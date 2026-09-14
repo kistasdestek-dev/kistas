@@ -90,7 +90,10 @@ export const Web3DCard: React.FC<Single3DCardProps> = ({
 
   const primaryPlatform = project.platforms?.[0] || 'App';
   const sourceImage = project.coverImageUrl || project.logoUrl;
-  const previewImage = getOptimizedImageUrl(sourceImage, 720);
+  const previewImage = getOptimizedImageUrl(sourceImage, 640);
+  const coverImageSet = sourceImage && previewImage !== sourceImage
+    ? [320, 640].map((width) => `${getOptimizedImageUrl(sourceImage, width)} ${width}w`).join(', ')
+    : undefined;
   return (
     <div className="crd-f3d-float">
       <div
@@ -104,7 +107,7 @@ export const Web3DCard: React.FC<Single3DCardProps> = ({
         role="button"
         tabIndex={0}
       >
-        {previewImage && <img src={previewImage} alt="" aria-hidden="true" className="crd-f3d-today-cover" decoding="async" fetchPriority="high" />}
+        {previewImage && <img src={previewImage} srcSet={coverImageSet} sizes="(max-width: 360px) 280px, 310px" alt="" aria-hidden="true" className="crd-f3d-today-cover" decoding="async" fetchPriority="high" />}
         <div className="crd-f3d-today-shade" aria-hidden="true" />
         <div className="crd-f3d-doodles" aria-hidden="true">
           <div className="crd-f3d-doodle-circle" />
