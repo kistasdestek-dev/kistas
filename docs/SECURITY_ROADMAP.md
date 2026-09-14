@@ -182,7 +182,7 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 | SEC-007 | Proje Düzeltmesini Güvenli Yeniden Gönderme | 2/3 | P1 | DOGRULANDI | Codex | Sahiplik ve durum doğrulamalı RPC, anonim erişim reddi, denetim kaydı ve core-domain testi (32/32) |
 | SEC-008 | Eski alan adindaki KVKK iletisim adresi ve paylasim URL'leri | 6/7 | P2 | DUZELTILDI | Codex / kullanici | Canli gizlilik metni ve blog linkleri dogrulandi; kistasdestek@gmail.com gercek teslimat testi kullanicida bekliyor (hedef 2026-09-15) |
 | SEC-009 | Expo arac zincirinde dolayli uuid guvenlik uyarisi | 6 | P2 | RISK_KABUL | Codex | `npm audit --omit=dev --audit-level=high`: 0 high/critical, 26 moderate; duzeltme yok, sonraki Expo surumunde yeniden degerlendirilecek |
-| SEC-010 | Supabase Auth e-posta teslimati ve sifre kurtarma | 6/7 | P2 | KISMI | Codex / kullanici | Resend `auth.xn--kstas-n4a.com` DNS ve domain dogrulamasi tamamlandi; Supabase SMTP baglantisi ve gercek teslimat testi bekliyor (hedef 2026-09-15). |
+| SEC-010 | Supabase Auth e-posta teslimati ve sifre kurtarma | 6/7 | P2 | KISMI | Codex / kullanici | Resend alan adi ve Supabase SMTP etkin; destek hesabina sifirlama e-postasi Resend'de `Delivered`. Linkten yeni sifre kaydi ve yeni kayit dogrulamasi bekliyor (hedef 2026-09-15). |
 | SEC-011 | Bekleniyor | - | - | BEKLIYOR | - | - |
 | SEC-012 | Bekleniyor | - | - | BEKLIYOR | - | - |
 | SEC-013 | Bekleniyor | - | - | BEKLIYOR | - | - |
@@ -268,9 +268,11 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 - Tarih: 2026-09-14. Supabase Authentication > Emails > SMTP Settings panelinde `Enable custom SMTP` kapali goruldu. Varsayilan Supabase servisi yalniz proje ekibindeki izinli adreslere mail gonderebilir; genel kullanici kayit dogrulamasi ve sifre sifirlama teslimati saglanmis degil.
 - Kod bulgusu: `resetPasswordForEmail()` baglanti gonderiyordu fakat `PASSWORD_RECOVERY` olayini yakalayip yeni sifreyi kaydeden ekran yoktu. Kayit dogrulama bekleyen oturumsuz kullanici da basarisiz profil olusturma yoluna dusuyordu.
 - Duzeltme: Kurtarma oturumu AuthContext'te izleniyor; yeni sifre ekrani `updateUser({ password })` ile sifreyi guncelliyor ve tamamlaninca oturumu kapatip girise donuyor. Oturumsuz kayit sonucunda dogrulama gerektigi acikca gosteriliyor; izin verilmeyen e-posta hatasi yerellestirildi.
-- Kanit: `npm run release:web` TypeScript, 32 alan, 14 URL, XSS/SQL ve bundle sir taramasindan gecti. Gercek sifirlama e-postasi ve linkten yeni sifre kaydi ozel SMTP olmadan uctan uca dogrulanamaz; bu nedenle durum `KISMI`.
+- Kod kaniti: `npm run release:web` TypeScript, 32 alan, 14 URL, XSS/SQL ve bundle sir taramasindan gecti; `68d0837` Cloudflare Pages production dagitimi basarili.
 - E-posta altyapisi kaniti: Resend ucretsiz hesapta `auth.xn--kstas-n4a.com` Ireland bolgesinde `Verified` oldu; Cloudflare DKIM TXT, SPF TXT ve donus MX kayitlari 1.1.1.1 uzerinden dogru degerlerle cozumleniyor.
-- Sonraki adim: Yalniz bu alt alan icin gonderim yetkili API anahtarini Supabase ozel SMTP'ye bagla; kayit dogrulama ve sifre sifirlama e-posta teslimat testi yap. Hedef 2026-09-15; sahip: kullanici ve Codex. Anahtarlar kaynaga, istemci paketine ve paylasilabilir yedege girmez.
+- Canli gonderim kaniti: Supabase ozel SMTP `bildirim@auth.xn--kstas-n4a.com`, `smtp.resend.com:465` ve `resend` kullanicisi ile etkin ve yeniden yukleme sonrasi kayitli. Supabase kullanici paneli `kistasdestek@gmail.com` icin `Sent password recovery` gosterdi; Resend Emails panelinde ayni alici ve `Reset your password` konusu `Delivered` oldu. Gelen kutusunda gorunme ve 60 dakika gecerli baglantidan yeni sifre kaydi henuz kullanici tarafindan dogrulanmadi; durum `KISMI`.
+- Kalan risk: Gonderim anahtari sohbet mesajinda paylasildi. Anahtar yalniz gonderim ve tek alt alanla sinirli; kullanici mevcut anahtari koruyarak devam etme tercihini bildirdi. Uygun zamanda yeni anahtar olusturulup Supabase'de degistirilerek eski anahtar iptal edilmeli. Anahtar kaynakta, istemci paketinde veya paylasilabilir yedekte tutulmaz.
+- Sonraki adim: Gelen kutusunda teslimati, sifirlama baglantisindan yeni sifre kaydini ve yeni kullanici kayit dogrulamasini test et. Hedef 2026-09-15; sahip: kullanici ve Codex.
 
 ### SEC-003 - Marka ve Kimlik Taklidi Koruması (Kıstas İsmi Kilidi)
 
