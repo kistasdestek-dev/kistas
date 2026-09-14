@@ -5,13 +5,14 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   Platform,
   useWindowDimensions,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Listing, isListingSponsored } from '../../features/listings/domain/Listing';
-import { breakpoints } from '../../core/theme';
+import { breakpoints, theme } from '../../core/theme';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 
 export interface PopularProjectPagerProps {
@@ -66,20 +67,43 @@ export const PopularProjectPager: React.FC<PopularProjectPagerProps> = React.mem
 
   return (
     <View style={[styles.popularSection, isWideWeb && styles.popularSectionWeb]}>
-      <TouchableOpacity
-        style={styles.popularHeader}
-        onPress={onOpenBrowse}
-        activeOpacity={onOpenBrowse ? 0.7 : 1}
-        disabled={!onOpenBrowse}
-        accessibilityRole="button"
-        accessibilityLabel="Tüm popüler projeleri aç"
-      >
-        <View style={styles.popularHeadingCopy}>
+      <View style={styles.popularHeaderRow}>
+        <TouchableOpacity
+          style={styles.popularHeadingCopy}
+          onPress={onOpenBrowse}
+          activeOpacity={onOpenBrowse ? 0.72 : 1}
+          disabled={!onOpenBrowse}
+          accessibilityRole={onOpenBrowse ? 'button' : undefined}
+          accessibilityLabel={`${title} projelerini aç`}
+        >
           <Text style={styles.popularTitle}>{title}</Text>
           <Text style={styles.popularSubtitle}>{subtitle}</Text>
-        </View>
-        {onOpenBrowse ? <Ionicons name="chevron-forward" size={28} color="#63666f" /> : null}
-      </TouchableOpacity>
+        </TouchableOpacity>
+
+        {onOpenBrowse ? (
+          <Pressable
+            onPress={onOpenBrowse}
+            style={({ hovered, pressed }: any) => [
+              styles.seeAllGlassButton,
+              hovered && styles.seeAllGlassButtonHover,
+              pressed && styles.seeAllGlassButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={`${title} tümünü incele`}
+          >
+            {({ hovered }: any) => (
+              <>
+                <Text style={[styles.seeAllGlassButtonText, hovered && styles.seeAllGlassButtonTextHover]}>
+                  Tümünü Gör
+                </Text>
+                <View style={[styles.seeAllIconBadge, hovered && styles.seeAllIconBadgeHover]}>
+                  <Ionicons name="arrow-forward" size={12} color={hovered ? '#1D4ED8' : '#2563EB'} />
+                </View>
+              </>
+            )}
+          </Pressable>
+        ) : null}
+      </View>
 
       <ScrollView
         horizontal
@@ -174,17 +198,21 @@ const styles = StyleSheet.create({
     boxShadow: '0 18px 46px rgba(255,255,255,0.18)' as any,
     overflow: 'hidden',
   },
-  popularHeader: {
-    alignSelf: 'flex-start',
+  popularHeaderRow: {
+    width: '100%',
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingTop: 8,
+    paddingBottom: 12,
   },
   popularHeadingCopy: {
-    flexShrink: 1,
+    flex: 1,
+    paddingRight: 12,
   },
   popularTitle: {
+    ...theme.typography.kistas,
     color: '#252333',
     fontSize: 28,
     lineHeight: 34,
@@ -192,12 +220,65 @@ const styles = StyleSheet.create({
     letterSpacing: -0.9,
   },
   popularSubtitle: {
+    ...theme.typography.kistas,
     color: '#686474',
     fontSize: 11.5,
     lineHeight: 16,
     fontWeight: '600',
     marginTop: 1,
   },
+  seeAllGlassButton: {
+    minHeight: 34,
+    paddingLeft: 14,
+    paddingRight: 7,
+    paddingVertical: 4,
+    borderRadius: 999,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    backdropFilter: 'blur(12px)',
+    borderWidth: 1,
+    borderColor: 'rgba(37, 99, 235, 0.18)',
+    boxShadow: '0 3px 12px rgba(37, 99, 235, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+    cursor: 'pointer',
+    transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+  } as any,
+  seeAllGlassButtonHover: {
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    borderColor: 'rgba(37, 99, 235, 0.35)',
+    boxShadow: '0 6px 18px rgba(37, 99, 235, 0.16), inset 0 1px 0 rgba(255, 255, 255, 1)',
+    transform: [{ translateY: -1 }],
+  } as any,
+  seeAllGlassButtonPressed: {
+    transform: [{ translateY: 0 }, { scale: 0.98 }],
+    opacity: 0.88,
+  },
+  seeAllGlassButtonText: {
+    ...theme.typography.kistas,
+    color: '#1E3A8A',
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: -0.1,
+  },
+  seeAllGlassButtonTextHover: {
+    color: '#2563EB',
+  },
+  seeAllIconBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(37, 99, 235, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(37, 99, 235, 0.12)',
+    transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+  } as any,
+  seeAllIconBadgeHover: {
+    backgroundColor: 'rgba(37, 99, 235, 0.15)',
+    transform: [{ translateX: 1.5 }],
+  } as any,
   popularPagerContent: {
     paddingLeft: 16,
     paddingRight: 28,
