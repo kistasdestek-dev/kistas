@@ -9,6 +9,7 @@
 - [x] Open Graph ve Twitter paylaşım etiketleri
 - [x] Organization, WebSite, WebPage, AboutPage, BlogPosting ve BreadcrumbList JSON-LD
 - [x] Blog yazılarında sabit yayın tarihi, yazar, konu, görsel ve ücretsiz erişim bilgisi
+- [x] Yayın ve güncelleme tarihleri canlı blog kayıtlarıyla eşit; sitemap `lastmod` güncelleme tarihini kullanıyor
 - [x] JavaScript çalışmadan görülebilen açıklayıcı metin ve taranabilir iç bağlantılar
 - [x] Blog dizini üç yazıya, yazılar birbirine doğrudan HTML bağlantısı veriyor
 - [x] Giriş, profil, mesajlar ve proje oluşturma gibi özel ekranlarda `noindex`

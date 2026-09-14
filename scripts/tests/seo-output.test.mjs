@@ -34,6 +34,11 @@ for (const route of SEO_ROUTES) {
       assert(html.includes(`href="${item.path}"`), `Blog ic baglantisi eksik: ${route.path} -> ${item.path}`);
     }
   }
+  if (route.ogType === 'article') {
+    const post = route.schema['@graph'].find((node) => node['@type'] === 'BlogPosting');
+    assert(html.includes(`<meta property="article:published_time" content="${post.datePublished}" />`), `Yayin tarihi tutarsiz: ${route.path}`);
+    assert.equal(route.lastmod, post.dateModified.slice(0, 10), `Sitemap degisiklik tarihi tutarsiz: ${route.path}`);
+  }
   const scriptPaths = [...html.matchAll(/<script\s+src="(\/_expo\/static\/js\/web\/[^"\s]+\.js)"/g)].map((match) => match[1]);
   assert(scriptPaths.length > 0, `Web JavaScript girisi eksik: ${route.path}`);
   for (const scriptPath of scriptPaths) {

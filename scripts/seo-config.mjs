@@ -26,7 +26,7 @@ const breadcrumb = (items) => ({
   })),
 });
 
-const article = ({ path, title, description, image, author, authorType = 'Organization', datePublished, section, keywords }) => {
+const article = ({ path, title, description, image, author, authorType = 'Organization', datePublished, dateModified, section, keywords }) => {
   const url = `${SITE_ORIGIN}${path}`;
   return {
     path,
@@ -36,7 +36,7 @@ const article = ({ path, title, description, image, author, authorType = 'Organi
     ogType: 'article',
     heading: title.replace(/ \| Kıstas$/, ''),
     lead: description,
-    lastmod: datePublished.slice(0, 10),
+    lastmod: dateModified.slice(0, 10),
     schema: {
       '@context': 'https://schema.org',
       '@graph': [
@@ -50,7 +50,7 @@ const article = ({ path, title, description, image, author, authorType = 'Organi
           description,
           image: [image],
           datePublished,
-          dateModified: datePublished,
+          dateModified,
           author: { '@type': authorType, name: author },
           publisher: { '@id': organization['@id'] },
           articleSection: section,
@@ -137,7 +137,7 @@ export const SEO_ROUTES = [
     title: 'Sıfır Bütçeyle Ürün Lansmanı Rehberi | Kıstas',
     description: 'Büyük reklam bütçeleri harcamadan ilk 1.000 aktif kullanıcıya ulaşmanın adil ve organik yolları. Topluluk odaklı lansman stratejileri.',
     image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1200&auto=format&fit=crop',
-    author: 'Mehmet Özdemir', authorType: 'Person', datePublished: '2026-09-12T08:00:00+03:00', section: 'Girişimcilik',
+    author: 'Mehmet Özdemir', authorType: 'Person', datePublished: '2026-09-08T05:10:55.706012+00:00', dateModified: '2026-09-10T05:10:55.706012+00:00', section: 'Girişimcilik',
     keywords: ['girişimcilik', 'ürün lansmanı', 'bağımsız geliştirici', 'organik büyüme'],
   }),
   article({
@@ -145,7 +145,7 @@ export const SEO_ROUTES = [
     title: 'Yapay Zekâ Uygulamalarında UX ve Güven | Kıstas',
     description: 'Yapay zekâ araçlarında akışkan yanıtlar, halüsinasyon kontrolü, kaynak gösterimi ve kullanıcı güvenini artıran ürün tasarımı ilkeleri.',
     image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop',
-    author: 'Kıstas Editoryal', datePublished: '2026-09-09T08:00:00+03:00', section: 'Yapay Zekâ',
+    author: 'Kıstas Editoryal', datePublished: '2026-09-05T05:10:55.706012+00:00', dateModified: '2026-09-10T05:10:55.706012+00:00', section: 'Yapay Zekâ',
     keywords: ['yapay zekâ', 'kullanıcı deneyimi', 'güven', 'ürün tasarımı'],
   }),
   article({
@@ -153,7 +153,7 @@ export const SEO_ROUTES = [
     title: 'SaaS Fiyatlandırması: Freemium mu Deneme mi? | Kıstas',
     description: 'Erken aşama yazılım girişimleri için freemium ve ücretsiz deneme modellerinin dönüşüm, maliyet ve kullanıcı kazanımı açısından karşılaştırması.',
     image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop',
-    author: 'Kıstas Strateji', datePublished: '2026-09-06T08:00:00+03:00', section: 'SaaS',
+    author: 'Kıstas Strateji', datePublished: '2026-09-02T05:10:55.706012+00:00', dateModified: '2026-09-10T05:10:55.706012+00:00', section: 'SaaS',
     keywords: ['SaaS', 'fiyatlandırma', 'freemium', 'ücretsiz deneme'],
   }),
   {
