@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getOptimizedImageUrl } from '../../core/media/imageDelivery';
 
 // In-memory cache so each logo URL is processed only once across the whole app session
 const transparentLogoCache = new Map<string, string>();
@@ -29,14 +30,15 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
   draggable = false,
   decoding = 'async',
 }) => {
+  const deliveredSrc = getOptimizedImageUrl(src, 160) || src;
   const [currentSrc, setCurrentSrc] = useState<string>(() => {
-    return transparentLogoCache.get(src) || src;
+    return transparentLogoCache.get(deliveredSrc) || deliveredSrc;
   });
 
   useEffect(() => {
-    if (!src) return;
+    if (!deliveredSrc) return;
 
-    const cached = transparentLogoCache.get(src);
+    const cached = transparentLogoCache.get(deliveredSrc);
     if (cached) {
       if (cached !== currentSrc) {
         setCurrentSrc(cached);
@@ -54,7 +56,7 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
         const naturalH = img.naturalHeight || img.height;
 
         if (!naturalW || !naturalH) {
-          transparentLogoCache.set(src, src);
+          transparentLogoCache.set(deliveredSrc, deliveredSrc);
           return;
         }
 
@@ -73,7 +75,7 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
         canvas.height = h;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) {
-          transparentLogoCache.set(src, src);
+          transparentLogoCache.set(deliveredSrc, deliveredSrc);
           return;
         }
 
@@ -92,7 +94,7 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
         // 1. If any corner is already transparent (alpha < 30), image already has a transparent background
         const hasTransparentCorner = cornerIndices.some((idx) => data[idx + 3] < 30);
         if (hasTransparentCorner) {
-          transparentLogoCache.set(src, src);
+          transparentLogoCache.set(deliveredSrc, deliveredSrc);
           return;
         }
 
@@ -172,26 +174,26 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
         ctx.putImageData(imgData, 0, 0);
         const transparentDataUrl = canvas.toDataURL('image/png');
 
-        transparentLogoCache.set(src, transparentDataUrl);
+        transparentLogoCache.set(deliveredSrc, transparentDataUrl);
         if (isMounted) {
           setCurrentSrc(transparentDataUrl);
         }
       } catch {
         // Fallback gracefully to original src on any canvas/CORS edge case
-        transparentLogoCache.set(src, src);
+        transparentLogoCache.set(deliveredSrc, deliveredSrc);
       }
     };
 
     img.onerror = () => {
-      transparentLogoCache.set(src, src);
+      transparentLogoCache.set(deliveredSrc, deliveredSrc);
     };
 
-    img.src = src;
+    img.src = deliveredSrc;
 
     return () => {
       isMounted = false;
     };
-  }, [src]);
+  }, [deliveredSrc]);
 
   return (
     <img
@@ -206,6 +208,7 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
       }}
       draggable={draggable}
       decoding={decoding}
+      loading="lazy"
     />
   );
 };

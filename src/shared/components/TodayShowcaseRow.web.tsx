@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import {
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,6 +15,7 @@ import { breakpoints, kistasStyle, theme } from '../../core/theme';
 import { Listing, PlatformType } from '../../features/listings/domain/Listing';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 import { GlassIconButton } from './GlassIconButton';
+import { getOptimizedImageUrl } from '../../core/media/imageDelivery';
 
 export interface TodayShowcaseRowProps {
   projects: Listing[];
@@ -122,7 +122,8 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
         contentContainerStyle={styles.scrollContent}
       >
         {featuredProjects.map((project) => {
-          const coverImage = project.coverImageUrl || project.logoUrl || IMAGE_FALLBACK;
+          const sourceImage = project.coverImageUrl || project.logoUrl || IMAGE_FALLBACK;
+          const coverImage = getOptimizedImageUrl(sourceImage, isPhone ? 640 : 800) || sourceImage;
           const makerName = project.seller?.fullName || 'Bağımsız geliştirici';
           const initials = project.title.slice(0, 2).toUpperCase();
           const platform = project.platforms?.[0];
@@ -141,7 +142,14 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
               ]}
             >
               <View style={styles.mediaFrame}>
-                <Image source={{ uri: coverImage }} resizeMode="cover" style={styles.coverImage} />
+                <img
+                  src={coverImage}
+                  alt=""
+                  aria-hidden="true"
+                  decoding="async"
+                  loading="lazy"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
                 <LinearGradient
                   colors={['rgba(241,245,250,0)', 'rgba(241,245,250,0.08)', 'rgba(241,245,250,0.76)', '#F1F5FA']}
                   locations={[0.34, 0.54, 0.76, 0.94]}
@@ -324,7 +332,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: NEO.global,
   },
-  coverImage: { width: '100%', height: '100%' },
   cardTopRow: {
     position: 'absolute',
     top: 14,

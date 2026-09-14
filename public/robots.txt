@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Allow: /cdn-cgi/image/
+Disallow: /cdn-cgi/
 
 Sitemap: https://www.xn--kstas-n4a.com/sitemap.xml

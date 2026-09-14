@@ -3,6 +3,7 @@ import { Listing } from '../../../features/listings/domain/Listing';
 import { AutoTransparentLogo } from '../AutoTransparentLogo';
 import { BorderBeam } from '../BorderBeam';
 import { KistasLogo } from '../KistasLogo';
+import { getOptimizedImageUrl } from '../../../core/media/imageDelivery';
 
 export interface Single3DCardProps {
   project?: Listing;
@@ -17,26 +18,6 @@ export const Web3DCard: React.FC<Single3DCardProps> = ({
   onPress,
   onOpenCreditStore,
 }) => {
-  React.useEffect(() => {
-    if (!project || typeof window === 'undefined') return undefined;
-
-    const preloadTimer = window.setTimeout(() => {
-      const imageUrls = [
-        project.logoUrl,
-        project.coverImageUrl,
-        ...(project.images ?? []).slice(0, 2).map((image) => image.imageUrl),
-      ].filter((url): url is string => Boolean(url));
-
-      [...new Set(imageUrls)].forEach((url) => {
-        const image = new window.Image();
-        image.decoding = 'async';
-        image.src = url;
-      });
-    }, 120);
-
-    return () => window.clearTimeout(preloadTimer);
-  }, [project]);
-
   if (isPromo || !project) {
     return (
       <div className="crd-f3d-float">
@@ -108,7 +89,8 @@ export const Web3DCard: React.FC<Single3DCardProps> = ({
     : 'KT';
 
   const primaryPlatform = project.platforms?.[0] || 'App';
-  const previewImage = project.coverImageUrl || project.logoUrl;
+  const sourceImage = project.coverImageUrl || project.logoUrl;
+  const previewImage = getOptimizedImageUrl(sourceImage, 720);
   return (
     <div className="crd-f3d-float">
       <div
@@ -122,7 +104,7 @@ export const Web3DCard: React.FC<Single3DCardProps> = ({
         role="button"
         tabIndex={0}
       >
-        {previewImage && <img src={previewImage} alt={project.title} className="crd-f3d-today-cover" />}
+        {previewImage && <img src={previewImage} alt="" aria-hidden="true" className="crd-f3d-today-cover" decoding="async" fetchPriority="high" />}
         <div className="crd-f3d-today-shade" aria-hidden="true" />
         <div className="crd-f3d-doodles" aria-hidden="true">
           <div className="crd-f3d-doodle-circle" />
@@ -148,6 +130,8 @@ export const Web3DCard: React.FC<Single3DCardProps> = ({
                   src={previewImage}
                   alt={project.title}
                   className="crd-f3d-preview-img"
+                  decoding="async"
+                  loading="lazy"
                 />
               ) : (
                 <div className="crd-f3d-preview-mockup">

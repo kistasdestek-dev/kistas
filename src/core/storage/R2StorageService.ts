@@ -1,4 +1,5 @@
 import { supabase } from '../supabase/supabaseClient';
+import { optimizeUploadImage } from '../media/optimizeUploadImage';
 
 export interface UploadResult {
   success: boolean;
@@ -86,22 +87,26 @@ export class R2StorageService {
         return { success: false, error: 'Görsel boyutu en fazla 10 MB olabilir.' };
       }
 
-      // 2. Uzantı belirleme
-      const rawExt = file.name.split('.').pop()?.toLowerCase() || 'webp';
+      // 2. Mobil veri ve LCP maliyetini düşürmek için görseli yüklemeden önce küçült.
+      const uploadFile = await optimizeUploadImage(file, folder);
+
+      // 3. Uzantı belirleme
+      const rawExt = uploadFile.name.split('.').pop()?.toLowerCase() || 'webp';
       const cleanExt = ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(rawExt)
         ? rawExt
         : 'jpg';
 
-      // 3. Benzersiz dosya yolu üretme
+      // 4. Benzersiz dosya yolu üretme
       const randomPart = Math.random().toString(36).substring(2, 10);
       const timestamp = Date.now();
       const fileKey = `${folder}/${timestamp}-${randomPart}.${cleanExt}`;
 
-      // 4. Supabase Storage Kovanına Yükle (CF-Istanbul edge hızında, %100 SSL garantili)
+      // 5. Supabase Storage Kovanına Yükle
       const { data: uploadData, error: sbError } = await supabase.storage
         .from('kistas')
-        .upload(fileKey, file, {
-          contentType: file.type || `image/${cleanExt}`,
+        .upload(fileKey, uploadFile, {
+          contentType: uploadFile.type || `image/${cleanExt}`,
+          cacheControl: '31536000',
           upsert: true,
         });
 
