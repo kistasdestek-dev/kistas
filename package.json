@@ -9,7 +9,7 @@
     "web": "expo start --web",
     "build:web": "node scripts/build-web.mjs",
     "postbuild:web": "node scripts/stage-web-icon-fonts.mjs",
-    "release:web": "node scripts/security/check-repo-secrets.mjs && npm run lint && npm run security:xss && npm run security:sql-injection && node scripts/tests/core-domain.test.mjs && node scripts/tests/analytics-consent.test.mjs && npm run build:web && node scripts/security/check-web-bundle.mjs",
+    "release:web": "node scripts/security/check-repo-secrets.mjs && npm run lint && npm run security:xss && npm run security:sql-injection && node scripts/tests/core-domain.test.mjs && node scripts/tests/analytics-consent.test.mjs && npm run build:web && node scripts/tests/seo-output.test.mjs dist && node scripts/security/check-web-bundle.mjs",
     "preview:tunnel": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-remote-preview.ps1",
     "preview:refresh": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/refresh-remote-preview.ps1",
     "preview:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/stop-remote-preview.ps1",

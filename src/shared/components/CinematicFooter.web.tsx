@@ -31,7 +31,7 @@ const STYLES = `
 
 .kcf-links{display:flex;flex-wrap:wrap;justify-content:center;margin-top:18px;gap:10px;opacity:0.15;transform:translateY(16px);transition:opacity .7s cubic-bezier(0.16,1,0.3,1) .28s,transform .7s cubic-bezier(0.16,1,0.3,1) .28s}
 .kcf-revealed .kcf-links{opacity:1;transform:translateY(0)}
-.kcf-links button{font-family:inherit;cursor:pointer}
+.kcf-links a{font-family:inherit;cursor:pointer}
 
 .kcf-pill{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 28px;border:1px solid rgba(50,105,199,.16);border-radius:999px;background:linear-gradient(145deg,rgba(37,35,51,.07),rgba(37,35,51,.02));box-shadow:0 16px 32px -18px #ffffff,inset 0 1px rgba(37,35,51,.1);backdrop-filter:blur(16px);color:var(--kcf-ink);font:700 13px/1 inherit;text-decoration:none;transition:transform .25s ease,border-color .25s ease,background .25s ease}
 .kcf-pill:hover{transform:translateY(-2px);border-color:rgba(50,105,199,.44);background:rgba(50,105,199,.09)}
@@ -173,6 +173,11 @@ export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = fals
     });
   };
 
+  const openInternalPage = (event: React.MouseEvent<HTMLAnchorElement>, action: () => void) => {
+    event.preventDefault();
+    action();
+  };
+
   return (
     <footer
       ref={rootRef}
@@ -193,10 +198,10 @@ export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = fals
           </span>
         </div>
         <nav className="kcf-links" aria-label="Yasal ve destek bağlantıları">
-          {onOpenAbout ? <button className="kcf-pill kcf-pill-small" type="button" onClick={onOpenAbout}>Hakkımızda</button> : null}
-          {onOpenHowItWorks ? <button className="kcf-pill kcf-pill-small" type="button" onClick={onOpenHowItWorks}>Nasıl Çalışır?</button> : null}
-          {onOpenBlog ? <button className="kcf-pill kcf-pill-small" type="button" onClick={() => onOpenBlog()}>Blog</button> : null}
-          {onOpenPrivacy ? <button className="kcf-pill kcf-pill-small" type="button" onClick={onOpenPrivacy}>KVKK ve Gizlilik</button> : null}
+          {onOpenAbout ? <a className="kcf-pill kcf-pill-small" href="/about" onClick={(event) => openInternalPage(event, onOpenAbout)}>Hakkımızda</a> : null}
+          {onOpenHowItWorks ? <a className="kcf-pill kcf-pill-small" href="/how-it-works" onClick={(event) => openInternalPage(event, onOpenHowItWorks)}>Nasıl Çalışır?</a> : null}
+          {onOpenBlog ? <a className="kcf-pill kcf-pill-small" href="/blog" onClick={(event) => openInternalPage(event, () => onOpenBlog())}>Blog</a> : null}
+          {onOpenPrivacy ? <a className="kcf-pill kcf-pill-small" href="/privacy" onClick={(event) => openInternalPage(event, onOpenPrivacy)}>KVKK ve Gizlilik</a> : null}
           {onOpenSupport ? <button className="kcf-pill kcf-pill-small" type="button" onClick={onOpenSupport}>Destek</button> : null}
         </nav>
       </div>

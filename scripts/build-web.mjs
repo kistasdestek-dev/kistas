@@ -64,6 +64,7 @@ async function main() {
 
   console.log('--- Expo Web Export (dist) ---');
   await runCommand('npx', ['expo', 'export', '--platform', 'web', '--output-dir', 'dist']);
+  await runCommand('node', ['scripts/generate-seo-pages.mjs', 'dist']);
 
   console.log('--- dist-web Esitleniyor (Her iki cikti klasorunu destekleme) ---');
   const distDir = join(projectRoot, 'dist');

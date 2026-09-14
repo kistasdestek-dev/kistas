@@ -32,6 +32,7 @@ import { BlogScreen } from './src/features/blog/presentation/BlogScreen';
 import { AppProviders, chatNotificationActions, useAuth, useAuthActions } from './src/core/state';
 import { breakpoints, theme } from './src/core/theme';
 import { readAnalyticsConsent, saveAnalyticsConsent, startAnalytics, trackPageView } from './src/core/analytics/analytics';
+import { applyPrivatePageSeo, applyPublicPageSeo } from './src/core/seo/WebSeoHelper';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -257,6 +258,18 @@ function AppContent() {
   useEffect(() => {
     if (analyticsConsent) startAnalytics();
   }, [analyticsConsent]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || isBlogOpen) return;
+    if (isAboutOpen) return applyPublicPageSeo('about');
+    if (isHowItWorksOpen) return applyPublicPageSeo('how-it-works');
+    if (isPrivacyOpen) return applyPublicPageSeo('privacy');
+    if (isShowcaseOpen) return applyPublicPageSeo('showcase');
+    if (activeCategoryScreenId || ['messages', 'create', 'credits', 'profile'].includes(activeTab)) {
+      return applyPrivatePageSeo();
+    }
+    return applyPublicPageSeo(activeTab === 'browse' ? 'browse' : 'home');
+  }, [activeTab, activeCategoryScreenId, isAboutOpen, isBlogOpen, isHowItWorksOpen, isPrivacyOpen, isShowcaseOpen]);
 
   // SPA sayfalarını yalnızca isteğe bağlı analitik izni verildikten sonra ölç.
   useEffect(() => {

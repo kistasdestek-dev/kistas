@@ -1,7 +1,7 @@
 import { BlogPost } from '../domain/BlogPost';
 import { SITE_ORIGIN, blogPostUrl } from '../../../core/config/siteUrls';
 
-const SCHEMA_SCRIPT_ID = 'kistas-blog-schema-jsonld';
+const SCHEMA_SCRIPT_ID = 'kistas-page-schema-jsonld';
 
 interface PreviousMetaState {
   title: string;
@@ -76,13 +76,14 @@ export const BlogSeoHelper = {
       };
     }
 
-    const title = 'Kıstas Blog · Bağımsız Dijital Girişimler, Yapay Zekâ & SaaS Rehberi';
-    const description = 'Bağımsız geliştiriciler, yapay zekâ mühendisleri ve girişimciler için sıfır bütçeyle lansman, ürün tasarımı ve organik büyüme stratejileri.';
+    const title = 'Kıstas Blog | Yapay Zekâ, SaaS ve Girişimcilik';
+    const description = 'Bağımsız geliştiriciler ve girişimciler için yapay zekâ, SaaS, ürün tasarımı, sıfır bütçeyle lansman ve organik büyüme rehberleri.';
     const canonical = `${SITE_ORIGIN}/blog`;
     const coverImage = `${SITE_ORIGIN}/social-preview.png`;
 
     document.title = title;
     setMetaTag('name', 'description', description);
+    setMetaTag('name', 'robots', 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
     setCanonicalUrl(canonical);
 
     // OpenGraph
@@ -111,9 +112,17 @@ export const BlogSeoHelper = {
           'url': canonical,
           'publisher': {
             '@type': 'Organization',
+            '@id': `${SITE_ORIGIN}/#organization`,
             'name': 'Kıstas',
             'url': SITE_ORIGIN,
+            'logo': {
+              '@type': 'ImageObject',
+              'url': `${SITE_ORIGIN}/social-preview.png`,
+              'width': 1024,
+              'height': 1024,
+            },
           },
+          'inLanguage': 'tr-TR',
         },
         {
           '@type': 'BreadcrumbList',
@@ -157,6 +166,7 @@ export const BlogSeoHelper = {
 
     document.title = title;
     setMetaTag('name', 'description', description);
+    setMetaTag('name', 'robots', 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
     setCanonicalUrl(canonical);
 
     // OpenGraph Article
@@ -179,29 +189,48 @@ export const BlogSeoHelper = {
     // Google Schema.org BlogPosting Structured Data
     injectJsonLd({
       '@context': 'https://schema.org',
-      '@type': 'BlogPosting',
-      'mainEntityOfPage': {
-        '@type': 'WebPage',
-        '@id': canonical,
-      },
-      'headline': post.title,
-      'description': description,
-      'image': [coverImage],
-      'datePublished': post.published_at,
-      'dateModified': post.updated_at || post.published_at,
-      'author': {
-        '@type': 'Person',
-        'name': post.author_name,
-        'jobTitle': post.author_title,
-      },
-      'publisher': {
-        '@type': 'Organization',
-        'name': 'Kıstas',
-        'url': SITE_ORIGIN,
-      },
-      'articleSection': post.category,
-      'keywords': post.tags.join(', '),
-      'timeRequired': `PT${post.reading_time_minutes}M`,
+      '@graph': [
+        {
+          '@type': 'BlogPosting',
+          '@id': `${canonical}#article`,
+          'mainEntityOfPage': { '@type': 'WebPage', '@id': canonical },
+          'headline': post.title,
+          'description': description,
+          'image': [coverImage],
+          'datePublished': post.published_at,
+          'dateModified': post.updated_at || post.published_at,
+          'author': {
+            '@type': post.author_name === 'Mehmet Özdemir' ? 'Person' : 'Organization',
+            'name': post.author_name,
+            ...(post.author_name === 'Mehmet Özdemir' ? { jobTitle: post.author_title } : {}),
+          },
+          'publisher': {
+            '@type': 'Organization',
+            '@id': `${SITE_ORIGIN}/#organization`,
+            'name': 'Kıstas',
+            'url': SITE_ORIGIN,
+            'logo': {
+              '@type': 'ImageObject',
+              'url': `${SITE_ORIGIN}/social-preview.png`,
+              'width': 1024,
+              'height': 1024,
+            },
+          },
+          'articleSection': post.category,
+          'keywords': post.tags,
+          'timeRequired': `PT${post.reading_time_minutes}M`,
+          'inLanguage': 'tr-TR',
+          'isAccessibleForFree': true,
+        },
+        {
+          '@type': 'BreadcrumbList',
+          'itemListElement': [
+            { '@type': 'ListItem', 'position': 1, 'name': 'Ana Sayfa', 'item': `${SITE_ORIGIN}/` },
+            { '@type': 'ListItem', 'position': 2, 'name': 'Blog', 'item': `${SITE_ORIGIN}/blog` },
+            { '@type': 'ListItem', 'position': 3, 'name': post.title, 'item': canonical },
+          ],
+        },
+      ],
     });
   },
 
