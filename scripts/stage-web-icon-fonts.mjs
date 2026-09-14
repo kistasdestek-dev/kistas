@@ -35,8 +35,6 @@ for (const bundle of bundles) {
     }
   }
 }
-await writeFile(indexFile, index);
-
 for (const [url, name] of assets) {
   const destination = new URL(`../dist${url}`, import.meta.url);
   await mkdir(dirname(fileURLToPath(destination)), { recursive: true });
@@ -45,7 +43,11 @@ for (const [url, name] of assets) {
 }
 
 for (const name of ['Ionicons', 'MaterialIcons', 'MaterialCommunityIcons']) {
-  if (![...assets.values()].includes(name)) {
+  const stagedUrl = [...assets].find(([, assetName]) => assetName === name)?.[0];
+  if (!stagedUrl) {
     throw new Error(`${name} asset URL was not found in the web bundle`);
   }
+  index = index.replaceAll(`/fonts/${name}.ttf`, stagedUrl);
 }
+
+await writeFile(indexFile, index);

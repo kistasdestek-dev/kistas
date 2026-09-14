@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { useWindowDimensions } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Asset } from 'expo-asset';
+import * as Font from 'expo-font';
 import { useChatUnreadCount } from '../../core/state';
 import { breakpoints } from '../../core/theme';
 import { KistasLogo } from '../components/KistasLogo';
@@ -10,6 +12,14 @@ import { AppNavigationProps, TabKey } from './navigationTypes';
 export type { TabKey } from './navigationTypes';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
+// Expo'nun varsayilan `auto` yuzunu olusturmadan once ayni fontu `swap` ile kaydet.
+if (typeof window !== 'undefined') {
+  void Font.loadAsync('ionicons', {
+    uri: Asset.fromModule(Ionicons.font.ionicons).uri,
+    display: Font.FontDisplay.SWAP,
+  });
+}
 
 interface WebNavItem {
   key: TabKey;

@@ -22,6 +22,10 @@ for (const route of SEO_ROUTES) {
 
   const file = route.path === '/' ? join(outputRoot, 'index.html') : join(outputRoot, route.path.slice(1), 'index.html');
   const html = await readFile(file, 'utf8');
+  const ioniconsPreload = html.match(/<link rel="preload" href="(\/fonts\/Ionicons\.[a-f0-9]{32}\.ttf)" as="font"/);
+  assert(ioniconsPreload, `Onceden yuklenen Ionicons uretim dosyasi eksik: ${route.path}`);
+  assert(html.includes(`src: url('${ioniconsPreload[1]}')`), `Ionicons font yuzu farkli dosyaya bakiyor: ${route.path}`);
+  assert((await stat(join(outputRoot, ioniconsPreload[1].slice(1)))).isFile(), `Ionicons dosyasi ciktiya yazilmadi: ${route.path}`);
   const canonical = `${SITE_ORIGIN}${route.path === '/' ? '/' : route.path}`;
   assert(html.includes(`<title>${route.title}</title>`), `Baslik ciktiya yazilmadi: ${route.path}`);
   assert(html.includes(`<link rel="canonical" href="${canonical}" />`), `Canonical eksik: ${route.path}`);
