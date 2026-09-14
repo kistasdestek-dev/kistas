@@ -1269,9 +1269,8 @@ export default function App() {
 const styles = StyleSheet.create({
   analyticsConsent: {
     position: 'absolute',
-    bottom: 20,
-    left: 16,
-    right: 16,
+    bottom: 78,
+    width: '92%',
     alignSelf: 'center',
     maxWidth: 560,
     padding: 18,
