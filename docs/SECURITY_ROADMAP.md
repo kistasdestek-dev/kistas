@@ -164,7 +164,7 @@ Her bulgu icin su bilgiler doldurulur:
 
 | ID | Oncelik | Bulgu | Durum | Tamamlanma kosulu |
 |---|---|---|---|---|
-| KST-KNOWN-001 | P0 | R2 Secret Access Key daha once web bundle icine girdi. Istemci kodu kaldirildi ve yeni bundle temiz dogrulandi. | KULLANICI AKSIYONU | Eski R2 token Cloudflare panelinden revoke edilir; gerekirse yeni token sadece sunucu secret'i olarak uretilir. |
+| KST-KNOWN-001 | P0 | R2 Secret Access Key daha once web bundle icine girdi. Istemci kodu kaldirildi ve yeni bundle temiz dogrulandi. | DOGRULANDI | 2026-09-14: Kullanici `KISTAS` (All buckets / Object Read & Write) token'ini sildi; Cloudflare R2 API Tokens panelinde `There are currently no Account API tokens for your buckets` goruldu. Eski kimlik bilgileri yerel `.env` dosyasindan cikarildi. |
 | KST-KNOWN-002 | P2 | Yerel yedek zip'i `.env` dosyasini iceriyor. | ANALIZ | Yedek erisim modeli belirlenir; paylasilan/offsite yedek icin sifreleme veya secretsiz profil eklenir. |
 
 ## 8. Elli Bulguluk Ana Kayit
@@ -174,7 +174,7 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 | ID | Baslik | Faz | Oncelik | Durum | Sahip | Dogrulama kaniti |
 |---|---|---:|---|---|---|---|
 | SEC-001 | SQL Enjeksiyonu | 3 | P1 | DOGRULANDI | Codex | `npm run security:sql-injection`; Supabase/RPC/migration kaynak incelemesi |
-| SEC-002 | XSS | 4 | P1 | DUZELTILDI | Codex | `npm run security:xss`; 14 URL testi; kaynak taramasi |
+| SEC-002 | XSS | 4 | P1 | DOGRULANDI | Codex | `npm run security:xss`; 14 URL testi; Pages yerel emulasyonunda CSP/HTTP basliklari, 2 URL yansitma testi ve tarayici blog acilisi |
 | SEC-003 | Marka ve Kimlik Taklidi Koruması (Kıstas İsmi Kilidi) | 1 | P1 | DOGRULANDI | Antigravity | UI doğrulama, ProfileService kontrolü, DB tetikleyicisi ve core-domain testi (19/19) |
 | SEC-004 | Proje Destek Bütünlüğü ve Kalıcılık Kalkanı (Destek Geri Alınamaz) | 3 | P1 | DOGRULANDI | Antigravity | DB RPC'de DELETE kaldırıldı, UI'da buton kilitlendi, core-domain testi (21/21) |
 | SEC-005 | Canlı Destek Görüşme Yaşam Döngüsü ve Yönetici Silme Yetkisi | 4/5 | P1 | DOGRULANDI | Codex | Sunucu RPC, kapalı görüşme RLS politikası, denetim kaydı ve core-domain testi (24/24) |
@@ -243,7 +243,7 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 - Sunucu korumasi: `20260908000014_xss_url_hardening.sql` yeni proje, gorsel ve avatar kayitlarinda HTTPS disindaki semalari reddeder. `NOT VALID` mevcut veriyi bozmadan yeni yazimlari korur.
 - Eski veri uyumlulugu: Kayitli baglantilar buton gorunurlugunu degistirmez. Guvenlik kontrolu yalnizca acma aninda uygulanir; semasiz alan adlari HTTPS olarak normalize edilir.
 - Regresyon korumasi: `npm run security:xss` raw HTML/JS calistirma noktalarini ve dogrulanmamis yonlendirmeleri reddeder; her kural guvenli ve guvensiz ornekle kendi kendini test eder.
-- Kalan risk: Production web sunucusunda CSP ve diger HTTP guvenlik basliklari deployment fazinda ayrica uygulanmali ve DAST ile dogrulanmalidir.
+- Dogrulama (2026-09-14): Wrangler Pages yerel emulasyonu `public/_headers` kuralini parse etti. `/`, `/blog`, `/blog/kistas-nedir` ve `/gizlilik-politikasi` 200 ile CSP, HSTS ve `X-Frame-Options: DENY` dondurdu. Script ve image-event payload'li iki URL yanitinda guvensiz yansitma yoktu; blog tarayicida basliklarla calisti. Canli Pages yanitinda basliklar ve CSP konsolu ayrica yayin sonrasi dogrulanacak.
 
 ### SEC-008 - Eski alan adi ve KVKK iletisim adresi
 
@@ -350,4 +350,5 @@ Production veya magazaya cikis icin:
 - Degisen kaynak: Git gizli dosya dislama kurallari, Pages web basliklari, yeni alan adi baglantilari, KVKK iletisim adresi, release test komutu ve iki asamali secret taramasi.
 - Dogrulama: `npm run release:web` basarili; TypeScript 0 hata, core-domain 32/32, XSS ve 14 URL testi, SQL guard, 393 kaynak dosyasi ve 71 dist dosyasinda gizli deger taramasi temiz. Yerel tarayicida ana sayfa, blog ve KVKK ekrani acildi. Yerel/uzak Supabase migration listesi eslesti.
 - Bagimlilik: `npm audit --omit=dev --audit-level=high` high/critical bulgu vermedi; 26 moderate dolayli uyarinin `SEC-009` risk kabulu kaydi acildi.
-- Kalan engel: `KST-KNOWN-001` R2 token iptali, `SEC-002` canli CSP/DAST dogrulamasi, `SEC-008` e-posta teslimati, canli RLS/admin negatif testleri ve alan adi SSL kontrolu. Bu kanitlar tamamlanmadan production yayin acilmaz.
+- 2026-09-14 guncelleme: `KST-KNOWN-001` R2 token iptali Cloudflare panelinde sifir etkin Account API token ile dogrulandi. `SEC-002` yerel Pages emulasyonunda CSP ve iki URL yansitma kontroluyle dogrulandi. Ozel GitHub deposu `kistasdestek-dev/kistas` `main` dalina gonderildi.
+- Kalan yayin kontrolleri: `SEC-008` e-posta teslimati, canli RLS/admin negatif testleri, Pages canli CSP ve SSL, Supabase Auth yonlendirme ayarlari. Bu kanitlar tamamlanmadan alan adi production yayinina gecilmez.
