@@ -110,7 +110,7 @@ const parseWebRoute = (): WebRouteState => {
   if (primary === 'how-it-works' || primary === 'nasil-calisir') {
     return { tab: 'discover', screen: 'how-it-works' };
   }
-  if (primary === 'privacy' || primary === 'gizlilik') {
+  if (primary === 'privacy' || primary === 'gizlilik' || primary === 'gizlilik-politikasi') {
     return { tab: 'discover', screen: 'privacy' };
   }
   if (primary === 'category' && secondary) {
