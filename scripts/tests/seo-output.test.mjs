@@ -31,9 +31,12 @@ for (const route of SEO_ROUTES) {
 
 const sitemap = await readFile(join(outputRoot, 'sitemap.xml'), 'utf8');
 const sourceSitemap = await readFile(join(projectRoot, 'public', 'sitemap.xml'), 'utf8');
+const llmsText = await readFile(join(outputRoot, 'llms.txt'), 'utf8');
 for (const route of SITEMAP_ROUTES) {
   assert(sitemap.includes(`<loc>${SITE_ORIGIN}${route.path === '/' ? '/' : route.path}</loc>`), `Sitemap URL eksik: ${route.path}`);
 }
 assert(!sitemap.includes(`${SITE_ORIGIN}/privacy</loc>`), 'Gizlilik sayfasi sitemap hedefi olmamali');
 assert.equal(sourceSitemap.replaceAll('\r\n', '\n'), sitemap.replaceAll('\r\n', '\n'), 'Kaynak ve uretilen sitemap ayni olmali');
+assert.match(llmsText, /^# Kıstas$/m, 'llms.txt H1 basligi eksik');
+assert.match(llmsText, /https:\/\/www\.xn--kstas-n4a\.com\/blog/, 'llms.txt taranabilir kaynak baglantilari eksik');
 console.log(`SEO output checks passed: ${SEO_ROUTES.length} pages, ${SITEMAP_ROUTES.length} sitemap URLs.`);
