@@ -824,6 +824,11 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
             Projenizin büyüme hedefine uygun paketi seçin. Tüm paketler bağımsız Sponsorlu Vitrin
             rotasyonu ve organik Kıstas topluluk desteği içerir.
           </p>
+          {storeState !== 'ready' && (
+            <p className="k-pricing-desc" role="status">
+              Web üzerinden kredi satın alma henüz açık değil. Bu sayfadan ödeme alınmıyor.
+            </p>
+          )}
 
           {/* User Balance Banner */}
           <div className="k-balance-banner">
@@ -935,11 +940,13 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
                 <div className="k-card-btn-container">
                   <button
                     type="button"
-                    disabled={isLoading}
+                    disabled={isLoading || storeState !== 'ready'}
                     onClick={() => handlePurchase(plan)}
                     className={`k-card-btn ${isPopular ? 'popular-btn' : 'outline-btn'}`}
                   >
-                    {isLoading ? (
+                    {storeState !== 'ready' ? (
+                      'Yakında'
+                    ) : isLoading ? (
                       'İşleniyor…'
                     ) : (
                       <>
