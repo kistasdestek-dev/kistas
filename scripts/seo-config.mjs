@@ -1,4 +1,4 @@
-export const SITE_ORIGIN = 'https://www.xn--kstas-n4a.com';
+export const SITE_ORIGIN = 'https://www.kistas.com.tr';
 export const DEFAULT_IMAGE = `${SITE_ORIGIN}/social-preview.png`;
 
 const organization = {

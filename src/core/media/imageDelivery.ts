@@ -1,4 +1,4 @@
-const CLOUDFLARE_IMAGE_ORIGIN = 'https://www.xn--kstas-n4a.com';
+const CLOUDFLARE_IMAGE_ORIGIN = 'https://www.kistas.com.tr';
 const TRUSTED_REMOTE_IMAGE_HOSTS = new Set([
   'iojgqicgeztqwkbetboa.supabase.co',
 ]);

@@ -16,7 +16,7 @@ const window = {
     setItem: (key, value) => values.set(key, value),
     removeItem: (key) => values.delete(key),
   },
-  location: { origin: 'https://www.xn--kstas-n4a.com', pathname: '/' },
+  location: { origin: 'https://www.kistas.com.tr', pathname: '/' },
 };
 const document = {
   createElement: () => ({}),
@@ -43,10 +43,10 @@ assert.equal(scripts.length, 1, 'Onaydan sonra Google kodu yuklenmeli');
 assert.equal(Object.prototype.toString.call(window.dataLayer[0]), '[object Arguments]', 'gtag komutlari Google etiketinin bekledigi Arguments biciminde olmali');
 exports.trackPageView('/browse?access_token=TEST_SECRET#refresh_token=TEST_SECRET', 'Kıstas');
 assert.equal(JSON.stringify(window.dataLayer).includes('TEST_SECRET'), false, 'Kurtarma tokeni analitige gitmemeli');
-assert.equal(window.dataLayer.at(-1)[2].page_location, 'https://www.xn--kstas-n4a.com/browse');
+assert.equal(window.dataLayer.at(-1)[2].page_location, 'https://www.kistas.com.tr/browse');
 window.location.pathname = '/blog/ornek-yazi';
 exports.trackPageView('/blog/ornek-yazi', 'Örnek Yazı');
-assert.equal(window.dataLayer.at(-1)[2].page_location, 'https://www.xn--kstas-n4a.com/blog/ornek-yazi', 'Dogrudan acilan blog URL yolu iki kez eklenmemeli');
+assert.equal(window.dataLayer.at(-1)[2].page_location, 'https://www.kistas.com.tr/blog/ornek-yazi', 'Dogrudan acilan blog URL yolu iki kez eklenmemeli');
 
 exports.saveAnalyticsConsent(false);
 const eventCount = window.dataLayer.length;

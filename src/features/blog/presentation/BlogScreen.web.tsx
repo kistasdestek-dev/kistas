@@ -21,7 +21,7 @@ export interface BlogScreenProps {
 
 const STYLE_ID = 'kistas-blog-styles';
 const safeBlogPostUrl = (slug: string) =>
-  toSafeHttpsUrl(blogPostUrl(slug), { allowedHosts: ['www.xn--kstas-n4a.com'] }) || '#';
+  toSafeHttpsUrl(blogPostUrl(slug), { allowedHosts: ['www.kistas.com.tr'] }) || '#';
 const STYLES = `
 .kblog-page{height:100%;overflow-x:hidden;overflow-y:auto;color:#252333;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#F1F5FA}
 .kblog-page *{box-sizing:border-box}

@@ -1840,7 +1840,7 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
               <View style={styles.blogInputGroup}>
                 <View style={styles.blogLabelRow}>
                   <Text style={styles.blogInputLabel}>SEO URL Bağlantısı (Slug)</Text>
-                  <Text style={styles.blogHelperHint}>www.kıstas.com/blog/{blogFormSlug || '...'}</Text>
+                  <Text style={styles.blogHelperHint}>www.kistas.com.tr/blog/{blogFormSlug || '...'}</Text>
                 </View>
                 <TextInput
                   style={styles.blogTextInput}

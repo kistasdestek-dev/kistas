@@ -2,8 +2,8 @@
 
 ## Teknik temel
 
-- [x] Tek ve güvenli ana adres: `https://www.kıstas.com`
-- [x] HTTPS, canonical adresler, robots.txt ve XML sitemap
+- [ ] Tek ve güvenli ana adres: `https://www.kistas.com.tr` (HTTPS çalışıyor; kök ve eski adreslerin 301 yönlendirmesi bekliyor)
+- [ ] Yeni adreste HTTPS, canonical adresler, robots.txt ve XML sitemap canlı doğrulaması
 - [x] Ana sayfa, Hakkımızda, Nasıl Çalışır, Blog ve üç yazı için ayrı statik HTML kabuğu
 - [x] Her arama hedefinde benzersiz başlık, açıklama ve tek H1
 - [x] Open Graph ve Twitter paylaşım etiketleri
@@ -12,8 +12,8 @@
 - [x] JavaScript çalışmadan görülebilen açıklayıcı metin ve taranabilir iç bağlantılar
 - [x] Giriş, profil, mesajlar ve proje oluşturma gibi özel ekranlarda `noindex`
 - [x] Derleme sırasında başlık uzunluğu, canonical, H1, JSON-LD ve sitemap testi
-- [x] Google Search Console alan adı doğrulaması ve sitemap gönderimi
-- [x] GA4 gerçek zamanlı `page_view` doğrulaması
+- [ ] Yeni `kistas.com.tr` alan adı için Google Search Console doğrulaması ve sitemap gönderimi
+- [ ] Yeni alan adında GA4 gerçek zamanlı `page_view` doğrulaması (mevcut ölçüm kimliği korunuyor)
 
 ## Yapay zekâ aramalarında görünürlük
 

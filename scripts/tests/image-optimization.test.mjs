@@ -6,7 +6,7 @@ const source = 'https://iojgqicgeztqwkbetboa.supabase.co/storage/v1/object/publi
 const optimized = buildOptimizedImageUrl(source, 640);
 assert.equal(
   optimized,
-  `https://www.xn--kstas-n4a.com/cdn-cgi/image/width=640,quality=76,format=auto,onerror=redirect/${source}`,
+  `https://www.kistas.com.tr/cdn-cgi/image/width=640,quality=76,format=auto,onerror=redirect/${source}`,
 );
 assert.equal(buildOptimizedImageUrl(source, 1)?.includes('width=32,'), true);
 assert.equal(buildOptimizedImageUrl(source, 5000)?.includes('width=1600,'), true);

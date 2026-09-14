@@ -38,5 +38,5 @@ for (const route of SITEMAP_ROUTES) {
 assert(!sitemap.includes(`${SITE_ORIGIN}/privacy</loc>`), 'Gizlilik sayfasi sitemap hedefi olmamali');
 assert.equal(sourceSitemap.replaceAll('\r\n', '\n'), sitemap.replaceAll('\r\n', '\n'), 'Kaynak ve uretilen sitemap ayni olmali');
 assert.match(llmsText, /^# Kıstas$/m, 'llms.txt H1 basligi eksik');
-assert.match(llmsText, /https:\/\/www\.xn--kstas-n4a\.com\/blog/, 'llms.txt taranabilir kaynak baglantilari eksik');
+assert(llmsText.includes(`${SITE_ORIGIN}/blog`), 'llms.txt taranabilir kaynak baglantilari eksik');
 console.log(`SEO output checks passed: ${SEO_ROUTES.length} pages, ${SITEMAP_ROUTES.length} sitemap URLs.`);
