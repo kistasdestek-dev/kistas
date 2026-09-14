@@ -150,7 +150,7 @@ export const BlogSeoHelper = {
       };
     }
 
-    const title = `${post.meta_title || post.title} | Kıstas Blog`;
+    const title = post.meta_title || `${post.title} | Kıstas Blog`;
     const description = post.meta_description || post.excerpt;
     const canonical = blogPostUrl(post.slug);
     const coverImage = post.cover_image_url;
