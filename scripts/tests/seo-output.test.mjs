@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { SEO_ROUTES, SITEMAP_ROUTES, SITE_ORIGIN } from '../seo-config.mjs';
 
@@ -28,6 +28,18 @@ for (const route of SEO_ROUTES) {
   assert(html.includes('id="kistas-page-schema-jsonld"'), `JSON-LD eksik: ${route.path}`);
   assert(html.includes(`<h1>${escapeHtml(route.heading)}</h1>`), `Sayfaya ozgu taranabilir H1 eksik: ${route.path}`);
   assert(html.includes(`<p>${escapeHtml(route.lead)}</p>`), `Sayfaya ozgu taranabilir aciklama eksik: ${route.path}`);
+  if (route.path === '/blog/' || route.ogType === 'article') {
+    const linkedArticles = SEO_ROUTES.filter((item) => item.ogType === 'article' && item.path !== route.path);
+    for (const item of linkedArticles) {
+      assert(html.includes(`href="${item.path}"`), `Blog ic baglantisi eksik: ${route.path} -> ${item.path}`);
+    }
+  }
+  const scriptPaths = [...html.matchAll(/<script\s+src="(\/_expo\/static\/js\/web\/[^"\s]+\.js)"/g)].map((match) => match[1]);
+  assert(scriptPaths.length > 0, `Web JavaScript girisi eksik: ${route.path}`);
+  for (const scriptPath of scriptPaths) {
+    const bundle = join(outputRoot, scriptPath.slice(1));
+    assert((await stat(bundle)).isFile(), `HTML olmayan JavaScript dosyasina baglaniyor: ${route.path} -> ${scriptPath}`);
+  }
 }
 
 const sitemap = await readFile(join(outputRoot, 'sitemap.xml'), 'utf8');

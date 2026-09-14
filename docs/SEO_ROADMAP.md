@@ -10,8 +10,10 @@
 - [x] Organization, WebSite, WebPage, AboutPage, BlogPosting ve BreadcrumbList JSON-LD
 - [x] Blog yazılarında sabit yayın tarihi, yazar, konu, görsel ve ücretsiz erişim bilgisi
 - [x] JavaScript çalışmadan görülebilen açıklayıcı metin ve taranabilir iç bağlantılar
+- [x] Blog dizini üç yazıya, yazılar birbirine doğrudan HTML bağlantısı veriyor
 - [x] Giriş, profil, mesajlar ve proje oluşturma gibi özel ekranlarda `noindex`
 - [x] Derleme sırasında başlık uzunluğu, canonical, H1, JSON-LD ve sitemap testi
+- [x] Her statik SEO sayfasının yüklediği JavaScript dosyaları derleme çıktısında mevcut; font düzenlemesi SEO sayfaları üretilmeden önce yapılıyor
 - [x] Yeni `kistas.com.tr` alan adı için Google Search Console doğrulaması ve sitemap gönderimi (7 keşfedilen sayfa)
 - [x] Yeni alan adında GA4 gerçek zamanlı `page_view` doğrulaması (`G-2XXP5LHME9`)
 
