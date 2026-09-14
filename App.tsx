@@ -1003,6 +1003,7 @@ function AppContent() {
         ) : isBlogOpen ? (
           <BlogScreen
             initialPostSlug={blogPostSlug || undefined}
+            onPostChange={setBlogPostSlug}
             onBack={() => {
               setIsBlogOpen(false);
               setBlogPostSlug(null);

@@ -16,12 +16,17 @@ export interface BlogScreenProps {
   onOpenSupport?: () => void;
   onOpenHowItWorks?: () => void;
   initialPostSlug?: string | null;
+  onPostChange?: (slug: string | null) => void;
 }
 
 const STYLE_ID = 'kistas-blog-styles';
+const safeBlogPostUrl = (slug: string) =>
+  toSafeHttpsUrl(blogPostUrl(slug), { allowedHosts: ['www.xn--kstas-n4a.com'] }) || '#';
 const STYLES = `
 .kblog-page{height:100%;overflow-x:hidden;overflow-y:auto;color:#252333;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#F1F5FA}
 .kblog-page *{box-sizing:border-box}
+.kblog-page a{color:inherit;text-decoration:none}
+.kblog-page a:hover{text-decoration:underline}
 .kblog-wrap{width:min(1180px,calc(100% - 40px));margin:0 auto}
 
 /* HEADER & HERO */
@@ -147,6 +152,7 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
   onOpenSupport,
   onOpenHowItWorks,
   initialPostSlug,
+  onPostChange,
 }) => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
@@ -172,10 +178,7 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
         if (isMounted) {
           setPosts(data);
           // Eğer initialPostSlug verildiyse o yazıyı aç
-          if (initialPostSlug) {
-            const found = data.find((p) => p.slug === initialPostSlug);
-            if (found) setSelectedPost(found);
-          }
+          setSelectedPost(initialPostSlug ? data.find((p) => p.slug === initialPostSlug) || null : null);
           setIsLoading(false);
         }
       })
@@ -220,11 +223,13 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
 
   const handleSelectPost = (post: BlogPost) => {
     setSelectedPost(post);
+    onPostChange?.(post.slug);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToList = () => {
     setSelectedPost(null);
+    onPostChange?.(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -432,7 +437,7 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
 
           {/* Öne Çıkan Yazı */}
           {featuredPost && !searchQuery ? (
-            <article className="kblog-featured" onClick={() => handleSelectPost(featuredPost)}>
+            <article className="kblog-featured">
               <div className="kblog-featured-img-wrap">
                 <img
                   src={featuredPost.cover_image_url}
@@ -448,7 +453,7 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
                     <Ionicons name="time-outline" size={13} /> {featuredPost.reading_time_minutes} dk okuma
                   </span>
                 </div>
-                <h2 className="kblog-featured-title">{featuredPost.title}</h2>
+                <h2 className="kblog-featured-title"><a href={safeBlogPostUrl(featuredPost.slug)} onClick={(event) => { event.preventDefault(); handleSelectPost(featuredPost); }}>{featuredPost.title}</a></h2>
                 <p className="kblog-featured-desc">{featuredPost.excerpt}</p>
                 <div className="kblog-author-row">
                   <div className="kblog-author-avatar">
@@ -470,7 +475,6 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
                 <article
                   className="kblog-card"
                   key={post.id}
-                  onClick={() => handleSelectPost(post)}
                 >
                   <div className="kblog-card-img-wrap">
                     <img
@@ -487,7 +491,7 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
                         <Ionicons name="time-outline" size={12} /> {post.reading_time_minutes} dk
                       </span>
                     </div>
-                    <h3 className="kblog-card-title">{post.title}</h3>
+                    <h3 className="kblog-card-title"><a href={safeBlogPostUrl(post.slug)} onClick={(event) => { event.preventDefault(); handleSelectPost(post); }}>{post.title}</a></h3>
                     <p className="kblog-card-desc">{post.excerpt}</p>
                     <div className="kblog-card-footer">
                       <span>{post.author_name}</span>

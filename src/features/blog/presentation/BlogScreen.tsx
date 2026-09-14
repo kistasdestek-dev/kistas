@@ -23,6 +23,7 @@ export interface BlogScreenProps {
   onOpenSupport?: () => void;
   onOpenHowItWorks?: () => void;
   initialPostSlug?: string | null;
+  onPostChange?: (slug: string | null) => void;
 }
 
 export const BlogScreen: React.FC<BlogScreenProps> = ({

@@ -48,10 +48,9 @@ export function startAnalytics(): void {
 export function trackPageView(path: string, title: string): void {
   if (readAnalyticsConsent() !== true || typeof window.gtag !== 'function') return;
   const safePath = (path.startsWith('/') ? path : `/${path}`).split(/[?#]/, 1)[0];
-  const basePath = window.location.pathname.replace(/\/$/, '');
   window.gtag('event', 'page_view', {
     page_path: safePath,
-    page_location: `${window.location.origin}${basePath}${safePath}`,
+    page_location: `${window.location.origin}${safePath}`,
     page_title: title,
     send_to: GA_MEASUREMENT_ID,
   });

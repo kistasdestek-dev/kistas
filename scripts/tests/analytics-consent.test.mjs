@@ -43,6 +43,9 @@ assert.equal(scripts.length, 1, 'Onaydan sonra Google kodu yuklenmeli');
 exports.trackPageView('/browse?access_token=TEST_SECRET#refresh_token=TEST_SECRET', 'Kıstas');
 assert.equal(JSON.stringify(window.dataLayer).includes('TEST_SECRET'), false, 'Kurtarma tokeni analitige gitmemeli');
 assert.equal(window.dataLayer.at(-1)[2].page_location, 'https://www.xn--kstas-n4a.com/browse');
+window.location.pathname = '/blog/ornek-yazi';
+exports.trackPageView('/blog/ornek-yazi', 'Örnek Yazı');
+assert.equal(window.dataLayer.at(-1)[2].page_location, 'https://www.xn--kstas-n4a.com/blog/ornek-yazi', 'Dogrudan acilan blog URL yolu iki kez eklenmemeli');
 
 exports.saveAnalyticsConsent(false);
 const eventCount = window.dataLayer.length;
