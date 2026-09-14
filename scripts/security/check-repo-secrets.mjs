@@ -32,7 +32,25 @@ for (const name of privateEnvNames) {
   if (value && value.length >= 8) secretValues.set(name, value);
 }
 
-const files = execFileSync('git', ['ls-files', '-z'], { cwd: root })
+function getGitCommand() {
+  const candidates = [
+    'git',
+    join(process.env.ProgramFiles || 'C:\\Program Files', 'Git', 'cmd', 'git.exe'),
+    join(process.env.LOCALAPPDATA || '', 'Programs', 'Git', 'cmd', 'git.exe'),
+    join(process.env.USERPROFILE || '', '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'native', 'git', 'cmd', 'git.exe'),
+  ];
+  for (const cmd of candidates) {
+    try {
+      execFileSync(cmd, ['--version'], { stdio: 'ignore' });
+      return cmd;
+    } catch {}
+  }
+  return 'git';
+}
+
+const gitCmd = getGitCommand();
+const safeDir = root.replace(/\\/g, '/');
+const files = execFileSync(gitCmd, ['-c', `safe.directory=${safeDir}`, 'ls-files', '-z'], { cwd: root })
   .toString('utf8').split('\0').filter(Boolean);
 if (files.length === 0) {
   console.error('Repository secret check failed: no staged or tracked files.');

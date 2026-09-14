@@ -38,6 +38,7 @@ import {
 import { toSafeHttpsUrl } from '../../../core/security/ExternalUrl';
 import { DescriptionRichText } from './DescriptionRichText';
 import { theme } from '../../../core/theme';
+import { trackEvent } from '../../../core/analytics/analytics';
 
 const APP_STORE_BADGE = require('../../../../assets/store-badges/app-store.png');
 const GOOGLE_PLAY_BADGE = require('../../../../assets/store-badges/google-play.png');
@@ -429,6 +430,10 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
         }
       } else if (res.success && res.upvotes_count !== undefined) {
         setUpvotesCount(Number(res.upvotes_count));
+        trackEvent('project_upvote', {
+          project_id: project.id,
+          project_title: project.title,
+        });
       }
     } catch {
       setHasUpvoted(false);

@@ -13,6 +13,7 @@ import { KistasTopBrandBar } from '../../../shared/components/KistasTopBrandBar'
 
 interface PrivacyPolicyScreenProps {
   onBack: () => void;
+  onManageAnalytics?: () => void;
 }
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -49,7 +50,7 @@ const PolicySection: React.FC<{
   </View>
 );
 
-export const PrivacyPolicyScreen: React.FC<PrivacyPolicyScreenProps> = ({ onBack }) => {
+export const PrivacyPolicyScreen: React.FC<PrivacyPolicyScreenProps> = ({ onBack, onManageAnalytics }) => {
   const { width } = useWindowDimensions();
   const wide = width >= 920;
 
@@ -146,6 +147,14 @@ export const PrivacyPolicyScreen: React.FC<PrivacyPolicyScreenProps> = ({ onBack
               <Text style={styles.paragraph}>
                 Kıstas; oturumunuzu açık tutmak, güvenliği sağlamak ve temel tercihleri hatırlamak için zorunlu çerezler veya benzer yerel depolama teknolojileri kullanabilir. Reklam amaçlı üçüncü taraf izleme teknolojileri bu temel işlevlerin parçası değildir.
               </Text>
+              <Text style={styles.paragraph}>
+                İzin verirseniz Google Analytics aracılığıyla sayfa ziyaretlerini ve proje etkileşimlerini ölçeriz. Bu isteğe bağlı hizmet üçüncü taraf çerezler kullanabilir. İzin vermediğinizde analitik kodu yüklenmez; tercihinizi dilediğiniz zaman değiştirebilirsiniz.
+              </Text>
+              {onManageAnalytics ? (
+                <TouchableOpacity onPress={onManageAnalytics} accessibilityRole="button" style={styles.backButton}>
+                  <Text style={styles.backText}>Analitik tercihini değiştir</Text>
+                </TouchableOpacity>
+              ) : null}
             </PolicySection>
 
             <PolicySection number="07" title="KVKK kapsamındaki haklarınız">

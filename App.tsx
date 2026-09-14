@@ -1,6 +1,6 @@
 import { BlurTargetView, BlurView } from 'expo-blur';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, SafeAreaView, StatusBar, Alert, Platform, Text, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, SafeAreaView, StatusBar, Alert, Platform, Pressable, Text, useWindowDimensions } from 'react-native';
 import { AdaptiveAppNavigation, TabKey } from './src/shared/navigation/AdaptiveAppNavigation';
 import { PremiumBackdrop, PremiumBackdropVariant } from './src/shared/components/PremiumBackdrop';
 import { KistasLaunchScreen } from './src/shared/components/KistasLaunchScreen';
@@ -31,6 +31,7 @@ import { PrivacyPolicyScreen } from './src/features/legal/presentation/PrivacyPo
 import { BlogScreen } from './src/features/blog/presentation/BlogScreen';
 import { AppProviders, chatNotificationActions, useAuth, useAuthActions } from './src/core/state';
 import { breakpoints, theme } from './src/core/theme';
+import { readAnalyticsConsent, saveAnalyticsConsent, startAnalytics, trackPageView } from './src/core/analytics/analytics';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -176,6 +177,7 @@ function AppContent() {
   const [isAboutOpen, setIsAboutOpen] = useState(initialWebRoute.screen === 'about');
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(initialWebRoute.screen === 'how-it-works');
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(initialWebRoute.screen === 'privacy');
+  const [analyticsConsent, setAnalyticsConsent] = useState<boolean | null>(readAnalyticsConsent);
   const [isBlogOpen, setIsBlogOpen] = useState(initialWebRoute.screen === 'blog');
   const [blogPostSlug, setBlogPostSlug] = useState<string | null>(initialWebRoute.blogSlug || null);
   const [activeCategoryScreenId, setActiveCategoryScreenId] = useState<string | null>(
@@ -251,6 +253,82 @@ function AppContent() {
     `;
     if (!scrollbarStyle.parentNode) document.head.appendChild(scrollbarStyle);
   }, []);
+
+  useEffect(() => {
+    if (analyticsConsent) startAnalytics();
+  }, [analyticsConsent]);
+
+  // SPA sayfalarını yalnızca isteğe bağlı analitik izni verildikten sonra ölç.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || analyticsConsent !== true || isPasswordRecovery) return;
+
+    let path = `/${activeTab}`;
+    let title = 'Kıstas';
+
+    if (selectedProject) {
+      path = `/project/${selectedProject.id}`;
+      title = `${selectedProject.title} · Kıstas`;
+    } else if (isBlogOpen) {
+      path = blogPostSlug ? `/blog/${blogPostSlug}` : '/blog';
+      title = 'Blog · Kıstas';
+    } else if (isHowItWorksOpen) {
+      path = '/nasil-calisir';
+      title = 'Nasıl Çalışır? · Kıstas';
+    } else if (isAboutOpen) {
+      path = '/hakkimizda';
+      title = 'Hakkımızda · Kıstas';
+    } else if (isPrivacyOpen) {
+      path = '/gizlilik-politikasi';
+      title = 'Gizlilik Politikası · Kıstas';
+    } else if (activeCategoryScreenId) {
+      path = `/category/${activeCategoryScreenId}`;
+      title = 'Kategori · Kıstas';
+    } else if (isShowcaseOpen) {
+      path = '/showcase';
+      title = 'Günün Vitrini · Kıstas';
+    } else {
+      switch (activeTab) {
+        case 'discover':
+          path = '/discover';
+          title = 'Keşfet · Kıstas';
+          break;
+        case 'browse':
+          path = '/browse';
+          title = 'Göz At · Kıstas';
+          break;
+        case 'credits':
+          path = '/credits';
+          title = 'Vitrin Kredisi · Kıstas';
+          break;
+        case 'profile':
+          path = '/profile';
+          title = 'Profil & Cüzdan · Kıstas';
+          break;
+        case 'messages':
+          path = '/messages';
+          title = 'Mesajlar · Kıstas';
+          break;
+        case 'create':
+          path = '/create';
+          title = 'Proje Lansmanı · Kıstas';
+          break;
+      }
+    }
+
+    trackPageView(path, title);
+  }, [
+    activeTab,
+    selectedProject,
+    isBlogOpen,
+    blogPostSlug,
+    isHowItWorksOpen,
+    isAboutOpen,
+    isPrivacyOpen,
+    activeCategoryScreenId,
+    isShowcaseOpen,
+    analyticsConsent,
+    isPasswordRecovery,
+  ]);
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof document === 'undefined') return;
@@ -915,7 +993,13 @@ function AppContent() {
             />
           )
         ) : isPrivacyOpen ? (
-          <PrivacyPolicyScreen onBack={() => setIsPrivacyOpen(false)} />
+          <PrivacyPolicyScreen
+            onBack={() => setIsPrivacyOpen(false)}
+            onManageAnalytics={() => {
+              saveAnalyticsConsent(null);
+              setAnalyticsConsent(null);
+            }}
+          />
         ) : isBlogOpen ? (
           <BlogScreen
             initialPostSlug={blogPostSlug || undefined}
@@ -1149,6 +1233,25 @@ function AppContent() {
           <KistasLogo size={52} showWordmark={false} glow />
         </View>
       ) : null}
+      {Platform.OS === 'web' && analyticsConsent === null ? (
+        <View style={styles.analyticsConsent} accessibilityLabel="Analitik çerez tercihi">
+          <Text style={styles.analyticsConsentTitle}>Analitik çerezler</Text>
+          <Text style={styles.analyticsConsentText}>
+            Kıstas'ı geliştirmek için Google Analytics ile ziyaret ve etkileşimleri ölçmek istiyoruz. Bu tercih isteğe bağlıdır; dilediğiniz zaman gizlilik sayfasından değiştirebilirsiniz.
+          </Text>
+          <View style={styles.analyticsConsentActions}>
+            <Pressable accessibilityRole="button" onPress={() => { saveAnalyticsConsent(false); setAnalyticsConsent(false); }} style={styles.analyticsConsentButton}>
+              <Text style={styles.analyticsConsentButtonText}>Reddet</Text>
+            </Pressable>
+            <Pressable accessibilityRole="button" onPress={() => { saveAnalyticsConsent(true); setAnalyticsConsent(true); }} style={styles.analyticsConsentButton}>
+              <Text style={styles.analyticsConsentButtonText}>Kabul et</Text>
+            </Pressable>
+            <Pressable accessibilityRole="button" onPress={() => setIsPrivacyOpen(true)} style={styles.analyticsConsentButton}>
+              <Text style={styles.analyticsConsentButtonText}>Bilgi</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -1164,6 +1267,37 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  analyticsConsent: {
+    position: 'absolute',
+    bottom: 20,
+    left: 16,
+    right: 16,
+    alignSelf: 'center',
+    maxWidth: 560,
+    padding: 18,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#C7DAF4',
+    zIndex: 1100,
+    elevation: 1100,
+    shadowColor: '#3269C7',
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+  },
+  analyticsConsentTitle: { color: '#203754', fontSize: 16, fontWeight: '700', marginBottom: 6 },
+  analyticsConsentText: { color: '#435B79', fontSize: 13, lineHeight: 19 },
+  analyticsConsentActions: { flexDirection: 'row', gap: 8, marginTop: 14 },
+  analyticsConsentButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#EEF5FF',
+    borderWidth: 1,
+    borderColor: '#C7DAF4',
+  },
+  analyticsConsentButtonText: { color: '#285BB4', fontSize: 13, fontWeight: '600' },
   safeArea: {
     flex: 1,
     height: Platform.OS === 'web' ? ('100%' as any) : undefined,
