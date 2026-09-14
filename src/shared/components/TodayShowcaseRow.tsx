@@ -294,13 +294,18 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
         </TouchableOpacity>
 
         {onOpenAll ? (
-          <GlassIconButton
-            icon="arrow-forward"
-            iconSize={18}
-            size={42}
+          <TouchableOpacity
+            activeOpacity={0.8}
             onPress={onOpenAll}
+            style={styles.seeAllGlassButton}
+            accessibilityRole="button"
             accessibilityLabel="Tüm vitrin liderlerini aç"
-          />
+          >
+            <Text style={styles.seeAllGlassButtonText}>Tümünü Gör</Text>
+            <View style={styles.seeAllIconBadge}>
+              <Ionicons name="arrow-forward" size={12} color="#2563EB" />
+            </View>
+          </TouchableOpacity>
         ) : onOpenCreditStore ? (
           <TouchableOpacity
             activeOpacity={0.78}
@@ -377,6 +382,41 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     lineHeight: 16,
     fontWeight: '500',
+  },
+  seeAllGlassButton: {
+    minHeight: 34,
+    paddingLeft: 14,
+    paddingRight: 7,
+    paddingVertical: 4,
+    borderRadius: 999,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(37, 99, 235, 0.18)',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  seeAllGlassButtonText: {
+    ...theme.typography.kistas,
+    color: '#1E3A8A',
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: -0.1,
+  },
+  seeAllIconBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(37, 99, 235, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(37, 99, 235, 0.12)',
   },
   showcaseCta: {
     minHeight: 38,

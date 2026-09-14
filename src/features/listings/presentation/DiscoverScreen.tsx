@@ -441,6 +441,7 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
         projects={filteredWeeklyShowcaseProjects}
         onSelectProject={onSelectListing}
         title="Günün Vitrini"
+        subtitle="Topluluk desteğiyle öne çıkan seçkin projeler"
         onOpenAll={() => onOpenShowcase?.({
           categoryId: selectedCategory,
           platform: selectedPlatform,
