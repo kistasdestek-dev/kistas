@@ -7,12 +7,14 @@ export interface AuthState {
   profile: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isPasswordRecovery: boolean;
 }
 
 export interface AuthActions {
   refreshProfile: () => Promise<UserProfile | null>;
   signOut: () => Promise<void>;
   setProfile: (profile: UserProfile | null) => void;
+  finishPasswordRecovery: () => void;
 }
 
 const AuthStateContext = createContext<AuthState | undefined>(undefined);
@@ -41,6 +43,7 @@ const readProfileSnapshot = (): UserProfile | null => {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [profile, setProfileState] = useState<UserProfile | null>(readProfileSnapshot);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   const refreshProfile = useCallback(async (): Promise<UserProfile | null> => {
     try {
@@ -67,19 +70,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setProfileState(newProfile);
   }, []);
 
-  useEffect(() => {
-    // 1. İlk oturum kontrolü
-    refreshProfile();
+  const finishPasswordRecovery = useCallback(() => setIsPasswordRecovery(false), []);
 
-    // 2. Canlı Supabase Auth Dinleyicisi
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+  useEffect(() => {
+    // Subscribe before the initial session check so a recovery link cannot race past the listener.
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (_event === 'PASSWORD_RECOVERY' && session?.user) {
+        setIsPasswordRecovery(true);
+      } else if (_event === 'SIGNED_OUT') {
+        setIsPasswordRecovery(false);
+      }
       if (session?.user) {
-        await refreshProfile();
+        void refreshProfile();
       } else {
         setProfileState(null);
         setIsLoading(false);
       }
     });
+
+    void refreshProfile();
 
     return () => {
       authListener?.subscription?.unsubscribe();
@@ -106,14 +115,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     profile,
     isAuthenticated: !!profile,
     isLoading,
-  }), [profile, isLoading]);
+    isPasswordRecovery,
+  }), [profile, isLoading, isPasswordRecovery]);
 
   // Referans bütünlüğü: Action fonksiyonları useCallback ve useMemo ile sabitlenir
   const dispatchValue = useMemo<AuthActions>(() => ({
     refreshProfile,
     signOut,
     setProfile,
-  }), [refreshProfile, signOut, setProfile]);
+    finishPasswordRecovery,
+  }), [refreshProfile, signOut, setProfile, finishPasswordRecovery]);
 
   return (
     <AuthDispatchContext.Provider value={dispatchValue}>

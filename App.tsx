@@ -18,6 +18,7 @@ import { VisibilityManagementScreen } from './src/features/profile/presentation/
 import { AccountSecurityScreen } from './src/features/profile/presentation/AccountSecurityScreen';
 import { LoginScreen } from './src/features/auth/presentation/LoginScreen';
 import { RegisterScreen } from './src/features/auth/presentation/RegisterScreen';
+import { PasswordRecoveryScreen } from './src/features/auth/presentation/PasswordRecoveryScreen';
 import { AdminDashboardScreen } from './src/features/admin/presentation/AdminDashboardScreen';
 import { UserProfile } from './src/features/auth/domain/User';
 import { Listing, PlatformType } from './src/features/listings/domain/Listing';
@@ -149,8 +150,8 @@ const parseWebRoute = (): WebRouteState => {
 function AppContent() {
   const navigationBlurTarget = useRef<View>(null);
   const { width: viewportWidth } = useWindowDimensions();
-  const { profile: currentUser, isLoading: isAuthLoading } = useAuth();
-  const { signOut, setProfile } = useAuthActions();
+  const { profile: currentUser, isLoading: isAuthLoading, isPasswordRecovery } = useAuth();
+  const { signOut, setProfile, finishPasswordRecovery } = useAuthActions();
 
   const initialWebRoute = useMemo(() => parseWebRoute(), []);
 
@@ -654,6 +655,9 @@ function AppContent() {
     const targetHash = `#/${targetPath}`;
     const currentHash = window.location.hash;
 
+    // Supabase must consume recovery/OAuth callback parameters before app routing rewrites the hash.
+    if (isPasswordRecovery || /^#(?:access_token|refresh_token|error)=/.test(currentHash)) return;
+
     if (
       currentHash === targetHash ||
       (targetPath === 'discover' && (currentHash === '' || currentHash === '#' || currentHash === '#/' || currentHash === '#/discover'))
@@ -666,7 +670,7 @@ function AppContent() {
     } catch {
       window.location.hash = targetHash;
     }
-  }, [activeTab, isBlogOpen, blogPostSlug, isAboutOpen, isHowItWorksOpen, isPrivacyOpen, activeCategoryScreenId, isShowcaseOpen, showcaseFilters]);
+  }, [activeTab, isBlogOpen, blogPostSlug, isAboutOpen, isHowItWorksOpen, isPrivacyOpen, activeCategoryScreenId, isShowcaseOpen, showcaseFilters, isPasswordRecovery]);
 
   const handleTabChange = useCallback((tab: TabKey) => {
     const wasStandalonePageOpen = isAboutOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || Boolean(activeCategoryScreenId);
@@ -806,7 +810,7 @@ function AppContent() {
   }, [updateNavCompact]);
 
   const isCheckoutLikeOpen = () => {
-    return isAuthModalOpen || isAuthSuccessVisible || !!selectedProject || isAdminDashboardOpen || isVisibilityManagementOpen || isAccountSecurityOpen || isAboutOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen;
+    return isPasswordRecovery || isAuthModalOpen || isAuthSuccessVisible || !!selectedProject || isAdminDashboardOpen || isVisibilityManagementOpen || isAccountSecurityOpen || isAboutOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen;
   };
 
   const backdropVariant: PremiumBackdropVariant = selectedProject
@@ -841,7 +845,17 @@ function AppContent() {
         ]}
       >
         {/* Modal Ekranlar (Overlay / Drill-down) */}
-        {isAdminDashboardOpen ? (
+        {isPasswordRecovery ? (
+          <PasswordRecoveryScreen onComplete={async () => {
+            setAuthView('login');
+            setIsAuthModalOpen(true);
+            try {
+              await signOut();
+            } finally {
+              finishPasswordRecovery();
+            }
+          }} />
+        ) : isAdminDashboardOpen ? (
           <View style={styles.flexOne}>
             <AdminDashboardScreen
               onBack={() => setIsAdminDashboardOpen(false)}

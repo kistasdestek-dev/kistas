@@ -31,6 +31,10 @@ export class AuthService {
       return 'E-posta adresiniz henüz doğrulanmamış. Lütfen gelen kutunuzdaki onay bağlantısını kontrol edin.';
     }
 
+    if (rawMessage.includes('email address not authorized') || rawMessage.includes('email_address_not_authorized')) {
+      return 'E-posta gönderimi henüz bu adres için kullanıma açık değil. Lütfen daha sonra tekrar deneyin.';
+    }
+
     if (
       rawMessage.includes('user already registered') ||
       rawMessage.includes('already registered') ||
@@ -92,7 +96,7 @@ export class AuthService {
     password: string,
     fullName: string,
     consents?: PendingRegistrationConsents
-  ): Promise<{ success: boolean; profile?: UserProfile | null; error?: string }> {
+  ): Promise<{ success: boolean; profile?: UserProfile | null; requiresEmailConfirmation?: boolean; error?: string }> {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       
@@ -108,6 +112,10 @@ export class AuthService {
 
       if (error || !data?.user) {
         return { success: false, error: this.localizeAuthError(error, 'Kayıt işlemi tamamlanamadı.') };
+      }
+
+      if (!data.session) {
+        return { success: false, requiresEmailConfirmation: true };
       }
 
       // KVKK & İYS Denetim İzi Kaydı
@@ -322,6 +330,22 @@ export class AuthService {
       return error ? { success: false, error: this.localizeAuthError(error, 'Şifre yenileme bağlantısı gönderilemedi.') } : { success: true };
     } catch (err: any) {
       return { success: false, error: this.localizeAuthError(err, 'Şifre yenileme bağlantısı gönderilemedi.') };
+    }
+  }
+
+  public static async updateRecoveredPassword(
+    password: string
+  ): Promise<{ success: boolean; error?: string }> {
+    if (password.length < 8) {
+      return { success: false, error: 'Yeni şifreniz en az 8 karakter olmalıdır.' };
+    }
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      return error
+        ? { success: false, error: this.localizeAuthError(error, 'Şifre güncellenemedi.') }
+        : { success: true };
+    } catch (err: any) {
+      return { success: false, error: this.localizeAuthError(err, 'Şifre güncellenemedi.') };
     }
   }
 

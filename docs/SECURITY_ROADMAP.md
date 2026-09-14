@@ -182,7 +182,7 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 | SEC-007 | Proje Düzeltmesini Güvenli Yeniden Gönderme | 2/3 | P1 | DOGRULANDI | Codex | Sahiplik ve durum doğrulamalı RPC, anonim erişim reddi, denetim kaydı ve core-domain testi (32/32) |
 | SEC-008 | Eski alan adindaki KVKK iletisim adresi ve paylasim URL'leri | 6/7 | P2 | DUZELTILDI | Codex / kullanici | Canli gizlilik metni ve blog linkleri dogrulandi; kistasdestek@gmail.com gercek teslimat testi kullanicida bekliyor (hedef 2026-09-15) |
 | SEC-009 | Expo arac zincirinde dolayli uuid guvenlik uyarisi | 6 | P2 | RISK_KABUL | Codex | `npm audit --omit=dev --audit-level=high`: 0 high/critical, 26 moderate; duzeltme yok, sonraki Expo surumunde yeniden degerlendirilecek |
-| SEC-010 | Bekleniyor | - | - | BEKLIYOR | - | - |
+| SEC-010 | Supabase Auth e-posta teslimati ve sifre kurtarma | 6/7 | P2 | KISMI | Codex / kullanici | Resend `auth.xn--kstas-n4a.com` DNS ve domain dogrulamasi tamamlandi; Supabase SMTP baglantisi ve gercek teslimat testi bekliyor (hedef 2026-09-15). |
 | SEC-011 | Bekleniyor | - | - | BEKLIYOR | - | - |
 | SEC-012 | Bekleniyor | - | - | BEKLIYOR | - | - |
 | SEC-013 | Bekleniyor | - | - | BEKLIYOR | - | - |
@@ -262,6 +262,15 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 - Risk kabul kapsami: Yalnizca mevcut Expo 57 gelistirme/derleme arac zinciri; canli web paketinde xcode veya uuid kullanan bu yolun bulunmadigi ayrica bundle taramasiyla kontrol edilir. High/critical audit bulgusu kabul edilmez.
 - Telafi kontrolu: Kilitli `package-lock.json`, `npm ci`, release testleri ve production bundle taramasi. Expo ve bagimliliklar 2026-10-14 tarihine kadar yeniden denetlenir; yeni duzeltme cikarsa onceliklendirilir.
 - Sahip: Codex / proje sahibi. Bu kabul yeni high/critical bulguya veya istemci paketinde etkilenebilir yola uygulanmaz.
+
+### SEC-010 - Auth e-posta teslimati ve sifre kurtarma
+
+- Tarih: 2026-09-14. Supabase Authentication > Emails > SMTP Settings panelinde `Enable custom SMTP` kapali goruldu. Varsayilan Supabase servisi yalniz proje ekibindeki izinli adreslere mail gonderebilir; genel kullanici kayit dogrulamasi ve sifre sifirlama teslimati saglanmis degil.
+- Kod bulgusu: `resetPasswordForEmail()` baglanti gonderiyordu fakat `PASSWORD_RECOVERY` olayini yakalayip yeni sifreyi kaydeden ekran yoktu. Kayit dogrulama bekleyen oturumsuz kullanici da basarisiz profil olusturma yoluna dusuyordu.
+- Duzeltme: Kurtarma oturumu AuthContext'te izleniyor; yeni sifre ekrani `updateUser({ password })` ile sifreyi guncelliyor ve tamamlaninca oturumu kapatip girise donuyor. Oturumsuz kayit sonucunda dogrulama gerektigi acikca gosteriliyor; izin verilmeyen e-posta hatasi yerellestirildi.
+- Kanit: `npm run release:web` TypeScript, 32 alan, 14 URL, XSS/SQL ve bundle sir taramasindan gecti. Gercek sifirlama e-postasi ve linkten yeni sifre kaydi ozel SMTP olmadan uctan uca dogrulanamaz; bu nedenle durum `KISMI`.
+- E-posta altyapisi kaniti: Resend ucretsiz hesapta `auth.xn--kstas-n4a.com` Ireland bolgesinde `Verified` oldu; Cloudflare DKIM TXT, SPF TXT ve donus MX kayitlari 1.1.1.1 uzerinden dogru degerlerle cozumleniyor.
+- Sonraki adim: Yalniz bu alt alan icin gonderim yetkili API anahtarini Supabase ozel SMTP'ye bagla; kayit dogrulama ve sifre sifirlama e-posta teslimat testi yap. Hedef 2026-09-15; sahip: kullanici ve Codex. Anahtarlar kaynaga, istemci paketine ve paylasilabilir yedege girmez.
 
 ### SEC-003 - Marka ve Kimlik Taklidi Koruması (Kıstas İsmi Kilidi)
 

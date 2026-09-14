@@ -137,7 +137,10 @@ export function AuthExperience({ mode, onAuthSuccess, onSwitch, onBack, onGoogle
         : await AuthService.signInWithPassword(email.trim(), password);
       if (!mounted.current) return;
       if (result.success) onAuthSuccess(result.profile || null);
-      else error(result.error || 'İşlem tamamlanamadı.');
+      else if (registering && 'requiresEmailConfirmation' in result && result.requiresEmailConfirmation) {
+        setInfo(true);
+        setMessage('Kayıt isteğiniz alındı. Doğrulama e-postası geldiyse bağlantıyı açıp giriş yapın.');
+      } else error(result.error || 'İşlem tamamlanamadı.');
     });
   };
   const advance = () => {

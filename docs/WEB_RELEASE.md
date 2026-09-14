@@ -25,3 +25,5 @@ Ana adres: `https://www.kıstas.com` (`https://www.xn--kstas-n4a.com`). `https:/
 ## Bilinen ilk sürüm sınırları
 
 Web uygulaması SPA olarak dışa aktarılır. Blogun temiz `/blog/...` bağlantısı istemci tarafından açılır; yazıya özel sosyal kartların sunucu tarafı önizlemesi bu sürümde yoktur. Web kredi satın alma sağlayıcısı bağlı değildir. Cloudflare koruması web adresini kapsar; doğrudan Supabase API yetkisi RLS/RPC ile korunur.
+
+E-posta ile yeni kayıt ve şifre sıfırlama teslimatı henüz genel kullanıcılara açık değildir: Supabase özel SMTP kapalıdır ve varsayılan gönderici yalnızca proje ekibinin izinli adreslerine gönderir. `SEC-010` kapanana kadar bu akışlar doğrulandı diye raporlanmaz. Google ve GitHub sağlayıcıları etkin olsa da normal kullanıcı tarayıcısında giriş testi ayrıca gerekir.
