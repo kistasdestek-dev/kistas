@@ -78,7 +78,7 @@ export const BlogSeoHelper = {
 
     const title = 'Kıstas Blog | Yapay Zekâ, SaaS ve Girişimcilik';
     const description = 'Bağımsız geliştiriciler ve girişimciler için yapay zekâ, SaaS, ürün tasarımı, sıfır bütçeyle lansman ve organik büyüme rehberleri.';
-    const canonical = `${SITE_ORIGIN}/blog`;
+    const canonical = `${SITE_ORIGIN}/blog/`;
     const coverImage = `${SITE_ORIGIN}/social-preview.png`;
 
     document.title = title;
@@ -106,7 +106,7 @@ export const BlogSeoHelper = {
       '@graph': [
         {
           '@type': 'Blog',
-          '@id': `${SITE_ORIGIN}/blog#blog`,
+          '@id': `${SITE_ORIGIN}/blog/#blog`,
           'name': 'Kıstas Blog & Perspektif',
           'description': description,
           'url': canonical,
@@ -226,7 +226,7 @@ export const BlogSeoHelper = {
           '@type': 'BreadcrumbList',
           'itemListElement': [
             { '@type': 'ListItem', 'position': 1, 'name': 'Ana Sayfa', 'item': `${SITE_ORIGIN}/` },
-            { '@type': 'ListItem', 'position': 2, 'name': 'Blog', 'item': `${SITE_ORIGIN}/blog` },
+            { '@type': 'ListItem', 'position': 2, 'name': 'Blog', 'item': `${SITE_ORIGIN}/blog/` },
             { '@type': 'ListItem', 'position': 3, 'name': post.title, 'item': canonical },
           ],
         },

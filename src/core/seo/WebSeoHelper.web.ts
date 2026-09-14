@@ -30,19 +30,19 @@ const PUBLIC_PAGES: Record<PublicPage, PageDefinition> = {
     schemaType: 'CollectionPage',
   },
   about: {
-    path: '/about',
+    path: '/about/',
     title: 'Kıstas Hakkında | Bağımsız Projeler İçin Adil Vitrin',
     description: "Kıstas'ın bağımsız geliştiricileri ve dijital ürünleri adil, şeffaf ve topluluk odaklı bir keşif deneyiminde nasıl buluşturduğunu öğrenin.",
     schemaType: 'AboutPage',
   },
   'how-it-works': {
-    path: '/how-it-works',
+    path: '/how-it-works/',
     title: 'Kıstas Nasıl Çalışır? | Projeni Keşfet ve Tanıt',
     description: "Kıstas'ta dijital projelerin nasıl keşfedildiğini, topluluk desteğinin nasıl çalıştığını ve kendi projenizi nasıl tanıtabileceğinizi öğrenin.",
     schemaType: 'WebPage',
   },
   privacy: {
-    path: '/privacy',
+    path: '/privacy/',
     title: 'KVKK ve Gizlilik Politikası | Kıstas',
     description: "Kıstas'ın kişisel verileri nasıl işlediğini, koruduğunu ve kullanıcı tercihlerini nasıl yönettiğini inceleyin.",
     schemaType: 'WebPage',

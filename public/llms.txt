@@ -5,15 +5,15 @@
 ## Temel sayfalar
 
 - [Ana Sayfa](https://www.kistas.com.tr/): Dijital projeleri keşfet ve destekle.
-- [Kıstas Hakkında](https://www.kistas.com.tr/about): Platformun amacı ve yaklaşımı.
-- [Kıstas Nasıl Çalışır?](https://www.kistas.com.tr/how-it-works): Proje keşfi, topluluk desteği ve proje tanıtım süreci.
-- [Kıstas Blog](https://www.kistas.com.tr/blog): Yapay zekâ, SaaS, ürün geliştirme ve girişimcilik rehberleri.
+- [Kıstas Hakkında](https://www.kistas.com.tr/about/): Platformun amacı ve yaklaşımı.
+- [Kıstas Nasıl Çalışır?](https://www.kistas.com.tr/how-it-works/): Proje keşfi, topluluk desteği ve proje tanıtım süreci.
+- [Kıstas Blog](https://www.kistas.com.tr/blog/): Yapay zekâ, SaaS, ürün geliştirme ve girişimcilik rehberleri.
 
 ## Öne çıkan rehberler
 
-- [Yapay Zekâ Uygulamalarında UX ve Güven](https://www.kistas.com.tr/blog/yapay-zeka-uygulamalarinda-kullanici-deneyimi-ve-guven)
-- [Sıfır Bütçeyle Ürün Lansmanı Rehberi](https://www.kistas.com.tr/blog/bagimsiz-gelistiriciler-icin-sifir-butceyle-lansman-rehberi)
-- [SaaS Fiyatlandırması: Freemium mu Deneme mi?](https://www.kistas.com.tr/blog/saas-fiyatlandirma-stratejileri-freemium-mu-ucretsiz-deneme-mi)
+- [Yapay Zekâ Uygulamalarında UX ve Güven](https://www.kistas.com.tr/blog/yapay-zeka-uygulamalarinda-kullanici-deneyimi-ve-guven/)
+- [Sıfır Bütçeyle Ürün Lansmanı Rehberi](https://www.kistas.com.tr/blog/bagimsiz-gelistiriciler-icin-sifir-butceyle-lansman-rehberi/)
+- [SaaS Fiyatlandırması: Freemium mu Deneme mi?](https://www.kistas.com.tr/blog/saas-fiyatlandirma-stratejileri-freemium-mu-ucretsiz-deneme-mi/)
 
 ## Kullanım bilgisi
 

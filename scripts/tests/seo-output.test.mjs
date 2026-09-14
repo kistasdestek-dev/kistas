@@ -12,6 +12,7 @@ const escapeHtml = (value) => String(value)
   .replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 
 for (const route of SEO_ROUTES) {
+  assert(route.path === '/' || route.path.endsWith('/'), `Pages son URL'siyle canonical uyusmuyor: ${route.path}`);
   assert(!paths.has(route.path), `Tekrarlanan SEO yolu: ${route.path}`);
   assert(!titles.has(route.title), `Tekrarlanan SEO basligi: ${route.title}`);
   assert(route.title.length >= 30 && route.title.length <= 65, `Baslik uzunlugu uygun degil: ${route.title}`);
@@ -35,7 +36,7 @@ const llmsText = await readFile(join(outputRoot, 'llms.txt'), 'utf8');
 for (const route of SITEMAP_ROUTES) {
   assert(sitemap.includes(`<loc>${SITE_ORIGIN}${route.path === '/' ? '/' : route.path}</loc>`), `Sitemap URL eksik: ${route.path}`);
 }
-assert(!sitemap.includes(`${SITE_ORIGIN}/privacy</loc>`), 'Gizlilik sayfasi sitemap hedefi olmamali');
+assert(!sitemap.includes(`${SITE_ORIGIN}/privacy/</loc>`), 'Gizlilik sayfasi sitemap hedefi olmamali');
 assert.equal(sourceSitemap.replaceAll('\r\n', '\n'), sitemap.replaceAll('\r\n', '\n'), 'Kaynak ve uretilen sitemap ayni olmali');
 assert.match(llmsText, /^# Kıstas$/m, 'llms.txt H1 basligi eksik');
 assert(llmsText.includes(`${SITE_ORIGIN}/blog`), 'llms.txt taranabilir kaynak baglantilari eksik');

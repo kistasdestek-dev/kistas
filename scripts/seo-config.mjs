@@ -58,7 +58,7 @@ const article = ({ path, title, description, image, author, authorType = 'Organi
           inLanguage: 'tr-TR',
           isAccessibleForFree: true,
         },
-        breadcrumb([['Ana Sayfa', `${SITE_ORIGIN}/`], ['Blog', `${SITE_ORIGIN}/blog`], [title.replace(/ \| Kıstas$/, ''), url]]),
+        breadcrumb([['Ana Sayfa', `${SITE_ORIGIN}/`], ['Blog', `${SITE_ORIGIN}/blog/`], [title.replace(/ \| Kıstas$/, ''), url]]),
       ],
     },
   };
@@ -89,7 +89,7 @@ export const SEO_ROUTES = [
     },
   },
   {
-    path: '/about',
+    path: '/about/',
     title: 'Kıstas Hakkında | Bağımsız Projeler İçin Adil Vitrin',
     description: "Kıstas'ın bağımsız geliştiricileri ve dijital ürünleri adil, şeffaf ve topluluk odaklı bir keşif deneyiminde nasıl buluşturduğunu öğrenin.",
     image: DEFAULT_IMAGE,
@@ -98,13 +98,13 @@ export const SEO_ROUTES = [
     lead: 'Kıstas, bağımsız geliştiricilerin mobil uygulamalarını, SaaS ürünlerini, oyunlarını ve yapay zekâ araçlarını doğru kitleyle buluşturan topluluk odaklı bir keşif platformudur.',
     lastmod: '2026-09-14',
     schema: { '@context': 'https://schema.org', '@graph': [organization, website, {
-      '@type': 'AboutPage', '@id': `${SITE_ORIGIN}/about#webpage`, url: `${SITE_ORIGIN}/about`, name: 'Kıstas Hakkında',
+      '@type': 'AboutPage', '@id': `${SITE_ORIGIN}/about/#webpage`, url: `${SITE_ORIGIN}/about/`, name: 'Kıstas Hakkında',
       description: "Kıstas'ın bağımsız geliştiricileri ve dijital ürünleri nasıl buluşturduğunu öğrenin.",
       isPartOf: { '@id': website['@id'] }, about: { '@id': organization['@id'] }, inLanguage: 'tr-TR',
-    }, breadcrumb([['Ana Sayfa', `${SITE_ORIGIN}/`], ['Hakkımızda', `${SITE_ORIGIN}/about`]])] },
+    }, breadcrumb([['Ana Sayfa', `${SITE_ORIGIN}/`], ['Hakkımızda', `${SITE_ORIGIN}/about/`]])] },
   },
   {
-    path: '/how-it-works',
+    path: '/how-it-works/',
     title: 'Kıstas Nasıl Çalışır? | Projeni Keşfet ve Tanıt',
     description: "Kıstas'ta dijital projelerin nasıl keşfedildiğini, topluluk desteğinin nasıl çalıştığını ve kendi projenizi nasıl tanıtabileceğinizi öğrenin.",
     image: DEFAULT_IMAGE,
@@ -113,13 +113,13 @@ export const SEO_ROUTES = [
     lead: 'Projeleri keşfet, topluluk desteğiyle öne çıkan ürünleri incele ve kendi dijital projenin lansmanını birkaç adımda başlat.',
     lastmod: '2026-09-14',
     schema: { '@context': 'https://schema.org', '@graph': [organization, website, {
-      '@type': 'WebPage', '@id': `${SITE_ORIGIN}/how-it-works#webpage`, url: `${SITE_ORIGIN}/how-it-works`, name: 'Kıstas Nasıl Çalışır?',
+      '@type': 'WebPage', '@id': `${SITE_ORIGIN}/how-it-works/#webpage`, url: `${SITE_ORIGIN}/how-it-works/`, name: 'Kıstas Nasıl Çalışır?',
       description: "Kıstas'ta proje keşfi, topluluk desteği ve proje tanıtım sürecini öğrenin.",
       isPartOf: { '@id': website['@id'] }, inLanguage: 'tr-TR',
-    }, breadcrumb([['Ana Sayfa', `${SITE_ORIGIN}/`], ['Nasıl Çalışır?', `${SITE_ORIGIN}/how-it-works`]])] },
+    }, breadcrumb([['Ana Sayfa', `${SITE_ORIGIN}/`], ['Nasıl Çalışır?', `${SITE_ORIGIN}/how-it-works/`]])] },
   },
   {
-    path: '/blog',
+    path: '/blog/',
     title: 'Kıstas Blog | Yapay Zekâ, SaaS ve Girişimcilik',
     description: 'Bağımsız geliştiriciler ve girişimciler için yapay zekâ, SaaS, ürün tasarımı, sıfır bütçeyle lansman ve organik büyüme rehberleri.',
     image: DEFAULT_IMAGE,
@@ -128,12 +128,12 @@ export const SEO_ROUTES = [
     lead: 'Bağımsız geliştiriciler için özgün ürün deneyimleri, karşılaştırmalar ve uygulamalı büyüme rehberleri.',
     lastmod: '2026-09-14',
     schema: { '@context': 'https://schema.org', '@graph': [organization, website, {
-      '@type': 'Blog', '@id': `${SITE_ORIGIN}/blog#blog`, url: `${SITE_ORIGIN}/blog`, name: 'Kıstas Blog',
+      '@type': 'Blog', '@id': `${SITE_ORIGIN}/blog/#blog`, url: `${SITE_ORIGIN}/blog/`, name: 'Kıstas Blog',
       description: 'Yapay zekâ, SaaS, ürün tasarımı ve organik büyüme rehberleri.', publisher: { '@id': organization['@id'] }, inLanguage: 'tr-TR',
-    }, breadcrumb([['Ana Sayfa', `${SITE_ORIGIN}/`], ['Blog', `${SITE_ORIGIN}/blog`]])] },
+    }, breadcrumb([['Ana Sayfa', `${SITE_ORIGIN}/`], ['Blog', `${SITE_ORIGIN}/blog/`]])] },
   },
   article({
-    path: '/blog/bagimsiz-gelistiriciler-icin-sifir-butceyle-lansman-rehberi',
+    path: '/blog/bagimsiz-gelistiriciler-icin-sifir-butceyle-lansman-rehberi/',
     title: 'Sıfır Bütçeyle Ürün Lansmanı Rehberi | Kıstas',
     description: 'Büyük reklam bütçeleri harcamadan ilk 1.000 aktif kullanıcıya ulaşmanın adil ve organik yolları. Topluluk odaklı lansman stratejileri.',
     image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1200&auto=format&fit=crop',
@@ -141,7 +141,7 @@ export const SEO_ROUTES = [
     keywords: ['girişimcilik', 'ürün lansmanı', 'bağımsız geliştirici', 'organik büyüme'],
   }),
   article({
-    path: '/blog/yapay-zeka-uygulamalarinda-kullanici-deneyimi-ve-guven',
+    path: '/blog/yapay-zeka-uygulamalarinda-kullanici-deneyimi-ve-guven/',
     title: 'Yapay Zekâ Uygulamalarında UX ve Güven | Kıstas',
     description: 'Yapay zekâ araçlarında akışkan yanıtlar, halüsinasyon kontrolü, kaynak gösterimi ve kullanıcı güvenini artıran ürün tasarımı ilkeleri.',
     image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop',
@@ -149,7 +149,7 @@ export const SEO_ROUTES = [
     keywords: ['yapay zekâ', 'kullanıcı deneyimi', 'güven', 'ürün tasarımı'],
   }),
   article({
-    path: '/blog/saas-fiyatlandirma-stratejileri-freemium-mu-ucretsiz-deneme-mi',
+    path: '/blog/saas-fiyatlandirma-stratejileri-freemium-mu-ucretsiz-deneme-mi/',
     title: 'SaaS Fiyatlandırması: Freemium mu Deneme mi? | Kıstas',
     description: 'Erken aşama yazılım girişimleri için freemium ve ücretsiz deneme modellerinin dönüşüm, maliyet ve kullanıcı kazanımı açısından karşılaştırması.',
     image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop',
@@ -157,7 +157,7 @@ export const SEO_ROUTES = [
     keywords: ['SaaS', 'fiyatlandırma', 'freemium', 'ücretsiz deneme'],
   }),
   {
-    path: '/privacy',
+    path: '/privacy/',
     title: 'KVKK ve Gizlilik Politikası | Kıstas',
     description: "Kıstas'ın kişisel verileri nasıl işlediğini, koruduğunu ve kullanıcı tercihlerini nasıl yönettiğini inceleyin.",
     image: DEFAULT_IMAGE,
@@ -170,8 +170,8 @@ export const SEO_ROUTES = [
       '@context': 'https://schema.org',
       '@graph': [organization, website, {
         '@type': 'WebPage',
-        '@id': `${SITE_ORIGIN}/privacy#webpage`,
-        url: `${SITE_ORIGIN}/privacy`,
+        '@id': `${SITE_ORIGIN}/privacy/#webpage`,
+        url: `${SITE_ORIGIN}/privacy/`,
         name: 'KVKK ve Gizlilik Politikası',
         description: "Kıstas'ın kişisel veri işleme ve güvenlik açıklamaları.",
         isPartOf: { '@id': website['@id'] },
