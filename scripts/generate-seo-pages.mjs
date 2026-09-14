@@ -29,7 +29,7 @@ for (const route of SEO_ROUTES) {
     .replace(/<meta name="twitter:description" content="[^"]*" \/>/, `<meta name="twitter:description" content="${escapeHtml(route.description)}" />`)
     .replace(/<meta name="twitter:image" content="[^"]*" \/>/, `<meta name="twitter:image" content="${escapeHtml(route.image)}" />`)
     .replace(/<script id="kistas-page-schema-jsonld" type="application\/ld\+json">[\s\S]*?<\/script>/, `<script id="kistas-page-schema-jsonld" type="application/ld+json">${safeJson(route.schema)}</script>`)
-    .replace(/<div id="root">[\s\S]*?<\/div>\s*<\/body>/, `<div id="root"><main id="seo-fallback" style="max-width:760px;margin:64px auto;padding:24px;font-family:system-ui,sans-serif;color:#203754"><h1>${escapeHtml(route.heading)}</h1><p>${escapeHtml(route.lead)}</p><nav aria-label="Kıstas bağlantıları"><a href="/">Ana Sayfa</a> · <a href="/blog">Blog</a> · <a href="/about">Hakkımızda</a> · <a href="/how-it-works">Nasıl Çalışır?</a></nav></main></div></body>`);
+    .replace(/<main id="seo-fallback"[\s\S]*?<\/main>/, `<main id="seo-fallback" style="max-width:760px;margin:64px auto;padding:24px;font-family:system-ui,sans-serif;color:#203754"><h1>${escapeHtml(route.heading)}</h1><p>${escapeHtml(route.lead)}</p><nav aria-label="Kıstas bağlantıları"><a href="/">Ana Sayfa</a> · <a href="/blog">Blog</a> · <a href="/about">Hakkımızda</a> · <a href="/how-it-works">Nasıl Çalışır?</a></nav></main>`);
 
   if (route.ogType === 'article') {
     const articleNode = route.schema['@graph'].find((node) => node['@type'] === 'BlogPosting');

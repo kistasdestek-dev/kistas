@@ -7,6 +7,9 @@ const projectRoot = resolve(import.meta.dirname, '../..');
 const outputRoot = resolve(projectRoot, process.argv[2] || 'dist');
 const paths = new Set();
 const titles = new Set();
+const escapeHtml = (value) => String(value)
+  .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 
 for (const route of SEO_ROUTES) {
   assert(!paths.has(route.path), `Tekrarlanan SEO yolu: ${route.path}`);
@@ -22,7 +25,8 @@ for (const route of SEO_ROUTES) {
   assert(html.includes(`<title>${route.title}</title>`), `Baslik ciktiya yazilmadi: ${route.path}`);
   assert(html.includes(`<link rel="canonical" href="${canonical}" />`), `Canonical eksik: ${route.path}`);
   assert(html.includes('id="kistas-page-schema-jsonld"'), `JSON-LD eksik: ${route.path}`);
-  assert(html.includes('<h1>'), `Taranabilir H1 eksik: ${route.path}`);
+  assert(html.includes(`<h1>${escapeHtml(route.heading)}</h1>`), `Sayfaya ozgu taranabilir H1 eksik: ${route.path}`);
+  assert(html.includes(`<p>${escapeHtml(route.lead)}</p>`), `Sayfaya ozgu taranabilir aciklama eksik: ${route.path}`);
 }
 
 const sitemap = await readFile(join(outputRoot, 'sitemap.xml'), 'utf8');
