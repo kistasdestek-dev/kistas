@@ -1,0 +1,21 @@
+node_modules/
+dist/
+build/
+*.log
+*.tmp
+*.tmp*
+.git/
+
+# KISTAS generated, build and local caches
+.expo/
+web-build/
+dist-web/
+dist-web-next/
+dist-web-previous/
+.tools/
+.tmp-*/
+backups/
+coverage/
+scratch/
+*.tsbuildinfo
+*.zip

@@ -1,0 +1,52 @@
+{
+  "name": "kistas-mobile",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "build:web": "expo export --platform web",
+    "release:web": "node scripts/security/check-repo-secrets.mjs && npm run lint && npm run security:xss && npm run security:sql-injection && node scripts/tests/core-domain.test.mjs && npm run build:web && node scripts/security/check-web-bundle.mjs",
+    "preview:tunnel": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-remote-preview.ps1",
+    "preview:refresh": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/refresh-remote-preview.ps1",
+    "preview:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/stop-remote-preview.ps1",
+    "generate:login-poster": "node scripts/generate-login-poster.cjs",
+    "lint": "tsc --noEmit",
+    "security:sql-injection": "node scripts/security/check-sql-injection.mjs",
+    "security:xss": "node scripts/security/check-xss.mjs && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/security/test-external-url.mjs",
+    "test:discovery-scale": "node scripts/verify-discovery-scale.mjs",
+    "check:system": "node scripts/system-check.mjs",
+    "system:check": "node scripts/system-check.mjs"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~57.0.15",
+    "@expo/vector-icons": "^15.0.2",
+    "@paper-design/shaders-react": "^0.0.80",
+    "@react-three/fiber": "^9.7.0",
+    "@supabase/supabase-js": "^2.49.1",
+    "@types/canvas-confetti": "^1.9.0",
+    "canvas-confetti": "^1.9.4",
+    "expo": "~57.0.19",
+    "expo-asset": "~57.0.5",
+    "expo-blur": "~57.0.2",
+    "expo-linear-gradient": "~57.0.1",
+    "expo-secure-store": "~57.0.3",
+    "expo-status-bar": "~57.0.1",
+    "framer-motion": "^13.2.0",
+    "gsap": "^3.15.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-purchases": "^10.9.0",
+    "react-native-web": "^0.21.0",
+    "three": "^0.186.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "@types/three": "^0.185.4",
+    "typescript": "~6.0.3"
+  },
+  "private": true
+}

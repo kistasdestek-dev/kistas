@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="244" height="54" viewBox="0 0 244 54" role="img" aria-labelledby="title">
+  <title id="title">Featured on Kıstas</title>
+  <rect x="0.5" y="0.5" width="243" height="53" rx="13" fill="#0B1830" stroke="#6FB6FF"/>
+  <circle cx="28" cy="27" r="16" fill="#F5FAFF" stroke="#8AC6FF"/>
+  <path d="M22 18v18m2-9 9-9m-9 9 9 9" fill="none" stroke="#2873C8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="55" y="22" fill="#A9C6E8" font-family="Arial, sans-serif" font-size="11" font-weight="600">FEATURED ON</text>
+  <text x="55" y="40" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="20" font-weight="700">Kıstas</text>
+</svg>

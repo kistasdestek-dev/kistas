@@ -1,0 +1,2 @@
+-- Uzak veritabanında daha önce uygulanmış 20260911000007 sürümü için yerel geçmiş eşleme kaydı.
+-- Şema değişikliği içermez; sonraki migration sürümlerinin güvenle uygulanmasını sağlar.

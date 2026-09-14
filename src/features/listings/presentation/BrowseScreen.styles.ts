@@ -1,0 +1,140 @@
+import { Platform, StyleSheet, ViewStyle } from 'react-native';
+import { theme } from '../../../core/theme';
+
+const NEO = theme.kistasStyle.neumorphism;
+export const BROWSE_LAYOUT = { maxWidth: 1180, padding: 22, gap: 16 } as const;
+
+// Kategori detaylarının mevcut renk ailelerini canlı, parlak kart geçişlerine taşır.
+export const CATEGORY_CARD_TINTS: Readonly<Record<string, readonly [string, string, string]>> = {
+  '#116871': ['#9AF28E', '#54D66B', '#2CB956'],
+  '#9B503F': ['#FFD08A', '#FFA149', '#FF7B27'],
+  '#514194': ['#CCB9FF', '#9878FF', '#7250F2'],
+  '#235D89': ['#82E8F5', '#48CBE3', '#20ADD0'],
+  '#933D69': ['#FFB8D3', '#F47CB2', '#DA4F92'],
+  '#396850': ['#AAE8C0', '#62CF91', '#35B976'],
+  '#713E85': ['#D8B2FF', '#A870F3', '#844ED3'],
+  '#3D5092': ['#B4DAFF', '#73B6F2', '#478EDB'],
+  fallback: ['#9FDDFC', '#5BAFEF', '#347FD2'],
+};
+
+const raised = {
+  backgroundColor: NEO.surface,
+  borderWidth: 1,
+  borderColor: NEO.border,
+  ...Platform.select({
+    web: { boxShadow: '-8px -8px 18px rgba(255,255,255,0.94), 8px 8px 20px rgba(130,146,168,0.22)' },
+    default: { shadowColor: NEO.shadow, shadowOffset: { width: 7, height: 9 }, shadowOpacity: 0.2, shadowRadius: 18, elevation: 6 },
+  }),
+} satisfies ViewStyle;
+
+const inset = {
+  backgroundColor: '#EAF0F7',
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.88)',
+  ...Platform.select({
+    web: { boxShadow: 'inset 3px 3px 8px rgba(130,146,168,0.15), inset -4px -4px 9px rgba(255,255,255,0.94)' },
+  }),
+} satisfies ViewStyle;
+
+export const browseStyles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: NEO.surface },
+  list: { flex: 1 },
+  listContent: {
+    width: '100%',
+    maxWidth: BROWSE_LAYOUT.maxWidth,
+    alignSelf: 'center',
+    paddingHorizontal: BROWSE_LAYOUT.padding,
+    paddingTop: 24,
+  },
+  brandBar: { paddingHorizontal: 0, paddingBottom: 8, marginBottom: 14 },
+  pageHeader: { paddingTop: 4, marginBottom: 24 },
+  pageEyebrow: { ...theme.typography.kistas, color: '#6D83A3', fontSize: 9, letterSpacing: 1.1, marginBottom: 5 },
+  pageTitle: { ...theme.typography.kistas, color: NEO.ink, fontSize: 29, lineHeight: 35, fontWeight: '700', letterSpacing: -0.7 },
+  pageDescription: { ...theme.typography.kistas, color: '#65748A', lineHeight: 19, fontWeight: '400', marginTop: 8 },
+  segmentContainer: { ...inset, flexDirection: 'row', borderRadius: 20, padding: 5, gap: 5, maxWidth: 520 },
+  segmentTab: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 48,
+    paddingHorizontal: 7,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  segmentTabActive: {
+    ...raised,
+    backgroundColor: '#F7FAFF',
+    ...Platform.select({ web: { boxShadow: '-3px -3px 8px rgba(255,255,255,0.95), 3px 3px 9px rgba(130,146,168,0.18)' } }),
+  },
+  segmentTabText: { ...theme.typography.kistas, flexShrink: 1, color: '#65748A', fontSize: 12, lineHeight: 17 },
+  segmentTabTextActive: { color: NEO.ink },
+  segmentBadge: { borderRadius: 8, minWidth: 22, paddingHorizontal: 4, paddingVertical: 3, alignItems: 'center' },
+  segmentBadgeActive: { backgroundColor: NEO.global },
+  segmentBadgeText: { ...theme.typography.kistas, fontSize: 10, lineHeight: 13, color: '#65748A' },
+  segmentBadgeTextActive: { color: '#3269C7' },
+  controlPressed: { opacity: 0.7 },
+  sectionHeadingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 28, marginBottom: 18 },
+  sectionTitle: { ...theme.typography.kistas, flexShrink: 1, color: NEO.ink, fontSize: 15, lineHeight: 21 },
+  sectionCount: { ...theme.typography.kistas, color: '#65748A', fontSize: 10, lineHeight: 16 },
+  columnWrapper: { gap: BROWSE_LAYOUT.gap, marginBottom: BROWSE_LAYOUT.gap },
+  categoryCard: {
+    ...raised,
+    borderRadius: 20,
+    borderColor: 'rgba(255,255,255,0.58)',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  categoryCardPressed: { opacity: 0.82, transform: [{ scale: 0.985 }] },
+  cardGradient: { ...StyleSheet.absoluteFill },
+  cardSheen: { ...StyleSheet.absoluteFill },
+  cardTopRow: {
+    position: 'absolute',
+    zIndex: 1,
+    top: 9,
+    left: 9,
+    right: 9,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-end',
+    gap: 4,
+  },
+  artworkPlate: {
+    width: 58,
+    height: 58,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.28)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Platform.select({ web: { boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.30), 0 8px 15px rgba(23,56,102,0.10)' } }),
+  },
+  category3dIcon: { width: 58, height: 58 },
+  cardTitle: {
+    ...theme.typography.kistas,
+    position: 'absolute',
+    zIndex: 1,
+    left: 12,
+    right: '30%',
+    bottom: 10,
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 17,
+    fontWeight: '800',
+    letterSpacing: -0.25,
+    textShadowColor: 'rgba(23,56,102,0.28)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  footerBlock: { marginTop: 12 },
+  platformSection: { ...raised, borderRadius: 24, padding: 18, marginBottom: 24 },
+  platformSectionTitle: { ...theme.typography.kistas, color: NEO.ink, fontSize: 16, lineHeight: 22, marginBottom: 17 },
+  platformOptions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  platformButton: { ...inset, flexDirection: 'row', alignItems: 'center', minHeight: 48, gap: 8, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 16 },
+  platformLabel: { ...theme.typography.kistas, color: NEO.ink },
+  bottomSpacer: { height: 124 },
+});
