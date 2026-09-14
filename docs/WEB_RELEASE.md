@@ -20,7 +20,7 @@ Ana adres: `https://www.kistas.com.tr`. Kök `https://kistas.com.tr` ve önceki 
 ## DNS, SSL ve kimlik
 
 - `kistas.com.tr` alanının yetkili ad sunucuları `mimi.ns.cloudflare.com` ve `nero.ns.cloudflare.com` olarak dış DNS'te doğrulandı. Pages kök ve `www` alanları `Active / SSL enabled`; iki adres de HTTPS ile Kıstas ana sayfasını açıyor. Resend `auth.kistas.com.tr` alanı `Verified`. Cloudflare DNSSEC daha sonra ayrıca değerlendirilecek.
-- Pages Custom domains bölümüne hem `www.kistas.com.tr` hem `kistas.com.tr` ekle. Sertifika etkinleşmesini bekle. Kök alan adından `www` adresine kalıcı yönlendirme kur; önceki `xn--kstas-n4a.com` ve `www.xn--kstas-n4a.com` adreslerini yeni adrese 301 ile yönlendirirken yol/sorguyu koru. HTTPS zorlamasını ve temel WAF/DDoS korumasını aç. Pages'in `_headers` dosyasındaki CSP/HSTS başlıklarını canlı yanıtta doğrula.
+- Pages Custom domains içinde `www.kistas.com.tr` ve `kistas.com.tr` `Active / SSL enabled`. Kök ve eski alan adlarının `www.kistas.com.tr` hedefine yol/sorgu koruyan 301 kuralları canlı doğrulandı. HTTPS zorlaması ile temel WAF/DDoS koruması etkin; Pages `_headers` içindeki CSP/HSTS başlıkları canlı yanıtta doğrulandı.
 - Supabase Dashboard → Authentication → URL Configuration: Site URL `https://www.kistas.com.tr`; izinli yönlendirme URL'si tam ana adres. Geçiş boyunca eski adresi izinli yönlendirmelerde tut; eski posta bağlantıları süresi bitince kaldır. OAuth sağlayıcıları etkinse sağlayıcı callback ayarlarını da doğrula.
 
 ## Bilinen ilk sürüm sınırları
