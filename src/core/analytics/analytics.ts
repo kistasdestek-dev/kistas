@@ -35,7 +35,8 @@ export function startAnalytics(): void {
   if (readAnalyticsConsent() !== true || typeof document === 'undefined' || window.gtag) return;
   (window as unknown as Record<string, unknown>)[`ga-disable-${GA_MEASUREMENT_ID}`] = false;
   window.dataLayer = window.dataLayer || [];
-  window.gtag = (...args: unknown[]) => { window.dataLayer?.push(args); };
+  // gtag.js expects each queued command as an Arguments object.
+  window.gtag = function () { window.dataLayer?.push(arguments); };
   window.gtag('js', new Date());
   window.gtag('config', GA_MEASUREMENT_ID, { send_page_view: false });
 

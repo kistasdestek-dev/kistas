@@ -40,6 +40,7 @@ assert.equal(scripts.length, 0, 'Consent olmadan Google kodu yuklenmemeli');
 
 exports.saveAnalyticsConsent(true);
 assert.equal(scripts.length, 1, 'Onaydan sonra Google kodu yuklenmeli');
+assert.equal(Object.prototype.toString.call(window.dataLayer[0]), '[object Arguments]', 'gtag komutlari Google etiketinin bekledigi Arguments biciminde olmali');
 exports.trackPageView('/browse?access_token=TEST_SECRET#refresh_token=TEST_SECRET', 'Kıstas');
 assert.equal(JSON.stringify(window.dataLayer).includes('TEST_SECRET'), false, 'Kurtarma tokeni analitige gitmemeli');
 assert.equal(window.dataLayer.at(-1)[2].page_location, 'https://www.xn--kstas-n4a.com/browse');
