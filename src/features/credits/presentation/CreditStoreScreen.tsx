@@ -14,6 +14,7 @@ import { KistasTopBrandBar } from '../../../shared/components/KistasTopBrandBar'
 import { UserProfile } from '../../auth/domain/User';
 import { useAuth, useWallet, useWalletActions } from '../../../core/state';
 import { Button } from '../../../shared/components/Button';
+import { theme } from '../../../core/theme';
 import {
   CREDIT_PRODUCT_IDS,
   CreditPurchaseService,
@@ -43,42 +44,42 @@ const CREDIT_PACKAGES: CreditPackage[] = [
     id: 'starter',
     storeProductId: CREDIT_PRODUCT_IDS.starter,
     name: 'Başlangıç',
-    tagline: 'Temel görünürlük için başlangıç paketi',
+    tagline: 'İlk sponsorlu görünürlük deneyimin için.',
     credits: 100,
     price: 299,
     features: [
-      'Sponsorlu Vitrin süresi',
-      'Saatlik eşit rotasyona katılım',
       '100 görünürlük kredisi',
+      'Sponsorlu Vitrin süresi',
+      'Saatlik eşit rotasyon',
     ],
   },
   {
     id: 'pro_launch',
     storeProductId: CREDIT_PRODUCT_IDS.pro_launch,
     name: 'Profesyonel',
-    tagline: 'Daha uzun sponsorlu görünürlük süresi',
+    tagline: 'Daha uzun süre görünür kalmak için.',
     credits: 350,
     price: 699,
     badge: 'Önerilen paket',
     isPopular: true,
     features: [
-      'Sponsorlu proje rozeti',
-      'Saatlik eşit sponsor rotasyonu',
       '350 görünürlük kredisi',
+      'Sponsorlu proje rozeti',
+      'Saatlik eşit rotasyon',
     ],
   },
   {
     id: 'unicorn',
     storeProductId: CREDIT_PRODUCT_IDS.unicorn,
     name: 'Ölçek',
-    tagline: 'Uzun süreli sponsorlu görünürlük',
+    tagline: 'Uzun kampanyalar ve birden fazla lansman için.',
     credits: 1000,
     price: 1699,
     badge: 'Geniş erişim',
     features: [
-      'Uzun süreli sponsorlu gösterim',
-      'Saatlik eşit sponsor rotasyonu',
-      '1000 görünürlük kredisi',
+      '1.000 görünürlük kredisi',
+      'Uzun süreli vitrin kullanımı',
+      'Saatlik eşit rotasyon',
     ],
   },
 ];
@@ -458,10 +459,10 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
         {/* 1. ÜST BAŞLIK */}
         <View style={[styles.hero, contentWidth >= 850 && styles.heroWide]}>
         <View style={styles.header}>
-          <Text style={styles.heroEyebrow}>KISTAS KREDİ MAĞAZASI</Text>
-          <Text style={styles.pageTitle}>{'İyi bir proje.\nDaha fazla keşif.'}</Text>
+          <Text style={styles.heroEyebrow}>GÖRÜNÜRLÜK KREDİLERİ</Text>
+          <Text style={styles.pageTitle}>{'Projeni daha\ngörünür kıl.'}</Text>
           <Text style={styles.pageSubtitle}>
-            Projene sahnede yer aç. Görünürlük kredilerinle Sponsorlu Vitrin süreni kendin belirle.
+            Tek seferlik kredi paketini seç; Sponsorlu Vitrin süreni ihtiyacına göre kullan.
           </Text>
         </View>
 
@@ -474,16 +475,16 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
 
         {/* 3. KISA BİLGİ ALANI */}
         <View style={styles.benefitsContainer}>
-          <BenefitItem icon="eye-outline" title="Vitrinde görünürlük" />
+          <BenefitItem icon="card-outline" title="Tek seferlik satın alım" />
           <BenefitItem icon="layers-outline" title="Saatlik eşit rotasyon" />
-          <BenefitItem icon="ribbon-outline" title="Sponsorlu rozet" />
+          <BenefitItem icon="wallet-outline" title="Krediler bakiyende kalır" />
         </View>
 
         {/* 4. KREDİ PAKETLERİ */}
         <View style={styles.packagesSection}>
           <Text style={styles.sectionEyebrow}>BİR SONRAKİ ADIMIN</Text>
           <Text style={styles.sectionHeader}>Hedefine uygun paketi seç.</Text>
-          <Text style={styles.sectionDescription}>Aynı vitrin, farklı kredi seçenekleri. Kontrol sende.</Text>
+          <Text style={styles.sectionDescription}>Abonelik yok. Krediler tek sefer alınır ve bakiyende kalır.</Text>
           <View style={[styles.packagesGrid, contentWidth >= 850 && styles.packagesGridWide]}>
           {CREDIT_PACKAGES.map((pkg) => (
             <CreditPackageCard
@@ -541,8 +542,8 @@ const styles = StyleSheet.create({
   },
   hero: { gap: 24, marginBottom: 24 },
   heroWide: { flexDirection: 'row', alignItems: 'stretch', gap: 40 },
-  heroEyebrow: { fontSize: 10, letterSpacing: 1.7, fontWeight: '700', color: '#686474', marginTop: 24 },
-  sectionEyebrow: { fontSize: 10, letterSpacing: 1.5, fontWeight: '700', color: '#686474', marginBottom: 8 },
+  heroEyebrow: { ...theme.typography.kistas, color: '#3269C7', marginTop: 24 },
+  sectionEyebrow: { ...theme.typography.kistas, color: '#3269C7', marginBottom: 8 },
   sectionDescription: { fontSize: 14, lineHeight: 21, color: '#686474', marginBottom: 22 },
   packagesGrid: { gap: 16 },
   packagesGridWide: { flexDirection: 'row', alignItems: 'stretch' },
@@ -619,10 +620,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   balanceEyebrow: {
-    fontSize: 11,
-    fontWeight: '600',
+    ...theme.typography.kistas,
     color: '#25364E',
-    letterSpacing: 0.8,
   },
   flashIconPill: {
     width: 40,
@@ -699,8 +698,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   benefitTitle: {
-    fontSize: 11,
-    fontWeight: '500',
+    ...theme.typography.kistas,
     color: '#25364E',
   },
   packagesSection: {
@@ -754,9 +752,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(50,105,199,0.18)',
   },
   packageBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.2,
+    ...theme.typography.kistas,
   },
   popularBadgeText: {
     color: '#25364E',
@@ -832,7 +828,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     flex: 1,
-    fontSize: 12,
+    ...theme.typography.kistas,
     color: '#25364E',
     lineHeight: 16,
   },
@@ -848,7 +844,7 @@ const styles = StyleSheet.create({
   },
   transparencyText: {
     flexShrink: 1,
-    fontSize: 11.5,
+    ...theme.typography.kistas,
     color: '#686474',
     textAlign: 'center',
   },

@@ -2,11 +2,7 @@ import React, {
   useState,
   useRef,
   useEffect,
-  createContext,
-  useContext,
-  useCallback,
 } from 'react';
-import confetti from 'canvas-confetti';
 import { UserProfile } from '../../auth/domain/User';
 import { useAuth, useWallet, useWalletActions } from '../../../core/state';
 import {
@@ -23,11 +19,14 @@ const STORE_CSS = `
   position: relative;
   width: 100%;
   min-height: 100%;
-  background: #F1F5FA;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(50, 105, 199, 0.10), transparent 34%),
+    radial-gradient(circle at 88% 24%, rgba(37, 72, 92, 0.08), transparent 30%),
+    #F4F7FB;
   color: #25364E;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   overflow-x: hidden;
-  padding: 48px 20px 120px 20px;
+  padding: 42px 20px 120px;
   box-sizing: border-box;
 }
 
@@ -47,149 +46,133 @@ const STORE_CSS = `
   z-index: 1;
 }
 
-/* Header & Balance */
-.k-pricing-header {
-  max-width: 760px;
-  margin: 0 auto 40px auto;
-  text-align: center;
+/* Hero & Balance */
+.k-pricing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 22px;
 }
 
-.k-pricing-eyebrow {
+.k-pricing-header {
+  min-height: 260px;
+  padding: 42px;
+  border-radius: 30px;
+  text-align: left;
+  background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(238,244,252,0.92));
+  border: 1px solid rgba(50, 105, 199, 0.16);
+  box-shadow: 0 18px 45px rgba(37, 54, 78, 0.08), inset 0 1px 0 #FFFFFF;
+  box-sizing: border-box;
+}
+
+.k-pricing-kicker {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 14px;
-  border-radius: 999px;
-  background: rgba(50, 105, 199, 0.08);
-  border: 1px solid rgba(50, 105, 199, 0.18);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.4px;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
   color: #3269C7;
-  text-transform: uppercase;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
+}
+
+.k-pricing-kicker::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3269C7;
+  box-shadow: 0 0 0 5px rgba(50,105,199,0.10);
 }
 
 .k-pricing-title {
-  font-size: 42px;
-  line-height: 1.15;
-  font-weight:700;
-  letter-spacing: -1.2px;
+  font-size: clamp(36px, 5vw, 58px);
+  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: -2.2px;
   color: #25364E;
-  margin: 0 0 8px 0;
+  margin: 0 0 18px;
+  max-width: 720px;
 }
 
 .k-pricing-desc {
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.55;
   color: #64748B;
-  margin: 0 auto;
-  max-width: 580px;
+  margin: 0;
+  max-width: 620px;
 }
 
-/* User Balance Pill */
-.k-balance-banner {
+.k-store-notice {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  background: #FFFFFF;
-  border: 1px solid rgba(226, 232, 240, 0.95);
-  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
-  border-radius: 999px;
-  padding: 8px 18px;
-  margin-top: 22px;
-}
-
-.k-balance-text {
-  font-size: 13.5px;
-  color: #475569;
-}
-
-.k-balance-bold {
-  font-weight: 700;
-  color: #3269C7;
-}
-
-.k-balance-btn {
-  background: #EAF2FC;
-  color: #2554A5;
+  gap: 7px;
+  margin-top: 20px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(50,105,199,0.12);
+  color: #64748B;
   font-size: 12px;
   font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 999px;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  transition: background 0.18s ease;
+  letter-spacing: -0.1px;
 }
 
-.k-balance-btn:hover {
-  background: #D5E5FA;
-}
-
-/* Toggle */
-.k-toggle-wrapper {
-  display: flex;
-  justify-content: center;
-  margin: 36px 0 48px 0;
-}
-
-.k-toggle-pill-track {
+.k-balance-panel {
   position: relative;
+  overflow: hidden;
   display: flex;
-  align-items: center;
-  background: #F1F5F9;
-  border: 1px solid rgba(203, 213, 225, 0.7);
-  border-radius: 999px;
-  padding: 4px;
-  user-select: none;
-}
-
-.k-toggle-slider {
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  border-radius: 999px;
-  background: #3269C7;
-  box-shadow: 0 2px 8px rgba(50, 105, 199, 0.35);
-  transition: transform 0.28s cubic-bezier(0.34, 1.3, 0.64, 1), width 0.28s ease;
-  pointer-events: none;
-}
-
-.k-toggle-btn {
-  position: relative;
-  z-index: 2;
-  border: none;
-  background: transparent;
-  padding: 9px 22px;
-  font-size: 13.5px;
-  font-weight: 600;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: color 0.22s ease;
-}
-
-.k-toggle-btn.active {
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 260px;
+  padding: 28px;
+  border-radius: 30px;
   color: #FFFFFF;
+  background: linear-gradient(145deg, #173866 0%, #285EA5 58%, #43889B 100%);
+  box-shadow: 0 20px 46px rgba(23,56,102,0.22), inset 0 1px 0 rgba(255,255,255,0.28);
+  box-sizing: border-box;
 }
 
-.k-toggle-btn.inactive {
-  color: #64748B;
+.k-balance-panel::after {
+  content: '';
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border: 34px solid rgba(255,255,255,0.06);
+  border-radius: 50%;
+  right: -118px;
+  bottom: -112px;
 }
 
-.k-toggle-btn.inactive:hover {
-  color: #25364E;
+.k-balance-label, .k-balance-value, .k-balance-help, .k-balance-btn { position: relative; z-index: 1; }
+.k-balance-label { font-size: 12px; font-weight: 600; letter-spacing: -0.1px; color: rgba(255,255,255,0.72); }
+.k-balance-value { margin-top: 8px; font-size: 48px; line-height: 1; font-weight: 700; letter-spacing: -1.8px; }
+.k-balance-value span { margin-left: 6px; font-size: 14px; font-weight: 600; letter-spacing: -0.1px; color: rgba(255,255,255,0.72); }
+.k-balance-help { max-width: 240px; margin: 12px 0 20px; font-size: 12px; line-height: 1.5; font-weight: 600; letter-spacing: -0.1px; color: rgba(255,255,255,0.76); }
+.k-balance-btn {
+  align-self: flex-start;
+  background: rgba(255,255,255,0.94);
+  color: #173866;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease;
 }
+.k-balance-btn:hover { transform: translateY(-1px); background: #FFFFFF; }
 
-.k-toggle-badge {
-  margin-left: 6px;
-  font-size: 11.5px;
-  font-weight: 700;
-}
+.k-benefit-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 42px; }
+.k-benefit-item { display: flex; align-items: center; gap: 10px; padding: 13px 15px; border-radius: 16px; background: rgba(255,255,255,0.78); border: 1px solid rgba(50,105,199,0.12); box-shadow: inset 0 1px 0 #FFFFFF; color: #475569; font-size: 12px; font-weight: 600; letter-spacing: -0.1px; }
+.k-benefit-icon { display: grid; place-items: center; width: 30px; height: 30px; flex: 0 0 30px; border-radius: 10px; background: #FFFFFF; border: 1px solid rgba(50,105,199,0.18); box-shadow: 0 5px 14px rgba(50,105,199,0.12); color: #3269C7; }
 
-.k-toggle-badge.light {
-  color: #93C5FD;
-}
+.k-packages-heading { margin-bottom: 28px; }
+.k-packages-kicker { margin: 0 0 7px; color: #3269C7; font-size: 12px; font-weight: 600; letter-spacing: -0.1px; }
+.k-packages-title { margin: 0; color: #25364E; font-size: 30px; line-height: 1.15; font-weight: 700; letter-spacing: -0.8px; }
+.k-packages-desc { margin: 8px 0 0; color: #64748B; font-size: 13px; line-height: 1.5; }
 
 /* Cards Grid */
 .k-cards-grid {
@@ -210,7 +193,7 @@ const STORE_CSS = `
 .k-pricing-card {
   position: relative;
   border-radius: 24px;
-  padding: 34px 28px 30px 28px;
+  padding: 30px 26px 26px;
   display: flex;
   flex-direction: column;
   background: rgba(255, 255, 255, 0.92);
@@ -273,22 +256,22 @@ const STORE_CSS = `
   font-weight: 700;
   color: #25364E;
   margin: 0;
-  text-align: center;
+  text-align: left;
 }
 
 .k-card-desc {
   font-size: 13.5px;
   line-height: 1.5;
   color: #64748B;
-  margin: 8px 0 20px 0;
-  text-align: center;
+  margin: 7px 0 20px;
+  text-align: left;
   min-height: 40px;
 }
 
 .k-card-price-row {
   display: flex;
   align-items: baseline;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 6px;
 }
 
@@ -301,17 +284,13 @@ const STORE_CSS = `
   line-height: 1;
 }
 
-.k-card-period {
-  font-size: 14px;
-  font-weight: 600;
-  color: #64748B;
-}
-
 .k-card-billing-note {
   font-size: 12px;
-  color: #94A3B8;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  color: #3269C7;
   margin-top: 6px;
-  text-align: center;
+  text-align: left;
 }
 
 /* Features list */
@@ -329,7 +308,9 @@ const STORE_CSS = `
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  font-size: 13.5px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
   line-height: 1.45;
   color: #25364E;
 }
@@ -400,6 +381,29 @@ const STORE_CSS = `
   color: #64748B;
   font-size: 13px;
   text-align: center;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+}
+
+@media (max-width: 767px) {
+  .k-pricing-root { padding: 22px 14px 110px; }
+  .k-pricing-hero { grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; }
+  .k-pricing-header { min-height: 0; padding: 24px 22px; border-radius: 24px; }
+  .k-pricing-kicker { margin-bottom: 15px; }
+  .k-pricing-title { font-size: 36px; letter-spacing: -1.6px; margin-bottom: 14px; }
+  .k-pricing-desc { font-size: 14px; }
+  .k-store-notice { align-items: flex-start; margin-top: 15px; }
+  .k-balance-panel { min-height: 194px; padding: 22px; border-radius: 24px; }
+  .k-balance-value { font-size: 44px; }
+  .k-balance-help { margin: 9px 0 13px; }
+  .k-benefit-strip { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 30px; }
+  .k-benefit-item { min-height: 74px; flex-direction: column; justify-content: center; gap: 7px; padding: 9px 6px; text-align: center; font-size: 11.5px; line-height: 1.25; box-sizing: border-box; }
+  .k-benefit-icon { width: 27px; height: 27px; flex-basis: 27px; border-radius: 9px; }
+  .k-packages-title { font-size: 27px; }
+  .k-cards-grid { gap: 18px; }
+  .k-pricing-card { padding: 27px 22px 22px; border-radius: 22px; }
+  .k-pricing-card.popular { margin-top: 10px; }
+  .k-card-price { font-size: 42px; }
 }
 `;
 
@@ -415,9 +419,7 @@ interface PlanItem {
   storeProductId: string;
   name: string;
   credits: number;
-  monthlyPrice: number;
-  annualMonthlyPrice: number;
-  period: string;
+  price: number;
   description: string;
   features: string[];
   isPopular?: boolean;
@@ -429,15 +431,12 @@ const PLANS: PlanItem[] = [
     storeProductId: CREDIT_PRODUCT_IDS.starter,
     name: 'Başlangıç',
     credits: 100,
-    monthlyPrice: 299,
-    annualMonthlyPrice: 239,
-    period: '100 Kredi',
-    description: 'Temel görünürlük ve yeni lansmanlar için ideal başlangıç paketi.',
+    price: 299,
+    description: 'İlk sponsorlu görünürlük deneyimin için.',
     features: [
-      '100 Görünürlük Kredisi',
-      'Sponsorlu Vitrin rotasyonuna katılım',
-      'Saatlik eşit rotasyon algoritması',
-      'Tüm platformlarda (Web, iOS, Android) listeleme',
+      '100 görünürlük kredisi',
+      'Sponsorlu Vitrin süresi',
+      'Saatlik eşit rotasyon',
     ],
   },
   {
@@ -445,17 +444,13 @@ const PLANS: PlanItem[] = [
     storeProductId: CREDIT_PRODUCT_IDS.pro_launch,
     name: 'Profesyonel',
     credits: 350,
-    monthlyPrice: 699,
-    annualMonthlyPrice: 559,
-    period: '350 Kredi',
-    description: 'Hızlı büyüme ve üst sıralarda uzun süreli görünürlük.',
+    price: 699,
+    description: 'Daha uzun süre görünür kalmak için.',
     isPopular: true,
     features: [
-      '350 Görünürlük Kredisi (Bonus Dahil)',
-      'Sponsorlu Proje Özel Rozeti',
-      'Saatlik eşit sponsor rotasyonu',
-      'Öncelikli vitrin eşleşmesi',
-      'Organik Kıstas puan desteği',
+      '350 görünürlük kredisi',
+      'Sponsorlu proje rozeti',
+      'Saatlik eşit rotasyon',
     ],
   },
   {
@@ -463,16 +458,12 @@ const PLANS: PlanItem[] = [
     storeProductId: CREDIT_PRODUCT_IDS.unicorn,
     name: 'Ölçek',
     credits: 1000,
-    monthlyPrice: 1699,
-    annualMonthlyPrice: 1359,
-    period: '1000 Kredi',
-    description: 'Maksimum erişim ve kesintisiz ana sayfa vitrin varlığı.',
+    price: 1699,
+    description: 'Uzun kampanyalar ve birden fazla lansman için.',
     features: [
-      '1000 Görünürlük Kredisi (Büyük Paket)',
-      'Uzun süreli kesintisiz vitrin gösterimi',
-      'Saatlik eşit sponsor rotasyonu',
-      'Sponsorlu Proje Rozeti & Vitrin Işıltısı',
-      'Özel geliştirici destek hattı',
+      '1.000 görünürlük kredisi',
+      'Uzun süreli vitrin kullanımı',
+      'Saatlik eşit rotasyon',
     ],
   },
 ];
@@ -611,38 +602,6 @@ const InteractiveStarfield: React.FC<{
   return <canvas ref={canvasRef} className="k-starfield-canvas" />;
 };
 
-// --- NUMBER ANIMATION COMPONENT ---
-const AnimatedNumber: React.FC<{ value: number }> = ({ value }) => {
-  const [displayValue, setDisplayValue] = useState(value);
-
-  useEffect(() => {
-    let start = displayValue;
-    const end = value;
-    if (start === end) return;
-
-    const duration = 320;
-    const startTime = performance.now();
-
-    const updateCounter = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      // Ease out cubic
-      const ease = 1 - Math.pow(1 - progress, 3);
-      const current = Math.round(start + (end - start) * ease);
-      setDisplayValue(current);
-
-      if (progress < 1) {
-        requestAnimationFrame(updateCounter);
-      }
-    };
-
-    const animId = requestAnimationFrame(updateCounter);
-    return () => cancelAnimationFrame(animId);
-  }, [value]);
-
-  return <span>₺{displayValue.toLocaleString('tr-TR')}</span>;
-};
-
 // --- MAIN CREDIT STORE SCREEN (WEB) ---
 export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
   currentUser: propUser,
@@ -656,7 +615,6 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
   const user = propUser !== undefined ? propUser : authUser;
   const activeBalance = credits ?? user?.boostCredits ?? 0;
 
-  const [isMonthly, setIsMonthly] = useState(true);
   const [loadingPkgId, setLoadingPkgId] = useState<string | null>(null);
   const [storeProducts, setStoreProducts] = useState<Record<string, StoreCreditProduct>>({});
   const [storeState, setStoreState] = useState<'loading' | 'ready' | 'unconfigured' | 'error'>(
@@ -664,10 +622,6 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
   );
 
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const confettiRef = useRef<HTMLDivElement | null>(null);
-  const monthlyBtnRef = useRef<HTMLButtonElement | null>(null);
-  const annualBtnRef = useRef<HTMLButtonElement | null>(null);
-  const [sliderStyle, setSliderStyle] = useState<{ width: number; left: number }>({ width: 0, left: 0 });
 
   const [mousePos, setMousePos] = useState<{ x: number | null; y: number | null }>({
     x: null,
@@ -684,17 +638,6 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
       document.head.appendChild(styleEl);
     }
   }, []);
-
-  // Update slider position for the toggle
-  useEffect(() => {
-    const activeBtn = isMonthly ? monthlyBtnRef.current : annualBtnRef.current;
-    if (activeBtn) {
-      setSliderStyle({
-        width: activeBtn.offsetWidth,
-        left: activeBtn.offsetLeft,
-      });
-    }
-  }, [isMonthly]);
 
   // Load products from store service
   useEffect(() => {
@@ -731,30 +674,6 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
 
   const handleMouseLeave = () => {
     setMousePos({ x: null, y: null });
-  };
-
-  // Toggle handler with Confetti
-  const handleToggle = (monthly: boolean) => {
-    if (isMonthly === monthly) return;
-    setIsMonthly(monthly);
-
-    // Fire confetti when switching to Annual (discounted)
-    if (!monthly && annualBtnRef.current && typeof window !== 'undefined') {
-      const rect = annualBtnRef.current.getBoundingClientRect();
-      const originX = (rect.left + rect.width / 2) / window.innerWidth;
-      const originY = (rect.top + rect.height / 2) / window.innerHeight;
-
-      confetti({
-        particleCount: 80,
-        spread: 75,
-        origin: { x: originX, y: originY },
-        colors: ['#3269C7', '#60A5FA', '#936413', '#25364E', '#EAF2FC'],
-        ticks: 280,
-        gravity: 1.15,
-        decay: 0.94,
-        startVelocity: 28,
-      });
-    }
   };
 
   // Purchase Handler
@@ -814,76 +733,56 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
       <InteractiveStarfield mousePos={mousePos} containerRef={containerRef} />
 
       <div className="k-pricing-container">
-        {/* Header */}
-        <div className="k-pricing-header">
-          <div className="k-pricing-eyebrow">
-            <span>✨ KISTAS KREDİ EKOSİSTEMİ</span>
-          </div>
-          <h1 className="k-pricing-title">Şeffaf ve Esnek Kredi Paketleri</h1>
-          <p className="k-pricing-desc">
-            Projenizin büyüme hedefine uygun paketi seçin. Tüm paketler bağımsız Sponsorlu Vitrin
-            rotasyonu ve organik Kıstas topluluk desteği içerir.
-          </p>
-          {storeState !== 'ready' && (
-            <p className="k-pricing-desc" role="status">
-              Web üzerinden kredi satın alma henüz açık değil. Bu sayfadan ödeme alınmıyor.
+        <div className="k-pricing-hero">
+          <div className="k-pricing-header">
+            <div className="k-pricing-kicker">Görünürlük kredileri</div>
+            <h1 className="k-pricing-title">Projeni daha görünür kıl.</h1>
+            <p className="k-pricing-desc">
+              Tek seferlik kredi paketini seç; Sponsorlu Vitrin süreni ihtiyacına göre kullan.
             </p>
-          )}
+            {storeState !== 'ready' && (
+              <div className="k-store-notice" role="status">
+                <span aria-hidden="true">ⓘ</span>
+                <span>Web satın alımları henüz açık değil. Bu ekrandan ödeme alınmaz.</span>
+              </div>
+            )}
+          </div>
 
-          {/* User Balance Banner */}
-          <div className="k-balance-banner">
-            <span className="k-balance-text">
-              Kullanılabilir Bakiyeniz: <span className="k-balance-bold">{activeBalance} Kredi</span>
-            </span>
+          <div className="k-balance-panel">
+            <div>
+              <div className="k-balance-label">Kullanılabilir bakiyen</div>
+              <div className="k-balance-value">{activeBalance.toLocaleString('tr-TR')}<span>kredi</span></div>
+              <p className="k-balance-help">Projelerini Sponsorlu Vitrin'de öne çıkarmak için kredilerini kullan.</p>
+            </div>
             {onNavigateToLaunch ? (
               <button
                 type="button"
                 className="k-balance-btn"
                 onClick={onNavigateToLaunch}
               >
-                Lansmana Git &rarr;
+                Lansman alanına git &rarr;
               </button>
             ) : null}
           </div>
         </div>
 
-        {/* Pricing Toggle with Sliding Pill & Confetti */}
-        <div className="k-toggle-wrapper">
-          <div ref={confettiRef} className="k-toggle-pill-track">
-            <div
-              className="k-toggle-slider"
-              style={{
-                width: `${sliderStyle.width}px`,
-                transform: `translateX(${sliderStyle.left}px)`,
-              }}
-            />
-            <button
-              ref={monthlyBtnRef}
-              type="button"
-              onClick={() => handleToggle(true)}
-              className={`k-toggle-btn ${isMonthly ? 'active' : 'inactive'}`}
-            >
-              Aylık
-            </button>
-            <button
-              ref={annualBtnRef}
-              type="button"
-              onClick={() => handleToggle(false)}
-              className={`k-toggle-btn ${!isMonthly ? 'active' : 'inactive'}`}
-            >
-              Yıllık
-              <span className={`k-toggle-badge ${!isMonthly ? 'light' : ''}`}>
-                (%20 Tasarruf)
-              </span>
-            </button>
-          </div>
+        <div className="k-benefit-strip" aria-label="Kredi avantajları">
+          <div className="k-benefit-item"><span className="k-benefit-icon">◎</span><span>Tek seferlik satın alım</span></div>
+          <div className="k-benefit-item"><span className="k-benefit-icon">↻</span><span>Saatlik eşit rotasyon</span></div>
+          <div className="k-benefit-item"><span className="k-benefit-icon">◇</span><span>İhtiyacın kadar kullan</span></div>
+        </div>
+
+        <div className="k-packages-heading">
+          <p className="k-packages-kicker">Kredi paketleri</p>
+          <h2 className="k-packages-title">Hedefine uygun paketi seç.</h2>
+          <p className="k-packages-desc">Abonelik yok. Krediler tek sefer alınır ve bakiyende kalır.</p>
         </div>
 
         {/* 3 Pricing Cards */}
         <div className="k-cards-grid">
           {PLANS.map((plan) => {
             const isPopular = plan.isPopular;
-            const price = isMonthly ? plan.monthlyPrice : plan.annualMonthlyPrice;
+            const priceLabel = storeProducts[plan.storeProductId]?.priceString || `₺${plan.price.toLocaleString('tr-TR')}`;
             const isLoading = loadingPkgId === plan.id;
 
             return (
@@ -905,15 +804,12 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
                 <h3 className="k-card-title">{plan.name}</h3>
                 <p className="k-card-desc">{plan.description}</p>
 
-                {/* Price Display with Animated Number */}
+                {/* One-time package price */}
                 <div className="k-card-price-row">
-                  <span className="k-card-price">
-                    <AnimatedNumber value={price} />
-                  </span>
-                  <span className="k-card-period">/ {plan.period}</span>
+                  <span className="k-card-price">{priceLabel}</span>
                 </div>
                 <div className="k-card-billing-note">
-                  {isMonthly ? 'Aylık faturalandırılır' : 'Yıllık faturalandırılır (%20 indirimli)'}
+                  Tek seferlik ödeme · {plan.credits.toLocaleString('tr-TR')} kredi
                 </div>
 
                 {/* Features List */}
@@ -977,8 +873,7 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
             <path d="M9 12l2 2 4-4" />
           </svg>
           <span>
-            Krediler yalnızca Kıstas ekosistemi içerisindeki proje görünürlüğü ve bağımsız vitrin
-            için kullanılır.
+            Krediler yalnızca proje görünürlüğü için kullanılır; paketler abonelik başlatmaz.
           </span>
         </div>
       </div>
