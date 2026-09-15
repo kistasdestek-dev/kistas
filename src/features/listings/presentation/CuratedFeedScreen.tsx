@@ -58,15 +58,15 @@ const getRankConfig = (rank: number) => {
   }
   if (rank === 2) {
     return {
-      backgroundColor: '#c0d2e9',
-      textColor: '#173866',
-      borderColor: 'rgba(255, 255, 255, 0.95)',
+      backgroundColor: '#394d45',
+      textColor: '#FFFFFF',
+      borderColor: 'rgba(255, 255, 255, 0.85)',
     };
   }
   if (rank === 3) {
     return {
-      backgroundColor: '#a3d4ff',
-      textColor: '#0e5b9b',
+      backgroundColor: '#fff200',
+      textColor: '#173866',
       borderColor: 'rgba(255, 255, 255, 0.95)',
     };
   }
