@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { breakpoints, kistasStyle, theme } from '../../../core/theme';
 import { AutoTransparentLogo } from '../../../shared/components/AutoTransparentLogo';
 import { GlassIconButton } from '../../../shared/components/GlassIconButton';
@@ -99,6 +100,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
 }) => {
   const { width } = useWindowDimensions();
   const isPopular = mode === 'popular';
+  const isPhone = width <= breakpoints.phoneMax;
 
   const [selectedPlatform, setSelectedPlatform] = useState<PlatformType | 'all'>(initialPlatform);
 
@@ -107,7 +109,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Kategori Bilgisi (Başlıkta veya URL'den gelirse göstermek üzere)
+  // Kategori Bilgisi
   useEffect(() => {
     let isMounted = true;
     CategoryService.getProjectCategories()
@@ -164,10 +166,10 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
     [categories, initialCategoryId]
   );
 
-  const columnCount = width <= breakpoints.phoneMax ? 1 : width <= breakpoints.tabletMax ? 2 : 3;
-  const horizontalPadding = width <= breakpoints.phoneMax ? 16 : 28;
+  const columnCount = isPhone ? 1 : width <= breakpoints.tabletMax ? 2 : 3;
+  const horizontalPadding = isPhone ? 16 : 28;
   const contentWidth = Math.min(width, 1440) - horizontalPadding * 2;
-  const cardWidth = Math.max(280, (contentWidth - (columnCount - 1) * 18) / columnCount);
+  const cardWidth = isPhone ? '100%' : Math.max(280, (contentWidth - (columnCount - 1) * 18) / columnCount);
 
   const handleResetPlatform = () => {
     setSelectedPlatform('all');
@@ -185,17 +187,26 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
       <View style={styles.heroRow}>
         <GlassIconButton icon="arrow-back" onPress={onBack} accessibilityLabel="Geri dön" />
         <View style={styles.heroCopy}>
-          <View style={styles.badgeRow}>
-            <View style={[styles.modeBadge, isPopular ? styles.popularBadge : styles.newBadge]}>
-              <Ionicons
-                name={isPopular ? 'flame' : 'sparkles'}
-                size={13}
-                color={isPopular ? '#EA580C' : '#2563EB'}
-              />
-              <Text style={[styles.modeBadgeText, isPopular ? styles.popularBadgeText : styles.newBadgeText]}>
-                {isPopular ? 'HAFTALIK TREND' : 'YENİ KEŞİFLER'}
+          {/* Özel Kıstas Neumorphic Eyebrow Kapsülü */}
+          <View style={styles.eyebrowContainer}>
+            <View style={styles.eyebrowCapsule}>
+              <LinearGradient
+                colors={isPopular ? ['#FF8A00', '#EA580C'] : ['#3B82F6', '#1D4ED8']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.eyebrowIconWell}
+              >
+                <Ionicons
+                  name={isPopular ? 'flame' : 'sparkles'}
+                  size={12}
+                  color="#FFFFFF"
+                />
+              </LinearGradient>
+              <Text style={styles.eyebrowTitle}>
+                {isPopular ? 'HAFTALIK TOPLULUK TRENDİ' : 'YENİ KEŞİFLER RADARI'}
               </Text>
             </View>
+
             {activeCategoryObj ? (
               <View style={styles.categoryBadge}>
                 <Ionicons name="folder-outline" size={12} color="#3269C7" />
@@ -204,14 +215,14 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
             ) : null}
           </View>
 
-          <Text style={styles.title}>
+          <Text style={[styles.title, isPhone && styles.titleMobile]}>
             {activeCategoryObj
               ? `${activeCategoryObj.name} · ${isPopular ? 'Popüler' : 'Yeni Çıkanlar'}`
               : isPopular
               ? 'Popüler Projeler'
               : 'Yeni Çıkanlar'}
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, isPhone && styles.subtitleMobile]}>
             {isPopular
               ? 'Son 7 günün doğrulanmış topluluk desteğine göre en çok öne çıkan projeleri.'
               : 'Topluluğa yeni katılan, ilk günlerindeki bağımsız ve yenilikçi projeler.'}
@@ -219,7 +230,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
         </View>
       </View>
 
-      {/* Sade ve Neumorphic Platform Filtre Çubuğu (Arama ve Kategoriler Kaldırıldı) */}
+      {/* Sade ve Neumorphic Platform Filtre Çubuğu */}
       <View style={styles.filterSection}>
         <View style={styles.platformInsetTrack}>
           <ScrollView
@@ -295,7 +306,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
           </Pressable>
         </View>
       ) : (
-        <View style={styles.grid}>
+        <View style={[styles.grid, isPhone && styles.gridMobile]}>
           {filteredProjects.map((project, index) => {
             const rank = index + 1;
             const rankConfig = getRankConfig(rank);
@@ -312,11 +323,26 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
                 accessibilityLabel={`${project.title} projesini incele`}
                 style={({ pressed }) => [
                   styles.card,
-                  { width: cardWidth },
+                  isPhone && styles.cardMobile,
+                  { width: cardWidth as any },
                   pressed && styles.cardPressed,
                 ]}
               >
-                {/* Üst Satır: Neumorphic Sıralama ve Destek Metriği */}
+                {/* Sol üstten hafif mavi, ortada saf beyaz, sağ altta hafif yeşil pürüzsüz ambiyans geçişi */}
+                {Platform.OS === 'web' ? (
+                  <View pointerEvents="none" style={styles.cardWebAurora} />
+                ) : (
+                  <LinearGradient
+                    colors={['#F5F8FD', '#FFFFFF', '#F6FAF8']}
+                    locations={[0, 0.5, 1]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                )}
+                <View pointerEvents="none" style={styles.cardSpecularTop} />
+
+                {/* 1. Kısım: Üst Başlık (Sıralama Rozeti ve Destek Skoru) */}
                 <View style={styles.cardHeaderRow}>
                   {isPopular ? (
                     rankConfig ? (
@@ -351,14 +377,14 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
                   </View>
                 </View>
 
-                {/* Orta Satır: Kıstas Neumorphic Logo Yuvası ve Başlık Bilgisi */}
-                <View style={styles.cardBodyRow}>
-                  <View style={styles.logoWell}>
+                {/* 2. Kısım: Kimlik Alanı (Logo Yuvası, Proje Adı, Geliştirici) */}
+                <View style={[styles.cardBodyRow, isPhone && styles.cardBodyRowMobile]}>
+                  <View style={[styles.logoWell, isPhone && styles.logoWellMobile]}>
                     {project.logoUrl ? (
                       <AutoTransparentLogo
                         src={project.logoUrl}
                         alt={`${project.title} logosu`}
-                        style={styles.logoImage}
+                        style={isPhone ? styles.logoImageMobile : styles.logoImage}
                       />
                     ) : (
                       <Text style={styles.logoFallback}>
@@ -367,7 +393,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
                     )}
                   </View>
                   <View style={styles.cardInfo}>
-                    <Text style={styles.projectTitle} numberOfLines={1}>
+                    <Text style={[styles.projectTitle, isPhone && styles.projectTitleMobile]} numberOfLines={1}>
                       {project.title}
                     </Text>
                     <View style={styles.makerRow}>
@@ -381,12 +407,12 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
                   </View>
                 </View>
 
-                {/* Açıklama / Tagline */}
-                <Text style={styles.tagline} numberOfLines={2}>
+                {/* 3. Kısım: Açıklama / Tagline Metni */}
+                <Text style={[styles.tagline, isPhone && styles.taglineMobile]} numberOfLines={2}>
                   {project.tagline || project.description || 'Açıklama belirtilmedi.'}
                 </Text>
 
-                {/* Alt Satır: Neumorphic Platform Etiketleri ve Kıstas GlassIconButton */}
+                {/* 4. Kısım: Alt Satır (Hafif çizgiyle ayrılmış Platform Etiketleri ve İncele Butonu) */}
                 <View style={styles.cardFooterRow}>
                   <View style={styles.platformTagsRow}>
                     {(project.platforms || ['Web']).slice(0, 3).map((plat) => (
@@ -403,7 +429,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
                   />
                 </View>
 
-                {/* Kıstas İnce Cam Işıklandırma Kenarlığı (Inner Rim) */}
+                {/* Kıstas İnce Beyaz Işıklandırma Kenarlığı (Inner Rim) */}
                 <View pointerEvents="none" style={styles.cardInnerRim} />
               </Pressable>
             );
@@ -448,40 +474,52 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 16,
   },
-  badgeRow: {
+  eyebrowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 6,
+    marginBottom: 8,
   },
-  modeBadge: {
+  eyebrowCapsule: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
+    paddingLeft: 4,
+    paddingRight: 12,
     paddingVertical: 4,
     borderRadius: 999,
+    backgroundColor: '#F1F5FA',
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
+    ...Platform.select({
+      web: {
+        boxShadow: '-3px -3px 8px rgba(255,255,255,0.95), 3px 3px 9px rgba(130,146,168,0.18)',
+      },
+      default: {
+        shadowColor: NEO.shadow,
+        shadowOffset: { width: 2, height: 3 },
+        shadowOpacity: 0.14,
+        shadowRadius: 6,
+        elevation: 2,
+      },
+    }),
   },
-  popularBadge: {
-    backgroundColor: 'rgba(254,243,199,0.85)',
-    borderColor: 'rgba(245,158,11,0.3)',
+  eyebrowIconWell: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 7,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
-  popularBadgeText: {
-    color: '#D97706',
-  },
-  newBadge: {
-    backgroundColor: 'rgba(239,246,255,0.9)',
-    borderColor: 'rgba(59,130,246,0.3)',
-  },
-  newBadgeText: {
-    color: '#2563EB',
-  },
-  modeBadgeText: {
+  eyebrowTitle: {
     ...theme.typography.kistas,
-    fontSize: 10,
+    fontSize: 10.5,
     fontWeight: '800',
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
+    color: NEO.ink,
   },
   categoryBadge: {
     flexDirection: 'row',
@@ -509,6 +547,11 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: -1.1,
   },
+  titleMobile: {
+    fontSize: 28,
+    lineHeight: 34,
+    letterSpacing: -0.8,
+  },
   subtitle: {
     ...theme.typography.kistas,
     marginTop: 6,
@@ -516,6 +559,10 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     lineHeight: 18,
     fontWeight: '600',
+  },
+  subtitleMobile: {
+    fontSize: 12,
+    lineHeight: 17,
   },
   filterSection: {
     marginTop: 8,
@@ -613,25 +660,63 @@ const styles = StyleSheet.create({
     gap: 18,
     alignItems: 'flex-start',
   },
+  gridMobile: {
+    gap: 16,
+  },
   card: {
-    minHeight: 188,
+    minHeight: 206,
     padding: 18,
     borderRadius: 24,
-    backgroundColor: NEO.surface,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: NEO.border,
+    borderColor: '#DDE7F2',
     position: 'relative',
     overflow: 'hidden',
     ...Platform.select({
       web: {
-        boxShadow: '-7px -7px 18px rgba(255,255,255,0.94), 8px 9px 22px rgba(130,146,168,0.22)',
+        background: 'linear-gradient(155deg, #FFFFFF 0%, #FAFCFE 55%, #F4F8FC 100%)' as any,
+        boxShadow: '0 16px 36px -16px rgba(34,72,120,.14), 0 4px 12px -6px rgba(34,72,120,.08), inset 0 1px 0 rgba(255,255,255,0.95)',
       },
       default: {
-        shadowColor: NEO.shadow,
-        shadowOffset: { width: 7, height: 9 },
-        shadowOpacity: 0.18,
+        shadowColor: '#224878',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.12,
         shadowRadius: 16,
-        elevation: 5,
+        elevation: 4,
+      },
+    }),
+  },
+  cardMobile: {
+    minHeight: 216,
+    padding: 16,
+    borderRadius: 22,
+    marginBottom: 2,
+  },
+  cardWebAurora: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    ...Platform.select({
+      web: {
+        background: 'radial-gradient(circle at 8% 6%, rgba(73, 135, 223, 0.09) 0%, rgba(73, 135, 223, 0.02) 26%, transparent 48%), radial-gradient(circle at 94% 94%, rgba(35, 146, 132, 0.07) 0%, rgba(35, 146, 132, 0.02) 26%, transparent 48%)' as any,
+        pointerEvents: 'none' as any,
+      },
+    }),
+  },
+  cardSpecularTop: {
+    position: 'absolute',
+    top: 0,
+    left: 32,
+    right: 32,
+    height: 1,
+    ...Platform.select({
+      web: {
+        background: 'linear-gradient(90deg, transparent, rgba(66, 126, 211, 0.35), transparent)' as any,
+      },
+      default: {
+        backgroundColor: 'rgba(66, 126, 211, 0.30)',
       },
     }),
   },
@@ -643,7 +728,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 13,
+    marginBottom: 14,
   },
   topRankBadge: {
     minWidth: 32,
@@ -723,27 +808,41 @@ const styles = StyleSheet.create({
   cardBodyRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 11,
+    marginBottom: 12,
+  },
+  cardBodyRowMobile: {
+    marginBottom: 10,
   },
   logoWell: {
-    width: 54,
-    height: 54,
-    borderRadius: 16,
-    backgroundColor: '#EAF0F7',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.9)',
+    width: 52,
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    overflow: 'visible',
+  },
+  logoWellMobile: {
+    width: 46,
+    height: 46,
+  },
+  logoImage: {
+    width: 50,
+    height: 50,
     ...Platform.select({
       web: {
-        boxShadow: 'inset 2px 2px 5px rgba(130,146,168,0.14), inset -2px -2px 5px rgba(255,255,255,0.9)',
+        objectFit: 'contain' as any,
       },
     }),
   },
-  logoImage: {
-    width: 48,
-    height: 48,
+  logoImageMobile: {
+    width: 44,
+    height: 44,
+    ...Platform.select({
+      web: {
+        objectFit: 'contain' as any,
+      },
+    }),
   },
   logoFallback: {
     ...theme.typography.kistas,
@@ -753,19 +852,24 @@ const styles = StyleSheet.create({
   },
   cardInfo: {
     flex: 1,
-    marginLeft: 13,
+    marginLeft: 14,
   },
   projectTitle: {
     ...theme.typography.kistas,
-    fontSize: 16,
+    fontSize: 16.5,
+    lineHeight: 22,
     fontWeight: '800',
-    color: NEO.ink,
+    color: '#1A2130',
     letterSpacing: -0.3,
+  },
+  projectTitleMobile: {
+    fontSize: 15.5,
+    lineHeight: 20,
   },
   makerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
+    marginTop: 3,
   },
   makerName: {
     ...theme.typography.kistas,
@@ -778,9 +882,14 @@ const styles = StyleSheet.create({
   },
   tagline: {
     ...theme.typography.kistas,
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: '#5C6C84',
+    marginBottom: 16,
+  },
+  taglineMobile: {
     fontSize: 12,
     lineHeight: 17,
-    color: '#58749D',
     marginBottom: 14,
   },
   cardFooterRow: {
@@ -788,25 +897,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 'auto',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(214, 227, 242, 0.7)',
   },
   platformTagsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
     flex: 1,
-    marginRight: 8,
+    marginRight: 10,
+    overflow: 'hidden',
   },
   platformTag: {
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 7,
-    backgroundColor: '#EAF0F7',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.85)',
+    borderColor: 'rgba(69, 120, 190, 0.16)',
     ...Platform.select({
       web: {
-        boxShadow: 'inset 1px 1px 3px rgba(130,146,168,0.1), inset -1px -1px 3px rgba(255,255,255,0.8)',
+        boxShadow: '0 2px 6px rgba(42, 79, 130, 0.05)',
       },
     }),
   },
@@ -814,7 +927,7 @@ const styles = StyleSheet.create({
     ...theme.typography.kistas,
     fontSize: 9.5,
     fontWeight: '700',
-    color: '#58749D',
+    color: '#47658E',
   },
   cardInnerRim: {
     position: 'absolute',
@@ -824,7 +937,7 @@ const styles = StyleSheet.create({
     left: 2,
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.65)',
+    borderColor: 'rgba(255, 255, 255, 0.75)',
   },
   stateCard: {
     minHeight: 220,

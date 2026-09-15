@@ -32,13 +32,15 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
 }) => {
   const deliveredSrc = getOptimizedImageUrl(src, 160) || src;
   const imageRef = useRef<HTMLImageElement>(null);
+  const isSupabaseHosted = typeof src === 'string' && src.includes('supabase.co');
   const [shouldProcess, setShouldProcess] = useState(() => typeof IntersectionObserver === 'undefined');
   const [currentSrc, setCurrentSrc] = useState<string>(() => {
-    return transparentLogoCache.get(deliveredSrc) || deliveredSrc;
+    if (!isSupabaseHosted) return deliveredSrc || src;
+    return transparentLogoCache.get(src) || transparentLogoCache.get(deliveredSrc) || deliveredSrc;
   });
 
   useEffect(() => {
-    if (shouldProcess) return;
+    if (shouldProcess || !isSupabaseHosted) return;
     const element = imageRef.current;
     if (!element) return;
 
@@ -49,12 +51,17 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
     }, { rootMargin: '320px' });
     observer.observe(element);
     return () => observer.disconnect();
-  }, [shouldProcess]);
+  }, [shouldProcess, isSupabaseHosted]);
 
   useEffect(() => {
-    if (!deliveredSrc || !shouldProcess) return;
+    if (!src) return;
+    if (!isSupabaseHosted) {
+      setCurrentSrc(deliveredSrc || src);
+      return;
+    }
+    if (!shouldProcess) return;
 
-    const cached = transparentLogoCache.get(deliveredSrc);
+    const cached = transparentLogoCache.get(src) || transparentLogoCache.get(deliveredSrc);
     if (cached) {
       if (cached !== currentSrc) {
         setCurrentSrc(cached);
@@ -67,73 +74,73 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
     img.crossOrigin = 'anonymous';
 
     img.onload = () => {
-      try {
-        const naturalW = img.naturalWidth || img.width;
-        const naturalH = img.naturalHeight || img.height;
+        try {
+          const naturalW = img.naturalWidth || img.width;
+          const naturalH = img.naturalHeight || img.height;
 
-        if (!naturalW || !naturalH) {
-          transparentLogoCache.set(deliveredSrc, deliveredSrc);
-          return;
-        }
+          if (!naturalW || !naturalH) {
+            transparentLogoCache.set(src, deliveredSrc);
+            return;
+          }
 
-        // Keep canvas size optimized (max 256px) for instantaneous processing (< 2ms)
-        const maxDim = 256;
-        let w = naturalW;
-        let h = naturalH;
-        if (w > maxDim || h > maxDim) {
-          const ratio = Math.min(maxDim / w, maxDim / h);
-          w = Math.max(1, Math.round(w * ratio));
-          h = Math.max(1, Math.round(h * ratio));
-        }
+          // Keep canvas size optimized (max 256px) for instantaneous processing (< 2ms)
+          const maxDim = 256;
+          let w = naturalW;
+          let h = naturalH;
+          if (w > maxDim || h > maxDim) {
+            const ratio = Math.min(maxDim / w, maxDim / h);
+            w = Math.max(1, Math.round(w * ratio));
+            h = Math.max(1, Math.round(h * ratio));
+          }
 
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        if (!ctx) {
-          transparentLogoCache.set(deliveredSrc, deliveredSrc);
-          return;
-        }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          if (!ctx) {
+            transparentLogoCache.set(src, deliveredSrc);
+            return;
+          }
 
-        ctx.drawImage(img, 0, 0, w, h);
-        const imgData = ctx.getImageData(0, 0, w, h);
-        const data = imgData.data;
+          ctx.drawImage(img, 0, 0, w, h);
+          const imgData = ctx.getImageData(0, 0, w, h);
+          const data = imgData.data;
 
-        // Check 4 corner pixels
-        const cornerIndices = [
-          0,
-          (w - 1) * 4,
-          (h - 1) * w * 4,
-          ((h - 1) * w + w - 1) * 4,
-        ];
+          // Check 4 corner pixels
+          const cornerIndices = [
+            0,
+            (w - 1) * 4,
+            (h - 1) * w * 4,
+            ((h - 1) * w + w - 1) * 4,
+          ];
 
-        // 1. If any corner is already transparent (alpha < 30), image already has a transparent background
-        const hasTransparentCorner = cornerIndices.some((idx) => data[idx + 3] < 30);
-        if (hasTransparentCorner) {
-          transparentLogoCache.set(deliveredSrc, deliveredSrc);
-          return;
-        }
+          // 1. If any corner is already transparent (alpha < 30), image already has a transparent background
+          const hasTransparentCorner = cornerIndices.some((idx) => data[idx + 3] < 30);
+          if (hasTransparentCorner) {
+            transparentLogoCache.set(src, deliveredSrc);
+            return;
+          }
 
-        // 2. Check if corners are light/white (r, g, b > 215)
-        const isCornerLight = (idx: number) => {
-          return data[idx] > 215 && data[idx + 1] > 215 && data[idx + 2] > 215;
-        };
+          // 2. Check if corners are light/white (r, g, b > 195)
+          const isCornerLight = (idx: number) => {
+            return data[idx] > 195 && data[idx + 1] > 195 && data[idx + 2] > 195;
+          };
 
-        const cornersAreLight = cornerIndices.filter(isCornerLight).length >= 3;
-        if (!cornersAreLight) {
-          // Image corners are not white/light (e.g. dark artwork), preserve as is
-          transparentLogoCache.set(src, src);
-          return;
-        }
+          const cornersAreLight = cornerIndices.filter(isCornerLight).length >= 3;
+          if (!cornersAreLight) {
+            // Image corners are not white/light (e.g. dark artwork), preserve as is
+            transparentLogoCache.set(src, deliveredSrc);
+            return;
+          }
 
-        // 3. BFS Flood Fill from all 4 boundaries for contiguous white/light pixels
-        const visited = new Uint8Array(w * h);
-        const queue: number[] = [];
+          // 3. BFS Flood Fill from all 4 boundaries for contiguous white/light pixels
+          const visited = new Uint8Array(w * h);
+          const queue: number[] = [];
 
-        const isBgPixel = (x: number, y: number) => {
-          const i = (y * w + x) * 4;
-          return data[i] > 220 && data[i + 1] > 220 && data[i + 2] > 220;
-        };
+          const isBgPixel = (x: number, y: number) => {
+            const i = (y * w + x) * 4;
+            return data[i] > 195 && data[i + 1] > 195 && data[i + 2] > 195;
+          };
 
         // Seed outer boundaries
         for (let x = 0; x < w; x++) {
@@ -190,26 +197,32 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
         ctx.putImageData(imgData, 0, 0);
         const transparentDataUrl = canvas.toDataURL('image/png');
 
+        transparentLogoCache.set(src, transparentDataUrl);
         transparentLogoCache.set(deliveredSrc, transparentDataUrl);
         if (isMounted) {
           setCurrentSrc(transparentDataUrl);
         }
       } catch {
-        // Fallback gracefully to original src on any canvas/CORS edge case
-        transparentLogoCache.set(deliveredSrc, deliveredSrc);
+        transparentLogoCache.set(src, deliveredSrc);
+        if (isMounted) {
+          setCurrentSrc(deliveredSrc);
+        }
       }
     };
 
     img.onerror = () => {
-      transparentLogoCache.set(deliveredSrc, deliveredSrc);
+      if (img.src !== deliveredSrc) {
+        img.src = deliveredSrc;
+      } else {
+        transparentLogoCache.set(src, deliveredSrc);
+      }
     };
-
-    img.src = deliveredSrc;
+    img.src = src;
 
     return () => {
       isMounted = false;
     };
-  }, [deliveredSrc, shouldProcess]);
+  }, [src, deliveredSrc, isSupabaseHosted, shouldProcess]);
 
   return (
     <img
@@ -226,6 +239,11 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
       draggable={draggable}
       decoding={decoding}
       loading="lazy"
+      onError={() => {
+        if (currentSrc !== src) {
+          setCurrentSrc(src);
+        }
+      }}
     />
   );
 };
