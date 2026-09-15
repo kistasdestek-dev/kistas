@@ -587,6 +587,23 @@ runTest('Günün Vitrini: yeni doğrulanmış destek kart sayacına canlı eklen
   assert.match(sql, /SECURITY DEFINER[\s\S]*SET search_path = ''/i, 'Canlı vitrin getter güvenli search_path kullanmıyor!');
 });
 
+runTest('Keşfet: ilk ekran veri ve logo işleme bütçesi proje sayısından bağımsız kalmalı', () => {
+  const discoverSource = fs.readFileSync(
+    path.join(ROOT, 'src', 'features', 'listings', 'presentation', 'DiscoverScreen.tsx'),
+    'utf8'
+  );
+  const logoSource = fs.readFileSync(
+    path.join(ROOT, 'src', 'shared', 'components', 'AutoTransparentLogo.web.tsx'),
+    'utf8'
+  );
+
+  assert.match(discoverSource, /HOME_SPONSOR_LIMIT\s*=\s*12/i, 'Ana sayfa sponsor sorgusu 12 kayıtla sınırlı değil!');
+  assert.match(discoverSource, /HOME_FEED_LIMIT\s*=\s*12/i, 'Ana sayfa organik akış sorgusu 12 kayıtla sınırlı değil!');
+  assert.match(discoverSource, /getSponsoredListings\(categoryId, HOME_SPONSOR_LIMIT\)\.then/i, 'LCP sponsor isteği bağımsız tamamlanmıyor!');
+  assert.doesNotMatch(discoverSource, /getUserUpvotedProjectIds\(\)/i, 'Keşfet kullanılmayan sınırsız destek geçmişini çekiyor!');
+  assert.match(logoSource, /IntersectionObserver[\s\S]*rootMargin:\s*'320px'/i, 'Görünmeyen logoların tarayıcı işlemesi ertelenmiyor!');
+});
+
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);
 
 if (failedTests > 0) {

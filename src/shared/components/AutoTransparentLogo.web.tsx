@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getOptimizedImageUrl } from '../../core/media/imageDelivery';
 
 // In-memory cache so each logo URL is processed only once across the whole app session
@@ -31,12 +31,28 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
   decoding = 'async',
 }) => {
   const deliveredSrc = getOptimizedImageUrl(src, 160) || src;
+  const imageRef = useRef<HTMLImageElement>(null);
+  const [shouldProcess, setShouldProcess] = useState(() => typeof IntersectionObserver === 'undefined');
   const [currentSrc, setCurrentSrc] = useState<string>(() => {
     return transparentLogoCache.get(deliveredSrc) || deliveredSrc;
   });
 
   useEffect(() => {
-    if (!deliveredSrc) return;
+    if (shouldProcess) return;
+    const element = imageRef.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      setShouldProcess(true);
+      observer.disconnect();
+    }, { rootMargin: '320px' });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [shouldProcess]);
+
+  useEffect(() => {
+    if (!deliveredSrc || !shouldProcess) return;
 
     const cached = transparentLogoCache.get(deliveredSrc);
     if (cached) {
@@ -193,10 +209,11 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [deliveredSrc]);
+  }, [deliveredSrc, shouldProcess]);
 
   return (
     <img
+      ref={imageRef}
       src={currentSrc}
       alt={alt}
       className={className}

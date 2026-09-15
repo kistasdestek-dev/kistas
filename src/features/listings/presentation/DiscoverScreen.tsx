@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Platform,
   useWindowDimensions,
 } from 'react-native';
@@ -19,7 +18,7 @@ import { DiscoveryRevealStatement } from '../../../shared/components/DiscoveryRe
 import { SponsorLogoMarquee } from '../../../shared/components/SponsorLogoMarquee';
 import { CinematicFooter } from '../../../shared/components/CinematicFooter';
 import { KistasTopBrandBar } from '../../../shared/components/KistasTopBrandBar';
-import { isListingSponsored, Listing, PlatformType, PricingModel } from '../domain/Listing';
+import { Listing, PlatformType } from '../domain/Listing';
 import { ListingService } from '../application/ListingService';
 import { selectStableRandomPreview } from '../application/showcasePreview';
 import { CategoryService } from '../../categories/application/CategoryService';
@@ -52,49 +51,8 @@ interface DiscoverScreenProps {
 
 type FeedSortType = 'trending' | 'top_voted' | 'newest';
 type PlatformFilterType = PlatformType | 'all';
-type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
-
-const getPlatformIcon = (plt: PlatformType): IoniconName => {
-  switch (plt) {
-    case 'iOS':
-      return 'logo-apple';
-    case 'Android':
-      return 'logo-android';
-    case 'Web':
-      return 'globe-outline';
-    case 'macOS':
-      return 'desktop-outline';
-    case 'SaaS':
-      return 'cloud-outline';
-    default:
-      return 'phone-portrait-outline';
-  }
-};
-
-const formatPricingModel = (model?: PricingModel): string => {
-  switch (model) {
-    case 'free':
-      return 'Ücretsiz';
-    case 'paid':
-      return 'Ücretli';
-    case 'subscription':
-      return 'Abonelik';
-    case 'freemium':
-    default:
-      return 'Freemium';
-  }
-};
-
-const getProjectInitials = (title: string): string => {
-  if (!title) return 'K';
-  const parts = title.trim().split(/\s+/);
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return title.slice(0, 2).toUpperCase();
-};
-
-
+const HOME_SPONSOR_LIMIT = 12;
+const HOME_FEED_LIMIT = 12;
 
 export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
   onSelectListing,
@@ -125,7 +83,6 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
   const [popularProjects, setPopularProjects] = useState<Listing[]>([]);
   const [newProjects, setNewProjects] = useState<Listing[]>([]);
   const [weeklyShowcaseProjects, setWeeklyShowcaseProjects] = useState<Listing[]>([]);
-  const [upvotedMap, setUpvotedMap] = useState<Record<string, boolean>>({});
   const [showcasePreviewSeed] = useState(() => Math.floor(Math.random() * 0x7fffffff));
 
   useEffect(() => {
@@ -176,24 +133,23 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
   useEffect(() => {
     let isMounted = true;
     const categoryId = selectedCategory;
-    Promise.all([
-      ListingService.getSponsoredListings(categoryId),
-      ListingService.getPopularListings(50, categoryId),
-      ListingService.getNewListings(categoryId, 50),
-      ListingService.getWeeklyShowcaseListings(),
-      ListingService.getUserUpvotedProjectIds(),
-    ]).then(([sponsoredData, popularData, newData, weeklyShowcaseData, userUpvotedIds]) => {
+    void ListingService.getSponsoredListings(categoryId, HOME_SPONSOR_LIMIT).then((items) => {
       if (!isMounted) return;
-      setSponsoredProjects(sponsoredData);
+      setSponsoredProjects(items);
+    });
+
+    void ListingService.getWeeklyShowcaseListings(categoryId).then((items) => {
+      if (!isMounted) return;
+      setWeeklyShowcaseProjects(items);
+    });
+
+    void Promise.all([
+      ListingService.getPopularListings(HOME_FEED_LIMIT, categoryId),
+      ListingService.getNewListings(categoryId, HOME_FEED_LIMIT),
+    ]).then(([popularData, newData]) => {
+      if (!isMounted) return;
       setPopularProjects(popularData);
       setNewProjects(newData);
-      setWeeklyShowcaseProjects(weeklyShowcaseData);
-
-      const userUpvotedMap: Record<string, boolean> = {};
-      userUpvotedIds.forEach((id) => {
-        userUpvotedMap[id] = true;
-      });
-      setUpvotedMap(userUpvotedMap);
     });
 
     return () => {
@@ -208,7 +164,7 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
     const scheduleNextRotation = () => {
       const nextHourDelay = 60 * 60 * 1000 - (Date.now() % (60 * 60 * 1000)) + 1000;
       refreshTimer = setTimeout(async () => {
-        const nextSponsors = await ListingService.getSponsoredListings(selectedCategory);
+        const nextSponsors = await ListingService.getSponsoredListings(selectedCategory, HOME_SPONSOR_LIMIT);
         if (!isMounted) return;
         setSponsoredProjects(nextSponsors);
         scheduleNextRotation();
@@ -221,90 +177,6 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
       if (refreshTimer) clearTimeout(refreshTimer);
     };
   }, [selectedCategory]);
-
-  const handleToggleUpvote = useCallback(async (projectId: string) => {
-    const project = popularProjects.find((item) => item.id === projectId)
-      || newProjects.find((item) => item.id === projectId);
-    if (!project || isListingSponsored(project)) {
-      Alert.alert('Sponsorlu Proje', 'Sponsorlu projelerde destek geçici olarak kapalıdır.');
-      return;
-    }
-
-    const isCurrentlyUpvoted = !!upvotedMap[projectId];
-    if (isCurrentlyUpvoted) {
-      Alert.alert('Bilgi', 'Bu projeyi zaten desteklediniz. Kıstas kuralları gereği destek geri alınamaz.');
-      return;
-    }
-
-    // İyimser UI Güncellemesi (Tek yönlü kalıcı destek)
-    setUpvotedMap((prev) => ({ ...prev, [projectId]: true }));
-    const updateSupport = (items: Listing[], rollback = false): Listing[] =>
-      items.map((item) => {
-        if (item.id !== projectId) return item;
-        if (rollback) return {
-          ...item,
-          upvotesCount: project.upvotesCount,
-          weeklySupportCount: project.weeklySupportCount,
-        };
-        const delta = 1;
-        return {
-          ...item,
-          upvotesCount: item.upvotesCount + delta,
-          weeklySupportCount: item.weeklySupportCount === undefined
-            ? undefined
-            : item.weeklySupportCount + delta,
-        };
-      });
-
-    setPopularProjects((prev) => updateSupport(prev));
-    setNewProjects((prev) => updateSupport(prev));
-    setWeeklyShowcaseProjects((prev) => prev.map((item) => item.id === projectId ? {
-      ...item,
-      upvotesCount: item.upvotesCount + 1,
-      weeklySupportCount: (item.weeklySupportCount || 0) + 1,
-    } : item));
-
-    const res = await ListingService.toggleUpvote(projectId);
-    if (!res.success) {
-      if (res.code === 'SUPPORT_ALREADY_GIVEN') {
-        setUpvotedMap((prev) => ({ ...prev, [projectId]: true }));
-        Alert.alert('Bilgi', 'Bu projeyi zaten desteklediniz. Kıstas kuralları gereği destek geri alınamaz.');
-      } else {
-        setUpvotedMap((prev) => ({ ...prev, [projectId]: isCurrentlyUpvoted }));
-        setPopularProjects((prev) => updateSupport(prev, true));
-        setNewProjects((prev) => updateSupport(prev, true));
-        setWeeklyShowcaseProjects((prev) => prev.map((item) => item.id === projectId ? {
-          ...item,
-          upvotesCount: Math.max(0, item.upvotesCount - 1),
-          weeklySupportCount: Math.max(0, (item.weeklySupportCount || 0) - 1),
-        } : item));
-        Alert.alert('Destek Güncellenemedi', res.error || 'İşlem tamamlanamadı.');
-      }
-    } else if (res.success) {
-      if (res.upvotes_count !== undefined) {
-        const exactSupportCount = Number(res.upvotes_count);
-        setPopularProjects((prev) => prev.map((item) =>
-          item.id === projectId
-            ? { ...item, upvotesCount: exactSupportCount, likesCount: exactSupportCount }
-            : item
-        ));
-        setNewProjects((prev) => prev.map((item) =>
-          item.id === projectId
-            ? { ...item, upvotesCount: exactSupportCount, likesCount: exactSupportCount }
-            : item
-        ));
-      }
-
-      const [nextPopular, nextNew, nextShowcase] = await Promise.all([
-        ListingService.getPopularListings(50, selectedCategory),
-        ListingService.getNewListings(selectedCategory, 50),
-        ListingService.getWeeklyShowcaseListings(),
-      ]);
-      setPopularProjects(nextPopular);
-      setNewProjects(nextNew);
-      setWeeklyShowcaseProjects(nextShowcase);
-    }
-  }, [newProjects, popularProjects, selectedCategory, upvotedMap]);
 
   const handleClearFilters = useCallback(() => {
     setSearchQuery('');
@@ -482,8 +354,6 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
     filteredPopularProjects,
     filteredNewProjects,
     filteredWeeklyShowcaseProjects,
-    upvotedMap,
-    handleToggleUpvote,
     onOpenBrowse,
     categoryBoostedProjects,
     selectedCategoryObj,
