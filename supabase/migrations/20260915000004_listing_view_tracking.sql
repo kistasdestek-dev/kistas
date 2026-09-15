@@ -1,12 +1,12 @@
--- Gerçek proje detay görüntülenmelerini oturum/gün bazında tekilleştirir.
+-- Her gerçek proje detay açılışını ayrı bir görüntülenme olarak kaydeder.
 -- Yönetici Vitrin Desteği boosted_until üzerinden ayrı ve şeffaf kalır.
 
 CREATE TABLE IF NOT EXISTS public.listing_view_events (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     listing_id UUID NOT NULL REFERENCES public.listings(id) ON DELETE CASCADE,
     viewer_key TEXT NOT NULL,
     viewed_on DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
-    PRIMARY KEY (listing_id, viewer_key, viewed_on),
     CONSTRAINT listing_view_events_viewer_key_length
         CHECK (char_length(viewer_key) BETWEEN 5 AND 80)
 );
@@ -16,6 +16,9 @@ REVOKE ALL ON TABLE public.listing_view_events FROM PUBLIC, anon, authenticated;
 
 CREATE INDEX IF NOT EXISTS idx_listing_view_events_created_at
     ON public.listing_view_events (created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_listing_view_events_listing_created_at
+    ON public.listing_view_events (listing_id, created_at DESC);
 
 CREATE OR REPLACE FUNCTION public.record_listing_view(
     p_listing_id UUID,
@@ -31,7 +34,6 @@ DECLARE
     v_seller_id UUID;
     v_status public.listing_status;
     v_viewer_key TEXT;
-    v_inserted INTEGER := 0;
     v_view_count INTEGER := 0;
 BEGIN
     SELECT listing.seller_id, listing.status, COALESCE(listing.view_count, 0)
@@ -56,21 +58,16 @@ BEGIN
     END IF;
 
     INSERT INTO public.listing_view_events (listing_id, viewer_key)
-    VALUES (p_listing_id, v_viewer_key)
-    ON CONFLICT (listing_id, viewer_key, viewed_on) DO NOTHING;
+    VALUES (p_listing_id, v_viewer_key);
 
-    GET DIAGNOSTICS v_inserted = ROW_COUNT;
-
-    IF v_inserted = 1 THEN
-        UPDATE public.listings
-        SET view_count = LEAST(COALESCE(view_count, 0) + 1, 2147483647)
-        WHERE id = p_listing_id
-        RETURNING view_count INTO v_view_count;
-    END IF;
+    UPDATE public.listings
+    SET view_count = LEAST(COALESCE(view_count, 0) + 1, 2147483647)
+    WHERE id = p_listing_id
+    RETURNING view_count INTO v_view_count;
 
     RETURN jsonb_build_object(
         'success', TRUE,
-        'recorded', v_inserted = 1,
+        'recorded', TRUE,
         'view_count', v_view_count
     );
 END;
@@ -80,4 +77,4 @@ REVOKE ALL ON FUNCTION public.record_listing_view(UUID, UUID) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.record_listing_view(UUID, UUID) TO anon, authenticated;
 
 COMMENT ON FUNCTION public.record_listing_view(UUID, UUID) IS
-'Aktif proje detay görüntülenmesini kullanıcı veya anonim oturum başına günde bir kez sayar; proje sahibini dışlar.';
+'Aktif proje detayındaki her kullanıcı açılışını bir kez sayar; proje sahibini dışlar.';

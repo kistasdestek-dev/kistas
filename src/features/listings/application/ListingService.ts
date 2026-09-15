@@ -75,7 +75,6 @@ interface SponsoredListingRow {
   boosted_until: string;
 }
 
-const viewedListingIds = new Set<string>();
 const listingViewSessionId = (() => {
   const randomUuid = globalThis.crypto?.randomUUID?.();
   if (randomUuid) return randomUuid;
@@ -145,16 +144,12 @@ const mapListingRow = (row: any): Listing => {
 
 export class ListingService {
   public static async recordView(listingId: string): Promise<number | null> {
-    if (viewedListingIds.has(listingId)) return null;
-    viewedListingIds.add(listingId);
-
     const { data, error } = await supabase.rpc('record_listing_view', {
       p_listing_id: listingId,
       p_session_id: listingViewSessionId,
     });
 
     if (error || !data?.success) {
-      viewedListingIds.delete(listingId);
       return null;
     }
 

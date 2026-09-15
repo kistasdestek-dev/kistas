@@ -647,12 +647,24 @@ runTest('Editoryal katalog: gerçek geliştirici ile Kıstas yayıncısı ayrıl
   );
 });
 
-runTest('Proje görüntülenmesi: gerçek ziyaret tekilleştirilir ve sahip görüntülenmesi dışlanır', () => {
+runTest('Proje görüntülenmesi: her detay açılışı sayılır ve sahip görüntülenmesi dışlanır', () => {
   const migrationPath = path.join(ROOT, 'supabase', 'migrations', '20260915000004_listing_view_tracking.sql');
+  const counterMigrationPath = path.join(ROOT, 'supabase', 'migrations', '20260915000006_count_every_listing_open.sql');
   assert.strictEqual(fs.existsSync(migrationPath), true, 'Proje görüntülenme migration dosyası eksik!');
+  assert.strictEqual(fs.existsSync(counterMigrationPath), true, 'Her açılışı sayan migration dosyası eksik!');
   const sql = fs.readFileSync(migrationPath, 'utf8');
+  const counterSql = fs.readFileSync(counterMigrationPath, 'utf8');
+  const listingService = fs.readFileSync(
+    path.join(ROOT, 'src', 'features', 'listings', 'application', 'ListingService.ts'),
+    'utf8',
+  );
 
-  assert.match(sql, /PRIMARY KEY \(listing_id, viewer_key, viewed_on\)/i, 'Günlük görüntülenme tekilleştirmesi eksik!');
+  assert.match(sql, /id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY/i, 'Her görüntülenme için bağımsız olay kimliği eksik!');
+  assert.doesNotMatch(sql, /ON CONFLICT[\s\S]*DO NOTHING/i, 'Görüntülenmeler günlük tekilleştirilmemeli!');
+  assert.match(counterSql, /DROP CONSTRAINT IF EXISTS listing_view_events_pkey/i, 'Canlı günlük tekilleştirme kaldırılmıyor!');
+  assert.match(counterSql, /ADD CONSTRAINT listing_view_events_pkey PRIMARY KEY \(id\)/i, 'Canlı görüntülenme olay anahtarı yenilenmiyor!');
+  assert.match(counterSql, /SET view_count = LEAST\(COALESCE\(view_count, 0\) \+ 1/i, 'Her açılış sayacı atomik artırmıyor!');
+  assert.doesNotMatch(listingService, /viewedListingIds/i, 'İstemci aynı projeye sonraki girişleri engellememeli!');
   assert.match(sql, /v_actor_id = v_seller_id/i, 'Proje sahibinin görüntülenmesi dışlanmıyor!');
   assert.match(sql, /v_status <> 'active'/i, 'Aktif olmayan projeler görüntülenme alamamalı!');
   assert.match(sql, /SECURITY DEFINER[\s\S]*SET search_path = ''/i, 'Görüntülenme RPC güvenli search_path kullanmıyor!');
