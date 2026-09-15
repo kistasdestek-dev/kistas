@@ -21,18 +21,18 @@ export const FooterSloganBanner: React.FC<FooterSloganBannerProps> = ({
 
     const animations = animValues.map((val, idx) =>
       Animated.sequence([
-        Animated.delay(idx * 24),
+        Animated.delay(idx * 28),
         Animated.spring(val, {
           toValue: 1,
-          friction: 4,
-          tension: 80,
-          useNativeDriver: true,
+          friction: 4.5,
+          tension: 85,
+          useNativeDriver: false,
         }),
         Animated.spring(val, {
           toValue: 0,
           friction: 6,
           tension: 70,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
       ])
     );
@@ -41,6 +41,22 @@ export const FooterSloganBanner: React.FC<FooterSloganBannerProps> = ({
       setIsAnimating(false);
     });
   }, [animValues, isAnimating]);
+
+  // Mobilde ekrana girdiğinde otomatik ilk dalga + her 5.5 saniyede bir canlı nabız
+  React.useEffect(() => {
+    const initialTimer = setTimeout(() => {
+      triggerWave();
+    }, 700);
+
+    const intervalTimer = setInterval(() => {
+      triggerWave();
+    }, 5500);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(intervalTimer);
+    };
+  }, [triggerWave]);
 
   return (
     <View style={styles.bannerContainer}>
@@ -55,8 +71,14 @@ export const FooterSloganBanner: React.FC<FooterSloganBannerProps> = ({
       >
         {chars.map((char, index) => {
           const anim = animValues[index];
-          const translateY = anim ? anim.interpolate({ inputRange: [0, 1], outputRange: [0, -5] }) : 0;
-          const scale = anim ? anim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] }) : 1;
+          const translateY = anim ? anim.interpolate({ inputRange: [0, 1], outputRange: [0, -6] }) : 0;
+          const scale = anim ? anim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] }) : 1;
+          const color = anim
+            ? anim.interpolate({
+                inputRange: [0, 1],
+                outputRange: ['#25364E', '#013196'],
+              })
+            : '#25364E';
 
           return (
             <Animated.Text
@@ -65,6 +87,7 @@ export const FooterSloganBanner: React.FC<FooterSloganBannerProps> = ({
                 styles.sloganChar,
                 anim
                   ? {
+                      color,
                       transform: [{ translateY }, { scale }],
                     }
                   : null,

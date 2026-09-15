@@ -62,20 +62,44 @@ export const FooterSloganBanner: React.FC<FooterSloganBannerProps> = ({
     }
   }, []);
 
+  const bannerRef = useRef<HTMLDivElement>(null);
+
   const triggerMobileWave = useCallback(() => {
-    if (isActive) return;
     setIsActive(true);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       setIsActive(false);
     }, 1400);
-  }, [isActive]);
+  }, []);
+
+  useEffect(() => {
+    const node = bannerRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined' || typeof window === 'undefined') return;
+
+    // Yalnızca mobil veya dokunmatik cihazlarda görünür olunca 1 kez otomatik dalga
+    const isTouchOrMobile = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
+    if (!isTouchOrMobile) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          triggerMobileWave();
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [triggerMobileWave]);
 
   const chars = text.split('');
 
   return (
     <View style={styles.bannerContainer}>
       <div
+        ref={bannerRef}
         className={`kistas-bold-hover-root ${isActive ? 'is-active' : ''}`}
         onClick={() => {
           triggerMobileWave();
