@@ -604,6 +604,21 @@ runTest('Keşfet: ilk ekran veri ve logo işleme bütçesi proje sayısından ba
   assert.match(logoSource, /IntersectionObserver[\s\S]*rootMargin:\s*'320px'/i, 'Görünmeyen logoların tarayıcı işlemesi ertelenmiyor!');
 });
 
+runTest('Editoryal katalog: Google Play kaynakları açıkça belirtilmeli ve yönetilebilir kalmalı', () => {
+  const seedSource = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260915000001_seed_editorial_google_play_catalog.sql'),
+    'utf8'
+  );
+  const packageIds = [...seedSource.matchAll(/play\.google\.com\/store\/apps\/details\?id=([^&"']+)/g)]
+    .map((match) => match[1]);
+
+  assert.equal(new Set(packageIds).size, 7, 'Editoryal katalogda yedi benzersiz ve doğrulanmış paket olmalı!');
+  assert.equal(packageIds.length, 7, 'Her Google Play paketi yalnız bir kez kaynak bağlantısı olarak yer almalı!');
+  assert.doesNotMatch(seedSource, /id=hoklo\.android/i, 'Doğrulanamayan hoklo.android paketi eklenmemeli!');
+  assert.equal((seedSource.match(/Kaynak: Google Play\./g) || []).length, 7, 'Her proje Google Play kaynağını açıklamalı!');
+  assert.match(seedSource, /ON DELETE CASCADE/i, 'Editoryal görseller proje silinince temizlenebilir kalmalı!');
+});
+
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);
 
 if (failedTests > 0) {
