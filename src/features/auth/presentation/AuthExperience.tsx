@@ -291,7 +291,7 @@ const s = StyleSheet.create({
   typewriterCursor: { color: '#3269C7', fontWeight: '300' },
   subtitle: { color: '#677A93', fontSize: 13, lineHeight: 20, textAlign: 'center', marginTop: 12, marginBottom: 20 },
   socialRow: { flexDirection: 'row', justifyContent: 'center', gap: 16, marginTop: 8 },
-  social: { minHeight: 48, paddingHorizontal: 24, flexDirection: 'row', gap: 9, alignItems: 'center', borderWidth: 1, borderColor: '#CBD9EC', borderRadius: 28, backgroundColor: '#F6FAFF' },
+  social: { minHeight: 48, paddingHorizontal: 24, flex: 1, flexDirection: 'row', justifyContent: 'center', gap: 9, alignItems: 'center', borderWidth: 1, borderColor: '#CBD9EC', borderRadius: 28, backgroundColor: '#F6FAFF' },
   socialText: { fontSize: 13, fontWeight: '600', color: '#34445C' },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 12, marginVertical: 28 },
   line: { flex: 1, height: 1, backgroundColor: '#DCE5F1' },

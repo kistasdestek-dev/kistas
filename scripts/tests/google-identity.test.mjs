@@ -12,6 +12,9 @@ assert.match(button, /https:\/\/accounts\.google\.com\/gsi\/client/, 'Resmi Goog
 assert.match(button, /crypto\.getRandomValues\(new Uint8Array\(32\)\)/, 'Kriptografik Google nonce uretilmiyor.');
 assert.match(button, /crypto\.subtle\.digest\('SHA-256'/, 'Google nonce SHA-256 ile baglanmiyor.');
 assert.match(button, /use_fedcm_for_button:\s*true/, 'Google FedCM dugme akisi etkin degil.');
+assert.match(button, /shape:\s*'pill'/, 'Google dugmesi Kistas sosyal giris hap biciminde degil.');
+assert.match(button, /authGlass:\s*'true'/, 'Google dugmesinde Kistas cam yuzeyi kullanilmiyor.');
+assert.match(authExperience, /social:\s*\{[^}]*flex:\s*1,[^}]*borderRadius:\s*28/s, 'Sosyal giris dugmeleri esit genislikte ve hap biciminde degil.');
 assert.match(authService, /signInWithIdToken\(\{[\s\S]*provider:\s*'google'[\s\S]*token,[\s\S]*nonce,/m, 'Google ID token Supabase tarafinda nonce ile dogrulanmiyor.');
 assert.doesNotMatch(authExperience, /signInWithOAuth\(['"]google['"]\)/, 'Eski Supabase Google yonlendirmesi arayuzde kalmis.');
 assert.match(headers, /script-src[^;]*https:\/\/accounts\.google\.com\/gsi\/client/, 'Google Identity betigi CSP allowlistinde degil.');

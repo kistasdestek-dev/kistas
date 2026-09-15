@@ -26,7 +26,7 @@ interface GoogleIdentityApi {
         theme: 'outline';
         size: 'large';
         text: 'continue_with';
-        shape: 'rectangular';
+        shape: 'pill';
         logo_alignment: 'left';
         locale: 'tr';
         width: number;
@@ -42,6 +42,7 @@ declare global {
 }
 
 let googleScriptPromise: Promise<GoogleIdentityApi> | null = null;
+const glassWebProps = { dataSet: { authGlass: 'true' } };
 
 const loadGoogleIdentity = (): Promise<GoogleIdentityApi> => {
   if (window.google?.accounts?.id) return Promise.resolve(window.google);
@@ -120,7 +121,7 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
           theme: 'outline',
           size: 'large',
           text: 'continue_with',
-          shape: 'rectangular',
+          shape: 'pill',
           logo_alignment: 'left',
           locale: 'tr',
           width,
@@ -150,6 +151,7 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
 
   return (
     <View
+      {...glassWebProps}
       nativeID="google-identity-button"
       accessibilityLabel="Google ile devam et"
       pointerEvents={disabled ? 'none' : 'auto'}
@@ -167,10 +169,14 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
 const styles = StyleSheet.create({
   wrapper: {
     minWidth: 180,
-    minHeight: 44,
+    minHeight: 48,
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#CBD9EC',
+    borderRadius: 28,
+    backgroundColor: '#F6FAFF',
     overflow: 'hidden',
   },
   host: {
@@ -187,14 +193,14 @@ const styles = StyleSheet.create({
   },
   fallback: {
     minWidth: 180,
-    minHeight: 44,
+    minHeight: 48,
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#D4DCE8',
-    borderRadius: 4,
-    backgroundColor: '#FFFFFF',
+    borderRadius: 28,
+    backgroundColor: '#F6FAFF',
   },
   fallbackText: {
     color: '#252333',
