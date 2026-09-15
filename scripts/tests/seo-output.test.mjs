@@ -30,6 +30,7 @@ for (const route of SEO_ROUTES) {
   assert(html.includes(`<title>${route.title}</title>`), `Baslik ciktiya yazilmadi: ${route.path}`);
   assert(html.includes(`<link rel="canonical" href="${canonical}" />`), `Canonical eksik: ${route.path}`);
   assert(html.includes('id="kistas-page-schema-jsonld"'), `JSON-LD eksik: ${route.path}`);
+  assert(html.includes('<noscript><main id="seo-fallback"'), `SEO yedegi JavaScript acilisinda gorunebilir: ${route.path}`);
   assert(html.includes(`<h1>${escapeHtml(route.heading)}</h1>`), `Sayfaya ozgu taranabilir H1 eksik: ${route.path}`);
   assert(html.includes(`<p>${escapeHtml(route.lead)}</p>`), `Sayfaya ozgu taranabilir aciklama eksik: ${route.path}`);
   if (route.path === '/blog/' || route.ogType === 'article') {
