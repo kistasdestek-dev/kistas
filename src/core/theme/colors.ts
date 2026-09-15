@@ -1,6 +1,6 @@
 /** White surfaces, ink typography and restrained logo-blue interaction accents. */
 export const colors = {
-  brand: { ink: '#25364E', canvas: '#F1F5FA', surface: '#F8F9FB' },
+  brand: { ink: '#25364E', canvas: '#F1F5FA', surface: '#F8F9FB', scrollProgress: '#013196' },
   primary: {
     DEFAULT: '#3269C7', light: '#3269C7', hover: '#2858AA', dark: '#EAF2FC',
     surface: 'rgba(50,105,199,0.12)', gradientStart: '#EAF2FC', gradientEnd: '#3269C7',

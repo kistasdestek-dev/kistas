@@ -6,6 +6,7 @@ import { PremiumBackdrop, PremiumBackdropVariant } from './src/shared/components
 import { KistasLaunchScreen } from './src/shared/components/KistasLaunchScreen';
 import { KistasLogo } from './src/shared/components/KistasLogo';
 import { AuthSuccessOverlay } from './src/shared/components/AuthSuccessOverlay';
+import { GlobalScrollProgress } from './src/shared/components/GlobalScrollProgress';
 import { DiscoverScreen } from './src/features/listings/presentation/DiscoverScreen';
 import { ChatService } from './src/features/chat/application/ChatService';
 import { UserProfile } from './src/features/auth/domain/User';
@@ -1027,6 +1028,27 @@ function AppContent() {
     && (Platform.OS !== 'web' || isPhoneWeb);
   const showNavigation = !isCheckoutLikeOpen() && !isMobileChatOpen;
   const webContentWidth = Math.min(viewportWidth, 1600);
+  const scrollProgressPageKey = [
+    activeTab,
+    authView,
+    activeChatConvId || '',
+    selectedProject?.id || '',
+    editingProject?.id || '',
+    activeCategoryScreenId || '',
+    blogPostSlug || '',
+    isAdminDashboardOpen,
+    isPasswordRecovery,
+    isVisibilityManagementOpen,
+    isAccountSecurityOpen,
+    isAuthModalOpen,
+    isPrivacyOpen,
+    isBlogOpen,
+    isAboutOpen,
+    isHowItWorksOpen,
+    isShowcaseOpen,
+    isPopularOpen,
+    isNewOpen,
+  ].join(':');
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -1034,6 +1056,8 @@ function AppContent() {
         barStyle="dark-content"
         backgroundColor={theme.colors.brand.canvas}
       />
+
+      <GlobalScrollProgress pageKey={scrollProgressPageKey} />
 
       <PremiumBackdrop variant={backdropVariant} />
 
