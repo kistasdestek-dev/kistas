@@ -24,6 +24,7 @@ export interface PopularProjectPagerProps {
   onSelectProject?: (project: Listing) => void;
   onToggleUpvote?: (projectId: string) => void;
   onOpenBrowse?: () => void;
+  onOpenAll?: () => void;
 }
 
 const getProjectInitials = (title: string): string => {
@@ -45,6 +46,7 @@ export const PopularProjectPager: React.FC<PopularProjectPagerProps> = React.mem
   onSelectProject,
   onToggleUpvote: _onToggleUpvote,
   onOpenBrowse,
+  onOpenAll,
 }) => {
   const { width: viewportWidth } = useWindowDimensions();
   const isWideWeb = Platform.OS === 'web' && viewportWidth > breakpoints.phoneMax;
@@ -53,6 +55,8 @@ export const PopularProjectPager: React.FC<PopularProjectPagerProps> = React.mem
   const pageWidth = isWideWeb
     ? Math.min(Math.max((availableWebWidth - 62) / 2, 420), 612)
     : Math.min(viewportWidth - 42, 410);
+
+  const handlePressAll = onOpenAll || onOpenBrowse;
 
   const pages = useMemo(() => {
     const visibleProjects = projects.slice(0, 50);
@@ -70,19 +74,19 @@ export const PopularProjectPager: React.FC<PopularProjectPagerProps> = React.mem
       <View style={styles.popularHeaderRow}>
         <TouchableOpacity
           style={styles.popularHeadingCopy}
-          onPress={onOpenBrowse}
-          activeOpacity={onOpenBrowse ? 0.72 : 1}
-          disabled={!onOpenBrowse}
-          accessibilityRole={onOpenBrowse ? 'button' : undefined}
+          onPress={handlePressAll}
+          activeOpacity={handlePressAll ? 0.72 : 1}
+          disabled={!handlePressAll}
+          accessibilityRole={handlePressAll ? 'button' : undefined}
           accessibilityLabel={`${title} projelerini aç`}
         >
           <Text style={styles.popularTitle}>{title}</Text>
           <Text style={styles.popularSubtitle}>{subtitle}</Text>
         </TouchableOpacity>
 
-        {onOpenBrowse ? (
+        {handlePressAll ? (
           <Pressable
-            onPress={onOpenBrowse}
+            onPress={handlePressAll}
             style={({ hovered, pressed }: any) => [
               styles.seeAllGlassButton,
               hovered && styles.seeAllGlassButtonHover,

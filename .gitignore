@@ -16,6 +16,7 @@ build/
 web-build/
 .tmp-*/
 dist-web/
+.wrangler/
 remote-preview-url.txt
 expo-env.d.ts
 

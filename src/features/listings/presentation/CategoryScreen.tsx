@@ -38,6 +38,8 @@ export interface CategoryScreenProps {
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
   onScrollOffsetChange?: (offsetY: number) => void;
+  onOpenPopular?: (filters: { categoryId: string | null; platform: PlatformFilterType }) => void;
+  onOpenNew?: (filters: { categoryId: string | null; platform: PlatformFilterType }) => void;
 }
 
 type FeedSortType = 'trending' | 'top_voted' | 'newest';
@@ -65,6 +67,8 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
   onOpenHowItWorks,
   onOpenBlog,
   onScrollOffsetChange,
+  onOpenPopular,
+  onOpenNew,
 }) => {
   const { width: viewportWidth } = useWindowDimensions();
   const isWideWeb = Platform.OS === 'web' && viewportWidth > breakpoints.phoneMax;
@@ -390,6 +394,10 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
           projects={filteredPopularProjects}
           metric="weekly"
           onSelectProject={onSelectProject}
+          onOpenAll={onOpenPopular ? () => onOpenPopular({
+            categoryId,
+            platform: selectedPlatform,
+          }) : undefined}
         />
       ) : null}
 
@@ -401,6 +409,10 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
           projects={filteredNewProjects}
           metric="lifetime"
           onSelectProject={onSelectProject}
+          onOpenAll={onOpenNew ? () => onOpenNew({
+            categoryId,
+            platform: selectedPlatform,
+          }) : undefined}
         />
       ) : null}
     </View>
@@ -423,6 +435,9 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
     onSelectProject,
     filterForPresentation,
     handleOpenSponsor,
+    onOpenPopular,
+    onOpenNew,
+    categoryId,
   ]);
 
   const renderEmptyComponent = useCallback(() => {

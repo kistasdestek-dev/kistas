@@ -7,32 +7,34 @@ import { KistasLaunchScreen } from './src/shared/components/KistasLaunchScreen';
 import { KistasLogo } from './src/shared/components/KistasLogo';
 import { AuthSuccessOverlay } from './src/shared/components/AuthSuccessOverlay';
 import { DiscoverScreen } from './src/features/listings/presentation/DiscoverScreen';
-import { ProjectDetailScreen } from './src/features/listings/presentation/ProjectDetailScreen';
-import { CreateListingScreen } from './src/features/listings/presentation/CreateListingScreen';
-import { ConversationsScreen } from './src/features/chat/presentation/ConversationsScreen';
-import { ChatScreen } from './src/features/chat/presentation/ChatScreen';
 import { ChatService } from './src/features/chat/application/ChatService';
-import { CreditStoreScreen } from './src/features/credits/presentation/CreditStoreScreen';
-import { ProfileAndWalletScreen } from './src/features/profile/presentation/ProfileAndWalletScreen';
-import { VisibilityManagementScreen } from './src/features/profile/presentation/VisibilityManagementScreen';
-import { AccountSecurityScreen } from './src/features/profile/presentation/AccountSecurityScreen';
-import { LoginScreen } from './src/features/auth/presentation/LoginScreen';
-import { RegisterScreen } from './src/features/auth/presentation/RegisterScreen';
-import { PasswordRecoveryScreen } from './src/features/auth/presentation/PasswordRecoveryScreen';
-import { AdminDashboardScreen } from './src/features/admin/presentation/AdminDashboardScreen';
 import { UserProfile } from './src/features/auth/domain/User';
 import { Listing, PlatformType } from './src/features/listings/domain/Listing';
-import { BrowseScreen } from './src/features/listings/presentation/BrowseScreen';
-import { CategoryScreen } from './src/features/listings/presentation/CategoryScreen';
-import { ShowcaseLeadersScreen } from './src/features/listings/presentation/ShowcaseLeadersScreen';
-import { AboutScreen } from './src/features/about/presentation/AboutScreen';
-import { HowItWorksScreen } from './src/features/how-it-works/presentation/HowItWorksScreen';
-import { PrivacyPolicyScreen } from './src/features/legal/presentation/PrivacyPolicyScreen';
-import { BlogScreen } from './src/features/blog/presentation/BlogScreen';
 import { AppProviders, chatNotificationActions, useAuth, useAuthActions } from './src/core/state';
 import { breakpoints, theme } from './src/core/theme';
 import { readAnalyticsConsent, saveAnalyticsConsent, startAnalytics, trackPageView } from './src/core/analytics/analytics';
 import { applyPrivatePageSeo, applyPublicPageSeo } from './src/core/seo/WebSeoHelper';
+
+const ProjectDetailScreen = React.lazy(() => import('./src/features/listings/presentation/ProjectDetailScreen').then((module) => ({ default: module.ProjectDetailScreen })));
+const CreateListingScreen = React.lazy(() => import('./src/features/listings/presentation/CreateListingScreen').then((module) => ({ default: module.CreateListingScreen })));
+const ConversationsScreen = React.lazy(() => import('./src/features/chat/presentation/ConversationsScreen').then((module) => ({ default: module.ConversationsScreen })));
+const ChatScreen = React.lazy(() => import('./src/features/chat/presentation/ChatScreen').then((module) => ({ default: module.ChatScreen })));
+const CreditStoreScreen = React.lazy(() => import('./src/features/credits/presentation/CreditStoreScreen').then((module) => ({ default: module.CreditStoreScreen })));
+const ProfileAndWalletScreen = React.lazy(() => import('./src/features/profile/presentation/ProfileAndWalletScreen').then((module) => ({ default: module.ProfileAndWalletScreen })));
+const VisibilityManagementScreen = React.lazy(() => import('./src/features/profile/presentation/VisibilityManagementScreen').then((module) => ({ default: module.VisibilityManagementScreen })));
+const AccountSecurityScreen = React.lazy(() => import('./src/features/profile/presentation/AccountSecurityScreen').then((module) => ({ default: module.AccountSecurityScreen })));
+const LoginScreen = React.lazy(() => import('./src/features/auth/presentation/LoginScreen').then((module) => ({ default: module.LoginScreen })));
+const RegisterScreen = React.lazy(() => import('./src/features/auth/presentation/RegisterScreen').then((module) => ({ default: module.RegisterScreen })));
+const PasswordRecoveryScreen = React.lazy(() => import('./src/features/auth/presentation/PasswordRecoveryScreen').then((module) => ({ default: module.PasswordRecoveryScreen })));
+const AdminDashboardScreen = React.lazy(() => import('./src/features/admin/presentation/AdminDashboardScreen').then((module) => ({ default: module.AdminDashboardScreen })));
+const BrowseScreen = React.lazy(() => import('./src/features/listings/presentation/BrowseScreen').then((module) => ({ default: module.BrowseScreen })));
+const CategoryScreen = React.lazy(() => import('./src/features/listings/presentation/CategoryScreen').then((module) => ({ default: module.CategoryScreen })));
+const ShowcaseLeadersScreen = React.lazy(() => import('./src/features/listings/presentation/ShowcaseLeadersScreen').then((module) => ({ default: module.ShowcaseLeadersScreen })));
+const CuratedFeedScreen = React.lazy(() => import('./src/features/listings/presentation/CuratedFeedScreen').then((module) => ({ default: module.CuratedFeedScreen })));
+const AboutScreen = React.lazy(() => import('./src/features/about/presentation/AboutScreen').then((module) => ({ default: module.AboutScreen })));
+const HowItWorksScreen = React.lazy(() => import('./src/features/how-it-works/presentation/HowItWorksScreen').then((module) => ({ default: module.HowItWorksScreen })));
+const PrivacyPolicyScreen = React.lazy(() => import('./src/features/legal/presentation/PrivacyPolicyScreen').then((module) => ({ default: module.PrivacyPolicyScreen })));
+const BlogScreen = React.lazy(() => import('./src/features/blog/presentation/BlogScreen').then((module) => ({ default: module.BlogScreen })));
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -82,7 +84,7 @@ const NavigationBackdrop = Platform.OS === 'android' ? BlurTargetView : View;
 
 interface WebRouteState {
   tab: TabKey;
-  screen: 'none' | 'about' | 'how-it-works' | 'privacy' | 'blog' | 'category' | 'showcase';
+  screen: 'none' | 'about' | 'how-it-works' | 'privacy' | 'blog' | 'category' | 'showcase' | 'popular' | 'new';
   blogSlug?: string | null;
   categoryId?: string | null;
   platform?: PlatformType | 'all';
@@ -126,6 +128,28 @@ const parseWebRoute = (): WebRouteState => {
     return {
       tab: 'discover',
       screen: 'showcase',
+      categoryId: rawCategoryId && UUID_PATTERN.test(rawCategoryId) ? rawCategoryId : null,
+      platform: rawPlatform && SHOWCASE_PLATFORMS.includes(rawPlatform) ? rawPlatform : 'all',
+    };
+  }
+  if (primary === 'popular' || primary === 'populer') {
+    const params = new URLSearchParams(rawQuery);
+    const rawCategoryId = params.get('category');
+    const rawPlatform = params.get('platform') as PlatformType | 'all' | null;
+    return {
+      tab: 'discover',
+      screen: 'popular',
+      categoryId: rawCategoryId && UUID_PATTERN.test(rawCategoryId) ? rawCategoryId : null,
+      platform: rawPlatform && SHOWCASE_PLATFORMS.includes(rawPlatform) ? rawPlatform : 'all',
+    };
+  }
+  if (primary === 'new' || primary === 'yeni' || primary === 'yeni-cikanlar') {
+    const params = new URLSearchParams(rawQuery);
+    const rawCategoryId = params.get('category');
+    const rawPlatform = params.get('platform') as PlatformType | 'all' | null;
+    return {
+      tab: 'discover',
+      screen: 'new',
       categoryId: rawCategoryId && UUID_PATTERN.test(rawCategoryId) ? rawCategoryId : null,
       platform: rawPlatform && SHOWCASE_PLATFORMS.includes(rawPlatform) ? rawPlatform : 'all',
     };
@@ -188,6 +212,12 @@ function AppContent() {
   const [showcaseFilters, setShowcaseFilters] = useState<ShowcaseFilters>({
     categoryId: initialWebRoute.screen === 'showcase' ? initialWebRoute.categoryId || null : null,
     platform: initialWebRoute.screen === 'showcase' ? initialWebRoute.platform || 'all' : 'all',
+  });
+  const [isPopularOpen, setIsPopularOpen] = useState(initialWebRoute.screen === 'popular');
+  const [isNewOpen, setIsNewOpen] = useState(initialWebRoute.screen === 'new');
+  const [curatedFilters, setCuratedFilters] = useState<ShowcaseFilters>({
+    categoryId: (initialWebRoute.screen === 'popular' || initialWebRoute.screen === 'new') ? initialWebRoute.categoryId || null : null,
+    platform: (initialWebRoute.screen === 'popular' || initialWebRoute.screen === 'new') ? initialWebRoute.platform || 'all' : 'all',
   });
   const isHandlingPopstateRef = useRef(false);
   const [pendingSupportAfterAuth, setPendingSupportAfterAuth] = useState(false);
@@ -265,11 +295,13 @@ function AppContent() {
     if (isHowItWorksOpen) return applyPublicPageSeo('how-it-works');
     if (isPrivacyOpen) return applyPublicPageSeo('privacy');
     if (isShowcaseOpen) return applyPublicPageSeo('showcase');
+    if (isPopularOpen) return applyPublicPageSeo('popular');
+    if (isNewOpen) return applyPublicPageSeo('new');
     if (activeCategoryScreenId || ['messages', 'create', 'credits', 'profile'].includes(activeTab)) {
       return applyPrivatePageSeo();
     }
     return applyPublicPageSeo(activeTab === 'browse' ? 'browse' : 'home');
-  }, [activeTab, activeCategoryScreenId, isAboutOpen, isBlogOpen, isHowItWorksOpen, isPrivacyOpen, isShowcaseOpen]);
+  }, [activeTab, activeCategoryScreenId, isAboutOpen, isBlogOpen, isHowItWorksOpen, isPrivacyOpen, isShowcaseOpen, isPopularOpen, isNewOpen]);
 
   // SPA sayfalarını yalnızca isteğe bağlı analitik izni verildikten sonra ölç.
   useEffect(() => {
@@ -299,6 +331,12 @@ function AppContent() {
     } else if (isShowcaseOpen) {
       path = '/showcase';
       title = 'Günün Vitrini · Kıstas';
+    } else if (isPopularOpen) {
+      path = '/popular';
+      title = 'Popüler Projeler · Kıstas';
+    } else if (isNewOpen) {
+      path = '/new';
+      title = 'Yeni Çıkanlar · Kıstas';
     } else {
       switch (activeTab) {
         case 'discover':
@@ -339,6 +377,8 @@ function AppContent() {
     isPrivacyOpen,
     activeCategoryScreenId,
     isShowcaseOpen,
+    isPopularOpen,
+    isNewOpen,
     analyticsConsent,
     isPasswordRecovery,
   ]);
@@ -675,6 +715,40 @@ function AppContent() {
           categoryId: route.categoryId || null,
           platform: route.platform || 'all',
         });
+        setIsPopularOpen(false);
+        setIsNewOpen(false);
+        setIsAboutOpen(false);
+        setIsBlogOpen(false);
+        setBlogPostSlug(null);
+        setIsHowItWorksOpen(false);
+        setIsPrivacyOpen(false);
+        setActiveCategoryScreenId(null);
+        setSelectedProject(null);
+        setActiveTab('discover');
+      } else if (route.screen === 'popular') {
+        setIsPopularOpen(true);
+        setIsNewOpen(false);
+        setCuratedFilters({
+          categoryId: route.categoryId || null,
+          platform: route.platform || 'all',
+        });
+        setIsShowcaseOpen(false);
+        setIsAboutOpen(false);
+        setIsBlogOpen(false);
+        setBlogPostSlug(null);
+        setIsHowItWorksOpen(false);
+        setIsPrivacyOpen(false);
+        setActiveCategoryScreenId(null);
+        setSelectedProject(null);
+        setActiveTab('discover');
+      } else if (route.screen === 'new') {
+        setIsNewOpen(true);
+        setIsPopularOpen(false);
+        setCuratedFilters({
+          categoryId: route.categoryId || null,
+          platform: route.platform || 'all',
+        });
+        setIsShowcaseOpen(false);
         setIsAboutOpen(false);
         setIsBlogOpen(false);
         setBlogPostSlug(null);
@@ -685,6 +759,8 @@ function AppContent() {
         setActiveTab('discover');
       } else {
         setIsShowcaseOpen(false);
+        setIsPopularOpen(false);
+        setIsNewOpen(false);
         setIsAboutOpen(false);
         setIsBlogOpen(false);
         setBlogPostSlug(null);
@@ -739,6 +815,18 @@ function AppContent() {
       if (showcaseFilters.platform !== 'all') params.set('platform', showcaseFilters.platform);
       const query = params.toString();
       targetPath = `showcase${query ? `?${query}` : ''}`;
+    } else if (isPopularOpen) {
+      const params = new URLSearchParams();
+      if (curatedFilters.categoryId) params.set('category', curatedFilters.categoryId);
+      if (curatedFilters.platform !== 'all') params.set('platform', curatedFilters.platform);
+      const query = params.toString();
+      targetPath = `popular${query ? `?${query}` : ''}`;
+    } else if (isNewOpen) {
+      const params = new URLSearchParams();
+      if (curatedFilters.categoryId) params.set('category', curatedFilters.categoryId);
+      if (curatedFilters.platform !== 'all') params.set('platform', curatedFilters.platform);
+      const query = params.toString();
+      targetPath = `new${query ? `?${query}` : ''}`;
     } else {
       targetPath = activeTab === 'discover' ? 'discover' : activeTab;
     }
@@ -761,11 +849,13 @@ function AppContent() {
     } catch {
       window.location.hash = targetHash;
     }
-  }, [activeTab, isBlogOpen, blogPostSlug, isAboutOpen, isHowItWorksOpen, isPrivacyOpen, activeCategoryScreenId, isShowcaseOpen, showcaseFilters, isPasswordRecovery]);
+  }, [activeTab, isBlogOpen, blogPostSlug, isAboutOpen, isHowItWorksOpen, isPrivacyOpen, activeCategoryScreenId, isShowcaseOpen, showcaseFilters, isPopularOpen, isNewOpen, curatedFilters, isPasswordRecovery]);
 
   const handleTabChange = useCallback((tab: TabKey) => {
-    const wasStandalonePageOpen = isAboutOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || Boolean(activeCategoryScreenId);
+    const wasStandalonePageOpen = isAboutOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || isPopularOpen || isNewOpen || Boolean(activeCategoryScreenId);
     if (isShowcaseOpen) setIsShowcaseOpen(false);
+    if (isPopularOpen) setIsPopularOpen(false);
+    if (isNewOpen) setIsNewOpen(false);
     if (isAboutOpen) setIsAboutOpen(false);
     if (isPrivacyOpen) setIsPrivacyOpen(false);
     if (isHowItWorksOpen) setIsHowItWorksOpen(false);
@@ -900,8 +990,32 @@ function AppContent() {
     updateNavCompact(false);
   }, [updateNavCompact]);
 
+  const handleOpenPopular = useCallback((filters: { categoryId: string | null; platform: PlatformType | 'all' }) => {
+    setCuratedFilters({
+      categoryId: filters.categoryId || null,
+      platform: filters.platform || 'all',
+    });
+    setSelectedProject(null);
+    setIsShowcaseOpen(false);
+    setIsNewOpen(false);
+    setIsPopularOpen(true);
+    updateNavCompact(false);
+  }, [updateNavCompact]);
+
+  const handleOpenNew = useCallback((filters: { categoryId: string | null; platform: PlatformType | 'all' }) => {
+    setCuratedFilters({
+      categoryId: filters.categoryId || null,
+      platform: filters.platform || 'all',
+    });
+    setSelectedProject(null);
+    setIsShowcaseOpen(false);
+    setIsPopularOpen(false);
+    setIsNewOpen(true);
+    updateNavCompact(false);
+  }, [updateNavCompact]);
+
   const isCheckoutLikeOpen = () => {
-    return isPasswordRecovery || isAuthModalOpen || isAuthSuccessVisible || !!selectedProject || isAdminDashboardOpen || isVisibilityManagementOpen || isAccountSecurityOpen || isAboutOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen;
+    return isPasswordRecovery || isAuthModalOpen || isAuthSuccessVisible || !!selectedProject || isAdminDashboardOpen || isVisibilityManagementOpen || isAccountSecurityOpen || isAboutOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || isPopularOpen || isNewOpen;
   };
 
   const backdropVariant: PremiumBackdropVariant = selectedProject
@@ -935,6 +1049,7 @@ function AppContent() {
           },
         ]}
       >
+        <React.Suspense fallback={<View style={styles.flexOne} />}>
         {/* Modal Ekranlar (Overlay / Drill-down) */}
         {isPasswordRecovery ? (
           <PasswordRecoveryScreen onComplete={async () => {
@@ -1102,6 +1217,44 @@ function AppContent() {
             }}
             onSelectProject={(project) => setSelectedProject(project)}
           />
+        ) : isPopularOpen ? (
+          <CuratedFeedScreen
+            mode="popular"
+            initialCategoryId={curatedFilters.categoryId}
+            initialPlatform={curatedFilters.platform}
+            onBack={() => {
+              if (Platform.OS === 'web' && typeof window !== 'undefined' && (window.location.hash.startsWith('#/popular') || window.location.hash.startsWith('#/populer'))) {
+                window.history.back();
+              } else {
+                setIsPopularOpen(false);
+              }
+            }}
+            onSelectProject={(project) => setSelectedProject(project)}
+            onOpenAbout={handleOpenAbout}
+            onOpenPrivacy={handleOpenPrivacy}
+            onOpenSupport={handleOpenSupport}
+            onOpenHowItWorks={handleOpenHowItWorks}
+            onOpenBlog={handleOpenBlog}
+          />
+        ) : isNewOpen ? (
+          <CuratedFeedScreen
+            mode="new"
+            initialCategoryId={curatedFilters.categoryId}
+            initialPlatform={curatedFilters.platform}
+            onBack={() => {
+              if (Platform.OS === 'web' && typeof window !== 'undefined' && (window.location.hash.startsWith('#/new') || window.location.hash.startsWith('#/yeni'))) {
+                window.history.back();
+              } else {
+                setIsNewOpen(false);
+              }
+            }}
+            onSelectProject={(project) => setSelectedProject(project)}
+            onOpenAbout={handleOpenAbout}
+            onOpenPrivacy={handleOpenPrivacy}
+            onOpenSupport={handleOpenSupport}
+            onOpenHowItWorks={handleOpenHowItWorks}
+            onOpenBlog={handleOpenBlog}
+          />
         ) : activeCategoryScreenId ? (
           <CategoryScreen
             categoryId={activeCategoryScreenId}
@@ -1115,6 +1268,8 @@ function AppContent() {
               setActiveCategoryScreenId(null);
               setActiveTab('credits');
             }}
+            onOpenPopular={handleOpenPopular}
+            onOpenNew={handleOpenNew}
           />
         ) : activeTab === 'discover' ? (
           <DiscoverScreen
@@ -1133,6 +1288,8 @@ function AppContent() {
             onOpenHowItWorks={handleOpenHowItWorks}
             onOpenBlog={handleOpenBlog}
             onOpenShowcase={handleOpenShowcase}
+            onOpenPopular={handleOpenPopular}
+            onOpenNew={handleOpenNew}
             onScrollOffsetChange={Platform.OS === 'web' ? undefined : handleContentScroll}
           />
         ) : activeTab === 'browse' ? (
@@ -1226,6 +1383,7 @@ function AppContent() {
             />
           )
         )}
+        </React.Suspense>
       </NavigationBackdrop>
 
       {/* Modern Saf Mobil Alt Gezinme Barı (Bottom Navigation) */}

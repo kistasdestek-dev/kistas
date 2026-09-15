@@ -47,6 +47,14 @@ interface DiscoverScreenProps {
     searchQuery: string;
     feedSort: FeedSortType;
   }) => void;
+  onOpenPopular?: (filters: {
+    categoryId: string | null;
+    platform: PlatformFilterType;
+  }) => void;
+  onOpenNew?: (filters: {
+    categoryId: string | null;
+    platform: PlatformFilterType;
+  }) => void;
 }
 
 type FeedSortType = 'trending' | 'top_voted' | 'newest';
@@ -70,6 +78,8 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
   onOpenBlog,
   onScrollOffsetChange,
   onOpenShowcase,
+  onOpenPopular,
+  onOpenNew,
 }) => {
   const { width: viewportWidth } = useWindowDimensions();
   const isWideWeb = Platform.OS === 'web' && viewportWidth > breakpoints.phoneMax;
@@ -330,6 +340,10 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
           metric="weekly"
           onSelectProject={onSelectListing}
           onOpenBrowse={onOpenBrowse}
+          onOpenAll={onOpenPopular ? () => onOpenPopular({
+            categoryId: selectedCategory,
+            platform: selectedPlatform,
+          }) : undefined}
         />
       ) : null}
 
@@ -341,6 +355,10 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
           metric="lifetime"
           onSelectProject={onSelectListing}
           onOpenBrowse={onOpenBrowse}
+          onOpenAll={onOpenNew ? () => onOpenNew({
+            categoryId: selectedCategory,
+            platform: selectedPlatform,
+          }) : undefined}
         />
       ) : null}
     </View>
@@ -363,6 +381,8 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
     isWideWeb,
     handleBrandPress,
     onOpenShowcase,
+    onOpenPopular,
+    onOpenNew,
   ]);
 
   const renderEmptyComponent = useCallback(() => {
