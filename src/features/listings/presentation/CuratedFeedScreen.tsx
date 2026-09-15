@@ -6,7 +6,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -49,7 +48,7 @@ const PLATFORMS: ReadonlyArray<{ id: PlatformType | 'all'; label: string; icon: 
   { id: 'SaaS', label: 'SaaS', icon: 'cloud-outline' },
 ];
 
-const rankGradients = (rank: number): [string, string] => {
+const rankColors = (rank: number): [string, string] => {
   if (rank === 1) return ['#FFD700', '#F59E0B'];
   if (rank === 2) return ['#E2E8F0', '#94A3B8'];
   if (rank === 3) return ['#FED7AA', '#EA580C'];
@@ -85,7 +84,6 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategoryId);
   const [selectedPlatform, setSelectedPlatform] = useState<PlatformType | 'all'>(initialPlatform);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const [projects, setProjects] = useState<Listing[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -132,26 +130,17 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
     void loadProjects();
   }, [loadProjects]);
 
-  // Arama ve Platform İstemci Filtresi
+  // Platform Filtresi
   const filteredProjects = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
     return projects.filter((item) => {
       if (selectedPlatform !== 'all') {
         if (!item.platforms || !item.platforms.includes(selectedPlatform)) {
           return false;
         }
       }
-      if (q) {
-        const titleMatch = item.title.toLowerCase().includes(q);
-        const taglineMatch = item.tagline?.toLowerCase().includes(q);
-        const makerMatch = (item.seller?.fullName || item.developerName || '').toLowerCase().includes(q);
-        if (!titleMatch && !taglineMatch && !makerMatch) {
-          return false;
-        }
-      }
       return true;
     });
-  }, [projects, searchQuery, selectedPlatform]);
+  }, [projects, selectedPlatform]);
 
   const activeCategoryObj = useMemo(
     () => categories.find((c) => c.id === selectedCategory),
@@ -161,10 +150,9 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
   const columnCount = width <= breakpoints.phoneMax ? 1 : width <= breakpoints.tabletMax ? 2 : 3;
   const horizontalPadding = width <= breakpoints.phoneMax ? 16 : 28;
   const contentWidth = Math.min(width, 1440) - horizontalPadding * 2;
-  const cardWidth = Math.max(280, (contentWidth - (columnCount - 1) * 16) / columnCount);
+  const cardWidth = Math.max(280, (contentWidth - (columnCount - 1) * 18) / columnCount);
 
   const handleResetFilters = () => {
-    setSearchQuery('');
     setSelectedPlatform('all');
     setSelectedCategory(null);
   };
@@ -177,7 +165,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
     >
       <KistasTopBrandBar onPress={onBack} style={styles.brandBar} />
 
-      {/* Hero Başlık ve Aksiyon Satırı */}
+      {/* Hero Başlık ve Kıstas Geri İkonu */}
       <View style={styles.heroRow}>
         <GlassIconButton icon="arrow-back" onPress={onBack} accessibilityLabel="Geri dön" />
         <View style={styles.heroCopy}>
@@ -215,64 +203,44 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
         </View>
       </View>
 
-      {/* Kontrol Paneli: Canlı Arama ve Filtreler */}
-      <View style={styles.controlsContainer}>
-        {/* Canlı Arama Girdisi */}
-        <View style={styles.searchBar}>
-          <Ionicons name="search-outline" size={17} color="#3269C7" style={styles.searchIcon} />
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder={`${isPopular ? 'Popüler' : 'Yeni'} projelerde veya geliştiricilerde ara...`}
-            placeholderTextColor="#8292A8"
-            style={styles.searchInput}
-            returnKeyType="search"
-          />
-          {searchQuery ? (
-            <Pressable
-              onPress={() => setSearchQuery('')}
-              style={styles.searchClearButton}
-              accessibilityLabel="Aramayı temizle"
-            >
-              <Ionicons name="close-circle" size={16} color="#8292A8" />
-            </Pressable>
-          ) : null}
+      {/* Sade ve Neumorphic Filtreler Paneli (Arama Kaldırıldı) */}
+      <View style={styles.filterSection}>
+        {/* Platform Filtre Segmenti */}
+        <View style={styles.platformInsetTrack}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.platformScroll}
+          >
+            {PLATFORMS.map((plat) => {
+              const isSelected = selectedPlatform === plat.id;
+              return (
+                <Pressable
+                  key={plat.id}
+                  onPress={() => setSelectedPlatform(plat.id)}
+                  style={({ pressed }) => [
+                    styles.platformPill,
+                    isSelected && styles.platformPillActive,
+                    pressed && styles.platformPillPressed,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${plat.label} platformunu filtrele`}
+                >
+                  <Ionicons
+                    name={plat.icon}
+                    size={14}
+                    color={isSelected ? NEO.ink : '#65748A'}
+                  />
+                  <Text style={[styles.platformPillText, isSelected && styles.platformPillTextActive]}>
+                    {plat.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         </View>
 
-        {/* Platform Seçim Hapları */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.platformScroll}
-        >
-          {PLATFORMS.map((plat) => {
-            const isSelected = selectedPlatform === plat.id;
-            return (
-              <Pressable
-                key={plat.id}
-                onPress={() => setSelectedPlatform(plat.id)}
-                style={({ pressed }) => [
-                  styles.platformPill,
-                  isSelected && styles.platformPillActive,
-                  pressed && styles.platformPillPressed,
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={`${plat.label} platformunu filtrele`}
-              >
-                <Ionicons
-                  name={plat.icon}
-                  size={14}
-                  color={isSelected ? '#1D4ED8' : '#64748B'}
-                />
-                <Text style={[styles.platformPillText, isSelected && styles.platformPillTextActive]}>
-                  {plat.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-
-        {/* Kategori Seçim Hapları */}
+        {/* Kategori Filtre Hapları */}
         {categories.length > 0 ? (
           <ScrollView
             horizontal
@@ -321,15 +289,15 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
         ) : null}
       </View>
 
-      {/* Sonuç Sayacı */}
+      {/* Sade Sonuç Sayacı */}
       <View style={styles.resultsMetaRow}>
         <Text style={styles.resultsCountText}>
           {isLoading ? 'Yükleniyor...' : `${filteredProjects.length} proje listeleniyor`}
         </Text>
-        {searchQuery || selectedPlatform !== 'all' || selectedCategory !== null ? (
+        {selectedPlatform !== 'all' || selectedCategory !== null ? (
           <Pressable onPress={handleResetFilters} style={styles.resetFiltersButton}>
-            <Ionicons name="refresh-outline" size={13} color="#2563EB" />
-            <Text style={styles.resetFiltersText}>Filtreleri Temizle</Text>
+            <Ionicons name="refresh-outline" size={13} color="#3269C7" />
+            <Text style={styles.resetFiltersText}>Filtreleri Sıfırla</Text>
           </Pressable>
         ) : null}
       </View>
@@ -350,10 +318,10 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
         </View>
       ) : filteredProjects.length === 0 ? (
         <View style={styles.stateCard}>
-          <GlassIconButton icon="search-outline" accessibilityLabel="Sonuç bulunamadı" />
-          <Text style={styles.stateTitle}>Eşleşen proje bulunamadı</Text>
+          <GlassIconButton icon="layers-outline" accessibilityLabel="Sonuç bulunamadı" />
+          <Text style={styles.stateTitle}>Bu filtrede proje bulunamadı</Text>
           <Text style={styles.stateText}>
-            Arama kriterlerinize veya seçilen filtrelere uyan proje bulunamadı.
+            Seçilen kategori veya platform kriterine uyan proje henüz eklenmedi.
           </Text>
           <Pressable onPress={handleResetFilters} style={styles.stateActionButton}>
             <Text style={styles.stateActionButtonText}>Filtreleri Sıfırla</Text>
@@ -363,7 +331,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
         <View style={styles.grid}>
           {filteredProjects.map((project, index) => {
             const rank = index + 1;
-            const rankColors = rankGradients(rank);
+            const colors = rankColors(rank);
             const supportScore = isPopular
               ? project.weeklySupportCount || project.upvotesCount || 0
               : project.upvotesCount || 0;
@@ -381,28 +349,34 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
                   pressed && styles.cardPressed,
                 ]}
               >
-                {/* Üst Satır: Rozetler ve Metrik */}
+                {/* Üst Satır: Neumorphic Rozetler ve Metrik */}
                 <View style={styles.cardHeaderRow}>
                   {isPopular ? (
-                    <LinearGradient colors={rankColors} style={styles.rankBadge}>
-                      <Text style={styles.rankNumber}>{rank <= 3 ? `#${rank}` : `#${rank}`}</Text>
-                    </LinearGradient>
+                    rank <= 3 ? (
+                      <LinearGradient colors={colors} style={styles.topRankBadge}>
+                        <Text style={styles.topRankText}>#{rank}</Text>
+                      </LinearGradient>
+                    ) : (
+                      <View style={styles.rankBadgeInset}>
+                        <Text style={styles.rankNumberInset}>#{rank}</Text>
+                      </View>
+                    )
                   ) : (
                     <View style={styles.freshnessBadge}>
-                      <Ionicons name="sparkles" size={11} color="#2563EB" />
+                      <Ionicons name="sparkles" size={12} color="#2563EB" />
                       <Text style={styles.freshnessText}>{relativeDate}</Text>
                     </View>
                   )}
 
                   <View style={styles.supportBadge}>
-                    <Ionicons name="arrow-up" size={12} color="#16A34A" />
+                    <Ionicons name="arrow-up" size={13} color="#0FA336" />
                     <Text style={styles.supportScoreText}>{supportScore}</Text>
                   </View>
                 </View>
 
-                {/* Orta Satır: Logo ve Başlık Bilgisi */}
+                {/* Orta Satır: Kıstas Neumorphic Logo Yuvası ve Başlık Bilgisi */}
                 <View style={styles.cardBodyRow}>
-                  <View style={styles.logoContainer}>
+                  <View style={styles.logoWell}>
                     {project.logoUrl ? (
                       <AutoTransparentLogo
                         src={project.logoUrl}
@@ -424,7 +398,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
                         {project.seller?.fullName || project.developerName || 'Bağımsız Geliştirici'}
                       </Text>
                       {project.seller?.isVerified ? (
-                        <Ionicons name="checkmark-circle" size={13} color="#2563EB" style={styles.verifiedIcon} />
+                        <Ionicons name="checkmark-circle" size={13} color="#3269C7" style={styles.verifiedIcon} />
                       ) : null}
                     </View>
                   </View>
@@ -435,7 +409,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
                   {project.tagline || project.description || 'Açıklama belirtilmedi.'}
                 </Text>
 
-                {/* Alt Satır: Platform Etiketleri ve İncele Butonu */}
+                {/* Alt Satır: Neumorphic Platform Etiketleri ve Kıstas GlassIconButton */}
                 <View style={styles.cardFooterRow}>
                   <View style={styles.platformTagsRow}>
                     {(project.platforms || ['Web']).slice(0, 3).map((plat) => (
@@ -446,13 +420,13 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
                   </View>
                   <GlassIconButton
                     icon="arrow-forward"
-                    size={34}
-                    iconSize={15}
+                    size={36}
+                    iconSize={16}
                     accessibilityLabel={`${project.title} detayına git`}
                   />
                 </View>
 
-                {/* İnce Cam Çerçeve Efekti */}
+                {/* Kıstas İnce Cam Işıklandırma Kenarlığı (Inner Rim) */}
                 <View pointerEvents="none" style={styles.cardInnerRim} />
               </Pressable>
             );
@@ -475,7 +449,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: NEO.surface,
   },
   content: {
     width: '100%',
@@ -491,7 +465,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginTop: 12,
-    marginBottom: 18,
+    marginBottom: 20,
   },
   heroCopy: {
     flex: 1,
@@ -507,20 +481,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    paddingHorizontal: 9,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
     borderWidth: 1,
   },
   popularBadge: {
-    backgroundColor: 'rgba(254,243,199,0.7)',
+    backgroundColor: 'rgba(254,243,199,0.85)',
     borderColor: 'rgba(245,158,11,0.3)',
   },
   popularBadgeText: {
     color: '#D97706',
   },
   newBadge: {
-    backgroundColor: 'rgba(239,246,255,0.85)',
+    backgroundColor: 'rgba(239,246,255,0.9)',
     borderColor: 'rgba(59,130,246,0.3)',
   },
   newBadgeText: {
@@ -535,13 +509,13 @@ const styles = StyleSheet.create({
   categoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    gap: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
     borderRadius: 999,
-    backgroundColor: 'rgba(241,245,250,0.85)',
+    backgroundColor: '#EAF0F7',
     borderWidth: 1,
-    borderColor: 'rgba(50,105,199,0.18)',
+    borderColor: 'rgba(255,255,255,0.88)',
   },
   categoryBadgeText: {
     ...theme.typography.kistas,
@@ -553,10 +527,10 @@ const styles = StyleSheet.create({
     ...theme.typography.kistas,
     marginTop: 2,
     color: NEO.ink,
-    fontSize: 32,
-    lineHeight: 38,
+    fontSize: 34,
+    lineHeight: 40,
     fontWeight: '800',
-    letterSpacing: -0.9,
+    letterSpacing: -1.1,
   },
   subtitle: {
     ...theme.typography.kistas,
@@ -566,97 +540,105 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: '600',
   },
-  controlsContainer: {
-    marginTop: 10,
+  filterSection: {
+    marginTop: 8,
     marginBottom: 16,
     gap: 12,
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 46,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
+  platformInsetTrack: {
+    backgroundColor: '#EAF0F7',
     borderWidth: 1,
-    borderColor: 'rgba(50,105,199,0.22)',
-    shadowColor: NEO.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    ...theme.typography.kistas,
-    flex: 1,
-    fontSize: 13,
-    color: NEO.ink,
-    paddingVertical: Platform.OS === 'web' ? 10 : 6,
-  },
-  searchClearButton: {
-    padding: 4,
+    borderColor: 'rgba(255,255,255,0.88)',
+    borderRadius: 18,
+    padding: 5,
+    ...Platform.select({
+      web: {
+        boxShadow: 'inset 2px 2px 6px rgba(130,146,168,0.15), inset -2px -2px 6px rgba(255,255,255,0.94)',
+      },
+    }),
   },
   platformScroll: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 2,
+    gap: 6,
   },
   platformPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    minHeight: 34,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    backgroundColor: '#F8FAFC',
+    minHeight: 36,
+    paddingHorizontal: 13,
+    borderRadius: 13,
+    backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: 'rgba(148,163,184,0.3)',
+    borderColor: 'transparent',
   },
   platformPillActive: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#3B82F6',
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 2,
+    backgroundColor: '#F7FAFF',
+    borderWidth: 1,
+    borderColor: NEO.border,
+    ...Platform.select({
+      web: {
+        boxShadow: '-3px -3px 8px rgba(255,255,255,0.95), 3px 3px 8px rgba(130,146,168,0.18)',
+      },
+      default: {
+        shadowColor: NEO.shadow,
+        shadowOffset: { width: 3, height: 4 },
+        shadowOpacity: 0.16,
+        shadowRadius: 6,
+        elevation: 3,
+      },
+    }),
   },
   platformPillPressed: {
-    transform: [{ scale: 0.98 }],
+    opacity: 0.8,
   },
   platformPillText: {
     ...theme.typography.kistas,
     fontSize: 11.5,
     fontWeight: '600',
-    color: '#64748B',
+    color: '#65748A',
   },
   platformPillTextActive: {
-    color: '#1D4ED8',
-    fontWeight: '700',
+    color: NEO.ink,
+    fontWeight: '800',
   },
   categoryScroll: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
   },
   categoryPill: {
-    minHeight: 30,
-    paddingHorizontal: 11,
+    minHeight: 32,
+    paddingHorizontal: 12,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.85)',
+    backgroundColor: '#F1F5FA',
     borderWidth: 1,
-    borderColor: 'rgba(50,105,199,0.18)',
+    borderColor: NEO.border,
+    ...Platform.select({
+      web: {
+        boxShadow: '-2px -2px 6px rgba(255,255,255,0.9), 2px 2px 6px rgba(130,146,168,0.14)',
+      },
+      default: {
+        shadowColor: NEO.shadow,
+        shadowOffset: { width: 2, height: 3 },
+        shadowOpacity: 0.12,
+        shadowRadius: 5,
+        elevation: 2,
+      },
+    }),
   },
   categoryPillActive: {
-    backgroundColor: '#3269C7',
-    borderColor: '#3269C7',
+    backgroundColor: NEO.global,
+    borderColor: 'rgba(50,105,199,0.22)',
+    ...Platform.select({
+      web: {
+        boxShadow: 'inset 1px 1px 4px rgba(50,105,199,0.15), inset -1px -1px 4px rgba(255,255,255,0.9)',
+      },
+    }),
   },
   categoryPillPressed: {
     transform: [{ scale: 0.97 }],
@@ -665,11 +647,11 @@ const styles = StyleSheet.create({
     ...theme.typography.kistas,
     fontSize: 11,
     fontWeight: '600',
-    color: '#475569',
+    color: '#58749D',
   },
   categoryPillTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    color: NEO.ink,
+    fontWeight: '800',
   },
   resultsMetaRow: {
     flexDirection: 'row',
@@ -682,81 +664,117 @@ const styles = StyleSheet.create({
     ...theme.typography.kistas,
     fontSize: 12,
     fontWeight: '700',
-    color: '#64748B',
+    color: '#65748A',
   },
   resetFiltersButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingVertical: 2,
-    paddingHorizontal: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    backgroundColor: '#EAF0F7',
   },
   resetFiltersText: {
     ...theme.typography.kistas,
     fontSize: 11.5,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#3269C7',
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
+    gap: 18,
     alignItems: 'flex-start',
   },
   card: {
-    minHeight: 180,
-    padding: 16,
-    borderRadius: 22,
-    backgroundColor: '#FFFFFF',
+    minHeight: 188,
+    padding: 18,
+    borderRadius: 24,
+    backgroundColor: NEO.surface,
     borderWidth: 1,
-    borderColor: 'rgba(50,105,199,0.18)',
-    shadowColor: NEO.shadow,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 14,
-    elevation: 4,
+    borderColor: NEO.border,
     position: 'relative',
     overflow: 'hidden',
+    ...Platform.select({
+      web: {
+        boxShadow: '-7px -7px 18px rgba(255,255,255,0.94), 8px 9px 22px rgba(130,146,168,0.22)',
+      },
+      default: {
+        shadowColor: NEO.shadow,
+        shadowOffset: { width: 7, height: 9 },
+        shadowOpacity: 0.18,
+        shadowRadius: 16,
+        elevation: 5,
+      },
+    }),
   },
   cardPressed: {
-    opacity: 0.94,
+    opacity: 0.93,
     transform: [{ scale: 0.99 }],
   },
   cardHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 13,
   },
-  rankBadge: {
+  topRankBadge: {
+    minWidth: 42,
+    height: 27,
+    paddingHorizontal: 9,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.85)',
+  },
+  topRankText: {
+    ...theme.typography.kistas,
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '900',
+    textShadowColor: 'rgba(0,0,0,0.18)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  rankBadgeInset: {
     minWidth: 38,
     height: 26,
     paddingHorizontal: 8,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#EAF0F7',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.7)',
+    borderColor: 'rgba(255,255,255,0.9)',
+    ...Platform.select({
+      web: {
+        boxShadow: 'inset 1px 1px 3px rgba(130,146,168,0.14), inset -1px -1px 3px rgba(255,255,255,0.85)',
+      },
+    }),
   },
-  rankNumber: {
+  rankNumberInset: {
     ...theme.typography.kistas,
-    color: '#FFFFFF',
-    fontSize: 11.5,
+    color: '#3269C7',
+    fontSize: 11,
     fontWeight: '800',
-    textShadowColor: 'rgba(0,0,0,0.15)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   freshnessBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    height: 24,
-    paddingHorizontal: 8,
+    gap: 5,
+    height: 26,
+    paddingHorizontal: 9,
     borderRadius: 8,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#EAF0F7',
     borderWidth: 1,
-    borderColor: 'rgba(37,99,235,0.22)',
+    borderColor: 'rgba(255,255,255,0.9)',
+    ...Platform.select({
+      web: {
+        boxShadow: 'inset 1px 1px 3px rgba(130,146,168,0.12), inset -1px -1px 3px rgba(255,255,255,0.85)',
+      },
+    }),
   },
   freshnessText: {
     ...theme.typography.kistas,
@@ -767,55 +785,61 @@ const styles = StyleSheet.create({
   supportBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    height: 24,
-    paddingHorizontal: 8,
+    gap: 4,
+    height: 26,
+    paddingHorizontal: 9,
     borderRadius: 8,
-    backgroundColor: '#F0FDF4',
+    backgroundColor: 'rgba(15, 163, 54, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(22,163,74,0.22)',
+    borderColor: 'rgba(15, 163, 54, 0.22)',
   },
   supportScoreText: {
     ...theme.typography.kistas,
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '800',
-    color: '#15803D',
+    color: '#0FA336',
   },
   cardBodyRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 11,
   },
-  logoContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: '#F8FAFC',
+  logoWell: {
+    width: 54,
+    height: 54,
+    borderRadius: 16,
+    backgroundColor: '#EAF0F7',
     borderWidth: 1,
-    borderColor: 'rgba(50,105,199,0.15)',
+    borderColor: 'rgba(255,255,255,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    ...Platform.select({
+      web: {
+        boxShadow: 'inset 2px 2px 5px rgba(130,146,168,0.14), inset -2px -2px 5px rgba(255,255,255,0.9)',
+      },
+    }),
   },
   logoImage: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
   },
   logoFallback: {
     ...theme.typography.kistas,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
     color: NEO.ink,
   },
   cardInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 13,
   },
   projectTitle: {
     ...theme.typography.kistas,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
     color: NEO.ink,
+    letterSpacing: -0.3,
   },
   makerRow: {
     flexDirection: 'row',
@@ -824,7 +848,7 @@ const styles = StyleSheet.create({
   },
   makerName: {
     ...theme.typography.kistas,
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '600',
     color: '#64748B',
   },
@@ -833,9 +857,9 @@ const styles = StyleSheet.create({
   },
   tagline: {
     ...theme.typography.kistas,
-    fontSize: 11.5,
-    lineHeight: 16,
-    color: '#475569',
+    fontSize: 12,
+    lineHeight: 17,
+    color: '#58749D',
     marginBottom: 14,
   },
   cardFooterRow: {
@@ -847,24 +871,29 @@ const styles = StyleSheet.create({
   platformTagsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
     flexWrap: 'wrap',
     flex: 1,
     marginRight: 8,
   },
   platformTag: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 6,
-    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 7,
+    backgroundColor: '#EAF0F7',
     borderWidth: 1,
-    borderColor: 'rgba(148,163,184,0.22)',
+    borderColor: 'rgba(255,255,255,0.85)',
+    ...Platform.select({
+      web: {
+        boxShadow: 'inset 1px 1px 3px rgba(130,146,168,0.1), inset -1px -1px 3px rgba(255,255,255,0.8)',
+      },
+    }),
   },
   platformTagText: {
     ...theme.typography.kistas,
     fontSize: 9.5,
     fontWeight: '700',
-    color: '#475569',
+    color: '#58749D',
   },
   cardInnerRim: {
     position: 'absolute',
@@ -872,9 +901,9 @@ const styles = StyleSheet.create({
     right: 2,
     bottom: 2,
     left: 2,
-    borderRadius: 20,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.7)',
+    borderColor: 'rgba(255,255,255,0.65)',
   },
   stateCard: {
     minHeight: 220,
@@ -882,15 +911,22 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: NEO.surface,
     borderWidth: 1,
-    borderColor: 'rgba(50,105,199,0.2)',
-    shadowColor: NEO.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
-    elevation: 4,
+    borderColor: NEO.border,
     marginVertical: 20,
+    ...Platform.select({
+      web: {
+        boxShadow: '-7px -7px 18px rgba(255,255,255,0.94), 8px 9px 22px rgba(130,146,168,0.22)',
+      },
+      default: {
+        shadowColor: NEO.shadow,
+        shadowOffset: { width: 7, height: 9 },
+        shadowOpacity: 0.18,
+        shadowRadius: 16,
+        elevation: 5,
+      },
+    }),
   },
   stateTitle: {
     ...theme.typography.kistas,
@@ -913,8 +949,8 @@ const styles = StyleSheet.create({
   stateActionButton: {
     marginTop: 16,
     paddingHorizontal: 18,
-    paddingVertical: 9,
-    borderRadius: 12,
+    paddingVertical: 10,
+    borderRadius: 13,
     backgroundColor: '#3269C7',
   },
   stateActionButtonText: {
