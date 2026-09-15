@@ -234,6 +234,29 @@ export class AdminService {
     }
   }
 
+  public static async grantProjectViews(
+    listingId: string,
+    amount: number
+  ): Promise<{ success: boolean; newViewCount?: number; error?: string }> {
+    try {
+      const { data, error } = await supabase.rpc('admin_grant_project_views', {
+        p_listing_id: listingId,
+        p_amount: amount,
+      });
+
+      if (error || !data?.success) {
+        return { success: false, error: error?.message || 'Görünürlük tanımlanamadı.' };
+      }
+
+      return {
+        success: true,
+        newViewCount: Number(data.new_view_count ?? 0),
+      };
+    } catch (error) {
+      return { success: false, error: getErrorMessage(error, 'Görünürlük tanımlanamadı.') };
+    }
+  }
+
   public static async setProjectSponsorship(
     listingId: string,
     durationHours: 0 | 24 | 72 | 168

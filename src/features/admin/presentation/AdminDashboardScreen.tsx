@@ -207,6 +207,11 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
   const [customSupportInput, setCustomSupportInput] = useState<string>('');
   const [isGrantingSupport, setIsGrantingSupport] = useState<boolean>(false);
   const [supportModalError, setSupportModalError] = useState<string | null>(null);
+  const [viewModalTarget, setViewModalTarget] = useState<AdminListingItem | null>(null);
+  const [viewAmount, setViewAmount] = useState<number>(50);
+  const [customViewInput, setCustomViewInput] = useState<string>('');
+  const [isGrantingViews, setIsGrantingViews] = useState<boolean>(false);
+  const [viewModalError, setViewModalError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [listingFilter, setListingFilter] = useState<AdminListingFilter>('all');
   const [sponsorView, setSponsorView] = useState<SponsorView>('active');
@@ -636,6 +641,50 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
       setSupportModalError(err?.message || 'Beklenmedik bir hata oluştu.');
     } finally {
       setIsGrantingSupport(false);
+    }
+  };
+
+  const handleOpenViewModal = (project: AdminListingItem) => {
+    setViewModalTarget(project);
+    setViewAmount(50);
+    setCustomViewInput('');
+    setViewModalError(null);
+  };
+
+  const handleConfirmGrantViews = async () => {
+    if (!viewModalTarget) return;
+    const finalAmount = customViewInput ? parseInt(customViewInput, 10) : viewAmount;
+    if (isNaN(finalAmount) || finalAmount <= 0) {
+      setViewModalError('Lütfen geçerli bir görünürlük miktarı girin (en az 1).');
+      return;
+    }
+    if (finalAmount > 100000) {
+      setViewModalError('Tek seferde en fazla 100.000 görünürlük tanımlanabilir.');
+      return;
+    }
+
+    setViewModalError(null);
+    setIsGrantingViews(true);
+    try {
+      const result = await AdminService.grantProjectViews(viewModalTarget.id, finalAmount);
+      if (!result.success) {
+        setViewModalError(result.error || 'Görünürlük tanımlanamadı.');
+        return;
+      }
+      const newCount = result.newViewCount ?? (viewModalTarget.viewCount + finalAmount);
+      setListings((prev) =>
+        prev.map((p) => (p.id === viewModalTarget.id ? { ...p, viewCount: newCount } : p))
+      );
+      showSuccessDialog(
+        `“${viewModalTarget.title}” projesine +${finalAmount} görünürlük eklendi. Güncel görünürlük: ${newCount}`,
+        'eye-outline'
+      );
+      setViewModalTarget(null);
+      void loadData();
+    } catch (err: any) {
+      setViewModalError(err?.message || 'Beklenmedik bir hata oluştu.');
+    } finally {
+      setIsGrantingViews(false);
     }
   };
 
@@ -1179,6 +1228,12 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
                   <Text style={styles.inlineMeta}>{formatNumber(project.viewCount)} görüntülenme</Text><View style={styles.metaDot} /><Text style={styles.inlineMeta}>{formatNumber(project.upvotesCount)} destek</Text><View style={styles.metaDot} /><Text style={styles.inlineMeta}>{formatSponsorExpiry(project.boostedUntil)}</Text>
                 </View>
                 <View style={styles.actionsRow}>
+                  <ActionButton
+                    label="Görünürlük Ekle"
+                    icon="eye-outline"
+                    tone="blue"
+                    onPress={() => handleOpenViewModal(project)}
+                  />
                   <ActionButton label={project.isBoosted ? '+24 saat' : '24 saat destek ver'} icon={project.isBoosted ? 'time-outline' : 'eye-outline'} tone="blue" onPress={() => handleSponsorship(project, 24)} />
                   <ActionButton label="+3 gün" icon="calendar-outline" tone="blue" onPress={() => handleSponsorship(project, 72)} />
                   <ActionButton label="+7 gün" icon="calendar-number-outline" tone="gold" onPress={() => handleSponsorship(project, 168)} />
@@ -1216,6 +1271,8 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
                       <Ionicons name="arrow-up-circle" size={13} color="#D97706" />
                       <Text style={styles.inlineUpvotesText}>{formatNumber(project.upvotesCount)} destek</Text>
                     </View>
+                    <Text style={styles.inlineMeta}>{formatNumber(project.viewCount)} görüntülenme</Text>
+                    <View style={styles.metaDot} />
                     <Text style={styles.inlineMeta}>{(project.platforms || ['iOS']).join(' · ')}</Text>
                     <View style={styles.metaDot} />
                     <Text style={styles.inlineMeta}>{project.pricingModel}</Text>
@@ -1226,6 +1283,12 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
                       icon="rocket-outline"
                       tone="gold"
                       onPress={() => handleOpenSupportModal(project)}
+                    />
+                    <ActionButton
+                      label="Görünürlük Arttır"
+                      icon="eye-outline"
+                      tone="blue"
+                      onPress={() => handleOpenViewModal(project)}
                     />
                     <ActionButton label="Kategori Değiştir" icon="folder-open-outline" tone="blue" onPress={() => handleOpenCategoryModal(project)} />
                     {project.status === 'draft' || project.status === 'banned' ? <ActionButton label="Yayına al" icon="checkmark-outline" tone="green" onPress={() => handleUpdateStatus(project, 'active')} /> : null}
@@ -2391,6 +2454,204 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
           </View>
         </View>
       </Modal>
+
+      {/* GÖRÜNÜRLÜK ARTTIRMA MODALI */}
+      <Modal
+        visible={!!viewModalTarget}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          if (!isGrantingViews) setViewModalTarget(null);
+        }}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.supportModalBox}>
+            <LinearGradient
+              colors={['#0F2B5C', '#1D4ED8', '#2563EB']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.supportModalHeader}
+            >
+              <View style={styles.supportModalGlow} />
+              <View style={styles.supportModalHeaderCopy}>
+                <View style={styles.supportSecretPill}>
+                  <View style={styles.supportSecretDot} />
+                  <Text style={styles.supportSecretPillText}>KISTAS GÖRÜNÜRLÜK YÖNETİMİ</Text>
+                </View>
+                <Text style={styles.supportModalTitle}>Görünürlük Tanımla</Text>
+                <Text style={styles.supportModalSubtitle}>
+                  Projeye eklenecek görüntülenme (görünürlük) sayısını belirleyin.
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.categoryModalCloseBtn}
+                onPress={() => setViewModalTarget(null)}
+                disabled={isGrantingViews}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close" size={19} color="#FFFFFF" />
+              </TouchableOpacity>
+            </LinearGradient>
+
+            {/* Proje Bilgi Kartı */}
+            {viewModalTarget ? (
+              <View style={styles.supportProjectCard}>
+                <View style={styles.supportProjectInfo}>
+                  <Text style={styles.supportProjectLabel}>HEDEF PROJE</Text>
+                  <Text style={styles.supportProjectTitle} numberOfLines={1}>
+                    {viewModalTarget.title}
+                  </Text>
+                  <Text style={styles.supportProjectTagline} numberOfLines={1}>
+                    {viewModalTarget.tagline || 'Dijital Proje'}
+                  </Text>
+                </View>
+                <View style={styles.supportCurrentBadge}>
+                  <Text style={styles.supportCurrentLabel}>MEVCUT GÖRÜNÜRLÜK</Text>
+                  <Text style={styles.supportCurrentVal}>
+                    👁️ {formatNumber(viewModalTarget.viewCount)}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+
+            {/* Hata Bildirimi */}
+            {viewModalError ? (
+              <View style={styles.categoryModalErrorBox}>
+                <Ionicons name="alert-circle" size={17} color="#B83D57" />
+                <Text style={styles.categoryModalErrorText}>{viewModalError}</Text>
+              </View>
+            ) : null}
+
+            <ScrollView
+              style={styles.supportModalScroll}
+              contentContainerStyle={styles.supportModalBody}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={styles.supportChoicePanel}>
+                <View style={styles.supportChoiceHeader}>
+                  <View>
+                    <Text style={styles.supportSectionLabel}>GÖRÜNÜRLÜK MİKTARI</Text>
+                    <Text style={styles.supportSectionHint}>Hazır bir paket seçin veya özel değer girin.</Text>
+                  </View>
+                  <View style={styles.supportLimitBadge}><Text style={styles.supportLimitText}>1–100.000</Text></View>
+                </View>
+                <View style={styles.supportPresetRow}>
+                  {[25, 50, 100, 250, 500].map((amt) => {
+                    const isSelected = !customViewInput && viewAmount === amt;
+                    return (
+                      <TouchableOpacity
+                        key={amt}
+                        style={[styles.supportPresetPill, isSelected && styles.supportPresetPillActive]}
+                        onPress={() => {
+                          setViewAmount(amt);
+                          setCustomViewInput('');
+                          setViewModalError(null);
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={[styles.supportPresetAmount, isSelected && styles.supportPresetAmountActive]}>+{amt}</Text>
+                        <Text style={[styles.supportPresetPillText, isSelected && styles.supportPresetPillTextActive]}>görünürlük</Text>
+                        {isSelected ? <View style={styles.supportPresetCheck}><Ionicons name="checkmark" size={10} color="#FFFFFF" /></View> : null}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                <View style={styles.supportCustomInputGroup}>
+                  <Text style={styles.supportCustomLabel}>ÖZEL MİKTAR</Text>
+                  <View style={[styles.supportInputWrap, Boolean(customViewInput) && styles.supportInputWrapActive]}>
+                    <Text style={styles.supportInputPrefix}>+</Text>
+                    <TextInput
+                      style={styles.supportTextInput}
+                      placeholder="Örn. 75"
+                      placeholderTextColor="#98A2B3"
+                      keyboardType="number-pad"
+                      value={customViewInput}
+                      onChangeText={(val) => {
+                        setCustomViewInput(val.replace(/[^0-9]/g, ''));
+                        setViewModalError(null);
+                      }}
+                    />
+                    <Text style={styles.supportInputSuffix}>GÖRÜNTÜLENME</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Hesaplanan Özet Şeridi */}
+              {viewModalTarget ? (
+                <View style={styles.supportCalculationCard}>
+                  <View style={styles.supportCalcItem}>
+                    <Text style={styles.supportCalcLabel}>MEVCUT</Text>
+                    <Text style={styles.supportCalcOldVal}>
+                      {formatNumber(viewModalTarget.viewCount)}
+                    </Text>
+                  </View>
+                  <View style={styles.supportCalcOperator}><Text style={styles.supportCalcOperatorText}>+</Text></View>
+                  <View style={styles.supportCalcItem}>
+                    <Text style={styles.supportCalcLabel}>EKLENECEK</Text>
+                    <Text style={styles.supportCalcAddVal}>
+                      +{customViewInput ? (parseInt(customViewInput, 10) || 0) : viewAmount}
+                    </Text>
+                  </View>
+                  <View style={styles.supportCalcOperator}><Text style={styles.supportCalcOperatorText}>=</Text></View>
+                  <View style={[styles.supportCalcItem, styles.supportCalcTotalItem]}>
+                    <Text style={[styles.supportCalcLabel, styles.supportCalcTotalLabel]}>YENİ TOPLAM</Text>
+                    <Text style={styles.supportCalcTotalVal}>
+                      {formatNumber(
+                        viewModalTarget.viewCount +
+                          (customViewInput ? (parseInt(customViewInput, 10) || 0) : viewAmount)
+                      )}
+                    </Text>
+                  </View>
+                </View>
+              ) : null}
+
+              {/* Bilgilendirme Notu */}
+              <View style={styles.supportSecretNotice}>
+                <Ionicons name="eye" size={16} color="#059669" />
+                <Text style={styles.supportSecretNoticeText}>
+                  Tanımlanan miktar doğrudan projenin toplam görüntülenme (view_count) sayacına eklenir ve vitrinde gerçek veri olarak yansıtılır.
+                </Text>
+              </View>
+            </ScrollView>
+
+            {/* Modal Butonları */}
+            <View style={styles.supportModalFooter}>
+              <View style={styles.supportFooterAmount}>
+                <Text style={styles.supportFooterLabel}>TANIMLANACAK</Text>
+                <Text style={styles.supportFooterValue}>+{customViewInput ? (parseInt(customViewInput, 10) || 0) : viewAmount} görünürlük</Text>
+              </View>
+              <View style={styles.supportFooterActions}>
+                <TouchableOpacity
+                  style={styles.categoryModalCancelBtn}
+                  onPress={() => setViewModalTarget(null)}
+                  disabled={isGrantingViews}
+                  activeOpacity={0.75}
+                >
+                  <Text style={styles.categoryModalCancelText}>Vazgeç</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.supportModalConfirmBtn}
+                  onPress={handleConfirmGrantViews}
+                  disabled={isGrantingViews}
+                  activeOpacity={0.8}
+                >
+                  {isGrantingViews ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <>
+                      <Text style={styles.supportModalConfirmText}>Görünürlüğü Tanımla</Text>
+                      <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 };
