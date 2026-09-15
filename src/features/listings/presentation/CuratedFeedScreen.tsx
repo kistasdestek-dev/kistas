@@ -10,7 +10,6 @@ import {
   View,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { breakpoints, kistasStyle, theme } from '../../../core/theme';
 import { AutoTransparentLogo } from '../../../shared/components/AutoTransparentLogo';
 import { GlassIconButton } from '../../../shared/components/GlassIconButton';
@@ -48,11 +47,30 @@ const PLATFORMS: ReadonlyArray<{ id: PlatformType | 'all'; label: string; icon: 
   { id: 'SaaS', label: 'SaaS', icon: 'cloud-outline' },
 ];
 
-const rankColors = (rank: number): [string, string] => {
-  if (rank === 1) return ['#FFD700', '#F59E0B'];
-  if (rank === 2) return ['#E2E8F0', '#94A3B8'];
-  if (rank === 3) return ['#FED7AA', '#EA580C'];
-  return ['#EAF2FF', '#3269C7'];
+/** Kullanıcının belirlediği ilk 3 sıralama renkleri ve tipografi kontrastları */
+const getRankConfig = (rank: number) => {
+  if (rank === 1) {
+    return {
+      backgroundColor: '#0e5b9b',
+      textColor: '#FFFFFF',
+      borderColor: 'rgba(255, 255, 255, 0.85)',
+    };
+  }
+  if (rank === 2) {
+    return {
+      backgroundColor: '#c0d2e9',
+      textColor: '#173866',
+      borderColor: 'rgba(255, 255, 255, 0.95)',
+    };
+  }
+  if (rank === 3) {
+    return {
+      backgroundColor: '#a3d4ff',
+      textColor: '#0e5b9b',
+      borderColor: 'rgba(255, 255, 255, 0.95)',
+    };
+  }
+  return null;
 };
 
 const formatRelativeTime = (dateStr?: string): string => {
@@ -82,7 +100,6 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
   const { width } = useWindowDimensions();
   const isPopular = mode === 'popular';
 
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategoryId);
   const [selectedPlatform, setSelectedPlatform] = useState<PlatformType | 'all'>(initialPlatform);
 
   const [projects, setProjects] = useState<Listing[]>([]);
@@ -90,7 +107,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Kategori Listesini Al
+  // Kategori Bilgisi (Başlıkta veya URL'den gelirse göstermek üzere)
   useEffect(() => {
     let isMounted = true;
     CategoryService.getProjectCategories()
@@ -111,8 +128,8 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
     setError(null);
     try {
       const data = isPopular
-        ? await ListingService.getPopularListings(100, selectedCategory)
-        : await ListingService.getNewListings(selectedCategory, 100);
+        ? await ListingService.getPopularListings(100, initialCategoryId)
+        : await ListingService.getNewListings(initialCategoryId, 100);
 
       setProjects(data);
     } catch {
@@ -124,7 +141,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [isPopular, selectedCategory]);
+  }, [initialCategoryId, isPopular]);
 
   useEffect(() => {
     void loadProjects();
@@ -143,8 +160,8 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
   }, [projects, selectedPlatform]);
 
   const activeCategoryObj = useMemo(
-    () => categories.find((c) => c.id === selectedCategory),
-    [categories, selectedCategory]
+    () => categories.find((c) => c.id === initialCategoryId),
+    [categories, initialCategoryId]
   );
 
   const columnCount = width <= breakpoints.phoneMax ? 1 : width <= breakpoints.tabletMax ? 2 : 3;
@@ -152,9 +169,8 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
   const contentWidth = Math.min(width, 1440) - horizontalPadding * 2;
   const cardWidth = Math.max(280, (contentWidth - (columnCount - 1) * 18) / columnCount);
 
-  const handleResetFilters = () => {
+  const handleResetPlatform = () => {
     setSelectedPlatform('all');
-    setSelectedCategory(null);
   };
 
   return (
@@ -203,9 +219,8 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
         </View>
       </View>
 
-      {/* Sade ve Neumorphic Filtreler Paneli (Arama Kaldırıldı) */}
+      {/* Sade ve Neumorphic Platform Filtre Çubuğu (Arama ve Kategoriler Kaldırıldı) */}
       <View style={styles.filterSection}>
-        {/* Platform Filtre Segmenti */}
         <View style={styles.platformInsetTrack}>
           <ScrollView
             horizontal
@@ -239,54 +254,6 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
             })}
           </ScrollView>
         </View>
-
-        {/* Kategori Filtre Hapları */}
-        {categories.length > 0 ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryScroll}
-          >
-            <Pressable
-              onPress={() => setSelectedCategory(null)}
-              style={({ pressed }) => [
-                styles.categoryPill,
-                selectedCategory === null && styles.categoryPillActive,
-                pressed && styles.categoryPillPressed,
-              ]}
-              accessibilityRole="button"
-            >
-              <Text
-                style={[
-                  styles.categoryPillText,
-                  selectedCategory === null && styles.categoryPillTextActive,
-                ]}
-              >
-                Tüm Kategoriler
-              </Text>
-            </Pressable>
-            {categories.map((cat) => {
-              const isCatSelected = selectedCategory === cat.id;
-              return (
-                <Pressable
-                  key={cat.id}
-                  onPress={() => setSelectedCategory(isCatSelected ? null : cat.id)}
-                  style={({ pressed }) => [
-                    styles.categoryPill,
-                    isCatSelected && styles.categoryPillActive,
-                    pressed && styles.categoryPillPressed,
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${cat.name} kategorisini filtrele`}
-                >
-                  <Text style={[styles.categoryPillText, isCatSelected && styles.categoryPillTextActive]}>
-                    {cat.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-        ) : null}
       </View>
 
       {/* Sade Sonuç Sayacı */}
@@ -294,10 +261,10 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
         <Text style={styles.resultsCountText}>
           {isLoading ? 'Yükleniyor...' : `${filteredProjects.length} proje listeleniyor`}
         </Text>
-        {selectedPlatform !== 'all' || selectedCategory !== null ? (
-          <Pressable onPress={handleResetFilters} style={styles.resetFiltersButton}>
+        {selectedPlatform !== 'all' ? (
+          <Pressable onPress={handleResetPlatform} style={styles.resetFiltersButton}>
             <Ionicons name="refresh-outline" size={13} color="#3269C7" />
-            <Text style={styles.resetFiltersText}>Filtreleri Sıfırla</Text>
+            <Text style={styles.resetFiltersText}>Filtreyi Sıfırla</Text>
           </Pressable>
         ) : null}
       </View>
@@ -319,19 +286,19 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
       ) : filteredProjects.length === 0 ? (
         <View style={styles.stateCard}>
           <GlassIconButton icon="layers-outline" accessibilityLabel="Sonuç bulunamadı" />
-          <Text style={styles.stateTitle}>Bu filtrede proje bulunamadı</Text>
+          <Text style={styles.stateTitle}>Bu platformda proje bulunamadı</Text>
           <Text style={styles.stateText}>
-            Seçilen kategori veya platform kriterine uyan proje henüz eklenmedi.
+            Seçilen platform kriterine uyan proje henüz eklenmedi.
           </Text>
-          <Pressable onPress={handleResetFilters} style={styles.stateActionButton}>
-            <Text style={styles.stateActionButtonText}>Filtreleri Sıfırla</Text>
+          <Pressable onPress={handleResetPlatform} style={styles.stateActionButton}>
+            <Text style={styles.stateActionButtonText}>Filtreyi Sıfırla</Text>
           </Pressable>
         </View>
       ) : (
         <View style={styles.grid}>
           {filteredProjects.map((project, index) => {
             const rank = index + 1;
-            const colors = rankColors(rank);
+            const rankConfig = getRankConfig(rank);
             const supportScore = isPopular
               ? project.weeklySupportCount || project.upvotesCount || 0
               : project.upvotesCount || 0;
@@ -349,16 +316,26 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
                   pressed && styles.cardPressed,
                 ]}
               >
-                {/* Üst Satır: Neumorphic Rozetler ve Metrik */}
+                {/* Üst Satır: Neumorphic Sıralama ve Destek Metriği */}
                 <View style={styles.cardHeaderRow}>
                   {isPopular ? (
-                    rank <= 3 ? (
-                      <LinearGradient colors={colors} style={styles.topRankBadge}>
-                        <Text style={styles.topRankText}>#{rank}</Text>
-                      </LinearGradient>
+                    rankConfig ? (
+                      <View
+                        style={[
+                          styles.topRankBadge,
+                          {
+                            backgroundColor: rankConfig.backgroundColor,
+                            borderColor: rankConfig.borderColor,
+                          },
+                        ]}
+                      >
+                        <Text style={[styles.topRankText, { color: rankConfig.textColor }]}>
+                          {rank}
+                        </Text>
+                      </View>
                     ) : (
                       <View style={styles.rankBadgeInset}>
-                        <Text style={styles.rankNumberInset}>#{rank}</Text>
+                        <Text style={styles.rankNumberInset}>{rank}</Text>
                       </View>
                     )
                   ) : (
@@ -543,7 +520,6 @@ const styles = StyleSheet.create({
   filterSection: {
     marginTop: 8,
     marginBottom: 16,
-    gap: 12,
   },
   platformInsetTrack: {
     backgroundColor: '#EAF0F7',
@@ -600,56 +576,6 @@ const styles = StyleSheet.create({
     color: '#65748A',
   },
   platformPillTextActive: {
-    color: NEO.ink,
-    fontWeight: '800',
-  },
-  categoryScroll: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 3,
-  },
-  categoryPill: {
-    minHeight: 32,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F1F5FA',
-    borderWidth: 1,
-    borderColor: NEO.border,
-    ...Platform.select({
-      web: {
-        boxShadow: '-2px -2px 6px rgba(255,255,255,0.9), 2px 2px 6px rgba(130,146,168,0.14)',
-      },
-      default: {
-        shadowColor: NEO.shadow,
-        shadowOffset: { width: 2, height: 3 },
-        shadowOpacity: 0.12,
-        shadowRadius: 5,
-        elevation: 2,
-      },
-    }),
-  },
-  categoryPillActive: {
-    backgroundColor: NEO.global,
-    borderColor: 'rgba(50,105,199,0.22)',
-    ...Platform.select({
-      web: {
-        boxShadow: 'inset 1px 1px 4px rgba(50,105,199,0.15), inset -1px -1px 4px rgba(255,255,255,0.9)',
-      },
-    }),
-  },
-  categoryPillPressed: {
-    transform: [{ scale: 0.97 }],
-  },
-  categoryPillText: {
-    ...theme.typography.kistas,
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#58749D',
-  },
-  categoryPillTextActive: {
     color: NEO.ink,
     fontWeight: '800',
   },
@@ -720,26 +646,21 @@ const styles = StyleSheet.create({
     marginBottom: 13,
   },
   topRankBadge: {
-    minWidth: 42,
+    minWidth: 32,
     height: 27,
     paddingHorizontal: 9,
     borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.85)',
   },
   topRankText: {
     ...theme.typography.kistas,
-    color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '900',
-    textShadowColor: 'rgba(0,0,0,0.18)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   rankBadgeInset: {
-    minWidth: 38,
+    minWidth: 32,
     height: 26,
     paddingHorizontal: 8,
     borderRadius: 8,
@@ -757,7 +678,7 @@ const styles = StyleSheet.create({
   rankNumberInset: {
     ...theme.typography.kistas,
     color: '#3269C7',
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '800',
   },
   freshnessBadge: {
