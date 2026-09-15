@@ -1,6 +1,6 @@
 import { SITE_ORIGIN } from '../config/siteUrls';
 
-type PublicPage = 'home' | 'browse' | 'showcase' | 'about' | 'how-it-works' | 'privacy';
+type PublicPage = 'home' | 'browse' | 'showcase' | 'popular' | 'new' | 'about' | 'how-it-works' | 'privacy';
 
 interface PageDefinition {
   path: string;
@@ -27,6 +27,18 @@ const PUBLIC_PAGES: Record<PublicPage, PageDefinition> = {
     path: '/showcase',
     title: 'Günün Öne Çıkan Dijital Projeleri | Kıstas',
     description: 'Kıstas topluluğunun desteğiyle öne çıkan bağımsız dijital projeleri ve yeni ürünleri inceleyin.',
+    schemaType: 'CollectionPage',
+  },
+  popular: {
+    path: '/popular',
+    title: 'Popüler Dijital Projeler | Kıstas',
+    description: "Kıstas'ta son 7 günün doğrulanmış topluluk desteğine göre en popüler dijital projelerini keşfedin.",
+    schemaType: 'CollectionPage',
+  },
+  new: {
+    path: '/new',
+    title: 'Yeni Çıkan Dijital Projeler | Kıstas',
+    description: "Kıstas'ta topluluğa yeni katılan, ilk günlerindeki yenilikçi ve bağımsız projeleri inceleyin.",
     schemaType: 'CollectionPage',
   },
   about: {
@@ -111,6 +123,7 @@ function setSchema(page: PageDefinition, canonical: string) {
 export function applyPublicPageSeo(pageKey: PublicPage): void {
   if (typeof document === 'undefined') return;
   const page = PUBLIC_PAGES[pageKey];
+  if (!page) return;
   const canonical = page.path === '/' ? `${SITE_ORIGIN}/` : `${SITE_ORIGIN}${page.path}`;
   document.title = page.title;
   setMeta('name', 'description', page.description);
