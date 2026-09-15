@@ -856,14 +856,14 @@ const styles = StyleSheet.create({
   },
   projectTitle: {
     ...theme.typography.kistas,
-    fontSize: 16.5,
+    fontSize: 16,
     lineHeight: 22,
-    fontWeight: '800',
-    color: '#1A2130',
-    letterSpacing: -0.3,
+    fontWeight: '700',
+    color: '#25364E',
+    letterSpacing: -0.15,
   },
   projectTitleMobile: {
-    fontSize: 15.5,
+    fontSize: 15,
     lineHeight: 20,
   },
   makerRow: {
