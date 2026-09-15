@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   wrapper: { marginHorizontal: 16, marginBottom: 14 },
   panel: { marginBottom: 8, padding: 13, borderRadius: 17, borderWidth: 1, borderColor: '#D5E1EF', backgroundColor: '#F7F9FC', shadowColor: '#17365F', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.11, shadowRadius: 18, elevation: 4 },
   panelHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11 },
-  kicker: { color: '#3269C7', fontSize: 8.5, fontWeight: '800', letterSpacing: 0.8 },
+  kicker: { color: '#3269C7', fontSize: 8.5, fontWeight: '700', letterSpacing: 0.8 },
   panelTitle: { marginTop: 2, color: '#22283A', fontSize: 16, fontWeight: '700' },
   closeButton: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderRadius: 10, borderWidth: 1, borderColor: '#D9E3EF', backgroundColor: '#FFFFFF' },
   optionStack: { gap: 7 },

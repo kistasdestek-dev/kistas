@@ -24,7 +24,7 @@ const STORE_CSS = `
   width: 100%;
   min-height: 100%;
   background: #F1F5FA;
-  color: #0F172A;
+  color: #25364E;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   overflow-x: hidden;
   padding: 48px 20px 120px 20px;
@@ -73,9 +73,9 @@ const STORE_CSS = `
 .k-pricing-title {
   font-size: 42px;
   line-height: 1.15;
-  font-weight: 800;
+  font-weight:700;
   letter-spacing: -1.2px;
-  color: #0F172A;
+  color: #25364E;
   margin: 0 0 8px 0;
 }
 
@@ -178,7 +178,7 @@ const STORE_CSS = `
 }
 
 .k-toggle-btn.inactive:hover {
-  color: #0F172A;
+  color: #25364E;
 }
 
 .k-toggle-badge {
@@ -271,7 +271,7 @@ const STORE_CSS = `
 .k-card-title {
   font-size: 22px;
   font-weight: 700;
-  color: #0F172A;
+  color: #25364E;
   margin: 0;
   text-align: center;
 }
@@ -294,9 +294,9 @@ const STORE_CSS = `
 
 .k-card-price {
   font-size: 46px;
-  font-weight: 800;
+  font-weight:700;
   letter-spacing: -1.5px;
-  color: #0F172A;
+  color: #25364E;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
@@ -331,7 +331,7 @@ const STORE_CSS = `
   gap: 12px;
   font-size: 13.5px;
   line-height: 1.45;
-  color: #334155;
+  color: #25364E;
 }
 
 .k-feature-check {
@@ -376,7 +376,7 @@ const STORE_CSS = `
 
 .k-card-btn.outline-btn {
   background: #FFFFFF;
-  color: #0F172A;
+  color: #25364E;
   border: 1px solid #DFE4EB;
 }
 
@@ -748,7 +748,7 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
         particleCount: 80,
         spread: 75,
         origin: { x: originX, y: originY },
-        colors: ['#3269C7', '#60A5FA', '#936413', '#252333', '#EAF2FC'],
+        colors: ['#3269C7', '#60A5FA', '#936413', '#25364E', '#EAF2FC'],
         ticks: 280,
         gravity: 1.15,
         decay: 0.94,

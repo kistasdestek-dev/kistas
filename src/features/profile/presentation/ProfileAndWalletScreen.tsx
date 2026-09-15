@@ -421,7 +421,7 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
             accessibilityLabel="Giriş yap veya kayıt ol"
           >
             <Text style={styles.guestButtonText}>Giriş Yap veya Kayıt Ol</Text>
-            <Ionicons name="arrow-forward" size={17} color="#252333" />
+            <Ionicons name="arrow-forward" size={17} color="#25364E" />
           </TouchableOpacity>
         </LinearGradient>
       </View>
@@ -839,7 +839,7 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Rozet kodunu görüntüle"
         >
-          <Ionicons name="copy-outline" size={16} color="#252333" />
+          <Ionicons name="copy-outline" size={16} color="#25364E" />
           <Text style={styles.copyButtonText}>Rozet Kodunu Görüntüle</Text>
         </TouchableOpacity>
       </View>
@@ -916,7 +916,7 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
                   <KistasLogo size={42} showWordmark={false} />
                 )}
                 <View style={styles.editorCameraBadge}>
-                  {isUploadingAvatar ? <ActivityIndicator size="small" color="#252333" /> : <Ionicons name="camera" size={14} color="#252333" />}
+                  {isUploadingAvatar ? <ActivityIndicator size="small" color="#25364E" /> : <Ionicons name="camera" size={14} color="#25364E" />}
                 </View>
               </TouchableOpacity>
               <View style={styles.editorAvatarCopy}>
@@ -947,7 +947,7 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
             <Text style={styles.editorLabel}>Hakkımda</Text>
             <TextInput value={draftBio} onChangeText={setDraftBio} maxLength={500} editable={!saving} multiline accessibilityLabel="Hakkımda" style={[styles.editorInput, { minHeight: 100, textAlignVertical: 'top' }]} />
             {saveError ? <Text accessibilityRole="alert" style={{ color: '#a06969', marginTop: 12 }}>{saveError}</Text> : null}
-            <TouchableOpacity accessibilityRole="button" disabled={saving || isUploadingAvatar || (!isAdmin && isReservedBrandName(draftName))} onPress={saveProfile} style={[styles.editorSave, (saving || isUploadingAvatar || (!isAdmin && isReservedBrandName(draftName))) && styles.editorSaveDisabled]}><Ionicons name="checkmark" size={18} color="#252333" /><Text style={styles.editorSaveText}>{saving ? 'Kaydediliyor...' : 'Değişiklikleri kaydet'}</Text></TouchableOpacity>
+            <TouchableOpacity accessibilityRole="button" disabled={saving || isUploadingAvatar || (!isAdmin && isReservedBrandName(draftName))} onPress={saveProfile} style={[styles.editorSave, (saving || isUploadingAvatar || (!isAdmin && isReservedBrandName(draftName))) && styles.editorSaveDisabled]}><Ionicons name="checkmark" size={18} color="#25364E" /><Text style={styles.editorSaveText}>{saving ? 'Kaydediliyor...' : 'Değişiklikleri kaydet'}</Text></TouchableOpacity>
             </ScrollView>
           </View>
         </KeyboardAvoidingView>

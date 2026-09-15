@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   sheet: { width: '100%', maxWidth: 480, maxHeight: '85%', backgroundColor: NEO.surface, borderRadius: 28, padding: 20, borderWidth: 1, borderColor: NEO.border, ...Platform.select({ web: { boxShadow: '-8px -8px 18px rgba(255,255,255,0.9), 10px 12px 28px rgba(23,56,102,0.24)' }, default: { shadowColor: NEO.shadow, shadowOffset: { width: 7, height: 9 }, shadowOpacity: 0.2, shadowRadius: 18, elevation: 7 } }) },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
   heading: { flex: 1 },
-  title: { ...theme.typography.kistas, fontSize: 23, fontWeight: '800', letterSpacing: -0.5, color: NEO.ink },
+  title: { ...theme.typography.kistas, fontSize: 23, fontWeight: '700', letterSpacing: -0.5, color: NEO.ink },
   caption: { ...theme.typography.kistas, fontSize: 13, lineHeight: 19, color: '#64748B', marginTop: 5 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, backgroundColor: '#EAF0F7', borderRadius: 14, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.88)' },
   input: { ...theme.typography.kistas, flex: 1, minWidth: 0, minHeight: 50, fontSize: 15, color: NEO.ink },

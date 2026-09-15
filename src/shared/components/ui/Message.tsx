@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
   },
   bubblePrimary: {
     backgroundColor: '#E1EDFA',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(250,251,253, 0.88)',
     borderWidth: 1,
     borderColor: 'rgba(50,105,199,0.1)',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
@@ -538,11 +538,11 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
   },
   bubbleTextPrimary: {
-    color: '#252333',
+    color: '#25364E',
     fontWeight: '500',
   },
   bubbleTextMuted: {
-    color: '#252333',
+    color: '#25364E',
     fontWeight: '400',
   },
   footerRow: {
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,

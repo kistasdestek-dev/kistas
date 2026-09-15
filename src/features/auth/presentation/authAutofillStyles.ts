@@ -13,26 +13,26 @@ ${AUTH_SCREEN_SELECTOR} input:focus-visible {
   -webkit-tap-highlight-color: transparent !important;
 }
 ${AUTH_SCREEN_SELECTOR} input::selection {
-  color: #252333 !important;
+  color: #25364E !important;
   background: rgba(50, 105, 199, 0.16) !important;
 }
 ${AUTH_SCREEN_SELECTOR} input:-webkit-autofill,
 ${AUTH_SCREEN_SELECTOR} input:-webkit-autofill:hover,
 ${AUTH_SCREEN_SELECTOR} input:-webkit-autofill:focus,
 ${AUTH_SCREEN_SELECTOR} input:-webkit-autofill:active {
-  -webkit-text-fill-color: #252333 !important;
+  -webkit-text-fill-color: #25364E !important;
   -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
   box-shadow: 0 0 0 1000px transparent inset !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   background-color: transparent !important;
   background-image: none !important;
-  caret-color: #252333 !important;
+  caret-color: #25364E !important;
   border-radius: 0 !important;
   transition: background-color 9999s ease-out 0s !important;
 }
 ${AUTH_SCREEN_SELECTOR} input:autofill {
-  color: #252333 !important;
+  color: #25364E !important;
   background-color: transparent !important;
   background-image: none !important;
 }

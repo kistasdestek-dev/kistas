@@ -499,7 +499,7 @@ export const CreateListingScreen: React.FC<CreateListingScreenProps> = ({ onSucc
               </View>
             )}
             <View style={styles.logoEditBadge}>
-              <Ionicons name="camera" size={12} color="#252333" />
+              <Ionicons name="camera" size={12} color="#25364E" />
             </View>
           </TouchableOpacity>
 
@@ -610,7 +610,7 @@ export const CreateListingScreen: React.FC<CreateListingScreenProps> = ({ onSucc
             const isSelected = selectedPlatforms.includes(p.id);
             return (
               <TouchableOpacity key={p.id} accessibilityRole="checkbox" accessibilityState={{ checked: isSelected }} style={[styles.platformPill, isSelected && styles.platformPillActive]} onPress={() => togglePlatform(p.id)}>
-                <Ionicons name={p.icon} size={18} color={isSelected ? '#252333' : '#252333'} />
+                <Ionicons name={p.icon} size={18} color={isSelected ? '#25364E' : '#25364E'} />
                 <Text style={[styles.platformPillText, isSelected && styles.platformPillTextActive]}>{p.label}</Text>
               </TouchableOpacity>
             );
@@ -845,16 +845,16 @@ const styles = StyleSheet.create({
   introMetaText: { ...theme.typography.kistas, fontSize: 9.5, letterSpacing: 1, fontWeight: '700', color: '#64748B' },
   cancelEditButton: { ...neoRaised, alignSelf: 'flex-start', minHeight: 36, marginTop: 13, paddingHorizontal: 11, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 6 },
   cancelEditText: { ...theme.typography.kistas, color: '#64748B', fontSize: 11.5, fontWeight: '700' },
-  pageEyebrow: { ...theme.typography.kistas, fontSize: 9.5, letterSpacing: 1.25, fontWeight: '800', color: '#3269C7' },
-  pageTitle: { ...theme.typography.kistas, maxWidth: 520, fontSize: 31, lineHeight: 37, letterSpacing: -1, fontWeight: '800', color: NEO.ink },
+  pageEyebrow: { ...theme.typography.kistas, fontSize: 9.5, letterSpacing: 1.25, fontWeight: '700', color: '#3269C7' },
+  pageTitle: { ...theme.typography.kistas, maxWidth: 520, fontSize: 31, lineHeight: 37, letterSpacing: -1, fontWeight: '700', color: NEO.ink },
   pageSubtitle: { ...theme.typography.kistas, maxWidth: 510, fontSize: 13.5, color: '#64748B', marginTop: 8, lineHeight: 21 },
   sectionCard: { ...neoRaised, padding: 20, borderRadius: 24, marginBottom: 22 },
   sectionCardWithBeam: { marginBottom: 0 },
   sectionBeamShell: { marginBottom: 22, borderRadius: 24 },
   sectionHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingBottom: 17, marginBottom: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(50,105,199,0.09)' },
   sectionHeading: { flex: 1 },
-  sectionNumber: { ...theme.typography.kistas, color: NEO.ink, backgroundColor: NEO.global, overflow: 'hidden', borderRadius: 11, width: 34, height: 34, lineHeight: 34, textAlign: 'center', fontSize: 10, fontWeight: '800' },
-  sectionTitle: { ...theme.typography.kistas, fontSize: 18, letterSpacing: -0.35, fontWeight: '800', color: NEO.ink, marginBottom: 4 },
+  sectionNumber: { ...theme.typography.kistas, color: NEO.ink, backgroundColor: NEO.global, overflow: 'hidden', borderRadius: 11, width: 34, height: 34, lineHeight: 34, textAlign: 'center', fontSize: 10, fontWeight: '700' },
+  sectionTitle: { ...theme.typography.kistas, fontSize: 18, letterSpacing: -0.35, fontWeight: '700', color: NEO.ink, marginBottom: 4 },
   sectionCaption: { ...theme.typography.kistas, fontSize: 11.5, color: '#64748B', lineHeight: 17 },
   logoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: theme.spacing.md },
   logoPickerBox: { ...neoRaised, position: 'relative', width: 72, height: 72, borderRadius: 20, marginRight: 14, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
@@ -875,9 +875,9 @@ const styles = StyleSheet.create({
   descriptionEditorInput: { marginBottom: 8, lineHeight: 22 },
   formatToolbar: { minHeight: 42, flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 7, marginBottom: 8 },
   formatButton: { ...neoRaised, minWidth: 42, minHeight: 34, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
-  formatHeadingOne: { ...theme.typography.kistas, color: NEO.ink, fontSize: 15, fontWeight: '800' },
-  formatHeadingTwo: { ...theme.typography.kistas, color: NEO.ink, fontSize: 13, fontWeight: '800' },
-  formatBold: { ...theme.typography.kistas, color: NEO.ink, fontSize: 12, fontWeight: '800' },
+  formatHeadingOne: { ...theme.typography.kistas, color: NEO.ink, fontSize: 15, fontWeight: '700' },
+  formatHeadingTwo: { ...theme.typography.kistas, color: NEO.ink, fontSize: 13, fontWeight: '700' },
+  formatBold: { ...theme.typography.kistas, color: NEO.ink, fontSize: 12, fontWeight: '700' },
   formatHint: { flexShrink: 1, color: '#7A8799', fontSize: 11.5, marginLeft: 3 },
   platformRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: theme.spacing.md },
   platformPill: { ...neoInset, flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 46, paddingHorizontal: 14, paddingVertical: 9, borderRadius: theme.radius.md },
@@ -893,15 +893,15 @@ const styles = StyleSheet.create({
   screenshotItem: { position: 'relative', marginRight: 10 },
   screenshotImg: { width: 90, height: 150, borderRadius: 14, backgroundColor: NEO.surface, borderWidth: 1, borderColor: 'rgba(50,105,199,0.18)' },
   deleteBadge: { position: 'absolute', top: 6, right: 6, backgroundColor: 'rgba(255,255,255,0.75)', width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  deleteText: { color: '#252333', fontSize: 12, fontWeight: 'bold' },
+  deleteText: { color: '#25364E', fontSize: 12, fontWeight: 'bold' },
   coverBadge: { position: 'absolute', bottom: 6, left: 6, backgroundColor: '#EAF2FC', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  coverText: { color: '#252333', fontSize: 8, fontWeight: 'bold' },
+  coverText: { color: '#25364E', fontSize: 8, fontWeight: 'bold' },
   addScreenshotBtn: { ...neoInset, width: 90, height: 150, borderRadius: 14, borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(50,105,199,0.28)', alignItems: 'center', justifyContent: 'center' },
   addScreenshotLabel: { ...theme.typography.kistas, fontSize: 10, color: '#64748B', fontWeight: '700' },
   showcaseCoverPreview: { width: '100%', height: 220, borderRadius: 18, marginVertical: 12, borderWidth: 1, borderColor: 'rgba(50,105,199,0.16)' },
   submitBtn: { marginTop: theme.spacing.md },
   publishBlock: { ...neoRaised, padding: 20, marginTop: 4, borderRadius: 24 },
-  publishTitle: { ...theme.typography.kistas, fontSize: 21, lineHeight: 27, fontWeight: '800', letterSpacing: -0.4, color: NEO.ink },
+  publishTitle: { ...theme.typography.kistas, fontSize: 21, lineHeight: 27, fontWeight: '700', letterSpacing: -0.4, color: NEO.ink },
   inputError: {
     borderColor: '#a02e2e',
     borderWidth: 1.5,

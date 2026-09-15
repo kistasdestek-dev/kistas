@@ -67,7 +67,7 @@ export const LogoLoop = <T extends LogoLoopItem = LogoLoopItem>({
           <Ionicons
             name={item.icon}
             size={14}
-            color={isSelected ? '#252333' : '#686474'}
+            color={isSelected ? '#25364E' : '#686474'}
             style={styles.icon}
           />
         ) : null}
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   labelActive: {
-    color: '#252333',
+    color: '#25364E',
     fontWeight: '700',
   },
 });

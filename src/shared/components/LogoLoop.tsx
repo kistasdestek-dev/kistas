@@ -92,14 +92,14 @@ const LLP_GLOBAL_CSS = `
 
 .llp-btn:hover {
   transform: scale(1.08);
-  color: #3f3b4c;
+  color: #25364E;
   background: rgba(50,105,199,0.08);
   border-color: rgba(50,105,199,0.18);
   box-shadow: 0 4px 16px rgba(255,255,255, 0.25);
 }
 
 .llp-btn.llp-active {
-  color: #252333;
+  color: #25364E;
   background: linear-gradient(135deg, rgba(50,105,199,0.32), rgba(50,105,199,0.25));
   border-color: rgba(50,105,199,0.32);
   box-shadow: 0 0 16px rgba(255,255,255,0.35);
@@ -120,12 +120,12 @@ const LLP_GLOBAL_CSS = `
 }
 
 .llp-btn:hover .llp-icon {
-  color: #252333;
+  color: #25364E;
   transform: scale(1.06);
 }
 
 .llp-btn.llp-active .llp-icon {
-  color: #252333;
+  color: #25364E;
 }
 
 .llp-text {
@@ -202,7 +202,7 @@ export const LogoLoop = <T extends LogoLoopItem = LogoLoopItem>({
                     <Ionicons
                       name={item.icon}
                       size={15}
-                      color={isSelected ? '#252333' : '#686474'}
+                      color={isSelected ? '#25364E' : '#686474'}
                     />
                   </span>
                 )}
@@ -252,7 +252,7 @@ export const LogoLoop = <T extends LogoLoopItem = LogoLoopItem>({
                 <Ionicons
                   name={item.icon}
                   size={14}
-                  color={isSelected ? '#252333' : '#686474'}
+                  color={isSelected ? '#25364E' : '#686474'}
                   style={styles.nativeIcon}
                 />
               )}
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(50,105,199,0.22)',
     borderColor: 'rgba(50,105,199,0.32)',
     elevation: 3,
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   nativeTextActive: {
-    color: '#252333',
+    color: '#25364E',
     fontWeight: '600',
   },
   leftMask: {

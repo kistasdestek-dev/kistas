@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     color: NEO.ink,
     fontSize: 27,
     lineHeight: 33,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.8,
   },
   sectionSubtitle: {
@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     color: NEO.ink,
     fontSize: 8.5,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: 0.75,
   },
   rankTextFirst: {
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
     ...theme.typography.kistas,
     color: NEO.ink,
     fontSize: 8.5,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: 1.05,
   },
   cardBody: {
@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
     color: NEO.ink,
     fontSize: 19,
     lineHeight: 23,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.45,
     textShadowColor: 'rgba(255,255,255,0.82)',
     textShadowOffset: { width: 0, height: 2 },
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     ...theme.typography.kistas,
     color: NEO.ink,
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   productInfo: {
     flex: 1,
@@ -614,7 +614,7 @@ const styles = StyleSheet.create({
     color: NEO.ink,
     fontSize: 14.5,
     lineHeight: 18,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.2,
   },
   makerName: {

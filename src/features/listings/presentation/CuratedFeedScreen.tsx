@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   eyebrowTitle: {
     ...theme.typography.kistas,
     fontSize: 10.5,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: 0.6,
     color: NEO.ink,
   },
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
     color: NEO.ink,
     fontSize: 34,
     lineHeight: 40,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -1.1,
   },
   titleMobile: {
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
   },
   platformPillTextActive: {
     color: NEO.ink,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   resultsMetaRow: {
     flexDirection: 'row',
@@ -742,7 +742,7 @@ const styles = StyleSheet.create({
   topRankText: {
     ...theme.typography.kistas,
     fontSize: 12.5,
-    fontWeight: '900',
+    fontWeight: '700',
   },
   rankBadgeInset: {
     minWidth: 32,
@@ -764,7 +764,7 @@ const styles = StyleSheet.create({
     ...theme.typography.kistas,
     color: '#3269C7',
     fontSize: 11.5,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   freshnessBadge: {
     flexDirection: 'row',
@@ -802,7 +802,7 @@ const styles = StyleSheet.create({
   supportScoreText: {
     ...theme.typography.kistas,
     fontSize: 11.5,
-    fontWeight: '800',
+    fontWeight: '700',
     color: '#0FA336',
   },
   cardBodyRow: {
@@ -847,7 +847,7 @@ const styles = StyleSheet.create({
   logoFallback: {
     ...theme.typography.kistas,
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '700',
     color: NEO.ink,
   },
   cardInfo: {
@@ -967,7 +967,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: NEO.ink,
     fontSize: 17,
-    fontWeight: '800',
+    fontWeight: '700',
     textAlign: 'center',
   },
   stateText: {

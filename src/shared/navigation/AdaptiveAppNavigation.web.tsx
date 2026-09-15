@@ -102,7 +102,7 @@ const DESKTOP_STYLES = `
   border-radius:9999px;
   border:1px solid transparent;
   background:transparent;
-  color:#2D3748;
+  color:#25364E;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
   user-select:none;
@@ -148,7 +148,7 @@ const DESKTOP_STYLES = `
 .kdn-pill-tab.is-mobile-tab.is-active .kdn-pill-label-wrapper{max-width:76px;opacity:1;margin-left:6px}
 .kdn-pill-label{font-size:12px;font-weight:700;letter-spacing:-.01em;color:inherit;white-space:nowrap;transition:color .3s ease}
 .kdn-pill-tab.is-mobile-tab .kdn-pill-label{font-size:11.5px}
-.kdn-badge{position:absolute;top:-4px;right:-6px;display:grid;place-items:center;min-width:15px;height:15px;padding:0 3px;box-sizing:border-box;border-radius:8px;background:#252333;color:#FAFBFD;font-size:8.5px;font-weight:800}
+.kdn-badge{position:absolute;top:-4px;right:-6px;display:grid;place-items:center;min-width:15px;height:15px;padding:0 3px;box-sizing:border-box;border-radius:8px;background:#25364E;color:#FAFBFD;font-size:8.5px;font-weight:700}
 
 /* --- 21st.dev Animated Icon Keyframes & Micro-interactions --- */
 .k21-icon{display:block;width:20px;height:20px;flex-shrink:0;overflow:visible;transition:transform .24s cubic-bezier(.34,1.56,.64,1),stroke .2s ease,fill .2s ease}

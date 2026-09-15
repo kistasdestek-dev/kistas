@@ -271,7 +271,7 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Kategorilere geri dön"
         >
-          <Ionicons name="chevron-back" size={20} color="#252333" />
+          <Ionicons name="chevron-back" size={20} color="#25364E" />
           <Text style={styles.backButtonText}>Kategorilere Dön</Text>
         </TouchableOpacity>
       </View>
@@ -363,7 +363,7 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
           selectedId={selectedPlatform}
           onItemPress={(plt) => setSelectedPlatform(plt.id as PlatformFilterType)}
           speed={22}
-          accentColor="#252333"
+          accentColor="#25364E"
         />
       </View>
 
@@ -521,9 +521,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(50,105,199,0.14)',
   },
   backButtonText: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   categoryHeroCard: {
     marginHorizontal: 16,
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 32,
     lineHeight: 38,
-    fontWeight: '900',
+    fontWeight: '700',
     letterSpacing: -0.8,
     textShadowColor: 'rgba(0,0,0,0.3)',
     textShadowOffset: { width: 0, height: 2 },
@@ -644,8 +644,8 @@ const styles = StyleSheet.create({
     color: '#686474',
   },
   segmentTabTextActive: {
-    color: '#252333',
-    fontWeight: '900',
+    color: '#25364E',
+    fontWeight: '700',
   },
   platformSection: {
     marginTop: 10,
@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
     marginBottom: 4,
   },
   emptySubtitle: {

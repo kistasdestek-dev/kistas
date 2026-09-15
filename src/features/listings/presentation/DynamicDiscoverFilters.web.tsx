@@ -35,7 +35,7 @@ const CSS = `
   margin: 4px 0 16px;
   position: relative;
   z-index: 35;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .kdf-bar {
@@ -155,7 +155,7 @@ const CSS = `
 .kdf-p-kicker {
   color: #2F6CBE;
   font-size: 9px;
-  font-weight: 800;
+  font-weight:700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }

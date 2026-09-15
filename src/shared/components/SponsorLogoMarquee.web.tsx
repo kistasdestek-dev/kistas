@@ -12,9 +12,9 @@ export interface SponsorLogoMarqueeProps {
 
 const STYLE_ID = 'kistas-sponsor-logo-marquee-styles';
 const STYLES = `
-.ksm{width:100%;margin:12px 0 32px;padding:18px 0 20px;border-block:1px solid rgba(50,105,199,.13);background:rgba(250,251,253,.22);color:#252333;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-sizing:border-box}
+.ksm{width:100%;margin:12px 0 32px;padding:18px 0 20px;border-block:1px solid rgba(50,105,199,.13);background:rgba(250,251,253,.22);color:#25364E;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;box-sizing:border-box}
 .ksm-head{margin:0 24px 14px}
-.ksm-label{display:flex;align-items:center;gap:9px;color:#3f3b4c;font-size:11px;font-weight:650;letter-spacing:0}
+.ksm-label{display:flex;align-items:center;gap:9px;color:#25364E;font-size:11px;font-weight:650;letter-spacing:0}
 .ksm-dot{width:5px;height:5px;border-radius:50%;background:#3269C7}
 .ksm-viewport{overflow:hidden;mask-image:linear-gradient(90deg,transparent,#ffffff 5%,#ffffff 95%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#ffffff 5%,#ffffff 95%,transparent);touch-action:pan-y}
 .ksm-track{display:flex;width:max-content;will-change:transform;animation:ksm-flow var(--ksm-duration) linear infinite;pointer-events:none}
@@ -22,10 +22,10 @@ const STYLES = `
 .ksm-item{display:flex;align-items:center;gap:12px;width:200px;height:52px;padding:0 20px;box-sizing:border-box;flex-shrink:0}
 .ksm-logo{display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;background:transparent;color:#3269C7;font-size:15px;font-weight:700}
 .ksm-logo img{width:100%;height:100%;object-fit:contain;display:block}
-.ksm-name{min-width:0;overflow:hidden;color:#3f3b4c;font-size:14px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+.ksm-name{min-width:0;overflow:hidden;color:#25364E;font-size:14px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
 .ksm-empty{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;min-height:52px;padding:0 20px}
-.ksm-empty-copy{color:#3f3b4c;font-size:12px}
-.ksm-cta{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid rgba(50,105,199,.25);border-radius:8px;background:rgba(50,105,199,.06);color:#252333;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.ksm-empty-copy{color:#25364E;font-size:12px}
+.ksm-cta{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid rgba(50,105,199,.25);border-radius:8px;background:rgba(50,105,199,.06);color:#25364E;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer}
 .ksm-cta:hover{background:rgba(50,105,199,.12)}
 .ksm-cta:focus-visible{outline:2px solid #3269C7;outline-offset:3px}
 .ksm-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

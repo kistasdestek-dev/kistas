@@ -111,7 +111,7 @@ export const AuthSuccessOverlay: React.FC<AuthSuccessOverlayProps> = ({ onFinish
             end={{ x: 1, y: 1 }}
             style={styles.lockBadgeGradient}
           >
-            <Ionicons name="shield-checkmark" size={23} color="#252333" />
+            <Ionicons name="shield-checkmark" size={23} color="#25364E" />
           </LinearGradient>
         </View>
 
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     bottom: -130,
     borderRadius: 160,
     backgroundColor: 'rgba(50,105,199,0.16)',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOpacity: 0.36,
     shadowRadius: 72,
   },
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     top: -150,
     borderRadius: 170,
     backgroundColor: 'rgba(50,105,199,0.18)',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOpacity: 0.42,
     shadowRadius: 78,
   },
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(50,105,199,0.23)',
     overflow: 'hidden',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 22 },
     shadowOpacity: 0.08,
     shadowRadius: 38,
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     padding: 1,
     backgroundColor: 'rgba(50,105,199,0.16)',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
@@ -241,14 +241,14 @@ const styles = StyleSheet.create({
     marginRight: 7,
     borderRadius: 3,
     backgroundColor: '#EAF2FC',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOpacity: 0.08,
     shadowRadius: 5,
   },
   sessionText: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 7.5,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: 1.15,
   },
 });

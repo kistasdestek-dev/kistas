@@ -52,8 +52,9 @@ export const PopularProjectPager: React.FC<PopularProjectPagerProps> = React.mem
   const isWideWeb = Platform.OS === 'web' && viewportWidth > breakpoints.phoneMax;
   const webNavigationInset = viewportWidth <= breakpoints.tabletMax ? 84 : 252;
   const availableWebWidth = Math.min(viewportWidth - webNavigationInset, 1320);
+  const itemsPerPage = isWideWeb ? 6 : 3;
   const pageWidth = isWideWeb
-    ? Math.min(Math.max((availableWebWidth - 62) / 2, 420), 612)
+    ? Math.max(availableWebWidth - 32, 420)
     : Math.min(viewportWidth - 42, 410);
 
   const handlePressAll = onOpenAll || onOpenBrowse;
@@ -61,11 +62,11 @@ export const PopularProjectPager: React.FC<PopularProjectPagerProps> = React.mem
   const pages = useMemo(() => {
     const visibleProjects = projects.slice(0, 50);
     const nextPages: Listing[][] = [];
-    for (let index = 0; index < visibleProjects.length; index += 3) {
-      nextPages.push(visibleProjects.slice(index, index + 3));
+    for (let index = 0; index < visibleProjects.length; index += itemsPerPage) {
+      nextPages.push(visibleProjects.slice(index, index + itemsPerPage));
     }
     return nextPages;
-  }, [projects]);
+  }, [projects, itemsPerPage]);
 
   if (projects.length === 0) return null;
 
@@ -117,69 +118,95 @@ export const PopularProjectPager: React.FC<PopularProjectPagerProps> = React.mem
         snapToAlignment="start"
         contentContainerStyle={styles.popularPagerContent}
       >
-        {pages.map((page, pageIndex) => (
-          <View key={`popular-page-${pageIndex}`} style={[styles.popularPage, { width: pageWidth }]}>
-            {page.map((project, rowIndex) => {
-              const isSupportLocked = isListingSponsored(project);
-              const supportCountText = isSupportLocked
-                ? 'Sponsorlu'
-                : metric === 'weekly'
-                  ? `${project.weeklySupportCount || 0}`
-                  : `${project.upvotesCount}`;
+        {pages.map((page, pageIndex) => {
+          const renderProjectRow = (project: Listing, isLast: boolean) => {
+            const isSupportLocked = isListingSponsored(project);
+            const supportCountText = isSupportLocked
+              ? 'Sponsorlu'
+              : metric === 'weekly'
+                ? `${project.weeklySupportCount || 0}`
+                : `${project.upvotesCount}`;
 
-              return (
-                <TouchableOpacity
-                  key={project.id}
-                  style={styles.popularRow}
-                  onPress={() => onSelectProject?.(project)}
-                  activeOpacity={0.72}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${project.title} projesini incele`}
-                >
-                  <View style={styles.popularMainAction}>
-                    {project.logoUrl ? (
-                      <View style={styles.popularLogoShell}>
-                        <AutoTransparentLogo
-                          src={project.logoUrl}
-                          alt={`${project.title} logosu`}
-                          style={styles.popularLogo}
-                        />
-                      </View>
-                    ) : (
-                      <LinearGradient
-                        colors={['#EAF2FC', '#F8F9FB']}
-                        style={[styles.popularLogoShell, styles.popularLogoPlaceholder]}
-                      >
-                        <Text style={styles.popularLogoInitials}>{getProjectInitials(project.title)}</Text>
-                      </LinearGradient>
-                    )}
-                    <View style={styles.popularCopy}>
-                      <Text style={styles.popularProjectTitle} numberOfLines={1}>{project.title}</Text>
-                      <Text style={styles.popularProjectTagline} numberOfLines={1}>
-                        {project.tagline || project.description || 'Bağımsız dijital proje'}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.popularTrailing}>
-                    <View style={[styles.popularSupportBadge, isSupportLocked && styles.popularSupportBadgeLocked]}>
-                      <Ionicons
-                        name={isSupportLocked ? 'lock-closed' : 'chevron-up'}
-                        size={12}
-                        color={isSupportLocked ? '#686474' : '#0FA336'}
+            return (
+              <TouchableOpacity
+                key={project.id}
+                style={styles.popularRow}
+                onPress={() => onSelectProject?.(project)}
+                activeOpacity={0.72}
+                accessibilityRole="button"
+                accessibilityLabel={`${project.title} projesini incele`}
+              >
+                <View style={styles.popularMainAction}>
+                  {project.logoUrl ? (
+                    <View style={styles.popularLogoShell}>
+                      <AutoTransparentLogo
+                        src={project.logoUrl}
+                        alt={`${project.title} logosu`}
+                        style={styles.popularLogo}
                       />
-                      <Text style={[styles.popularSupportBadgeText, isSupportLocked && styles.popularSupportBadgeTextLocked]}>
-                        {supportCountText}
-                      </Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={15} color="#A8A5B2" style={styles.popularTrailingChevron} />
+                  ) : (
+                    <LinearGradient
+                      colors={['#EAF2FC', '#F8F9FB']}
+                      style={[styles.popularLogoShell, styles.popularLogoPlaceholder]}
+                    >
+                      <Text style={styles.popularLogoInitials}>{getProjectInitials(project.title)}</Text>
+                    </LinearGradient>
+                  )}
+                  <View style={styles.popularCopy}>
+                    <Text style={styles.popularProjectTitle} numberOfLines={1}>{project.title}</Text>
+                    <Text style={styles.popularProjectTagline} numberOfLines={1}>
+                      {project.tagline || project.description || 'Bağımsız dijital proje'}
+                    </Text>
                   </View>
-                  {rowIndex < page.length - 1 ? <View pointerEvents="none" style={styles.popularSeparator} /> : null}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        ))}
+                </View>
+
+                <View style={styles.popularTrailing}>
+                  <View style={[styles.popularSupportBadge, isSupportLocked && styles.popularSupportBadgeLocked]}>
+                    <Ionicons
+                      name={isSupportLocked ? 'lock-closed' : 'chevron-up'}
+                      size={12}
+                      color={isSupportLocked ? '#686474' : '#0FA336'}
+                    />
+                    <Text style={[styles.popularSupportBadgeText, isSupportLocked && styles.popularSupportBadgeTextLocked]}>
+                      {supportCountText}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={15} color="#A8A5B2" style={styles.popularTrailingChevron} />
+                </View>
+                {!isLast ? <View pointerEvents="none" style={styles.popularSeparator} /> : null}
+              </TouchableOpacity>
+            );
+          };
+
+          const firstCol = page.slice(0, 3);
+          const secondCol = page.slice(3, 6);
+
+          return (
+            <View key={`popular-page-${pageIndex}`} style={[styles.popularPage, { width: pageWidth }]}>
+              {isWideWeb ? (
+                <View style={styles.popularTwoColumns}>
+                  <View style={styles.popularColumn}>
+                    {firstCol.map((project, idx) =>
+                      renderProjectRow(project, idx === firstCol.length - 1)
+                    )}
+                  </View>
+                  {secondCol.length > 0 ? (
+                    <View style={styles.popularColumn}>
+                      {secondCol.map((project, idx) =>
+                        renderProjectRow(project, idx === secondCol.length - 1)
+                      )}
+                    </View>
+                  ) : null}
+                </View>
+              ) : (
+                page.map((project, idx) =>
+                  renderProjectRow(project, idx === page.length - 1)
+                )
+              )}
+            </View>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -217,10 +244,10 @@ const styles = StyleSheet.create({
   },
   popularTitle: {
     ...theme.typography.kistas,
-    color: '#252333',
+    color: '#25364E',
     fontSize: 28,
     lineHeight: 34,
-    fontWeight: '900',
+    fontWeight: '700',
     letterSpacing: -0.9,
   },
   popularSubtitle: {
@@ -321,9 +348,9 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   popularLogoInitials: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 22,
-    fontWeight: '900',
+    fontWeight: '700',
   },
   popularCopy: {
     flex: 1,
@@ -332,7 +359,7 @@ const styles = StyleSheet.create({
     marginRight: 9,
   },
   popularProjectTitle: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 16.5,
     lineHeight: 21,
     fontWeight: '700',
@@ -370,7 +397,7 @@ const styles = StyleSheet.create({
   popularSupportBadgeText: {
     color: '#0FA336',
     fontSize: 11.5,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.2,
   },
   popularSupportBadgeTextLocked: {
@@ -388,5 +415,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: StyleSheet.hairlineWidth,
     backgroundColor: 'rgba(142,142,147,0.24)',
+  },
+  popularTwoColumns: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 24,
+  },
+  popularColumn: {
+    flex: 1,
+    minWidth: 0,
   },
 });

@@ -124,7 +124,7 @@ export const browseStyles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     lineHeight: 17,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.25,
     textShadowColor: 'rgba(23,56,102,0.28)',
     textShadowOffset: { width: 0, height: 1 },

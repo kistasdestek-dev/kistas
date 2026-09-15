@@ -129,6 +129,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 9,
     lineHeight: 11,
-    fontWeight: '900',
+    fontWeight: '700',
   },
 });

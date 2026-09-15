@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   },
   brandName: {
     fontSize: 24,
-    fontWeight: '900',
+    fontWeight: '700',
     letterSpacing: -0.6,
     color: '#1A1826',
     lineHeight: 30,
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
   },
   segmentTabActive: {
     backgroundColor: 'transparent',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.35,
     shadowRadius: 5,
@@ -620,7 +620,7 @@ const styles = StyleSheet.create({
     color: '#686474',
   },
   segmentTabTextActive: {
-    color: '#252333',
+    color: '#25364E',
     fontWeight: '700',
   },
   categoriesSection: {
@@ -652,10 +652,10 @@ const styles = StyleSheet.create({
   categoryChipText: {
     fontSize: 11.5,
     fontWeight: '500',
-    color: '#252333',
+    color: '#25364E',
   },
   categoryChipTextActive: {
-    color: '#252333',
+    color: '#25364E',
     fontWeight: '700',
   },
   browseShortcutChip: {
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
   browseShortcutText: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
   },
   browseShortcutChevron: {
     marginLeft: 3,
@@ -705,10 +705,10 @@ const styles = StyleSheet.create({
   platformChipText: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#252333',
+    color: '#25364E',
   },
   platformChipTextActive: {
-    color: '#252333',
+    color: '#25364E',
     fontWeight: '700',
   },
   popularSection: {
@@ -739,10 +739,10 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   popularTitle: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 28,
     lineHeight: 34,
-    fontWeight: '900',
+    fontWeight: '700',
     letterSpacing: -0.9,
   },
   popularSubtitle: {
@@ -790,9 +790,9 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   popularLogoInitials: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 22,
-    fontWeight: '900',
+    fontWeight: '700',
   },
   popularCopy: {
     flex: 1,
@@ -801,7 +801,7 @@ const styles = StyleSheet.create({
     marginRight: 9,
   },
   popularProjectTitle: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 16.5,
     lineHeight: 21,
     fontWeight: '700',
@@ -838,12 +838,12 @@ const styles = StyleSheet.create({
     opacity: 0.82,
   },
   popularSupportText: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 12.5,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   popularSupportTextActive: {
-    color: '#252333',
+    color: '#25364E',
   },
   popularSupportCount: {
     color: '#686474',
@@ -882,7 +882,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: Platform.OS === 'web' ? '#3f3b4c' : '#252333',
+    color: Platform.OS === 'web' ? '#3f3b4c' : '#25364E',
     marginBottom: 4,
   },
   emptySubtitle: {
@@ -903,7 +903,7 @@ const styles = StyleSheet.create({
   clearFilterBtnText: {
     fontSize: 11.5,
     fontWeight: '600',
-    color: '#252333',
+    color: '#25364E',
   },
   listFooter: {
     height: 124,

@@ -130,7 +130,7 @@ const BAR_STYLES = `
 .k-action-item-title {
   font-size: 14px;
   font-weight: 700;
-  color: #0F172A;
+  color: #25364E;
   line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
@@ -209,7 +209,7 @@ const BAR_STYLES = `
   padding: 8px 14px;
   font-size: 13.5px;
   font-weight: 700;
-  color: #252333;
+  color: #25364E;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -248,7 +248,7 @@ const BAR_STYLES = `
   cursor: pointer;
   color: #3269C7;
   font-size: 14px;
-  font-weight: 800;
+  font-weight:700;
   display: flex;
   align-items: center;
   padding: 0 2px;

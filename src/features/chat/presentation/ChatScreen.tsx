@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
     fontSize: 14.5,
     lineHeight: 22,
     fontWeight: '400',
-    color: '#1E293B',
+    color: '#25364E',
     letterSpacing: -0.01,
     ...Platform.select({ web: { overflowWrap: 'anywhere' } as any }),
   },
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
   meetingTitle: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: '#1E293B',
+    color: '#25364E',
   },
   meetingTitleOutgoing: {
     color: '#FFFFFF',
@@ -616,7 +616,7 @@ const styles = StyleSheet.create({
   },
   closedComposer: { minHeight: 82, paddingHorizontal: 18, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', gap: 11, backgroundColor: '#F4F7FB', borderTopWidth: 1, borderTopColor: 'rgba(50,105,199,0.1)' },
   closedComposerCopy: { flex: 1, minWidth: 0 },
-  closedComposerTitle: { color: '#34445C', fontSize: 12.5, fontWeight: '800' },
+  closedComposerTitle: { color: '#34445C', fontSize: 12.5, fontWeight: '700' },
   closedComposerText: { marginTop: 3, color: '#74839A', fontSize: 10.5, lineHeight: 15 },
   messageText: {
     fontSize: 15,
@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   closeSupportButton: { minHeight: 38, paddingHorizontal: 11, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#FFF3F5', borderWidth: 1, borderColor: '#EBC9D0' },
-  closeSupportButtonText: { color: '#9D3047', fontSize: 10.5, fontWeight: '800' },
+  closeSupportButtonText: { color: '#9D3047', fontSize: 10.5, fontWeight: '700' },
   headerAvatarWrap: {
     marginLeft: 12,
   },
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   headerName: {
     flexShrink: 1,
     fontSize: 16,
-    color: '#252333',
+    color: '#25364E',
     fontWeight: theme.typography.weights.heavy,
   },
   headerSubtitleRow: {
@@ -717,7 +717,7 @@ const styles = StyleSheet.create({
   projectTitle: {
     marginTop: 1,
     fontSize: 12,
-    color: '#252333',
+    color: '#25364E',
     fontWeight: theme.typography.weights.bold,
   },
   projectActionBadge: {
@@ -759,7 +759,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   messageStateTitle: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 15,
     fontWeight: theme.typography.weights.bold,
   },
@@ -815,7 +815,7 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     borderWidth: 1,
     borderColor: 'rgba(50,105,199,0.12)',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 8,
@@ -870,7 +870,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 16,
     lineHeight: 24,
-    color: '#252333',
+    color: '#25364E',
     ...Platform.select({ web: { outlineStyle: 'none' } as any }),
   },
   sendButton: {
@@ -881,7 +881,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 8,
     backgroundColor: '#dcd0f0',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.38,
     shadowRadius: 10,
@@ -931,13 +931,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#CADCF5',
   },
-  closeModalEyebrow: { marginTop: 15, color: '#3269C7', fontSize: 9, fontWeight: '900', letterSpacing: 1.2 },
-  closeModalTitle: { marginTop: 5, color: '#252333', fontSize: 22, lineHeight: 28, fontWeight: '900' },
+  closeModalEyebrow: { marginTop: 15, color: '#3269C7', fontSize: 9, fontWeight: '700', letterSpacing: 1.2 },
+  closeModalTitle: { marginTop: 5, color: '#25364E', fontSize: 22, lineHeight: 28, fontWeight: '700' },
   closeModalText: { marginTop: 9, color: '#686474', fontSize: 12.5, lineHeight: 19, textAlign: 'center' },
   closeModalError: { marginTop: 10, color: '#A9334E', fontSize: 11.5, lineHeight: 17, textAlign: 'center' },
   closeModalActions: { width: '100%', flexDirection: 'row', gap: 10, marginTop: 20 },
   closeModalCancel: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 14, backgroundColor: '#F3F5F8', borderWidth: 1, borderColor: '#E1E6EE' },
-  closeModalCancelText: { color: '#4D4B59', fontSize: 12, fontWeight: '800' },
+  closeModalCancelText: { color: '#4D4B59', fontSize: 12, fontWeight: '700' },
   closeModalConfirm: { flex: 1.45, minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, borderRadius: 14, backgroundColor: '#A9334E' },
-  closeModalConfirmText: { color: '#FFFFFF', fontSize: 11.5, fontWeight: '900' },
+  closeModalConfirmText: { color: '#FFFFFF', fontSize: 11.5, fontWeight: '700' },
 });

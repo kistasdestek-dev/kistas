@@ -68,7 +68,7 @@ export const SponsorLogoMarquee = React.memo<SponsorLogoMarqueeProps>(({ project
           <Text style={styles.emptyText}>{emptyMessage}</Text>
           {onOpenCreditStore ? (
             <TouchableOpacity style={styles.cta} onPress={onOpenCreditStore} accessibilityRole="button">
-              <Text style={styles.ctaText}>Vitrinde yer al</Text><Ionicons name="arrow-forward" size={13} color="#252333" />
+              <Text style={styles.ctaText}>Vitrinde yer al</Text><Ionicons name="arrow-forward" size={13} color="#25364E" />
             </TouchableOpacity>
           ) : null}
         </View>
@@ -82,17 +82,17 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 16, marginBottom: 9 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#3269C7' },
-  label: { color: '#3f3b4c', fontSize: 11, fontWeight: '600', letterSpacing: 0 },
+  label: { color: '#25364E', fontSize: 11, fontWeight: '600', letterSpacing: 0 },
   viewport: { overflow: 'hidden' },
   track: { flexDirection: 'row', width: 'auto' },
   item: { width: ITEM_WIDTH, flexShrink: 0, height: 48, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 10 },
   logo: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
   logoImage: { width: '100%', height: '100%' },
   uploadedLogo: { backgroundColor: 'transparent', borderRadius: 0, overflow: 'visible' },
-  initials: { color: '#3269C7', fontSize: 10, fontWeight: '900' },
-  name: { flex: 1, color: '#3f3b4c', fontSize: 13, fontWeight: '600' },
+  initials: { color: '#3269C7', fontSize: 10, fontWeight: '700' },
+  name: { flex: 1, color: '#25364E', fontSize: 13, fontWeight: '600' },
   empty: { alignItems: 'center', gap: 8, paddingHorizontal: 16 },
   emptyText: { color: '#3269C7', fontSize: 11, textAlign: 'center' },
   cta: { minHeight: 34, paddingHorizontal: 11, flexDirection: 'row', alignItems: 'center', gap: 7, borderWidth: 1, borderColor: 'rgba(50,105,199,0.20)', borderRadius: 8, backgroundColor: 'rgba(50,105,199,0.08)' },
-  ctaText: { color: '#252333', fontSize: 10, fontWeight: '800' },
+  ctaText: { color: '#25364E', fontSize: 10, fontWeight: '700' },
 });

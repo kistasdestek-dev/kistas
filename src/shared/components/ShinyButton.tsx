@@ -108,7 +108,7 @@ const SHINY_GLOBAL_CSS = `
   padding: 12px 32px;
   border-radius: 9999px;
   background-color: #FAFBFD;
-  color: #252333;
+  color: #25364E;
   font-size: 13.5px;
   font-weight: 600;
   letter-spacing: 0.025em;
@@ -130,11 +130,11 @@ const SHINY_GLOBAL_CSS = `
 // Conic gradient ışık hüzmesi stili (Gemini)
 const beamGradients: Record<ShinyButtonVariant, string> = {
   'electric-blue':
-    'conic-gradient(from 0deg, transparent 0deg, transparent 260deg, rgba(50,105,199,0.2) 290deg, rgba(50,105,199,0.8) 330deg, #3269C7 345deg, #252333 355deg, rgba(50,105,199,0.9) 360deg)',
+    'conic-gradient(from 0deg, transparent 0deg, transparent 260deg, rgba(50,105,199,0.2) 290deg, rgba(50,105,199,0.8) 330deg, #3269C7 345deg, #25364E 355deg, rgba(50,105,199,0.9) 360deg)',
   'kistas-orange':
-    'conic-gradient(from 0deg, transparent 0deg, transparent 260deg, rgba(160,57,1,0.2) 290deg, rgba(160,78,1,0.8) 330deg, #a08650 350deg, #252333 356deg, rgba(160,57,1,0.9) 360deg)',
+    'conic-gradient(from 0deg, transparent 0deg, transparent 260deg, rgba(160,57,1,0.2) 290deg, rgba(160,78,1,0.8) 330deg, #a08650 350deg, #25364E 356deg, rgba(160,57,1,0.9) 360deg)',
   emerald:
-    'conic-gradient(from 0deg, transparent 0deg, transparent 260deg, rgba(24,118,87,0.2) 290deg, rgba(24,118,87,0.8) 330deg, #3269C7 350deg, #252333 356deg, rgba(24,118,87,0.9) 360deg)',
+    'conic-gradient(from 0deg, transparent 0deg, transparent 260deg, rgba(24,118,87,0.2) 290deg, rgba(24,118,87,0.8) 330deg, #3269C7 350deg, #25364E 356deg, rgba(24,118,87,0.9) 360deg)',
 };
 
 const nativePalette: Record<ShinyButtonVariant, { beam: string; border: string }> = {

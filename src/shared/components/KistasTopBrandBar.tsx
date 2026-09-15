@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   },
   brandName: {
     fontSize: 24,
-    fontWeight: '900',
+    fontWeight: '700',
     letterSpacing: -0.6,
     color: '#1A1826',
     lineHeight: 29,

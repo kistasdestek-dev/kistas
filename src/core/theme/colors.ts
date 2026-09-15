@@ -1,6 +1,6 @@
 /** White surfaces, ink typography and restrained logo-blue interaction accents. */
 export const colors = {
-  brand: { ink: '#252333', canvas: '#F1F5FA', surface: '#F8F9FB' },
+  brand: { ink: '#25364E', canvas: '#F1F5FA', surface: '#F8F9FB' },
   primary: {
     DEFAULT: '#3269C7', light: '#3269C7', hover: '#2858AA', dark: '#EAF2FC',
     surface: 'rgba(50,105,199,0.12)', gradientStart: '#EAF2FC', gradientEnd: '#3269C7',
@@ -26,7 +26,7 @@ export const colors = {
   neutral: {
     white: '#FFFFFF', 50: '#FAFAFC', 100: '#F3F5F8', 200: '#DFE4EB',
     300: '#777181', 400: '#686474', 500: '#686474', 600: '#5c576b',
-    700: '#403b50', 800: '#302d40', 900: '#252333', black: '#252333',
+    700: '#403b50', 800: '#302d40', 900: '#25364E', black: '#25364E',
   },
   glass: {
     cardBg: '#FFFFFF', cardBorder: '#DFE4EB',

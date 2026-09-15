@@ -86,7 +86,7 @@ export const HowItWorksScreen: React.FC<HowItWorksScreenProps> = ({
           onPress={() => setRole('explorer')}
           accessibilityRole="button"
         >
-          <Ionicons name="compass" size={15} color={role === 'explorer' ? '#252333' : '#687890'} />
+          <Ionicons name="compass" size={15} color={role === 'explorer' ? '#25364E' : '#687890'} />
           <Text style={[styles.tabText, role === 'explorer' && styles.tabTextActive]}>Keşfedenler İçin</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -94,7 +94,7 @@ export const HowItWorksScreen: React.FC<HowItWorksScreenProps> = ({
           onPress={() => setRole('creator')}
           accessibilityRole="button"
         >
-          <Ionicons name="rocket" size={15} color={role === 'creator' ? '#252333' : '#687890'} />
+          <Ionicons name="rocket" size={15} color={role === 'creator' ? '#25364E' : '#687890'} />
           <Text style={[styles.tabText, role === 'creator' && styles.tabTextActive]}>Üretenler İçin</Text>
         </TouchableOpacity>
       </View>
@@ -178,8 +178,8 @@ const styles = StyleSheet.create({
   back: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 28 },
   backText: { color: '#686474', fontSize: 13, fontWeight: '700' },
   logoWrap: { marginBottom: 16 },
-  kicker: { color: '#3269C7', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
-  title: { marginTop: 10, color: '#252333', fontSize: 36, lineHeight: 40, fontWeight: '900', letterSpacing: -0.5 },
+  kicker: { color: '#3269C7', fontSize: 11, fontWeight: '700', letterSpacing: 1.5 },
+  title: { marginTop: 10, color: '#25364E', fontSize: 36, lineHeight: 40, fontWeight: '700', letterSpacing: -0.5 },
   lead: { marginTop: 8, marginBottom: 28, color: '#5A6A80', fontSize: 15, lineHeight: 23 },
   tabs: {
     flexDirection: 'row',
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   tabText: { color: '#687890', fontSize: 13, fontWeight: '700' },
-  tabTextActive: { color: '#252333', fontWeight: '800' },
+  tabTextActive: { color: '#25364E', fontWeight: '700' },
   stepsList: { gap: 16, marginBottom: 36 },
   stepCard: {
     backgroundColor: '#FFFFFF',
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepNum: { color: '#71849F', fontSize: 11, fontWeight: '700', letterSpacing: 0 },
-  stepTitle: { color: '#28374D', fontSize: 20, lineHeight: 28, fontWeight: '700', marginBottom: 12 },
+  stepTitle: { color: '#25364E', fontSize: 20, lineHeight: 28, fontWeight: '700', marginBottom: 12 },
   stepDesc: { color: '#5B6E87', fontSize: 14, lineHeight: 25 },
   principlesBox: {
     backgroundColor: '#F8FAFD',
@@ -241,10 +241,10 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     gap: 16,
   },
-  sectionHeader: { color: '#252333', fontSize: 18, fontWeight: '900', marginBottom: 4 },
+  sectionHeader: { color: '#25364E', fontSize: 18, fontWeight: '700', marginBottom: 4 },
   principleRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   principleContent: { flex: 1 },
-  principleTitle: { color: '#252333', fontSize: 14, fontWeight: '800', marginBottom: 2 },
+  principleTitle: { color: '#25364E', fontSize: 14, fontWeight: '700', marginBottom: 2 },
   principleDesc: { color: '#687890', fontSize: 12.5, lineHeight: 18 },
   faqBox: { marginBottom: 32, gap: 14 },
   faqItem: {
@@ -254,21 +254,21 @@ const styles = StyleSheet.create({
     borderColor: '#E6EFF9',
     padding: 16,
   },
-  faqQ: { color: '#252333', fontSize: 14, fontWeight: '800', marginBottom: 6 },
+  faqQ: { color: '#25364E', fontSize: 14, fontWeight: '700', marginBottom: 6 },
   faqA: { color: '#687890', fontSize: 13, lineHeight: 19 },
   primaryCta: {
-    backgroundColor: '#252333',
+    backgroundColor: '#25364E',
     borderRadius: 14,
     paddingVertical: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 3,
   },
-  primaryCtaText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  primaryCtaText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
 });

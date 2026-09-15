@@ -93,7 +93,7 @@ const ACTION_SEARCH_CSS = `
   outline: none;
   font-size: 14.5px;
   font-weight: 500;
-  color: #252333;
+  color: #25364E;
   letter-spacing: -0.01em;
 }
 .asb-input::placeholder {
@@ -143,7 +143,7 @@ const ACTION_SEARCH_CSS = `
 }
 .asb-clear-btn:hover {
   background: rgba(0, 0, 0, 0.12);
-  color: #252333;
+  color: #25364E;
 }
 
 /* Floating Dropdown Results */
@@ -248,7 +248,7 @@ const ACTION_SEARCH_CSS = `
 }
 .asb-item-initials {
   font-size: 13px;
-  font-weight: 800;
+  font-weight:700;
   color: #3269C7;
 }
 .asb-item-info {
@@ -265,14 +265,14 @@ const ACTION_SEARCH_CSS = `
 .asb-item-title {
   font-size: 13.5px;
   font-weight: 700;
-  color: #1E293B;
+  color: #25364E;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .asb-item-sponsored {
   font-size: 9.5px;
-  font-weight: 800;
+  font-weight:700;
   color: #3269C7;
   background: rgba(50, 105, 199, 0.12);
   padding: 1px 5px;
@@ -338,7 +338,7 @@ const ACTION_SEARCH_CSS = `
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
-  color: #334155;
+  color: #25364E;
   background: #FFFFFF;
   border: 1px solid rgba(203, 213, 225, 0.9);
   border-bottom: 2px solid rgba(148, 163, 184, 0.6);
@@ -735,7 +735,7 @@ const nativeStyles = StyleSheet.create({
     flex: 1,
     height: '100%',
     fontSize: 15,
-    color: '#252333',
+    color: '#25364E',
   },
   clearBtn: {
     padding: 4,
@@ -765,7 +765,7 @@ const nativeStyles = StyleSheet.create({
   itemTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1E293B',
+    color: '#25364E',
   },
   itemTagline: {
     fontSize: 12,

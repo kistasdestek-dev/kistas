@@ -106,7 +106,7 @@ const CreditBalanceCard: React.FC<CreditBalanceCardProps> = ({
     <View style={styles.balanceHeader}>
       <Text style={styles.balanceEyebrow}>KULLANILABİLİR BAKİYE</Text>
       <View style={styles.flashIconPill}>
-        <Ionicons name="flash" size={20} color="#252333" />
+        <Ionicons name="flash" size={20} color="#25364E" />
       </View>
     </View>
 
@@ -128,7 +128,7 @@ const CreditBalanceCard: React.FC<CreditBalanceCardProps> = ({
         accessibilityLabel="Projeyi öne çıkar"
       >
         <Text style={styles.balanceActionText}>Lansman alanına git</Text>
-        <Ionicons name="arrow-forward" size={14} color="#252333" />
+        <Ionicons name="arrow-forward" size={14} color="#25364E" />
       </TouchableOpacity>
     ) : null}
   </View>
@@ -142,7 +142,7 @@ interface BenefitItemProps {
 const BenefitItem: React.FC<BenefitItemProps> = ({ icon, title }) => (
   <View style={styles.benefitItem}>
     <View style={styles.benefitIconBox}>
-      <Ionicons name={icon} size={15} color="#252333" />
+      <Ionicons name={icon} size={15} color="#25364E" />
     </View>
     <Text style={styles.benefitTitle}>
       {title}
@@ -205,7 +205,7 @@ const CreditPackageCard: React.FC<CreditPackageCardProps> = ({
       <View pointerEvents="none" style={styles.packageArt}>
         <View style={[styles.artTile, styles.artTileBack]} />
         <View style={[styles.artTile, styles.artTileFront]}>
-          <Ionicons name={pkg.id === 'starter' ? 'flash-outline' : pkg.isPopular ? 'rocket-outline' : 'layers-outline'} size={30} color="#252333" />
+          <Ionicons name={pkg.id === 'starter' ? 'flash-outline' : pkg.isPopular ? 'rocket-outline' : 'layers-outline'} size={30} color="#25364E" />
         </View>
       </View>
       {pkg.badge ? (
@@ -238,7 +238,7 @@ const CreditPackageCard: React.FC<CreditPackageCardProps> = ({
           <Ionicons
             name={isSelected ? 'checkmark-circle' : 'ellipse-outline'}
             size={22}
-            color={isSelected ? '#252333' : '#252333'}
+            color={isSelected ? '#25364E' : '#25364E'}
           />
         </View>
       </View>
@@ -254,7 +254,7 @@ const CreditPackageCard: React.FC<CreditPackageCardProps> = ({
       <View style={styles.packageFeaturesList}>
         {pkg.features.map((feature) => (
           <View key={feature} style={styles.featureRow}>
-            <Ionicons name="checkmark" size={13} color="#252333" style={styles.featureIcon} />
+            <Ionicons name="checkmark" size={13} color="#25364E" style={styles.featureIcon} />
             <Text style={styles.featureText}>
               {feature}
             </Text>
@@ -263,7 +263,7 @@ const CreditPackageCard: React.FC<CreditPackageCardProps> = ({
       </View>
       <View style={[styles.packageSelect, isSelected && styles.packageSelectActive]}>
         <Text style={[styles.packageSelectText, isSelected && styles.packageSelectTextActive]}>{isSelected ? 'Seçili paket' : 'Paketi seç'}</Text>
-        <Ionicons name={isSelected ? 'checkmark' : 'arrow-forward'} size={16} color={isSelected ? '#252333' : '#252333'} />
+        <Ionicons name={isSelected ? 'checkmark' : 'arrow-forward'} size={16} color={isSelected ? '#25364E' : '#25364E'} />
       </View>
     </TouchableOpacity>
   );
@@ -552,8 +552,8 @@ const styles = StyleSheet.create({
   artTileFront: { left: 0, top: 19, backgroundColor: '#25485c', borderWidth: 1, borderColor: '#3269C7', transform: [{ rotate: '-9deg' }], ...Platform.select({ web: { boxShadow: '0 8px 12px rgba(255,255,255,0.13), inset 0 2px 1px rgba(255,255,255,0.2)' }, default: { elevation: 2 } }) },
   packageSelect: { marginTop: 24, padding: 14, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#F8F9FB' },
   packageSelectActive: { backgroundColor: '#EAF2FC' },
-  packageSelectText: { fontSize: 13, fontWeight: '700', color: '#252333' },
-  packageSelectTextActive: { color: '#252333' },
+  packageSelectText: { fontSize: 13, fontWeight: '700', color: '#25364E' },
+  packageSelectTextActive: { color: '#25364E' },
   header: {
     flex: 1,
     justifyContent: 'center',
@@ -561,8 +561,8 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 38,
     lineHeight: 43,
-    fontWeight: '800',
-    color: '#252333',
+    fontWeight: '700',
+    color: '#25364E',
     marginTop: 12,
     letterSpacing: -1.3,
   },
@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
     padding: 26,
     position: 'relative',
     overflow: 'hidden',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
   balanceEyebrow: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#3f3b4c',
+    color: '#25364E',
     letterSpacing: 0.8,
   },
   flashIconPill: {
@@ -639,19 +639,19 @@ const styles = StyleSheet.create({
   },
   balanceNumber: {
     fontSize: 56,
-    fontWeight: '800',
-    color: '#252333',
+    fontWeight: '700',
+    color: '#25364E',
     letterSpacing: -0.5,
   },
   balanceUnit: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#3f3b4c',
+    color: '#25364E',
     marginLeft: 6,
   },
   balanceDescription: {
     fontSize: 12.5,
-    color: '#3f3b4c',
+    color: '#25364E',
     lineHeight: 18,
     marginBottom: 12,
   },
@@ -665,7 +665,7 @@ const styles = StyleSheet.create({
   balanceActionText: {
     fontSize: 12.5,
     fontWeight: '600',
-    color: '#252333',
+    color: '#25364E',
     marginRight: 4,
   },
   benefitsContainer: {
@@ -701,7 +701,7 @@ const styles = StyleSheet.create({
   benefitTitle: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#252333',
+    color: '#25364E',
   },
   packagesSection: {
     marginBottom: 20,
@@ -709,7 +709,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 25,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
     marginBottom: 4,
     letterSpacing: -0.2,
   },
@@ -721,7 +721,7 @@ const styles = StyleSheet.create({
     padding: 22,
     position: 'relative',
     overflow: 'hidden',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 9 },
     shadowOpacity: 0.04,
     shadowRadius: 12,
@@ -759,10 +759,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   popularBadgeText: {
-    color: '#252333',
+    color: '#25364E',
   },
   neutralBadgeText: {
-    color: '#252333',
+    color: '#25364E',
   },
   packageCardHeader: {
     flexDirection: 'row',
@@ -777,7 +777,7 @@ const styles = StyleSheet.create({
   packageName: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
   },
   packageTagline: {
     fontSize: 12,
@@ -805,19 +805,19 @@ const styles = StyleSheet.create({
   packageCreditsNumber: {
     fontSize: 36,
     letterSpacing: -1,
-    fontWeight: '800',
-    color: '#252333',
+    fontWeight: '700',
+    color: '#25364E',
   },
   packageCreditsUnit: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#252333',
+    color: '#25364E',
     marginLeft: 5,
   },
   packagePriceText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
   },
   packageFeaturesList: {
     gap: 10,
@@ -833,7 +833,7 @@ const styles = StyleSheet.create({
   featureText: {
     flex: 1,
     fontSize: 12,
-    color: '#252333',
+    color: '#25364E',
     lineHeight: 16,
   },
   transparencyRow: {
@@ -892,7 +892,7 @@ const styles = StyleSheet.create({
   purchasePlanSummary: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
   },
   purchaseButton: {
     backgroundColor: 'transparent',
@@ -900,7 +900,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.28,
     shadowRadius: 10,
@@ -926,7 +926,7 @@ const styles = StyleSheet.create({
   purchaseButtonText: {
     fontSize: 14.5,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
     letterSpacing: 0.2,
   },
 });

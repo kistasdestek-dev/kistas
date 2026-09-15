@@ -1071,7 +1071,7 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
                 <Ionicons
                   name={getPlatformIonicon(plt)}
                   size={14}
-                  color="#252333"
+                  color="#25364E"
                   style={styles.pillIcon}
                 />
                 <Text style={styles.platformPillText}>{plt}</Text>
@@ -1082,7 +1082,7 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
               <Ionicons
                 name="pricetag-outline"
                 size={13}
-                color="#252333"
+                color="#25364E"
                 style={styles.pillIcon}
               />
               <Text style={styles.pricingPillText}>
@@ -1106,7 +1106,7 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
                 <Ionicons
                   name="ticket-outline"
                   size={18}
-                  color="#252333"
+                  color="#25364E"
                   style={styles.promoHeaderIcon}
                 />
                 <Text style={styles.promoTitle}>Kıstas topluluğuna özel</Text>
@@ -1194,7 +1194,7 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
                 <Ionicons
                   name="chatbubble-ellipses-outline"
                   size={15}
-                  color="#252333"
+                  color="#25364E"
                   style={styles.messageIcon}
                 />
                 <Text style={styles.messageMakerBtnText}>Mesaj Gönder</Text>
@@ -1464,7 +1464,7 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
                   accessibilityRole="button"
                   accessibilityLabel="Önceki görsel"
                 >
-                  <Ionicons name="chevron-back" size={24} color="#252333" />
+                  <Ionicons name="chevron-back" size={24} color="#25364E" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => showAdjacentScreenshot(1)}
@@ -1473,7 +1473,7 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
                   accessibilityRole="button"
                   accessibilityLabel="Sonraki görsel"
                 >
-                  <Ionicons name="chevron-forward" size={24} color="#252333" />
+                  <Ionicons name="chevron-forward" size={24} color="#25364E" />
                 </TouchableOpacity>
               </>
             ) : null}
@@ -1537,7 +1537,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.4,
     shadowRadius: 18,
@@ -1553,8 +1553,8 @@ const styles = StyleSheet.create({
   },
   heroLogoPlaceholderText: {
     fontSize: 34,
-    fontWeight: '800',
-    color: '#252333',
+    fontWeight: '700',
+    color: '#25364E',
   },
   heroInfoCol: {
     flex: 1,
@@ -1575,8 +1575,8 @@ const styles = StyleSheet.create({
 
   heroTitle: {
     fontSize: 20,
-    fontWeight: '800',
-    color: '#252333',
+    fontWeight: '700',
+    color: '#25364E',
     letterSpacing: -0.4,
     lineHeight: 25,
   },
@@ -1595,7 +1595,7 @@ const styles = StyleSheet.create({
   heroDeveloperName: {
     fontSize: 11.5,
     fontWeight: '600',
-    color: '#252333',
+    color: '#25364E',
   },
   verifiedIcon: {
     marginLeft: 3,
@@ -1669,7 +1669,7 @@ const styles = StyleSheet.create({
     ...theme.typography.kistas,
     fontSize: 7.5,
     lineHeight: 10,
-    fontWeight: '800',
+    fontWeight: '700',
     color: '#64748B',
     letterSpacing: 0.65,
     marginBottom: 4,
@@ -1678,21 +1678,21 @@ const styles = StyleSheet.create({
     ...theme.typography.kistas,
     fontSize: 14,
     lineHeight: 17,
-    fontWeight: '800',
-    color: '#252333',
+    fontWeight: '700',
+    color: '#25364E',
   },
   metadataValueText: {
     ...theme.typography.kistas,
     fontSize: 11.5,
     lineHeight: 16,
-    fontWeight: '800',
-    color: '#252333',
+    fontWeight: '700',
+    color: '#25364E',
   },
   metadataValueNeutral: {
     ...theme.typography.kistas,
     fontSize: 12,
     lineHeight: 16,
-    fontWeight: '800',
+    fontWeight: '700',
     color: '#394D45',
   },
   supportSection: {
@@ -1762,7 +1762,7 @@ const styles = StyleSheet.create({
   },
   supportCountTextLocked: {
     color: '#FFFFFF',
-    fontWeight: '800',
+    fontWeight: '700',
   },
   supportLockedNotice: {
     alignItems: 'center',
@@ -1794,7 +1794,7 @@ const styles = StyleSheet.create({
   },
   supportCountText: {
     fontSize: 11.5,
-    fontWeight: '800',
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   supportCountTextActive: {
@@ -1812,10 +1812,10 @@ const styles = StyleSheet.create({
   previewHeading: {
     marginBottom: 22,
     paddingHorizontal: 24,
-    color: '#252333',
+    color: '#25364E',
     fontSize: 30,
     lineHeight: 36,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -1,
   },
   previewHeadingCompact: {
@@ -1827,7 +1827,7 @@ const styles = StyleSheet.create({
   sectionHeading: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
     letterSpacing: -0.2,
     marginBottom: 10,
     paddingHorizontal: 16,
@@ -1872,7 +1872,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(50,105,199,0.14)',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 28 },
     shadowOpacity: 0.5,
     shadowRadius: 48,
@@ -1900,9 +1900,9 @@ const styles = StyleSheet.create({
     right: 20,
   },
   lightboxTitle: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.2,
     marginBottom: 3,
   },
@@ -1918,7 +1918,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#252333',
+    backgroundColor: '#25364E',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.24)',
   },
@@ -1940,7 +1940,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(50,105,199,0.12)',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 18 },
     shadowOpacity: 0.18,
     shadowRadius: 28,
@@ -2005,10 +2005,10 @@ const styles = StyleSheet.create({
   },
   descriptionHeading: {
     marginBottom: 10,
-    color: '#252333',
+    color: '#25364E',
     fontSize: 18,
     lineHeight: 23,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.35,
   },
   expandToggleBtn: {
@@ -2036,10 +2036,10 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   commentsTitle: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 18,
     lineHeight: 23,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: 0,
   },
   devDialogueChamber: {
@@ -2098,7 +2098,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     borderColor: 'rgba(50,105,199,0.18)',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 6,
@@ -2125,8 +2125,8 @@ const styles = StyleSheet.create({
   },
   devSpeechName: {
     fontSize: 12.5,
-    fontWeight: '800',
-    color: '#252333',
+    fontWeight: '700',
+    color: '#25364E',
   },
   devMakerBadge: {
     backgroundColor: 'rgba(50,105,199,0.08)',
@@ -2219,7 +2219,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(50,105,199,0.09)',
   },
   commentAccessCopy: { flex: 1 },
-  commentAccessTitle: { color: '#252333', fontSize: 12, fontWeight: '750' as any },
+  commentAccessTitle: { color: '#25364E', fontSize: 12, fontWeight: '750' as any },
   commentAccessText: { color: '#3269C7', fontSize: 10.5, lineHeight: 15, marginTop: 2 },
   commentsLoading: { height: 72, alignItems: 'center', justifyContent: 'center' },
   commentsEmpty: {
@@ -2262,10 +2262,10 @@ const styles = StyleSheet.create({
   },
   commentsEmptyTitle: {
     ...theme.typography.kistas,
-    color: '#252333',
+    color: '#25364E',
     fontSize: 15,
     lineHeight: 19,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.3,
   },
   commentsList: {
@@ -2286,11 +2286,11 @@ const styles = StyleSheet.create({
   },
   commentContent: { flex: 1, minWidth: 0 },
   commentMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  commentAuthor: { color: '#252333', fontSize: 11.5, fontWeight: '800', maxWidth: '55%' },
+  commentAuthor: { color: '#25364E', fontSize: 11.5, fontWeight: '700', maxWidth: '55%' },
   commentDate: { color: '#3269C7', fontSize: 9.5, marginLeft: 'auto' },
-  commentText: { color: '#3f3b4c', fontSize: 12.5, lineHeight: 18.5, marginTop: 5 },
+  commentText: { color: '#25364E', fontSize: 12.5, lineHeight: 18.5, marginTop: 5 },
   replyAction: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 7, paddingVertical: 2 },
-  replyActionText: { color: '#3269C7', fontSize: 10.5, fontWeight: '800' },
+  replyActionText: { color: '#3269C7', fontSize: 10.5, fontWeight: '700' },
   replyRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -2323,7 +2323,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(50,105,199,0.2)',
   },
-  ownerBadgeText: { color: '#3269C7', fontSize: 7, fontWeight: '900', letterSpacing: 0 },
+  ownerBadgeText: { color: '#3269C7', fontSize: 7, fontWeight: '700', letterSpacing: 0 },
   replyComposer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2342,7 +2342,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 36,
     maxHeight: 90,
-    color: '#252333',
+    color: '#25364E',
     fontSize: 11.5,
     lineHeight: 17,
     paddingVertical: 8,
@@ -2382,7 +2382,7 @@ const styles = StyleSheet.create({
   platformPillText: {
     fontSize: 11.5,
     fontWeight: '600',
-    color: '#252333',
+    color: '#25364E',
   },
   pricingPill: {
     flexDirection: 'row',
@@ -2397,7 +2397,7 @@ const styles = StyleSheet.create({
   pricingPillText: {
     fontSize: 11.5,
     fontWeight: '600',
-    color: '#252333',
+    color: '#25364E',
   },
   promoSection: {
     paddingHorizontal: 16,
@@ -2421,7 +2421,7 @@ const styles = StyleSheet.create({
   promoTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
   },
   promoSub: {
     fontSize: 11.5,
@@ -2444,8 +2444,8 @@ const styles = StyleSheet.create({
   },
   promoCodeText: {
     fontSize: 13,
-    fontWeight: '800',
-    color: '#252333',
+    fontWeight: '700',
+    color: '#25364E',
     letterSpacing: 1,
   },
   promoActionBtn: {
@@ -2490,7 +2490,7 @@ const styles = StyleSheet.create({
   developerCardName: {
     fontSize: 13.5,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
   },
   developerCardSub: {
     fontSize: 11,
@@ -2522,7 +2522,7 @@ const styles = StyleSheet.create({
   messageMakerBtnText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#252333',
+    color: '#25364E',
   },
   infoSection: {
     paddingHorizontal: 16,
@@ -2553,7 +2553,7 @@ const styles = StyleSheet.create({
   infoVal: {
     fontSize: 12.5,
     fontWeight: '600',
-    color: '#252333',
+    color: '#25364E',
     maxWidth: '65%',
     textAlign: 'right',
   },
@@ -2623,7 +2623,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     lineHeight: 17,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.15,
   },
   trustRow: {

@@ -72,18 +72,18 @@ const getCategoryIcon = (slug?: string): IoniconName => {
 };
 
 const CATEGORY_TONES: Record<string, { surface: string; border: string; accent: string; glow: string }> = {
-  all: { surface: '#7047c7', border: '#7047c7', accent: '#252333', glow: 'rgba(112,71,199,0.28)' },
-  ai: { surface: '#7047c7', border: '#7047c7', accent: '#252333', glow: 'rgba(112,71,199,0.3)' },
-  'ai-ml': { surface: '#7047c7', border: '#7047c7', accent: '#252333', glow: 'rgba(112,71,199,0.3)' },
-  ml: { surface: '#7047c7', border: '#7047c7', accent: '#252333', glow: 'rgba(112,71,199,0.3)' },
-  games: { surface: '#6846b9', border: '#7663a0', accent: '#252333', glow: 'rgba(91,61,160,0.3)' },
-  entertainment: { surface: '#6846b9', border: '#7663a0', accent: '#252333', glow: 'rgba(91,61,160,0.3)' },
-  productivity: { surface: '#7047c7', border: '#7047c7', accent: '#252333', glow: 'rgba(112,71,199,0.29)' },
-  fintech: { surface: '#7047c7', border: '#7047c7', accent: '#252333', glow: 'rgba(112,71,199,0.28)' },
-  social: { surface: '#5940a8', border: '#7063a0', accent: '#252333', glow: 'rgba(82,61,160,0.29)' },
-  devtools: { surface: '#7047c7', border: '#7047c7', accent: '#252333', glow: 'rgba(112,71,199,0.3)' },
-  saas: { surface: '#7047c7', border: '#7047c7', accent: '#252333', glow: 'rgba(112,71,199,0.29)' },
-  design: { surface: '#a95138', border: '#a0714f', accent: '#252333', glow: 'rgba(160,70,38,0.29)' },
+  all: { surface: '#7047c7', border: '#7047c7', accent: '#25364E', glow: 'rgba(112,71,199,0.28)' },
+  ai: { surface: '#7047c7', border: '#7047c7', accent: '#25364E', glow: 'rgba(112,71,199,0.3)' },
+  'ai-ml': { surface: '#7047c7', border: '#7047c7', accent: '#25364E', glow: 'rgba(112,71,199,0.3)' },
+  ml: { surface: '#7047c7', border: '#7047c7', accent: '#25364E', glow: 'rgba(112,71,199,0.3)' },
+  games: { surface: '#6846b9', border: '#7663a0', accent: '#25364E', glow: 'rgba(91,61,160,0.3)' },
+  entertainment: { surface: '#6846b9', border: '#7663a0', accent: '#25364E', glow: 'rgba(91,61,160,0.3)' },
+  productivity: { surface: '#7047c7', border: '#7047c7', accent: '#25364E', glow: 'rgba(112,71,199,0.29)' },
+  fintech: { surface: '#7047c7', border: '#7047c7', accent: '#25364E', glow: 'rgba(112,71,199,0.28)' },
+  social: { surface: '#5940a8', border: '#7063a0', accent: '#25364E', glow: 'rgba(82,61,160,0.29)' },
+  devtools: { surface: '#7047c7', border: '#7047c7', accent: '#25364E', glow: 'rgba(112,71,199,0.3)' },
+  saas: { surface: '#7047c7', border: '#7047c7', accent: '#25364E', glow: 'rgba(112,71,199,0.29)' },
+  design: { surface: '#a95138', border: '#a0714f', accent: '#25364E', glow: 'rgba(160,70,38,0.29)' },
 };
 
 const LIGHT_CATEGORY_TONES: typeof CATEGORY_TONES = {
@@ -184,7 +184,7 @@ export const CategoryFilterBar: React.FC<CategoryFilterBarProps> = ({
                 <Ionicons
                   name="compass-outline"
                   size={13.5}
-                  color="#252333"
+                  color="#25364E"
                   style={styles.buttonIcon}
                 />
               }

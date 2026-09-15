@@ -54,21 +54,21 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   h1: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 22,
     lineHeight: 29,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.5,
   },
   h2: {
-    color: '#252333',
+    color: '#25364E',
     fontSize: 17,
     lineHeight: 24,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.25,
   },
   bold: {
-    color: '#252333',
-    fontWeight: '800',
+    color: '#25364E',
+    fontWeight: '700',
   },
 });

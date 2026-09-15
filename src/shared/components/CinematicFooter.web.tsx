@@ -12,17 +12,17 @@ export interface CinematicFooterProps {
 
 const STYLE_ID = 'kistas-cinematic-footer-styles';
 const STYLES = `
-.kcf{--kcf-cyan:#3269C7;--kcf-ink:#252333;--kcf-muted:#686474;position:relative;isolation:isolate;width:100%;min-height:min(660px,78vh);margin-top:64px;overflow:hidden;background:rgba(255,255,255,.95);border-top:1px solid rgba(50,105,199,.22);color:var(--kcf-ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.kcf{--kcf-cyan:#3269C7;--kcf-ink:#25364E;--kcf-muted:#686474;position:relative;isolation:isolate;width:100%;min-height:min(660px,78vh);margin-top:64px;overflow:hidden;background:rgba(255,255,255,.95);border-top:1px solid rgba(50,105,199,.22);color:var(--kcf-ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .kcf *{box-sizing:border-box}
 .kcf-grid{position:absolute;inset:0;pointer-events:none;opacity:.38;background-size:60px 60px;background-image:linear-gradient(to right,rgba(50,105,199,.07) 1px,transparent 1px),linear-gradient(to bottom,rgba(50,105,199,.07) 1px,transparent 1px);mask-image:linear-gradient(to bottom,transparent,#ffffff 28%,#ffffff 72%,transparent)}
 .kcf-aurora{position:absolute;left:50%;top:52%;width:min(920px,82vw);height:520px;pointer-events:none;transform:translate(-50%,-50%) scale(0.9);background:radial-gradient(circle,rgba(50,105,199,.18),rgba(233,226,245,.13) 38%,transparent 70%);filter:blur(70px);opacity:0.25;transition:opacity 1.2s ease,transform 1.2s cubic-bezier(0.16,1,0.3,1)}
 .kcf-revealed .kcf-aurora{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.kcf-giant{position:absolute;left:50%;bottom:-4%;pointer-events:none;transform:translateX(-50%) translateY(32px);font-size:clamp(100px,18vw,300px);line-height:.72;font-weight:900;letter-spacing:0;white-space:nowrap;color:transparent;-webkit-text-stroke:1px rgba(37,35,51,.08);background:linear-gradient(180deg,rgba(37,35,51,.11),transparent 68%);background-clip:text;-webkit-background-clip:text;user-select:none;opacity:0.1;transition:opacity 1.1s cubic-bezier(0.16,1,0.3,1),transform 1.1s cubic-bezier(0.16,1,0.3,1)}
+.kcf-giant{position:absolute;left:50%;bottom:-4%;pointer-events:none;transform:translateX(-50%) translateY(32px);font-size:clamp(100px,18vw,300px);line-height:.72;font-weight:700;letter-spacing:0;white-space:nowrap;color:transparent;-webkit-text-stroke:1px rgba(37,35,51,.08);background:linear-gradient(180deg,rgba(37,35,51,.11),transparent 68%);background-clip:text;-webkit-background-clip:text;user-select:none;opacity:0.1;transition:opacity 1.1s cubic-bezier(0.16,1,0.3,1),transform 1.1s cubic-bezier(0.16,1,0.3,1)}
 .kcf-revealed .kcf-giant{opacity:1;transform:translateX(-50%) translateY(0)}
 .kcf-center{position:relative;z-index:2;min-height:min(580px,70vh);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:76px 24px 92px;text-align:center}
 
 /* Metin ve Eleman Hafif Giriş Efektleri */
-.kcf-title{max-width:900px;margin:0 0 36px;font-size:clamp(40px,6.5vw,88px);line-height:.96;font-weight:900;letter-spacing:0;background:linear-gradient(135deg,#252333 0%,#3269C7 50%,#252333 100%);background-size:200% auto;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 22px rgba(50,105,199,.12));opacity:0.15;transform:translateY(28px);filter:blur(5px);transition:opacity .85s cubic-bezier(0.16,1,0.3,1),transform .85s cubic-bezier(0.16,1,0.3,1),filter .85s cubic-bezier(0.16,1,0.3,1)}
+.kcf-title{max-width:900px;margin:0 0 36px;font-size:clamp(40px,6.5vw,88px);line-height:.96;font-weight:700;letter-spacing:0;background:linear-gradient(135deg,#25364E 0%,#3269C7 50%,#25364E 100%);background-size:200% auto;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 22px rgba(50,105,199,.12));opacity:0.15;transform:translateY(28px);filter:blur(5px);transition:opacity .85s cubic-bezier(0.16,1,0.3,1),transform .85s cubic-bezier(0.16,1,0.3,1),filter .85s cubic-bezier(0.16,1,0.3,1)}
 .kcf-revealed .kcf-title{opacity:1;transform:translateY(0);filter:blur(0);animation:kcf-title-shimmer 1.8s ease-out .2s 1 forwards}
 @keyframes kcf-title-shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
@@ -191,10 +191,10 @@ export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = fals
         <h2 className="kcf-title">Yeni bir şey keşfetmeye hazır mısın?</h2>
         <div className="kcf-actions">
           <span className="kcf-pill kcf-pill-soon" aria-label="Kıstas iOS uygulaması yakında">
-            <span className="kcf-icon"><Ionicons name="logo-apple" size={22} color="#252333" /></span><span className="kcf-platform">iOS uygulaması<small>Yakında</small></span>
+            <span className="kcf-icon"><Ionicons name="logo-apple" size={22} color="#25364E" /></span><span className="kcf-platform">iOS uygulaması<small>Yakında</small></span>
           </span>
           <span className="kcf-pill kcf-pill-soon" aria-label="Kıstas Android uygulaması yakında">
-            <span className="kcf-icon"><Ionicons name="logo-google-playstore" size={21} color="#252333" /></span><span className="kcf-platform">Android uygulaması<small>Yakında</small></span>
+            <span className="kcf-icon"><Ionicons name="logo-google-playstore" size={21} color="#25364E" /></span><span className="kcf-platform">Android uygulaması<small>Yakında</small></span>
           </span>
         </div>
         <nav className="kcf-links" aria-label="Yasal ve destek bağlantıları">

@@ -212,7 +212,7 @@ export const ConversationsScreen: React.FC<ConversationsScreenProps> = ({
                       </View>
 
                       <View style={styles.projectRow}>
-                        <Ionicons name={conversation.listingId ? 'cube-outline' : 'headset-outline'} size={12} color="#252333" />
+                        <Ionicons name={conversation.listingId ? 'cube-outline' : 'headset-outline'} size={12} color="#25364E" />
                         <Text style={styles.projectText} numberOfLines={1}>{projectName}</Text>
                         {conversation.closedAt ? (
                           <View style={styles.closedBadge}>
@@ -303,17 +303,17 @@ const styles = StyleSheet.create({
     minWidth: 0,
     fontSize: 15.5,
     lineHeight: 20,
-    color: '#252333',
+    color: '#25364E',
     fontWeight: '700',
   },
-  nameTextUnread: { color: NEO.ink, fontWeight: '800' },
+  nameTextUnread: { color: NEO.ink, fontWeight: '700' },
   timeWrap: { flexDirection: 'row', alignItems: 'center', gap: 5, marginLeft: 8 },
   timeDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#3269C7' },
   timeText: {
     ...theme.typography.kistas,
     fontSize: 11,
     flexShrink: 0,
-    color: '#3f3b4c',
+    color: '#25364E',
   },
   timeTextUnread: { color: '#3269C7', fontWeight: '700' },
   projectRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 5,
     fontSize: 11,
-    color: '#3f3b4c',
+    color: '#25364E',
   },
   closedBadge: { marginLeft: 8, paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#EEF2F7' },
   closedBadgeText: { ...theme.typography.kistas, color: '#65758C', fontSize: 8.5, fontWeight: '700' },
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     ...theme.typography.kistas,
     fontSize: 11,
     color: '#3269C7',
-    fontWeight: '800',
+    fontWeight: '700',
   },
   emptyState: {
     ...raisedSurface,
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     ...theme.typography.kistas,
     fontSize: 15,
-    color: '#252333',
+    color: '#25364E',
     fontWeight: '700',
   },
   emptyDescription: {

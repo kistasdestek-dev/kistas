@@ -227,7 +227,7 @@ export function AuthExperience({ mode, onAuthSuccess, onSwitch, onBack, onGoogle
                   </Pressable>
                 )}
                 <Pressable {...glassWebProps} accessibilityRole="button" accessibilityLabel="GitHub ile devam et" disabled={busy} onPress={() => social('github')} style={({ pressed }) => [s.social, pressed && s.pressed]}>
-                  <Ionicons name="logo-github" size={21} color="#252333" />
+                  <Ionicons name="logo-github" size={21} color="#25364E" />
                   <Text style={s.socialText}>GitHub</Text>
                 </Pressable>
               </View>
@@ -273,7 +273,7 @@ export function AuthExperience({ mode, onAuthSuccess, onSwitch, onBack, onGoogle
     </KeyboardAvoidingView>
     <Modal visible={legalIndex !== null} transparent animationType="fade" onRequestClose={() => setLegalIndex(null)}>
       <View style={s.modalOverlay}><View accessibilityViewIsModal style={s.modal}>
-        <View style={s.modalHeader}><Text style={s.modalTitle}>{legalIndex !== null ? legal[legalIndex].title : ''}</Text><Pressable accessibilityRole="button" accessibilityLabel="Kapat" onPress={() => setLegalIndex(null)} style={s.iconButton}><Ionicons name="close" size={22} color="#252333" /></Pressable></View>
+        <View style={s.modalHeader}><Text style={s.modalTitle}>{legalIndex !== null ? legal[legalIndex].title : ''}</Text><Pressable accessibilityRole="button" accessibilityLabel="Kapat" onPress={() => setLegalIndex(null)} style={s.iconButton}><Ionicons name="close" size={22} color="#25364E" /></Pressable></View>
         <ScrollView><Text style={s.legalText}>{legalIndex !== null ? legal[legalIndex].text : ''}</Text></ScrollView>
       </View></View>
     </Modal>
@@ -286,7 +286,7 @@ const s = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 144, paddingTop: 28, paddingBottom: 10 },
   stage: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 8, paddingBottom: 40 },
   form: { width: '100%', maxWidth: 380 },
-  title: { color: '#25364E', fontSize: 38, lineHeight: 46, textAlign: 'center', fontWeight: '400', fontFamily: Platform.select({ web: 'Georgia, serif', ios: 'Georgia', android: 'serif' }), marginHorizontal: -8 },
+  title: { color: '#25364E', fontSize: 38, lineHeight: 46, textAlign: 'center', fontWeight: '400', marginHorizontal: -8 },
   titleContainer: { minHeight: 96, justifyContent: 'center', alignItems: 'center', marginHorizontal: -8, marginBottom: 16 },
   typewriterCursor: { color: '#3269C7', fontWeight: '300' },
   subtitle: { color: '#677A93', fontSize: 13, lineHeight: 20, textAlign: 'center', marginTop: 12, marginBottom: 20 },

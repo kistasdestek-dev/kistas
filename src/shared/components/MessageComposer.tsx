@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     fontSize: 14.5,
     lineHeight: 22,
     fontWeight: '500',
-    color: '#1E293B',
+    color: '#25364E',
     backgroundColor: 'transparent',
     letterSpacing: -0.01,
     ...Platform.select({

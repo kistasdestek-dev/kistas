@@ -14,7 +14,7 @@ const logoSource = require('../../../assets/kistas-logo-transparent.png');
 export const KistasLogo: React.FC<KistasLogoProps> = ({
   size = 36,
   showWordmark = true,
-  wordmarkColor = '#252333',
+  wordmarkColor = '#25364E',
   glow = false,
   style,
 }) => (
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   wordmark: {
-    fontWeight: '900',
+    fontWeight: '700',
     letterSpacing: -0.6,
   },
 });

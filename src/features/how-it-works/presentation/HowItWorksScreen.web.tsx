@@ -14,86 +14,86 @@ export interface HowItWorksScreenProps {
 
 const STYLE_ID = 'kistas-how-it-works-styles';
 const STYLES = `
-.khiw-page{height:100%;overflow-x:hidden;overflow-y:auto;color:#252333;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#F1F5FA}
+.khiw-page{height:100%;overflow-x:hidden;overflow-y:auto;color:#25364E;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#F1F5FA}
 .khiw-page *{box-sizing:border-box}
 .khiw-wrap{width:min(1140px,calc(100% - 40px));margin:0 auto}
 
 /* HERO SECTION */
 .khiw-hero{min-height:min(640px,72vh);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 0 24px;text-align:center}
 .khiw-back{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 14px;border:1px solid rgba(50,105,199,.2);border-radius:20px;background:rgba(255,255,255,.85);color:#526680;font:700 12px/1 inherit;cursor:pointer;transition:all .2s ease}
-.khiw-back:hover{color:#252333;border-color:#3269C7;background:#FFFFFF;transform:translateX(-2px)}
-.khiw-kicker{margin:32px 0 12px;color:#3269C7;font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase}
-.khiw-title{margin:0;font-size:clamp(46px,7vw,90px);line-height:.98;font-weight:900;letter-spacing:-0.025em;color:#252333;text-shadow:0 12px 40px rgba(50,105,199,.12)}
+.khiw-back:hover{color:#25364E;border-color:#3269C7;background:#FFFFFF;transform:translateX(-2px)}
+.khiw-kicker{margin:32px 0 12px;color:#3269C7;font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase}
+.khiw-title{margin:0;font-size:clamp(46px,7vw,90px);line-height:.98;font-weight:700;letter-spacing:-0.025em;color:#25364E;text-shadow:0 12px 40px rgba(50,105,199,.12)}
 .khiw-lead{max-width:740px;margin:12px auto 0;color:#55657A;font-size:clamp(16px,1.8vw,19.5px);line-height:1.65}
-.khiw-lead strong{color:#252333}
+.khiw-lead strong{color:#25364E}
 
 /* TRUST RIBBON */
 .khiw-trust-ribbon{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:32px 0 8px}
 .khiw-trust-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(237,244,253,.7);border:1px solid rgba(203,217,236,.8);border-radius:999px;color:#3269C7;font-size:12px;font-weight:700;letter-spacing:.02em}
-.khiw-trust-chip span{color:#252333}
+.khiw-trust-chip span{color:#25364E}
 
 /* TABS */
 .khiw-tabs{display:inline-flex;padding:5px;background:rgba(235,243,254,.7);border:1px solid rgba(203,217,236,.8);border-radius:32px;gap:6px;margin-top:36px}
 .khiw-tab{padding:11px 26px;border-radius:26px;border:none;background:transparent;color:#596E8C;font:700 13.5px/1 inherit;cursor:pointer;transition:all .25s ease;display:flex;align-items:center;gap:8px}
-.khiw-tab.active{background:#FFFFFF;color:#252333;box-shadow:0 4px 14px -2px rgba(50,105,199,.16)}
-.khiw-tab:hover:not(.active){color:#252333}
+.khiw-tab.active{background:#FFFFFF;color:#25364E;box-shadow:0 4px 14px -2px rgba(50,105,199,.16)}
+.khiw-tab:hover:not(.active){color:#25364E}
 
 /* STEPS GRID */
 .khiw-steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin:44px 0 68px;width:100%}
 .khiw-step-card{min-width:0;background:#FFFFFF;border:1px solid #DDE6F1;border-top:3px solid #7FA5DA;border-radius:8px;padding:28px;position:relative;box-shadow:0 8px 24px -16px rgba(31,62,105,.18);transition:border-color .2s ease,box-shadow .2s ease;display:flex;flex-direction:column;text-align:left}
 @media(hover:hover){.khiw-step-card:hover{border-color:#A6BFDF;box-shadow:0 12px 28px -16px rgba(31,62,105,.24)}}
 .khiw-step-badge{width:48px;height:48px;border-radius:8px;background:#EDF4FD;color:#3269C7;display:grid;place-items:center;margin-bottom:24px;flex-shrink:0}
-.khiw-step-num{position:absolute;top:40px;right:28px;font-size:11px;font-weight:800;letter-spacing:.05em;color:#71849F}
-.khiw-step-card h3{margin:0 0 12px;font-size:19.5px;font-weight:800;color:#28374D;line-height:1.35;letter-spacing:0}
+.khiw-step-num{position:absolute;top:40px;right:28px;font-size:11px;font-weight:700;letter-spacing:.05em;color:#71849F}
+.khiw-step-card h3{margin:0 0 12px;font-size:19.5px;font-weight:700;color:#25364E;line-height:1.35;letter-spacing:0}
 .khiw-step-card p{margin:0;color:#5B6E87;font-size:14px;line-height:1.78;flex:1}
 @media(prefers-reduced-motion:reduce){.khiw-step-card{transition:none}}
 
 /* PRINCIPLES BAND */
 .khiw-principles{background:rgba(250,251,254,.92);border-block:1px solid rgba(203,217,236,.65);padding:84px 0}
 .khiw-p-head{text-align:center;max-width:640px;margin:0 auto 46px}
-.khiw-p-head h2{margin:0 0 12px;font-size:32px;font-weight:900;color:#252333;letter-spacing:-.01em}
+.khiw-p-head h2{margin:0 0 12px;font-size:32px;font-weight:700;color:#25364E;letter-spacing:-.01em}
 .khiw-p-head p{margin:0;color:#677A93;font-size:15px;line-height:1.6}
 .khiw-p-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
 .khiw-p-item{text-align:left;background:#FFFFFF;border:1px solid rgba(203,217,236,.7);border-radius:12px;padding:26px;box-shadow:0 6px 18px -6px rgba(50,105,199,.06)}
 .khiw-p-icon{width:42px;height:42px;border-radius:10px;background:#EDF4FD;color:#3269C7;display:grid;place-items:center;margin-bottom:18px}
-.khiw-p-item h4{margin:0 0 10px;font-size:18px;font-weight:800;color:#252333}
+.khiw-p-item h4{margin:0 0 10px;font-size:18px;font-weight:700;color:#25364E}
 .khiw-p-item p{margin:0;color:#677A93;font-size:13.5px;line-height:1.68}
 
 /* COMPARISON TABLE */
 .khiw-compare-section{padding:84px 0}
 .khiw-compare-head{text-align:center;max-width:640px;margin:0 auto 44px}
-.khiw-compare-head h2{margin:0 0 12px;font-size:32px;font-weight:900;color:#252333;letter-spacing:-.01em}
+.khiw-compare-head h2{margin:0 0 12px;font-size:32px;font-weight:700;color:#25364E;letter-spacing:-.01em}
 .khiw-compare-head p{margin:0;color:#677A93;font-size:15px}
 .khiw-table-shell{background:#FFFFFF;border:1px solid rgba(203,217,236,.8);border-radius:16px;overflow:hidden;box-shadow:0 12px 32px -12px rgba(50,105,199,.1)}
 .khiw-table{width:100%;border-collapse:collapse;text-align:left;font-size:14px}
-.khiw-table th{padding:18px 24px;background:#F6FAFF;border-bottom:1px solid rgba(203,217,236,.8);color:#252333;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.khiw-table th{padding:18px 24px;background:#F6FAFF;border-bottom:1px solid rgba(203,217,236,.8);color:#25364E;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
 .khiw-table th:last-child{background:#EEF5FE;color:#3269C7}
 .khiw-table td{padding:18px 24px;border-bottom:1px solid rgba(230,238,248,.9);color:#5B6E87;line-height:1.55}
 .khiw-table tr:last-child td{border-bottom:none}
-.khiw-table td.col-kistas{font-weight:700;color:#252333;background:rgba(238,245,254,.3)}
+.khiw-table td.col-kistas{font-weight:700;color:#25364E;background:rgba(238,245,254,.3)}
 .khiw-badge-bad{display:inline-flex;align-items:center;gap:6px;color:#C2410C;font-weight:600;font-size:13px}
 .khiw-badge-good{display:inline-flex;align-items:center;gap:6px;color:#15803D;font-weight:700;font-size:13px}
 
 /* FAQ SECTION */
 .khiw-faq-section{padding:84px 0}
 .khiw-faq-head{text-align:center;max-width:600px;margin:0 auto 46px}
-.khiw-faq-head h2{margin:0 0 12px;font-size:34px;font-weight:900;color:#252333}
+.khiw-faq-head h2{margin:0 0 12px;font-size:34px;font-weight:700;color:#25364E}
 .khiw-faq-head p{margin:0;color:#677A93;font-size:15px}
 .khiw-faq-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
 .khiw-faq-card{background:#FFFFFF;border:1px solid rgba(203,217,236,.75);border-radius:14px;padding:26px 28px;box-shadow:0 6px 20px -6px rgba(50,105,199,.06)}
-.khiw-faq-card h4{margin:0 0 10px;font-size:16px;font-weight:800;color:#252333;display:flex;align-items:center;gap:10px}
+.khiw-faq-card h4{margin:0 0 10px;font-size:16px;font-weight:700;color:#25364E;display:flex;align-items:center;gap:10px}
 .khiw-faq-card h4 span{color:#3269C7}
 .khiw-faq-card p{margin:0;color:#5D6F86;font-size:13.5px;line-height:1.7}
-.khiw-faq-card p strong{color:#252333}
+.khiw-faq-card p strong{color:#25364E}
 
 /* CTA SECTION */
 .khiw-cta{padding:80px 0 60px;text-align:center}
-.khiw-cta-box{background:linear-gradient(135deg,#252333 0%,#1B3864 100%);border-radius:24px;padding:64px 32px;color:#FFFFFF;box-shadow:0 24px 60px -15px rgba(27,56,100,.35);position:relative;overflow:hidden}
-.khiw-cta-box h2{margin:0 0 14px;font-size:clamp(30px,4.5vw,46px);font-weight:900;line-height:1.15}
+.khiw-cta-box{background:linear-gradient(135deg,#25364E 0%,#1B3864 100%);border-radius:24px;padding:64px 32px;color:#FFFFFF;box-shadow:0 24px 60px -15px rgba(27,56,100,.35);position:relative;overflow:hidden}
+.khiw-cta-box h2{margin:0 0 14px;font-size:clamp(30px,4.5vw,46px);font-weight:700;line-height:1.15}
 .khiw-cta-box p{max-width:560px;margin:0 auto 34px;color:rgba(255,255,255,.82);font-size:16px;line-height:1.6}
 .khiw-cta-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
 .khiw-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 28px;border-radius:26px;font:700 13.5px/1 inherit;text-decoration:none;cursor:pointer;transition:all .25s ease}
-.khiw-btn-primary{background:#FFFFFF;color:#252333;border:1px solid #FFFFFF}
+.khiw-btn-primary{background:#FFFFFF;color:#25364E;border:1px solid #FFFFFF}
 .khiw-btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.18)}
 .khiw-btn-secondary{background:rgba(255,255,255,.12);color:#FFFFFF;border:1px solid rgba(255,255,255,.24);backdrop-filter:blur(8px)}
 .khiw-btn-secondary:hover{background:rgba(255,255,255,.2);transform:translateY(-2px)}

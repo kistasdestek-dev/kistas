@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     height: 78,
     borderRadius: 999,
     backgroundColor: '#EAF2FC',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOpacity: 0.08,
     shadowRadius: 28,
     elevation: 4,
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   },
   character: {
     position: 'absolute',
-    color: '#3f3b4c',
+    color: '#25364E',
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
     fontWeight: '700',
     textAlign: 'center',
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   statusKey: {
     marginRight: 6,
-    color: '#252333',
+    color: '#25364E',
     fontSize: 10,
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
     fontWeight: '700',
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
   },
   statusTextBusy: {
-    color: '#252333',
+    color: '#25364E',
   },
   cursor: {
     width: 5,
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     borderRadius: 1,
     backgroundColor: '#EAF2FC',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOpacity: 0.08,
     shadowRadius: 5,
   },

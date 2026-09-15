@@ -48,8 +48,8 @@ export interface ButtonProps {
 const BAB_STYLE_ID = 'kistas-bab-button-styles';
 const BAB_GLOBAL_CSS = `
 .bab-stage { display:inline-flex; position:relative; isolation:isolate; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-.bab-btn { position:relative; isolation:isolate; overflow:hidden; display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; border:1px solid var(--bab-border,rgba(50,105,199,0.32)); background:var(--bab-surface,#EAF2FC); color:var(--bab-accent,#252333); font-family:inherit; font-weight:600; cursor:pointer; box-shadow:inset 0 1px 0 rgba(37,35,51,.1),0 5px 14px rgba(255,255,255,.18),0 0 14px var(--bab-glow,transparent); transition:transform 160ms cubic-bezier(.2,.8,.2,1),background 180ms ease,border-color 180ms ease,box-shadow 180ms ease; -webkit-tap-highlight-color:transparent; }
-.bab-stage-unselected .bab-btn { background:var(--bab-surface,#F8F9FB); color:var(--bab-accent,#252333); border-color:var(--bab-border,rgba(50,105,199,0.14)); }
+.bab-btn { position:relative; isolation:isolate; overflow:hidden; display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; border:1px solid var(--bab-border,rgba(50,105,199,0.32)); background:var(--bab-surface,#EAF2FC); color:var(--bab-accent,#25364E); font-family:inherit; font-weight:600; cursor:pointer; box-shadow:inset 0 1px 0 rgba(37,35,51,.1),0 5px 14px rgba(255,255,255,.18),0 0 14px var(--bab-glow,transparent); transition:transform 160ms cubic-bezier(.2,.8,.2,1),background 180ms ease,border-color 180ms ease,box-shadow 180ms ease; -webkit-tap-highlight-color:transparent; }
+.bab-stage-unselected .bab-btn { background:var(--bab-surface,#F8F9FB); color:var(--bab-accent,#25364E); border-color:var(--bab-border,rgba(50,105,199,0.14)); }
 .bab-label { position:relative; z-index:2; display:inline-flex; align-items:center; gap:6px; }
 .bab-arrow { color:currentColor; transition:transform 180ms ease; }
 .bab-btn:active:not(:disabled) { transform:scale(.97); }
@@ -178,7 +178,7 @@ export const Button: React.FC<ButtonProps> = ({
           <span className="bab-pulse" aria-hidden="true" />
           <span className="bab-label">
             {isLoading ? (
-              <ActivityIndicator color={isSelected ? '#252333' : '#252333'} size="small" style={{ marginRight: 6 }} />
+              <ActivityIndicator color={isSelected ? '#25364E' : '#25364E'} size="small" style={{ marginRight: 6 }} />
             ) : icon ? (
               <span style={{ display: 'inline-flex', marginRight: 4 }}>{icon}</span>
             ) : null}
@@ -339,7 +339,7 @@ const NativeButtonComponent: React.FC<ButtonProps> = ({
           borderWidth: 1,
           borderColor: tint?.border || 'rgba(50,105,199,0.16)',
         },
-        text: { color: tint?.accent || '#252333' },
+        text: { color: tint?.accent || '#25364E' },
       };
     }
     switch (variant) {
@@ -376,7 +376,7 @@ const NativeButtonComponent: React.FC<ButtonProps> = ({
             borderWidth: 1,
             borderColor: 'rgba(50,105,199,0.22)',
           },
-          text: { color: '#252333' },
+          text: { color: '#25364E' },
         };
       case 'danger':
         return {
@@ -388,7 +388,7 @@ const NativeButtonComponent: React.FC<ButtonProps> = ({
             shadowRadius: 8,
             elevation: 3,
           },
-          text: { color: '#252333' },
+          text: { color: '#25364E' },
           gradient: ['#a04949', '#a02e2e', '#a01c1c'],
         };
       case 'aurora':
@@ -405,7 +405,7 @@ const NativeButtonComponent: React.FC<ButtonProps> = ({
             shadowRadius: 10,
             elevation: 6,
           },
-          text: { color: tint?.accent || '#252333' },
+          text: { color: tint?.accent || '#25364E' },
         };
     }
   };

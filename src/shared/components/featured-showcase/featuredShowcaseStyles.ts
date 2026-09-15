@@ -270,7 +270,7 @@ export const F3D_CSS = `
 
 .crd-f3d-eyebrow {
   font-size: 9.5px;
-  font-weight: 800;
+  font-weight:700;
   letter-spacing: 0.8px;
   text-transform: uppercase;
   color: #EAF7FB;
@@ -281,7 +281,7 @@ export const F3D_CSS = `
 .crd-f3d-title-hero {
   margin: 0 0 3px;
   font-size: 18px;
-  font-weight: 800;
+  font-weight:700;
   line-height: 1.18;
   letter-spacing: -0.2px;
   color: #EAF7FB;
@@ -361,7 +361,7 @@ export const F3D_CSS = `
 
 .crd-f3d-dock-logo-init {
   font-size: 15px;
-  font-weight: 800;
+  font-weight:700;
   color: #EAF7FB;
   background: rgba(9,22,29,0.9);
   border: 1px solid rgba(109,228,255,0.16);
@@ -514,7 +514,7 @@ export const F3D_CSS = `
   gap: 5px;
   color: #47658E;
   font-size: 8px;
-  font-weight: 800;
+  font-weight:700;
   letter-spacing: .55px;
 }
 .crd-f3d-promo-status {
@@ -557,14 +557,14 @@ export const F3D_CSS = `
 .crd-f3d-promo-eyebrow {
   color: #3970BA;
   font-size: 8.5px;
-  font-weight: 850;
+  font-weight:700;
   letter-spacing: 1.1px;
   margin-bottom: 7px;
 }
 .crd-f3d-promo-title {
   max-width: 225px;
   margin: 0;
-  color: #202536;
+  color: #25364E;
   font-size: 21px;
   line-height: 1.13;
   font-weight: 780;
@@ -587,13 +587,13 @@ export const F3D_CSS = `
   align-items: center;
   justify-content: space-between;
   text-align: left;
-  color: #202536;
+  color: #25364E;
   background: rgba(255,255,255,.8);
   box-shadow: 0 12px 24px -16px rgba(37,78,134,.45), inset 0 1px 0 #FFFFFF;
   cursor: pointer;
 }
 .crd-f3d-promo-cta small, .crd-f3d-promo-cta strong { display: block; }
-.crd-f3d-promo-cta small { color: #B98916; font-size: 7.5px; font-weight: 800; letter-spacing: .8px; margin-bottom: 2px; }
+.crd-f3d-promo-cta small { color: #B98916; font-size: 7.5px; font-weight:700; letter-spacing: .8px; margin-bottom: 2px; }
 .crd-f3d-promo-cta strong { font-size: 12.5px; font-weight: 780; }
 .crd-f3d-promo-cta-arrow {
   width: 34px;
@@ -645,14 +645,14 @@ export const sectionStyles = StyleSheet.create({
   eyebrowText: {
     color: '#53647A',
     fontSize: 9.5,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: 1.05,
   },
   sectionHeading: {
     marginTop: 12,
     fontSize: 22,
     fontWeight: '600',
-    color: '#202536',
+    color: '#25364E',
     letterSpacing: -0.5,
     lineHeight: 28,
   },
@@ -678,7 +678,7 @@ export const sectionStyles = StyleSheet.create({
   inlineCtaArrow: {
     color: '#D58C1B',
     fontSize: Platform.OS === 'web' ? 20 : 18,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   headingRule: {
     width: 72,
@@ -718,7 +718,7 @@ export const nativeCardStyles = StyleSheet.create({
     height: 385,
     borderRadius: 22,
     overflow: 'hidden',
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 16 },
     shadowOpacity: 0.16,
     shadowRadius: 28,
@@ -740,18 +740,18 @@ export const nativeCardStyles = StyleSheet.create({
   promoStatusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   promoStatusPill: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.72)', borderWidth: 1, borderColor: 'rgba(69,120,190,0.16)' },
   promoStatusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#2B9B83' },
-  promoStatusText: { color: '#47658E', fontSize: 8, fontWeight: '800', letterSpacing: 0.55 },
-  promoRotation: { color: '#47658E', fontSize: 8, fontWeight: '800', letterSpacing: 0.45 },
+  promoStatusText: { color: '#47658E', fontSize: 8, fontWeight: '700', letterSpacing: 0.55 },
+  promoRotation: { color: '#47658E', fontSize: 8, fontWeight: '700', letterSpacing: 0.45 },
   promoHero: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, paddingTop: 4 },
   promoOrbitOuter: { width: 108, height: 108, borderRadius: 54, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(68,121,195,0.13)', backgroundColor: 'rgba(255,255,255,0.2)', marginBottom: 13 },
   promoOrbitInner: { width: 88, height: 88, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.72)', borderWidth: 1, borderColor: 'rgba(72,126,200,0.2)', shadowColor: '#2C5B9C', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.16, shadowRadius: 18, elevation: 4 },
   promoLogoOpticalCenter: { transform: [{ translateX: -3 }, { translateY: 2 }] },
-  promoEyebrow: { color: '#3970BA', fontSize: 8.5, fontWeight: '800', letterSpacing: 1.1, marginBottom: 7 },
-  promoTitle: { maxWidth: 230, color: '#202536', fontSize: 21, lineHeight: 24, fontWeight: '800', letterSpacing: -0.45, textAlign: 'center' },
+  promoEyebrow: { color: '#3970BA', fontSize: 8.5, fontWeight: '700', letterSpacing: 1.1, marginBottom: 7 },
+  promoTitle: { maxWidth: 230, color: '#25364E', fontSize: 21, lineHeight: 24, fontWeight: '700', letterSpacing: -0.45, textAlign: 'center' },
   promoTagline: { maxWidth: 225, color: '#6A778C', fontSize: 10.5, lineHeight: 15, textAlign: 'center', marginTop: 8 },
   promoCtaDock: { minHeight: 58, paddingVertical: 9, paddingLeft: 15, paddingRight: 10, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.82)', borderWidth: 1, borderColor: 'rgba(58,111,185,0.18)', shadowColor: '#254E86', shadowOffset: { width: 0, height: 9 }, shadowOpacity: 0.12, shadowRadius: 15, elevation: 3 },
-  promoCtaLabel: { color: '#B98916', fontSize: 7.5, fontWeight: '800', letterSpacing: 0.8, marginBottom: 2 },
-  promoCtaTitle: { color: '#202536', fontSize: 12.5, fontWeight: '800' },
+  promoCtaLabel: { color: '#B98916', fontSize: 7.5, fontWeight: '700', letterSpacing: 0.8, marginBottom: 2 },
+  promoCtaTitle: { color: '#25364E', fontSize: 12.5, fontWeight: '700' },
   promoCtaArrow: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#3269C7', shadowColor: '#285EA5', shadowOffset: { width: 0, height: 7 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 3 },
   promoCtaArrowText: { color: '#FFFFFF', fontSize: 18, lineHeight: 20, fontWeight: '700' },
   heroArea: {
@@ -802,13 +802,13 @@ export const nativeCardStyles = StyleSheet.create({
   badgeText: {
     fontSize: 8.5,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
     letterSpacing: 0.5,
   },
   creditsText: {
     fontSize: 9,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
   },
   previewFrame: {
     width: 154,
@@ -826,7 +826,7 @@ export const nativeCardStyles = StyleSheet.create({
     height: 166,
     flexShrink: 0,
     borderRadius: 15,
-    shadowColor: '#252333',
+    shadowColor: '#25364E',
     shadowOffset: { width: 0, height: 16 },
     shadowOpacity: 0.42,
     shadowRadius: 20,
@@ -855,16 +855,16 @@ export const nativeCardStyles = StyleSheet.create({
   },
   eyebrow: {
     fontSize: 9.5,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: 0.8,
-    color: '#252333',
+    color: '#25364E',
     marginBottom: 3,
   },
   titleHero: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '700',
     lineHeight: 22,
-    color: '#252333',
+    color: '#25364E',
     letterSpacing: -0.2,
     marginBottom: 3,
   },
@@ -914,8 +914,8 @@ export const nativeCardStyles = StyleSheet.create({
   },
   dockLogoInit: {
     fontSize: 15,
-    fontWeight: '800',
-    color: '#252333',
+    fontWeight: '700',
+    color: '#25364E',
     backgroundColor: 'rgba(250,251,253,0.9)',
     borderWidth: 1,
     borderColor: 'rgba(50,105,199,0.16)',
@@ -933,7 +933,7 @@ export const nativeCardStyles = StyleSheet.create({
   dockTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
   },
   dockSub: {
     fontSize: 9.5,
@@ -953,7 +953,7 @@ export const nativeCardStyles = StyleSheet.create({
   ctaText: {
     fontSize: 10.5,
     fontWeight: '700',
-    color: '#252333',
+    color: '#25364E',
   },
   dockMicro: {
     fontSize: 8,
