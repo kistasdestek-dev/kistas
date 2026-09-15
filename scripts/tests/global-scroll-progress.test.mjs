@@ -14,6 +14,7 @@ assert.match(colors, /scrollProgress:\s*'#013196'/, 'Kaydirma ilerleme rengi tem
 assert.match(component, /document\.addEventListener\('scroll', handleScroll, true\)/, 'Ic ScrollView kaydirmalari capture asamasinda izlenmiyor.');
 assert.match(component, /position:\s*'fixed'/, 'Ilerleme cubugu ekranin ustune sabitlenmemis.');
 assert.match(component, /transform:\s*`scaleX\(\$\{progress\}\)`/, 'Ilerleme orani yatay olcege uygulanmiyor.');
+assert.doesNotMatch(component, /boxShadow|box-shadow/, 'Ilerleme cubugunun altinda gri iz olusturan golge yeniden eklenmis.');
 assert.match(component, /pageKey/, 'Sayfa gecislerinde ilerleme sifirlanmiyor.');
 assert.match(nativeComponent, /=>\s*null/, 'Web ilerleme cubugunun guvenli native karsiligi yok.');
 assert.match(entryComponent, /GlobalScrollProgress\.native/, 'Platformlar arasi ortak bilesen girisi eksik.');

@@ -350,6 +350,7 @@ const WebAppNavigationComponent: React.FC<AppNavigationProps> = ({
   onTabPress,
   unreadMessagesCount,
   isAuthenticated = false,
+  compact,
 }) => {
   const { width } = useWindowDimensions();
   const storeUnreadCount = useChatUnreadCount();
@@ -364,6 +365,7 @@ const WebAppNavigationComponent: React.FC<AppNavigationProps> = ({
         unreadMessagesCount={unreadMessagesCount}
         unreadCount={unreadCount}
         isAuthenticated={isAuthenticated}
+        compact={compact}
       />
     );
   }
@@ -375,6 +377,7 @@ const WebAppNavigationComponent: React.FC<AppNavigationProps> = ({
       unreadMessagesCount={unreadMessagesCount}
       unreadCount={unreadCount}
       isAuthenticated={isAuthenticated}
+      compact={compact}
     />
   );
 };

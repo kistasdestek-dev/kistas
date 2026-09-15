@@ -22,6 +22,7 @@ import { chatNotificationActions } from '../../../core/state';
 
 interface ConversationsScreenProps {
   onSelectConversation?: (conversation: Conversation) => void;
+  onScrollOffsetChange?: (offsetY: number) => void;
 }
 
 interface DigitalConversation extends Conversation {
@@ -67,6 +68,7 @@ const formatConversationTime = (value?: string | null) => {
 
 export const ConversationsScreen: React.FC<ConversationsScreenProps> = ({
   onSelectConversation,
+  onScrollOffsetChange,
 }) => {
   const [conversations, setConversations] = useState<DigitalConversation[]>([]);
   const [filter, setFilter] = useState<InboxFilter>('all');
@@ -120,6 +122,11 @@ export const ConversationsScreen: React.FC<ConversationsScreenProps> = ({
               colors={['#3269C7']}
             />
           )}
+          onScroll={(event) => onScrollOffsetChange?.(event.nativeEvent.contentOffset.y)}
+          onScrollEndDrag={(event) => onScrollOffsetChange?.(event.nativeEvent.contentOffset.y)}
+          onMomentumScrollEnd={(event) => onScrollOffsetChange?.(event.nativeEvent.contentOffset.y)}
+          onScrollToTop={() => onScrollOffsetChange?.(0)}
+          scrollEventThrottle={32}
         >
           <View style={styles.pageHeader}>
             <Text accessibilityRole="header" style={styles.pageTitle}>Mesajlar</Text>

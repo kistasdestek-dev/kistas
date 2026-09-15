@@ -1,4 +1,4 @@
-import { BlurView } from 'expo-blur';
+import { BlurTargetView, BlurView } from 'expo-blur';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar, Alert, Platform, Pressable, Text, useWindowDimensions } from 'react-native';
 import { AdaptiveAppNavigation, TabKey } from './src/shared/navigation/AdaptiveAppNavigation';
@@ -80,6 +80,8 @@ interface ShowcaseFilters {
   categoryId: string | null;
   platform: PlatformType | 'all';
 }
+
+const NavigationBackdrop = Platform.OS === 'android' ? BlurTargetView : View;
 
 interface WebRouteState {
   tab: TabKey;
@@ -173,6 +175,7 @@ const parseWebRoute = (): WebRouteState => {
 };
 
 function AppContent() {
+  const navigationBlurTarget = useRef<View>(null);
   const { width: viewportWidth } = useWindowDimensions();
   const { profile: currentUser, isLoading: isAuthLoading, isPasswordRecovery } = useAuth();
   const { signOut, setProfile, finishPasswordRecovery } = useAuthActions();
@@ -221,6 +224,11 @@ function AppContent() {
   const [pendingSupportAfterAuth, setPendingSupportAfterAuth] = useState(false);
   const [pendingVisibilityAfterAuth, setPendingVisibilityAfterAuth] = useState(false);
   const [authView, setAuthView] = useState<'login' | 'register'>('login');
+  const [isNavCompact, setIsNavCompact] = useState(false);
+  const lastScrollOffsetRef = useRef(0);
+  const isNavCompactRef = useRef(false);
+  const scrollDirectionRef = useRef<'up' | 'down' | null>(null);
+  const scrollDirectionDistanceRef = useRef(0);
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof document === 'undefined') return;
@@ -465,6 +473,78 @@ function AppContent() {
     };
   }, []);
 
+  const updateNavCompact = useCallback((nextValue: boolean) => {
+    if (isNavCompactRef.current === nextValue) return;
+    isNavCompactRef.current = nextValue;
+    setIsNavCompact(nextValue);
+  }, []);
+
+  const handleContentScroll = useCallback((offsetY: number) => {
+    const nextOffset = Math.max(0, offsetY);
+    const delta = nextOffset - lastScrollOffsetRef.current;
+    const direction = delta > 0 ? 'down' : delta < 0 ? 'up' : null;
+
+    if (direction) {
+      if (scrollDirectionRef.current === direction) {
+        scrollDirectionDistanceRef.current += Math.abs(delta);
+      } else {
+        scrollDirectionRef.current = direction;
+        scrollDirectionDistanceRef.current = Math.abs(delta);
+      }
+    }
+
+    if (nextOffset <= 24) {
+      updateNavCompact(false);
+      scrollDirectionDistanceRef.current = 0;
+    } else if (nextOffset > 36 && direction === 'down' && scrollDirectionDistanceRef.current >= 14) {
+      updateNavCompact(true);
+      scrollDirectionDistanceRef.current = 0;
+    } else if (direction === 'up' && scrollDirectionDistanceRef.current >= 22) {
+      updateNavCompact(false);
+      scrollDirectionDistanceRef.current = 0;
+    }
+
+    lastScrollOffsetRef.current = nextOffset;
+  }, [updateNavCompact]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+
+    let animationFrameId: number | null = null;
+    let pendingOffset = 0;
+
+    const handleWebScroll = (event: Event) => {
+      const target = event.target;
+
+      if (target === document) {
+        pendingOffset = window.scrollY;
+      } else {
+        if (!(target instanceof HTMLElement)) return;
+        if (target.scrollHeight <= target.clientHeight + 1) return;
+        pendingOffset = target.scrollTop;
+      }
+
+      if (animationFrameId !== null) return;
+      animationFrameId = window.requestAnimationFrame(() => {
+        animationFrameId = null;
+        handleContentScroll(pendingOffset);
+      });
+    };
+
+    document.addEventListener('scroll', handleWebScroll, true);
+    return () => {
+      document.removeEventListener('scroll', handleWebScroll, true);
+      if (animationFrameId !== null) window.cancelAnimationFrame(animationFrameId);
+    };
+  }, [handleContentScroll]);
+
+  useEffect(() => {
+    lastScrollOffsetRef.current = 0;
+    scrollDirectionRef.current = null;
+    scrollDirectionDistanceRef.current = 0;
+    updateNavCompact(false);
+  }, [activeTab, updateNavCompact]);
+
   useEffect(() => {
     let cancelled = false;
     setActiveChatConvId(null);
@@ -501,23 +581,26 @@ function AppContent() {
     setActiveChatCanManageSupport(false);
     setActiveChatConvId(result.conversationId);
     setActiveTab('messages');
-  }, []);
+    updateNavCompact(false);
+  }, [updateNavCompact]);
 
   const handleOpenSupport = useCallback(() => {
     if (!currentUser) {
       setPendingSupportAfterAuth(true);
       setAuthView('login');
       setIsAuthModalOpen(true);
+      updateNavCompact(false);
       return;
     }
     void openSupportConversation();
-  }, [currentUser, openSupportConversation]);
+  }, [currentUser, openSupportConversation, updateNavCompact]);
 
   const handleOpenSponsorManagement = useCallback((listingId?: string) => {
     if (!currentUser) {
       setPendingVisibilityAfterAuth(true);
       setAuthView('login');
       setIsAuthModalOpen(true);
+      updateNavCompact(false);
       return;
     }
 
@@ -526,7 +609,8 @@ function AppContent() {
     setIsPrivacyOpen(false);
     setVisibilityTargetListingId(listingId || null);
     setIsVisibilityManagementOpen(true);
-  }, [currentUser]);
+    updateNavCompact(false);
+  }, [currentUser, updateNavCompact]);
 
   const handleLoginSuccess = (profile: UserProfile | null) => {
     setProfile(profile);
@@ -561,12 +645,16 @@ function AppContent() {
   };
 
   const handleOpenBlog = useCallback((slug?: string) => {
+    lastScrollOffsetRef.current = 0;
+    scrollDirectionRef.current = null;
+    scrollDirectionDistanceRef.current = 0;
+    updateNavCompact(false);
     setIsAboutOpen(false);
     setIsHowItWorksOpen(false);
     setIsPrivacyOpen(false);
     setBlogPostSlug(typeof slug === 'string' ? slug : null);
     setIsBlogOpen(true);
-  }, []);
+  }, [updateNavCompact]);
 
   // Web tarayıcı geri/ileri butonları ve manuel hash değişikliklerini dinleme
   useEffect(() => {
@@ -784,9 +872,12 @@ function AppContent() {
       setSelectedProject(null);
       setAuthView('login');
       setIsAuthModalOpen(true);
+      updateNavCompact(false);
       return;
     }
 
+    lastScrollOffsetRef.current = 0;
+    updateNavCompact(false);
     setSelectedProject(null);
     setActiveTab(tab);
     setActiveChatConvId(null);
@@ -802,31 +893,43 @@ function AppContent() {
         platform: 'all',
       });
     }
-  }, [activeCategoryScreenId, activeTab, currentUser, isAboutOpen, isBlogOpen, isHowItWorksOpen, isPrivacyOpen, isShowcaseOpen]);
+  }, [activeCategoryScreenId, activeTab, currentUser, isAboutOpen, isBlogOpen, isHowItWorksOpen, isPrivacyOpen, isShowcaseOpen, updateNavCompact]);
 
   const handleOpenAbout = useCallback(() => {
+    lastScrollOffsetRef.current = 0;
+    scrollDirectionRef.current = null;
+    scrollDirectionDistanceRef.current = 0;
+    updateNavCompact(false);
     setIsAboutOpen(true);
     setIsHowItWorksOpen(false);
     setIsPrivacyOpen(false);
     setIsBlogOpen(false);
     setBlogPostSlug(null);
-  }, []);
+  }, [updateNavCompact]);
 
   const handleOpenHowItWorks = useCallback(() => {
+    lastScrollOffsetRef.current = 0;
+    scrollDirectionRef.current = null;
+    scrollDirectionDistanceRef.current = 0;
+    updateNavCompact(false);
     setIsAboutOpen(false);
     setIsHowItWorksOpen(true);
     setIsPrivacyOpen(false);
     setIsBlogOpen(false);
     setBlogPostSlug(null);
-  }, []);
+  }, [updateNavCompact]);
 
   const handleOpenPrivacy = useCallback(() => {
+    lastScrollOffsetRef.current = 0;
+    scrollDirectionRef.current = null;
+    scrollDirectionDistanceRef.current = 0;
+    updateNavCompact(false);
     setIsAboutOpen(false);
     setIsHowItWorksOpen(false);
     setIsPrivacyOpen(true);
     setIsBlogOpen(false);
     setBlogPostSlug(null);
-  }, []);
+  }, [updateNavCompact]);
 
   const handleAboutExplore = useCallback(() => {
     setIsAboutOpen(false);
@@ -885,7 +988,8 @@ function AppContent() {
     });
     setSelectedProject(null);
     setIsShowcaseOpen(true);
-  }, []);
+    updateNavCompact(false);
+  }, [updateNavCompact]);
 
   const handleOpenPopular = useCallback((filters: { categoryId: string | null; platform: PlatformType | 'all' }) => {
     setCuratedFilters({
@@ -896,7 +1000,8 @@ function AppContent() {
     setIsShowcaseOpen(false);
     setIsNewOpen(false);
     setIsPopularOpen(true);
-  }, []);
+    updateNavCompact(false);
+  }, [updateNavCompact]);
 
   const handleOpenNew = useCallback((filters: { categoryId: string | null; platform: PlatformType | 'all' }) => {
     setCuratedFilters({
@@ -907,7 +1012,8 @@ function AppContent() {
     setIsShowcaseOpen(false);
     setIsPopularOpen(false);
     setIsNewOpen(true);
-  }, []);
+    updateNavCompact(false);
+  }, [updateNavCompact]);
 
   const isCheckoutLikeOpen = () => {
     return isPasswordRecovery || isAuthModalOpen || isAuthSuccessVisible || !!selectedProject || isAdminDashboardOpen || isVisibilityManagementOpen || isAccountSecurityOpen || isAboutOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || isPopularOpen || isNewOpen;
@@ -955,7 +1061,8 @@ function AppContent() {
 
       <PremiumBackdrop variant={backdropVariant} />
 
-      <View
+      <NavigationBackdrop
+        ref={navigationBlurTarget}
         style={[
           styles.screenContainer,
           Platform.OS === 'web' && showNavigation && {
@@ -1207,6 +1314,7 @@ function AppContent() {
             onOpenShowcase={handleOpenShowcase}
             onOpenPopular={handleOpenPopular}
             onOpenNew={handleOpenNew}
+            onScrollOffsetChange={Platform.OS === 'web' ? undefined : handleContentScroll}
           />
         ) : activeTab === 'browse' ? (
           <BrowseScreen
@@ -1219,6 +1327,7 @@ function AppContent() {
             onOpenSupport={handleOpenSupport}
             onOpenHowItWorks={handleOpenHowItWorks}
             onOpenBlog={handleOpenBlog}
+            onScrollOffsetChange={Platform.OS === 'web' ? undefined : handleContentScroll}
           />
         ) : activeTab === 'create' && currentUser ? (
           <CreateListingScreen
@@ -1249,6 +1358,7 @@ function AppContent() {
                 setActiveChatOtherPartyAvatar(conversation.otherParty?.avatarUrl || null);
                 setActiveChatCanManageSupport(false);
               }}
+              onScrollOffsetChange={Platform.OS === 'web' ? undefined : handleContentScroll}
             />
           )
         ) : activeTab === 'credits' ? (
@@ -1267,6 +1377,7 @@ function AppContent() {
               onOpenMessages={() => setActiveTab('messages')}
               onOpenSupport={handleOpenSupport}
               onOpenAdminDashboard={() => setIsAdminDashboardOpen(true)}
+              onScrollOffsetChange={Platform.OS === 'web' ? undefined : handleContentScroll}
               onNavigateToCredits={() => setActiveTab('credits')}
               onOpenVisibilityManagement={(project) => handleOpenSponsorManagement(project?.id)}
               onOpenAccountSecurity={() => setIsAccountSecurityOpen(true)}
@@ -1274,6 +1385,7 @@ function AppContent() {
               onEditProject={(project) => {
                 setEditingProject(project);
                 setActiveTab('create');
+                updateNavCompact(false);
               }}
               onSelectProject={(project) => setSelectedProject(project)}
               onSignOut={async () => {
@@ -1296,7 +1408,7 @@ function AppContent() {
           )
         )}
         </React.Suspense>
-      </View>
+      </NavigationBackdrop>
 
       {/* Modern Saf Mobil Alt Gezinme Barı (Bottom Navigation) */}
       {showNavigation && (
@@ -1304,6 +1416,8 @@ function AppContent() {
           activeTab={activeTab}
           onTabPress={handleTabChange}
           isAuthenticated={!!currentUser}
+          compact={isNavCompact}
+          blurTarget={navigationBlurTarget}
         />
       )}
       {isLaunchVisible ? <KistasLaunchScreen onFinish={() => setIsLaunchVisible(false)} /> : null}

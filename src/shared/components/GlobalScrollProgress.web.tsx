@@ -81,7 +81,6 @@ export const GlobalScrollProgress: React.FC<GlobalScrollProgressProps> = ({ page
           width: '100%',
           height: '100%',
           backgroundColor: theme.colors.brand.scrollProgress,
-          boxShadow: '0 1px 8px rgba(1, 49, 150, 0.34)',
           transform: `scaleX(${progress})`,
           transformOrigin: 'left center',
           transition: 'transform 120ms cubic-bezier(0.22, 1, 0.36, 1)',

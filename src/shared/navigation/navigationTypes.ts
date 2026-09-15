@@ -1,3 +1,6 @@
+import type { RefObject } from 'react';
+import type { View } from 'react-native';
+
 export type TabKey =
   | 'discover'
   | 'browse'
@@ -11,4 +14,6 @@ export interface AppNavigationProps {
   onTabPress: (tab: TabKey) => void;
   isAuthenticated?: boolean;
   unreadMessagesCount?: number;
+  compact?: boolean;
+  blurTarget?: RefObject<View | null>;
 }
