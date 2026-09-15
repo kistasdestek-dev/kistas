@@ -828,11 +828,6 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
                     source={{ uri: item.url }}
                     style={styles.screenshotImage}
                     resizeMode="contain"
-                    onLoad={({ nativeEvent }) => cacheScreenshotAspectRatio(
-                      item.url,
-                      nativeEvent.source.width,
-                      nativeEvent.source.height,
-                    )}
                   />
                 </Pressable>
               ))}
@@ -1437,11 +1432,6 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
                       resizeMode="contain"
                       fadeDuration={0}
                       style={styles.lightboxImage}
-                      onLoad={({ nativeEvent }) => cacheScreenshotAspectRatio(
-                        item.url,
-                        nativeEvent.source.width,
-                        nativeEvent.source.height,
-                      )}
                       accessibilityRole="image"
                       accessibilityLabel={`${project.title} ekran görüntüsü ${index + 1}`}
                     />

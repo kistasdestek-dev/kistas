@@ -636,6 +636,11 @@ runTest('Editoryal katalog: gerçek geliştirici ile Kıstas yayıncısı ayrıl
   assert.match(detailSource, /Google Play kaynaklı editoryal kayıt/i, 'Editoryal kaynak etiketi görünmüyor!');
   assert.match(detailSource, /onOpenChat && !project\.isEditorial/i, 'Kıstas editörü gerçek geliştirici gibi mesaj kabul ediyor!');
   assert.match(detailSource, /Yayınlayan[\s\S]*Kıstas Editör/i, 'Editoryal yayınlayan bilgisi ayrıştırılmamış!');
+  assert.doesNotMatch(
+    detailSource,
+    /nativeEvent\.source\.(?:width|height)/i,
+    'Web görsel yükleme olayı bulunmayan nativeEvent.source alanını okumamalı!',
+  );
 });
 
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);
