@@ -64,6 +64,42 @@ const article = ({ path, title, description, image, author, authorType = 'Organi
   };
 };
 
+const collection = ({ path, title, description, heading, lead }) => {
+  const url = `${SITE_ORIGIN}${path}`;
+  return {
+    path,
+    title,
+    description,
+    image: DEFAULT_IMAGE,
+    ogType: 'website',
+    heading,
+    lead,
+    lastmod: '2026-09-15',
+    schema: {
+      '@context': 'https://schema.org',
+      '@graph': [
+        organization,
+        website,
+        {
+          '@type': 'CollectionPage',
+          '@id': `${url}#webpage`,
+          url,
+          name: heading,
+          description,
+          isPartOf: { '@id': website['@id'] },
+          mainEntity: {
+            '@type': 'ItemList',
+            name: heading,
+            itemListOrder: 'https://schema.org/ItemListOrderDescending',
+          },
+          inLanguage: 'tr-TR',
+        },
+        breadcrumb([['Ana Sayfa', `${SITE_ORIGIN}/`], [heading, url]]),
+      ],
+    },
+  };
+};
+
 export const SEO_ROUTES = [
   {
     path: '/',
@@ -88,6 +124,27 @@ export const SEO_ROUTES = [
       }],
     },
   },
+  collection({
+    path: '/browse/',
+    title: 'Dijital Projeleri Keşfet | Kıstas',
+    description: 'Mobil uygulama, SaaS, oyun, web ve yapay zekâ projelerini kategori ve platformlara göre keşfedin; bağımsız üreticilerin yeni ürünlerini inceleyin.',
+    heading: 'Bağımsız dijital projeleri keşfet',
+    lead: 'Mobil uygulamalardan SaaS ürünlerine, oyunlardan yapay zekâ araçlarına kadar bağımsız geliştiricilerin projelerini tek vitrinde keşfedin.',
+  }),
+  collection({
+    path: '/popular/',
+    title: 'Popüler Dijital Projeler | Kıstas',
+    description: "Kıstas topluluğunun son yedi gündeki doğrulanmış desteğine göre öne çıkan popüler mobil uygulamaları, SaaS ürünlerini ve oyunları keşfedin.",
+    heading: 'Popüler dijital projeler',
+    lead: 'Topluluğun doğrulanmış desteğiyle yükselen bağımsız dijital ürünleri ve haftanın dikkat çeken projelerini inceleyin.',
+  }),
+  collection({
+    path: '/new/',
+    title: 'Yeni Çıkan Dijital Projeler | Kıstas',
+    description: "Kıstas'a yeni katılan mobil uygulamaları, SaaS ürünlerini, oyunları ve yapay zekâ araçlarını keşfedin; bağımsız üreticileri erkenden destekleyin.",
+    heading: 'Yeni çıkan dijital projeler',
+    lead: 'Topluluğa yeni katılan yenilikçi uygulamaları ve dijital ürünleri ilk keşfedenlerden biri olun.',
+  }),
   {
     path: '/about/',
     title: 'Kıstas Hakkında | Bağımsız Projeler İçin Adil Vitrin',
