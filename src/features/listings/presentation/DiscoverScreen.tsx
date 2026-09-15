@@ -17,6 +17,7 @@ import { PopularProjectPager } from '../../../shared/components/PopularProjectPa
 import { DiscoveryRevealStatement } from '../../../shared/components/DiscoveryRevealStatement';
 import { SponsorLogoMarquee } from '../../../shared/components/SponsorLogoMarquee';
 import { CinematicFooter } from '../../../shared/components/CinematicFooter';
+import { FooterSloganBanner } from '../../../shared/components/FooterSloganBanner';
 import { KistasTopBrandBar } from '../../../shared/components/KistasTopBrandBar';
 import { Listing, PlatformType } from '../domain/Listing';
 import { ListingService } from '../application/ListingService';
@@ -423,6 +424,7 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
             && filteredNewProjects.length === 0)
           ? renderEmptyComponent()
           : null}
+        <FooterSloganBanner onPress={onOpenBrowse} />
         <CinematicFooter onOpenAbout={onOpenAbout} onOpenHowItWorks={onOpenHowItWorks} onOpenPrivacy={onOpenPrivacy} onOpenSupport={onOpenSupport} onOpenBlog={onOpenBlog} />
         <View style={styles.listFooter} />
       </ScrollView>
