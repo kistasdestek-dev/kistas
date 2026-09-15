@@ -7,6 +7,7 @@ import { Typewriter } from '../../../shared/components/Typewriter';
 import { AuthService } from '../application/AuthService';
 import { UserProfile } from '../domain/User';
 import { installAuthAutofillStyles } from './authAutofillStyles';
+import { GoogleIdentityButton } from './GoogleIdentityButton';
 
 const LOGIN_TYPEWRITER_WORDS = [
   'Geleceğin projelerini keşfedin.',
@@ -47,6 +48,7 @@ const css = `
 #kistas-auth-experience #auth-atmosphere{background:linear-gradient(130deg,#fff 12%,#f2f7ff 36%,#e2edfc 49%,#f8fbff 60%,#fff 82%)!important;animation:auth-silk 28s ease-in-out infinite}
 @keyframes auth-silk{0%,100%{transform:scale(1.15) translateX(-3%)}50%{transform:scale(1.15) translateX(3%)}}
 @media(hover:hover){#kistas-auth-experience [data-auth-glass="true"][role=button]:hover{border-color:#8CAEDF;transform:translateY(-1px)}}
+@media(max-width:420px){#kistas-auth-experience #auth-social-row{flex-direction:column!important;gap:10px!important;align-items:stretch!important}#kistas-auth-experience #auth-social-row>[role=button]{width:100%;justify-content:center}}
 @media(prefers-reduced-motion:reduce){#kistas-auth-experience #auth-atmosphere{animation:none}#kistas-auth-experience [data-auth-glass="true"]{transition:none}}
 `;
 
@@ -149,8 +151,15 @@ export function AuthExperience({ mode, onAuthSuccess, onSwitch, onBack, onGoogle
     else if (step === 1 && registering) { if (password.length < 6) error('Şifreniz en az 6 karakter olmalı.'); else go(2); }
     else submit();
   };
-  const social = (provider: 'google' | 'github') => void run(async () => {
-    const callback = provider === 'google' ? onGooglePress : onGitHubPress;
+  const googleCredential = (credential: string, nonce: string) => void run(async () => {
+    if (onGooglePress) { onGooglePress(); return; }
+    const result = await AuthService.signInWithGoogleIdToken(credential, nonce);
+    if (!mounted.current) return;
+    if (result.success && result.profile) onAuthSuccess(result.profile);
+    else error(result.error || 'Google ile giriş tamamlanamadı.');
+  });
+  const social = (provider: 'github') => void run(async () => {
+    const callback = onGitHubPress;
     if (callback) { callback(); return; }
     const result = await AuthService.signInWithOAuth(provider);
     if (!mounted.current) return;
@@ -208,11 +217,19 @@ export function AuthExperience({ mode, onAuthSuccess, onSwitch, onBack, onGoogle
               </Text>
             )}
             {step === 0 && <>
-              <View style={s.socialRow}>
-                {(['google', 'github'] as const).map(provider => <Pressable key={provider} {...glassWebProps} accessibilityRole="button" accessibilityLabel={provider === 'google' ? 'Google ile devam et' : 'GitHub ile devam et'} disabled={busy} onPress={() => social(provider)} style={({ pressed }) => [s.social, pressed && s.pressed]}>
-                  <Ionicons name={provider === 'google' ? 'logo-google' : 'logo-github'} size={21} color={provider === 'google' ? '#3269C7' : '#252333'} />
-                  <Text style={s.socialText}>{provider === 'google' ? 'Google' : 'GitHub'}</Text>
-                </Pressable>)}
+              <View nativeID="auth-social-row" style={s.socialRow}>
+                {Platform.OS === 'web' ? (
+                  <GoogleIdentityButton disabled={busy} onCredential={googleCredential} onError={error} />
+                ) : (
+                  <Pressable {...glassWebProps} accessibilityRole="button" accessibilityLabel="Google ile devam et" disabled={busy} onPress={onGooglePress} style={({ pressed }) => [s.social, pressed && s.pressed]}>
+                    <Ionicons name="logo-google" size={21} color="#3269C7" />
+                    <Text style={s.socialText}>Google</Text>
+                  </Pressable>
+                )}
+                <Pressable {...glassWebProps} accessibilityRole="button" accessibilityLabel="GitHub ile devam et" disabled={busy} onPress={() => social('github')} style={({ pressed }) => [s.social, pressed && s.pressed]}>
+                  <Ionicons name="logo-github" size={21} color="#252333" />
+                  <Text style={s.socialText}>GitHub</Text>
+                </Pressable>
               </View>
               <View style={s.divider}><View style={s.line} /><Text style={s.or}>veya e-posta ile</Text><View style={s.line} /></View>
             </>}

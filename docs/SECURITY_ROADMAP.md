@@ -184,7 +184,7 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 | SEC-009 | Expo arac zincirinde dolayli uuid guvenlik uyarisi | 6 | P2 | RISK_KABUL | Codex | `npm audit --omit=dev --audit-level=high`: 0 high/critical, 26 moderate; duzeltme yok, sonraki Expo surumunde yeniden degerlendirilecek |
 | SEC-010 | Supabase Auth e-posta teslimati ve sifre kurtarma | 6/7 | P2 | KISMI | Codex / kullanici | SMTP teslimati, Gmail SPF/DKIM/DMARC PASS ve kurtarma ekranina yonlendirme dogrulandi. Turkce Kistas sablonuyla yeni kurtarma postasi Gmail Gelen Kutusu'na ulasti; yeni sifre kaydi ve yeni kayit dogrulamasi bekliyor (hedef 2026-09-15). |
 | SEC-011 | GA4 URL token sizintisi ve izinsiz analitik | 6/7 | P1 | DOGRULANDI | Codex | 2026-09-14: Google kodu yalniz istege bagli onaydan sonra yuklenir; URL query/hash analitige gonderilmez. `node scripts/tests/analytics-consent.test.mjs` onay yok, onay, tokenli URL ve ret senaryolarindan gecti. |
-| SEC-012 | Bekleniyor | - | - | BEKLIYOR | - | - |
+| SEC-012 | Google OAuth teknik alan adi ve marka guveni | 1/6 | P2 | DUZELTILDI | Codex | Dogrudan Google Identity ID token, kriptografik nonce, FedCM ve CSP regresyon testi; canli hesap secici testi bekliyor |
 | SEC-013 | Bekleniyor | - | - | BEKLIYOR | - | - |
 | SEC-014 | Bekleniyor | - | - | BEKLIYOR | - | - |
 | SEC-015 | Bekleniyor | - | - | BEKLIYOR | - | - |
@@ -316,6 +316,16 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 - Negatif kontroller: Anonim erişim geri alındı; farklı kullanıcıya ait proje bulunamadı olarak reddedilir ve geçersiz durum geçişi engellenir.
 - Denetim izi: Başarılı yeniden gönderim `listing_revision_resubmitted` eylemiyle `admin_action_audit` tablosuna kaydedilir.
 - Doğrulama kanıtı: `20260914000004_listing_revision_resubmission.sql` uzak veritabanına uygulandı ve migration listesinde eşleşti; TypeScript kontrolü ile core-domain testleri 32/32 başarılı tamamlandı.
+
+### SEC-012 - Google OAuth teknik alan adi ve marka guveni
+
+- Tarih: 2026-09-15. Kaynak: Kullanici bildirimi ve canli OAuth hesap secici incelemesi.
+- Bulgu: Web Google girisi Supabase'in yonlendirmeli OAuth adresini kullandigi icin Google hesap secici `iojgqicgeztqwkbetboa.supabase.co` teknik alan adini gosteriyordu. Bu, Kistas ile alan adi bagini belirsizlestirerek kimlik avi algisi olusturabiliyordu.
+- Duzeltme: Web girisi resmi Google Identity Services dugmesine ve `signInWithIdToken` akimina tasindi. Her oturum isteginde Web Crypto ile 256 bit nonce uretilir; SHA-256 ozeti Google'a, ham nonce Supabase dogrulamasina verilir. FedCM dugme akisi etkinlestirildi.
+- Dis kaynak siniri: Yalniz `https://accounts.google.com/gsi/` betik, stil, iframe ve baglanti uclari CSP allowlistine eklendi. Google web Client ID herkese acik kimliktir; Client Secret istemciye eklenmedi.
+- Regresyon: `scripts/tests/google-identity.test.mjs` eski Google yonlendirmesinin arayuzde bulunmadigini; ID token + nonce, kriptografik uretim, FedCM ve CSP kurallarini dogrular.
+- Kalan dogrulama: Google Cloud OAuth istemcisinde `https://www.kistas.com.tr` Authorized JavaScript Origin olarak kayitli olmali. Canli hesap secicide Supabase teknik alan adinin kayboldugu ve mevcut Google hesabinin ayni Supabase kullanicisina girdigi dogrulanmadan durum `DOGRULANDI` yapilmaz.
+- Geri donus: UI ve AuthService degisikligi geri alinarak onceki Supabase yonlendirmeli Google OAuth akimina donulebilir; kullanici kayitlari veya oturum tablolari degismez.
 
 ## 9. Faz Calisma Kaydi
 

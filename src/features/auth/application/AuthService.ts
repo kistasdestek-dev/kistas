@@ -243,14 +243,41 @@ export class AuthService {
     }
   }
 
+  public static async signInWithGoogleIdToken(
+    token: string,
+    nonce: string
+  ): Promise<{ success: boolean; profile?: UserProfile | null; error?: string }> {
+    if (Platform.OS !== 'web' || !token || !nonce) {
+      return { success: false, error: 'Google kimlik doğrulaması tamamlanamadı.' };
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token,
+        nonce,
+      });
+      if (error) {
+        return { success: false, error: this.localizeAuthError(error, 'Google ile giriş tamamlanamadı.') };
+      }
+
+      const profile = await this.getCurrentProfile();
+      return profile
+        ? { success: true, profile }
+        : { success: false, error: 'Google hesabı doğrulandı ancak kullanıcı profili hazırlanamadı.' };
+    } catch (err: any) {
+      return { success: false, error: this.localizeAuthError(err, 'Google ile giriş tamamlanamadı.') };
+    }
+  }
+
   /**
-   * 3. Google veya Apple (App Store) ile Gerçek OAuth Oturum Açma / Kayıt
+   * 3. GitHub veya Apple ile yönlendirmeli OAuth oturumu
    */
   public static async signInWithOAuth(
-    provider: 'google' | 'apple' | 'github'
+    provider: 'apple' | 'github'
   ): Promise<{ success: boolean; profile?: UserProfile | null; error?: string }> {
     try {
-      const providerName = provider === 'google' ? 'Google' : provider === 'github' ? 'GitHub' : 'Apple';
+      const providerName = provider === 'github' ? 'GitHub' : 'Apple';
 
       if (Platform.OS === 'web' && typeof window !== 'undefined') {
         const { data, error } = await supabase.auth.signInWithOAuth({
