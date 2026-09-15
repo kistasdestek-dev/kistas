@@ -134,14 +134,14 @@ export const SEO_ROUTES = [
   collection({
     path: '/popular/',
     title: 'Popüler Dijital Projeler | Kıstas',
-    description: "Kıstas topluluğunun son yedi gündeki doğrulanmış desteğine göre öne çıkan popüler mobil uygulamaları, SaaS ürünlerini ve oyunları keşfedin.",
+    description: "Kıstas topluluğunun kalıcı desteğine göre öne çıkan popüler mobil uygulamaları, SaaS ürünlerini ve oyunları keşfedin.",
     heading: 'Popüler dijital projeler',
-    lead: 'Topluluğun doğrulanmış desteğiyle yükselen bağımsız dijital ürünleri ve haftanın dikkat çeken projelerini inceleyin.',
+    lead: 'Topluluğun kalıcı desteğiyle yükselen bağımsız dijital ürünleri ve en çok desteklenen projeleri inceleyin.',
   }),
   collection({
     path: '/new/',
     title: 'Yeni Çıkan Dijital Projeler | Kıstas',
-    description: "Kıstas'a yeni katılan mobil uygulamaları, SaaS ürünlerini, oyunları ve yapay zekâ araçlarını keşfedin; bağımsız üreticileri erkenden destekleyin.",
+    description: "Kıstas'a son 30 günde katılan mobil uygulamaları, SaaS ürünlerini, oyunları ve yapay zekâ araçlarını keşfedin; bağımsız üreticileri erkenden destekleyin.",
     heading: 'Yeni çıkan dijital projeler',
     lead: 'Topluluğa yeni katılan yenilikçi uygulamaları ve dijital ürünleri ilk keşfedenlerden biri olun.',
   }),

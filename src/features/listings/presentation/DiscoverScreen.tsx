@@ -336,9 +336,9 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
       {feedSort !== 'newest' ? (
         <PopularProjectPager
           title={selectedCategoryObj ? `${selectedCategoryObj.name} · Popüler` : 'Popüler'}
-          subtitle="Son 7 günün doğrulanmış topluluk desteği"
+          subtitle="Kalıcı topluluk desteğine göre sıralama"
           projects={filteredPopularProjects}
-          metric="weekly"
+          metric="lifetime"
           onSelectProject={onSelectListing}
           onOpenBrowse={onOpenBrowse}
           onOpenAll={onOpenPopular ? () => onOpenPopular({
@@ -351,7 +351,7 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
       {feedSort !== 'top_voted' ? (
         <PopularProjectPager
           title={selectedCategoryObj ? `${selectedCategoryObj.name} · Yeni` : 'Yeni Çıkanlar'}
-          subtitle="İlk 7 günündeki bağımsız projeler"
+          subtitle="İlk 30 günündeki bağımsız projeler"
           projects={filteredNewProjects}
           metric="lifetime"
           onSelectProject={onSelectListing}

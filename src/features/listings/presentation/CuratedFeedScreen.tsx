@@ -203,7 +203,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
                 />
               </LinearGradient>
               <Text style={styles.eyebrowTitle}>
-                {isPopular ? 'HAFTALIK TOPLULUK TRENDİ' : 'YENİ KEŞİFLER RADARI'}
+                {isPopular ? 'KALICI TOPLULUK SIRALAMASI' : 'YENİ KEŞİFLER RADARI'}
               </Text>
             </View>
 
@@ -224,8 +224,8 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
           </Text>
           <Text style={[styles.subtitle, isPhone && styles.subtitleMobile]}>
             {isPopular
-              ? 'Son 7 günün doğrulanmış topluluk desteğine göre en çok öne çıkan projeleri.'
-              : 'Topluluğa yeni katılan, ilk günlerindeki bağımsız ve yenilikçi projeler.'}
+              ? 'Toplam kalıcı topluluk desteğine göre en çok öne çıkan projeleri.'
+              : 'Topluluğa son 30 günde katılan bağımsız ve yenilikçi projeler.'}
           </Text>
         </View>
       </View>
@@ -310,9 +310,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
           {filteredProjects.map((project, index) => {
             const rank = index + 1;
             const rankConfig = getRankConfig(rank);
-            const supportScore = isPopular
-              ? project.weeklySupportCount || project.upvotesCount || 0
-              : project.upvotesCount || 0;
+            const supportScore = project.upvotesCount || 0;
             const relativeDate = formatRelativeTime(project.createdAt);
 
             return (

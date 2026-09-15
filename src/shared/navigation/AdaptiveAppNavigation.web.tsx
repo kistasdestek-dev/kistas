@@ -232,7 +232,7 @@ const DesktopFloatingNavigation: React.FC<DesktopNavigationProps> = ({
               aria-label="Kıstas Keşfet'e git"
               title="Kıstas"
             >
-              <KistasLogo size={26} showWordmark={false} />
+              <KistasLogo size={32} showWordmark={false} />
             </button>
             <div className="kdn-divider" />
             <nav className="kdn-tabs" aria-label="Ana gezinti" role="tablist">

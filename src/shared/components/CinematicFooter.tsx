@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { AccessibilityInfo, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../../core/theme';
 import { KistasLogo } from './KistasLogo';
@@ -79,7 +78,6 @@ export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = fals
             {section.links.map((link: FooterLink) => (
               <Pressable key={link.title} onPress={link.action} style={({ pressed }) => [styles.link, pressed && styles.linkPressed]} accessibilityRole="button">
                 <Text style={styles.linkText}>{link.title}</Text>
-                <Ionicons name="arrow-forward" size={13} color="#013196" />
               </Pressable>
             ))}
           </Animated.View>

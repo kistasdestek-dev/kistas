@@ -32,13 +32,13 @@ const PUBLIC_PAGES: Record<PublicPage, PageDefinition> = {
   popular: {
     path: '/popular/',
     title: 'Popüler Dijital Projeler | Kıstas',
-    description: "Kıstas'ta son 7 günün doğrulanmış topluluk desteğine göre en popüler dijital projelerini keşfedin.",
+    description: "Kıstas'ta kalıcı topluluk desteğine göre en popüler dijital projeleri keşfedin.",
     schemaType: 'CollectionPage',
   },
   new: {
     path: '/new/',
     title: 'Yeni Çıkan Dijital Projeler | Kıstas',
-    description: "Kıstas'ta topluluğa yeni katılan, ilk günlerindeki yenilikçi ve bağımsız projeleri inceleyin.",
+    description: "Kıstas'ta topluluğa son 30 günde katılan yenilikçi ve bağımsız projeleri inceleyin.",
     schemaType: 'CollectionPage',
   },
   about: {

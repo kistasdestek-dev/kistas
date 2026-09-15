@@ -268,7 +268,7 @@ export const HowItWorksScreen: React.FC<HowItWorksScreenProps> = ({
             <div className="khiw-p-item">
               <div className="khiw-p-icon"><Ionicons name="sparkles-outline" size={22} /></div>
               <h4>Akıllı Destek Algoritması</h4>
-              <p>Destek oyları sunucuda atomik RPC ile doğrulanır. Son 7 günün zaman azalımlı (time-decay) ağırlıklandırmasıyla vitrin her gün taze kalır; sahte hesaplar ve botlar elenir.</p>
+              <p>Destek oyları sunucuda atomik RPC ile doğrulanır. Popüler sıralaması kalıcı destek toplamına göre belirlenir; sahte hesaplar ve botlar sunucu tarafında elenir.</p>
             </div>
             <div className="khiw-p-item">
               <div className="khiw-p-icon"><Ionicons name="sync-outline" size={22} /></div>
@@ -342,7 +342,7 @@ export const HowItWorksScreen: React.FC<HowItWorksScreenProps> = ({
           </div>
           <div className="khiw-faq-card">
             <h4><span>02.</span> Upvote (Destek Oyu) ne işe yarar?</h4>
-            <p>Bir projeye verdiğin destek oyu, projenin son 7 günlük puanını yükselterek Popüler Vitrini'nde üst sıralara tırmanmasını sağlar. Sahte oylar sunucu kontrolünde elenir.</p>
+            <p>Bir projeye verdiğin kalıcı destek oyu, toplam destek sayısını yükselterek Popüler Vitrini'nde üst sıralara tırmanmasını sağlar. Sahte oylar sunucu kontrolünde elenir.</p>
           </div>
           <div className="khiw-faq-card">
             <h4><span>03.</span> Sponsorlu Vitrin rotasyonu nedir?</h4>

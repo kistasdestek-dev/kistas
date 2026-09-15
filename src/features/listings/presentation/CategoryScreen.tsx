@@ -97,21 +97,26 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
   // Veri Yükleme
   useEffect(() => {
     let isMounted = true;
-    Promise.all([
-      CategoryService.getProjectCategories(),
-      ListingService.getCategorySponsoredListings(categoryId),
-      ListingService.getCategoryListings(categoryId, 'popular', 'all', 50),
-      ListingService.getCategoryListings(categoryId, 'newest', 'all', 50),
-      ListingService.getWeeklyShowcaseListings(categoryId),
-      ListingService.getUserUpvotedProjectIds(),
-    ])
-      .then(([cats, sponsored, popular, newest, weeklyShowcase, userUpvotedIds]) => {
-        if (!isMounted) return;
+    CategoryService.getProjectCategories()
+      .then(async (cats) => {
         const found = cats.find((c: Category) => c.id === categoryId || c.slug === categoryId);
-        if (found) setCategoryInfo(found);
+        if (!found) throw new Error('Kategori bulunamadı.');
+
+        const resolvedCategoryId = found.id;
+        const [sponsored, popular, newest, weeklyShowcase, userUpvotedIds] = await Promise.all([
+          ListingService.getCategorySponsoredListings(resolvedCategoryId),
+          ListingService.getCategoryListings(resolvedCategoryId, 'popular', 'all', 50),
+          ListingService.getCategoryListings(resolvedCategoryId, 'newest', 'all', 50),
+          ListingService.getWeeklyShowcaseListings(resolvedCategoryId),
+          ListingService.getUserUpvotedProjectIds(),
+        ]);
+
+        if (!isMounted) return;
+        setCategoryInfo(found);
 
         setSponsoredProjects(sponsored);
         setPopularProjects(popular);
+        setNewProjects(newest);
         // Sadece doğrulanmış topluluk desteği (>0) olan projeler kategori vitrininde lider gösterilebilir
         const qualifiedShowcase = (weeklyShowcase || []).filter(
           (p) => (p.weeklySupportCount ?? 0) > 0 || (p.upvotesCount ?? 0) > 0
@@ -204,10 +209,10 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
           ? { ...item, upvotesCount: exactSupportCount, likesCount: exactSupportCount }
           : item
       ));
-      const nextShowcase = await ListingService.getWeeklyShowcaseListings(categoryId);
+      const nextShowcase = await ListingService.getWeeklyShowcaseListings(categoryInfo?.id || categoryId);
       setShowcaseProjects(nextShowcase);
     }
-  }, [newProjects, popularProjects, upvotedMap]);
+  }, [categoryId, categoryInfo?.id, newProjects, popularProjects, upvotedMap]);
 
   const filterForPresentation = useCallback((items: Listing[]) => {
     const q = searchQuery.trim();
@@ -390,9 +395,9 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
       {feedSort !== 'newest' ? (
         <PopularProjectPager
           title={`${categoryTitle} · Popüler`}
-          subtitle="Son 7 günün doğrulanmış topluluk desteği"
+          subtitle="Kalıcı topluluk desteğine göre sıralama"
           projects={filteredPopularProjects}
-          metric="weekly"
+          metric="lifetime"
           onSelectProject={onSelectProject}
           onOpenAll={onOpenPopular ? () => onOpenPopular({
             categoryId,
@@ -405,7 +410,7 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
       {feedSort !== 'top_voted' ? (
         <PopularProjectPager
           title={`${categoryTitle} · Yeni Çıkanlar`}
-          subtitle="İlk 7 günündeki bağımsız projeler"
+          subtitle="İlk 30 günündeki bağımsız projeler"
           projects={filteredNewProjects}
           metric="lifetime"
           onSelectProject={onSelectProject}

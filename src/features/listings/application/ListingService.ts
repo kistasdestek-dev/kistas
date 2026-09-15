@@ -414,7 +414,7 @@ export class ListingService {
   }
 
   /**
-   * Son 7 günlük doğrulanmış desteklere göre organik Popüler sıralaması.
+   * Kalıcı destek toplamına göre organik Popüler sıralaması.
    * Aktif sponsorlu projeler sunucu tarafında bu sonuçtan çıkarılır.
    */
   public static async getPopularListings(
@@ -428,7 +428,7 @@ export class ListingService {
   }
 
   /**
-   * İlk 7 günü içindeki, aktif ve sponsorlu olmayan yeni projeler.
+   * İlk 30 günü içindeki, aktif ve sponsorlu olmayan yeni projeler.
    */
   public static async getNewListings(
     categoryId?: string | null,
@@ -663,7 +663,21 @@ export class ListingService {
         }
       }
 
-      // Fallback veya 'top_voted' / 'newest' doğrudan sorgu
+      if (sort === 'newest') {
+        const ranked = await this.getRankedListings('get_new_listings', {
+          p_limit: limit,
+          p_category_id: categoryId,
+        });
+        const filtered = platform && platform !== 'all'
+          ? ranked.filter((p) => p.platforms?.includes(platform))
+          : ranked;
+        return filtered.map((item, idx) => ({
+          ...item,
+          categoryRank: idx + 1,
+        }));
+      }
+
+      // Popüler RPC fallback'i veya 'top_voted' doğrudan sorgusu.
       let query = supabase
         .from('listings')
         .select(LISTING_SELECT)
@@ -674,11 +688,7 @@ export class ListingService {
         query = query.contains('platforms', [platform]);
       }
 
-      if (sort === 'newest') {
-        query = query.order('created_at', { ascending: false });
-      } else {
-        query = query.order('upvotes_count', { ascending: false }).order('created_at', { ascending: false });
-      }
+      query = query.order('upvotes_count', { ascending: false }).order('created_at', { ascending: false });
 
       const { data, error } = await query.limit(limit);
       if (error || !data) return [];
