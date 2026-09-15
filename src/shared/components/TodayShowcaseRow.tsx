@@ -177,8 +177,8 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = React.memo(({
           ]}
         />
         <LinearGradient
-          colors={['rgba(241,245,250,0)', 'rgba(241,245,250,0.08)', 'rgba(241,245,250,0.76)', '#F1F5FA']}
-          locations={[0.34, 0.54, 0.76, 0.94]}
+          colors={['rgba(241,245,250,0)', 'rgba(241,245,250,0.40)', 'rgba(241,245,250,0.88)', '#F1F5FA']}
+          locations={[0.20, 0.46, 0.70, 0.92]}
           style={StyleSheet.absoluteFill}
         />
         <View style={styles.cardTopRow}>
@@ -193,10 +193,6 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = React.memo(({
             <Ionicons name={getPlatformIcon(platform)} size={13} color="#3269C7" />
             <Text style={styles.platformText}>{platform || 'Dijital'}</Text>
           </View>
-        </View>
-        <View style={styles.mediaSignature}>
-          <View style={styles.signatureDot} />
-          <Text style={styles.signatureText}>{isPremium ? 'HAFTANIN KAZANANI' : 'TOPLULUK SEÇİMİ'}</Text>
         </View>
       </View>
 
@@ -534,27 +530,6 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '700',
   },
-  mediaSignature: {
-    position: 'absolute',
-    left: 12,
-    bottom: 150,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  signatureDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 6,
-    backgroundColor: '#70B9FF',
-  },
-  signatureText: {
-    ...theme.typography.kistas,
-    color: NEO.ink,
-    fontSize: 8.5,
-    fontWeight: '700',
-    letterSpacing: 1.05,
-  },
   cardBody: {
     flex: 1,
     zIndex: 2,
@@ -567,13 +542,10 @@ const styles = StyleSheet.create({
   heroStatement: {
     ...theme.typography.kistas,
     color: NEO.ink,
-    fontSize: 19,
+    fontSize: 17.5,
     lineHeight: 23,
     fontWeight: '700',
-    letterSpacing: -0.45,
-    textShadowColor: 'rgba(255,255,255,0.82)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 7,
+    letterSpacing: -0.35,
   },
   productDock: {
     minHeight: 70,
