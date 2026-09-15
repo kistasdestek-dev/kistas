@@ -13,6 +13,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { BlogPost, BLOG_CATEGORIES } from '../domain/BlogPost';
 import { BlogService } from '../application/BlogService';
 import { KistasTopBrandBar } from '../../../shared/components/KistasTopBrandBar';
+import { CinematicFooter } from '../../../shared/components/CinematicFooter';
 
 export interface BlogScreenProps {
   onBack: () => void;
@@ -30,6 +31,10 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
   onBack,
   onExplore,
   onCreateProject,
+  onOpenAbout,
+  onOpenPrivacy,
+  onOpenSupport,
+  onOpenHowItWorks,
   initialPostSlug,
 }) => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -235,6 +240,7 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
           )}
         </View>
       )}
+      <CinematicFooter compact onOpenAbout={onOpenAbout} onOpenPrivacy={onOpenPrivacy} onOpenSupport={onOpenSupport} onOpenHowItWorks={onOpenHowItWorks} />
     </ScrollView>
   );
 };

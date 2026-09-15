@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { KistasTopBrandBar } from '../../../shared/components/KistasTopBrandBar';
+import { CinematicFooter } from '../../../shared/components/CinematicFooter';
 
 export interface AboutScreenProps {
   onBack: () => void;
@@ -12,7 +13,7 @@ export interface AboutScreenProps {
   onOpenBlog?: () => void;
 }
 
-export const AboutScreen: React.FC<AboutScreenProps> = ({ onBack, onExplore }) => (
+export const AboutScreen: React.FC<AboutScreenProps> = ({ onBack, onExplore, onOpenPrivacy, onOpenSupport, onOpenHowItWorks, onOpenBlog }) => (
   <ScrollView decelerationRate={0.99} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
     <TouchableOpacity style={styles.back} onPress={onBack} accessibilityRole="button">
       <Ionicons name="arrow-back" size={17} color="#686474" />
@@ -35,6 +36,7 @@ export const AboutScreen: React.FC<AboutScreenProps> = ({ onBack, onExplore }) =
     <TouchableOpacity style={styles.cta} onPress={onExplore} accessibilityRole="button">
       <Text style={styles.ctaText}>Keşfetmeye Başla</Text><Ionicons name="arrow-forward" size={17} color="#FAFBFD" />
     </TouchableOpacity>
+    <CinematicFooter compact onOpenPrivacy={onOpenPrivacy} onOpenSupport={onOpenSupport} onOpenHowItWorks={onOpenHowItWorks} onOpenBlog={onOpenBlog} />
   </ScrollView>
 );
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { KistasTopBrandBar } from '../../../shared/components/KistasTopBrandBar';
+import { CinematicFooter } from '../../../shared/components/CinematicFooter';
 
 export interface HowItWorksScreenProps {
   onBack: () => void;
@@ -17,6 +18,10 @@ export const HowItWorksScreen: React.FC<HowItWorksScreenProps> = ({
   onBack,
   onExplore,
   onCreateProject,
+  onOpenAbout,
+  onOpenPrivacy,
+  onOpenSupport,
+  onOpenBlog,
 }) => {
   const [role, setRole] = useState<'explorer' | 'creator'>('explorer');
 
@@ -169,6 +174,7 @@ export const HowItWorksScreen: React.FC<HowItWorksScreenProps> = ({
         </Text>
         <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
       </TouchableOpacity>
+      <CinematicFooter compact onOpenAbout={onOpenAbout} onOpenPrivacy={onOpenPrivacy} onOpenSupport={onOpenSupport} onOpenBlog={onOpenBlog} />
     </ScrollView>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { KistasLogo } from './KistasLogo';
 
 export interface CinematicFooterProps {
   compact?: boolean;
@@ -12,77 +13,23 @@ export interface CinematicFooterProps {
 
 const STYLE_ID = 'kistas-cinematic-footer-styles';
 const STYLES = `
-.kcf{--kcf-cyan:#3269C7;--kcf-ink:#25364E;--kcf-muted:#686474;position:relative;isolation:isolate;width:100%;min-height:min(660px,78vh);margin-top:64px;overflow:hidden;background:rgba(255,255,255,.95);border-top:1px solid rgba(50,105,199,.22);color:var(--kcf-ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.kcf *{box-sizing:border-box}
-.kcf-grid{position:absolute;inset:0;pointer-events:none;opacity:.38;background-size:60px 60px;background-image:linear-gradient(to right,rgba(50,105,199,.07) 1px,transparent 1px),linear-gradient(to bottom,rgba(50,105,199,.07) 1px,transparent 1px);mask-image:linear-gradient(to bottom,transparent,#ffffff 28%,#ffffff 72%,transparent)}
-.kcf-aurora{position:absolute;left:50%;top:52%;width:min(920px,82vw);height:520px;pointer-events:none;transform:translate(-50%,-50%) scale(0.9);background:radial-gradient(circle,rgba(50,105,199,.18),rgba(233,226,245,.13) 38%,transparent 70%);filter:blur(70px);opacity:0.25;transition:opacity 1.2s ease,transform 1.2s cubic-bezier(0.16,1,0.3,1)}
-.kcf-revealed .kcf-aurora{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.kcf-giant{position:absolute;left:50%;bottom:-4%;pointer-events:none;transform:translateX(-50%) translateY(32px);font-size:clamp(100px,18vw,300px);line-height:.72;font-weight:700;letter-spacing:0;white-space:nowrap;color:transparent;-webkit-text-stroke:1px rgba(37,35,51,.08);background:linear-gradient(180deg,rgba(37,35,51,.11),transparent 68%);background-clip:text;-webkit-background-clip:text;user-select:none;opacity:0.1;transition:opacity 1.1s cubic-bezier(0.16,1,0.3,1),transform 1.1s cubic-bezier(0.16,1,0.3,1)}
-.kcf-revealed .kcf-giant{opacity:1;transform:translateX(-50%) translateY(0)}
-.kcf-center{position:relative;z-index:2;min-height:min(580px,70vh);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:76px 24px 92px;text-align:center}
-
-/* Metin ve Eleman Hafif Giriş Efektleri */
-.kcf-title{max-width:900px;margin:0 0 36px;font-size:clamp(40px,6.5vw,88px);line-height:.96;font-weight:700;letter-spacing:0;background:linear-gradient(135deg,#25364E 0%,#3269C7 50%,#25364E 100%);background-size:200% auto;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 22px rgba(50,105,199,.12));opacity:0.15;transform:translateY(28px);filter:blur(5px);transition:opacity .85s cubic-bezier(0.16,1,0.3,1),transform .85s cubic-bezier(0.16,1,0.3,1),filter .85s cubic-bezier(0.16,1,0.3,1)}
-.kcf-revealed .kcf-title{opacity:1;transform:translateY(0);filter:blur(0);animation:kcf-title-shimmer 1.8s ease-out .2s 1 forwards}
-@keyframes kcf-title-shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-
-.kcf-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;opacity:0.15;transform:translateY(22px);filter:blur(3px);transition:opacity .75s cubic-bezier(0.16,1,0.3,1) .15s,transform .75s cubic-bezier(0.16,1,0.3,1) .15s,filter .75s cubic-bezier(0.16,1,0.3,1) .15s}
-.kcf-revealed .kcf-actions{opacity:1;transform:translateY(0);filter:blur(0)}
-
-.kcf-links{display:flex;flex-wrap:wrap;justify-content:center;margin-top:18px;gap:10px;opacity:0.15;transform:translateY(16px);transition:opacity .7s cubic-bezier(0.16,1,0.3,1) .28s,transform .7s cubic-bezier(0.16,1,0.3,1) .28s}
-.kcf-revealed .kcf-links{opacity:1;transform:translateY(0)}
-.kcf-links a{font-family:inherit;cursor:pointer}
-
-.kcf-pill{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 28px;border:1px solid rgba(50,105,199,.16);border-radius:999px;background:linear-gradient(145deg,rgba(37,35,51,.07),rgba(37,35,51,.02));box-shadow:0 16px 32px -18px #ffffff,inset 0 1px rgba(37,35,51,.1);backdrop-filter:blur(16px);color:var(--kcf-ink);font:700 13px/1 inherit;text-decoration:none;transition:transform .25s ease,border-color .25s ease,background .25s ease}
-.kcf-pill:hover{transform:translateY(-2px);border-color:rgba(50,105,199,.44);background:rgba(50,105,199,.09)}
-.kcf-pill-small{min-height:42px;padding:0 20px;color:var(--kcf-muted);font-size:12px}
-.kcf-pill-soon{cursor:default}
-.kcf-platform{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
-.kcf-platform small{font-size:9px;color:var(--kcf-muted);font-weight:600}
-.kcf-icon{display:grid;place-items:center;width:24px;height:24px;font-size:19px}
-
-.kcf-bottom{position:absolute;z-index:5;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 32px;color:var(--kcf-muted);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:0.2;transition:opacity .6s ease-out .4s}
-.kcf-revealed .kcf-bottom{opacity:1}
-.kcf-top{width:46px;height:46px;min-height:46px!important;padding:0;font-size:22px;cursor:pointer;z-index:10;pointer-events:auto;user-select:none;-webkit-user-select:none}
-.kcf-compact{min-height:520px}.kcf-compact .kcf-center{min-height:460px;padding:56px 20px 72px}
-
-@media(max-width:767px){
-  .kcf{min-height:540px;margin-top:40px}
-  .kcf-aurora{filter:blur(36px)}
-  .kcf-pill{backdrop-filter:none;-webkit-backdrop-filter:none}
-  .kcf-center{min-height:460px;padding:64px 18px 96px}
-  .kcf-title{font-size:38px;margin-bottom:28px}
-  .kcf-actions{flex-direction:column;width:min(300px,100%)}
-  .kcf-actions .kcf-pill{width:100%}
-  .kcf-bottom{padding:18px 16px 46px;justify-content:center}
-  .kcf-top{position:absolute;right:16px;bottom:38px}
-  .kcf-copy{max-width:230px;text-align:center;line-height:1.5}
-  .kcf-giant{display:none}
-  .kcf-links{max-width:330px}
-}
-@media(prefers-reduced-motion:reduce){
-  .kcf-title,.kcf-actions,.kcf-links,.kcf-giant,.kcf-bottom,.kcf-aurora{opacity:1!important;transform:none!important;filter:none!important;transition:none!important;animation:none!important}
-  .kcf-pill{transition:none}
-}
+.kcf{--kcf-blue:#013196;--kcf-ink:#25364E;--kcf-muted:#64748B;position:relative;isolation:isolate;width:min(1180px,calc(100% - 32px));margin:72px auto 0;overflow:hidden;border:1px solid rgba(1,49,150,.12);border-bottom:0;border-radius:48px 48px 0 0;background:radial-gradient(38% 150px at 50% 0,rgba(1,49,150,.13),transparent 72%),linear-gradient(180deg,#fff 0%,#f8fafd 100%);color:var(--kcf-ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.kcf *{box-sizing:border-box}.kcf-glow{position:absolute;z-index:2;top:0;left:50%;width:36%;height:1px;transform:translate(-50%,-50%);border-radius:999px;background:rgba(1,49,150,.68);box-shadow:0 0 16px 4px rgba(1,49,150,.26);pointer-events:none}
+.kcf-shell{position:relative;z-index:1;display:grid;grid-template-columns:minmax(230px,.9fr) minmax(0,2fr);gap:72px;padding:58px 64px 34px}.kcf-brand{display:flex;min-width:0;flex-direction:column;align-items:flex-start}.kcf-tagline{max-width:300px;margin:22px 0 0;color:var(--kcf-muted);font-size:13px;line-height:1.65}.kcf-sections{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px}.kcf-section-title{margin:0 0 18px;color:var(--kcf-blue);font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}.kcf-list{display:flex;margin:0;padding:0;list-style:none;flex-direction:column;gap:12px}.kcf-link,.kcf-static{display:inline-flex;min-height:26px;align-items:center;gap:8px;border:0;background:none;color:var(--kcf-muted);font:600 12px/1.45 inherit;letter-spacing:-.1px;text-align:left;text-decoration:none}.kcf-link{width:max-content;max-width:100%;padding:0;cursor:pointer;transition:color .25s ease,transform .25s ease}.kcf-link:hover,.kcf-link:focus-visible{color:var(--kcf-blue);transform:translateX(3px)}.kcf-link:focus-visible{outline:2px solid rgba(1,49,150,.25);outline-offset:4px;border-radius:4px}.kcf-link-icon{display:inline-flex;transition:transform .25s ease}.kcf-link:hover .kcf-link-icon{transform:translateX(2px)}.kcf-static{color:#73839a}.kcf-soon{margin-left:2px;padding:2px 6px;border-radius:999px;background:rgba(1,49,150,.07);color:var(--kcf-blue);font-size:9px;font-weight:700}.kcf-bottom{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 64px;padding:22px 0 26px;border-top:1px solid rgba(1,49,150,.1);color:var(--kcf-muted);font-size:11px;font-weight:600;letter-spacing:-.1px}.kcf-top{display:grid;width:42px;height:42px;flex:0 0 42px;place-items:center;border:1px solid rgba(50,105,199,.24);border-radius:50%;background:linear-gradient(145deg,#fff,#eef5ff);box-shadow:0 9px 20px -12px rgba(1,49,150,.65);color:var(--kcf-blue);cursor:pointer;transition:transform .25s ease,box-shadow .25s ease}.kcf-top:hover{transform:translateY(-2px);box-shadow:0 12px 24px -12px rgba(1,49,150,.8)}
+.kcf-animate{opacity:0;filter:blur(4px);transform:translateY(-8px);transition:opacity .8s ease var(--kcf-delay,0s),filter .8s ease var(--kcf-delay,0s),transform .8s cubic-bezier(.16,1,.3,1) var(--kcf-delay,0s)}.kcf-revealed .kcf-animate{opacity:1;filter:blur(0);transform:translateY(0)}.kcf-compact{margin-top:48px}.kcf-compact .kcf-shell{padding-top:46px;padding-bottom:28px}
+@media(max-width:860px){.kcf{width:calc(100% - 20px);margin-top:48px;border-radius:34px 34px 0 0}.kcf-shell{grid-template-columns:1fr;gap:38px;padding:42px 28px 28px}.kcf-tagline{margin-top:16px}.kcf-sections{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 22px}.kcf-bottom{margin:0 28px;padding-bottom:28px}.kcf-glow{width:52%}}
+@media(max-width:420px){.kcf{width:calc(100% - 12px);border-radius:28px 28px 0 0}.kcf-shell{padding:38px 20px 24px}.kcf-sections{gap:28px 16px}.kcf-section-title{margin-bottom:14px}.kcf-list{gap:10px}.kcf-bottom{margin:0 20px}.kcf-copy{max-width:220px;line-height:1.55}.kcf-glow{width:62%;box-shadow:0 0 12px 3px rgba(1,49,150,.2)}}
+@media(prefers-reduced-motion:reduce){.kcf-animate{opacity:1!important;filter:none!important;transform:none!important;transition:none!important}.kcf-link,.kcf-link-icon,.kcf-top{transition:none!important}}
 `;
+
+type FooterLink = { title: string; action: () => void };
 
 const smoothScrollToTop = (element: HTMLElement | Window) => {
   try {
-    if (element === window) {
-      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-      if (document.documentElement) document.documentElement.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-      if (document.body) document.body.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-    } else {
-      (element as HTMLElement).scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-    }
+    element.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   } catch {
-    if (element === window) {
-      window.scrollTo(0, 0);
-      if (document.documentElement) document.documentElement.scrollTop = 0;
-      if (document.body) document.body.scrollTop = 0;
-    } else {
-      (element as HTMLElement).scrollTop = 0;
-    }
+    if (element === window) window.scrollTo(0, 0);
+    else (element as HTMLElement).scrollTop = 0;
   }
 };
 
@@ -97,124 +44,79 @@ export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = fals
       style.textContent = STYLES;
       document.head.appendChild(style);
     }
-
     const node = rootRef.current;
-    if (!node) return;
-
-    if (typeof IntersectionObserver !== 'undefined') {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setIsRevealed(true);
-            }
-          });
-        },
-        {
-          threshold: 0.08,
-          rootMargin: '0px 0px -30px 0px',
-        }
-      );
-      observer.observe(node);
-      return () => observer.disconnect();
-    } else {
+    if (!node || typeof IntersectionObserver === 'undefined') {
       setIsRevealed(true);
-    }
-  }, []);
-
-  const scrollToTop = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.currentTarget && 'blur' in e.currentTarget) {
-        (e.currentTarget as HTMLElement).blur();
-      }
-    }
-
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('kistas:scroll-to-top'));
-    }
-
-    const scrollersToAnimate: (HTMLElement | Window)[] = [];
-
-    // 1. Ata elemanlar
-    if (rootRef.current) {
-      let el: HTMLElement | null = rootRef.current.parentElement;
-      while (el) {
-        if (el.scrollHeight > el.clientHeight + 1 && el.scrollTop > 0 && !scrollersToAnimate.includes(el)) {
-          scrollersToAnimate.push(el);
-        }
-        el = el.parentElement;
-      }
-    }
-
-    // 2. Dokümandaki tüm kaydırılabilir kaplar (React Native ScrollView / FlatList dahil)
-    try {
-      const candidates = document.querySelectorAll<HTMLElement>('div, main, section');
-      candidates.forEach((node) => {
-        if (node.scrollHeight > node.clientHeight + 1 && node.scrollTop > 0 && !scrollersToAnimate.includes(node)) {
-          scrollersToAnimate.push(node);
-        }
-      });
-    } catch {}
-
-    // 3. Window & document
-    if (window.scrollY > 0 || (document.documentElement && document.documentElement.scrollTop > 0) || (document.body && document.body.scrollTop > 0)) {
-      scrollersToAnimate.push(window);
-    }
-
-    if (scrollersToAnimate.length === 0) {
-      smoothScrollToTop(window);
       return;
     }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsRevealed(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.08, rootMargin: '0px 0px -24px 0px' });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
-    scrollersToAnimate.forEach((scroller) => {
-      smoothScrollToTop(scroller);
+  const scrollToTop = () => {
+    window.dispatchEvent(new CustomEvent('kistas:scroll-to-top'));
+    const scrollers: (HTMLElement | Window)[] = [];
+    let ancestor = rootRef.current?.parentElement ?? null;
+    while (ancestor) {
+      if (ancestor.scrollHeight > ancestor.clientHeight + 1 && ancestor.scrollTop > 0) scrollers.push(ancestor);
+      ancestor = ancestor.parentElement;
+    }
+    document.querySelectorAll<HTMLElement>('div, main, section').forEach((node) => {
+      if (node.scrollHeight > node.clientHeight + 1 && node.scrollTop > 0 && !scrollers.includes(node)) scrollers.push(node);
     });
+    if (window.scrollY > 0) scrollers.push(window);
+    (scrollers.length ? scrollers : [window]).forEach(smoothScrollToTop);
   };
 
-  const openInternalPage = (event: React.MouseEvent<HTMLAnchorElement>, action: () => void) => {
-    event.preventDefault();
-    action();
-  };
+  const sections: Array<{ label: string; links: FooterLink[] }> = [
+    { label: 'Kıstas', links: [
+      ...(onOpenAbout ? [{ title: 'Hakkımızda', action: onOpenAbout }] : []),
+      ...(onOpenHowItWorks ? [{ title: 'Nasıl Çalışır?', action: onOpenHowItWorks }] : []),
+    ] },
+    { label: 'Kaynaklar', links: [
+      ...(onOpenBlog ? [{ title: 'Blog', action: onOpenBlog }] : []),
+      ...(onOpenSupport ? [{ title: 'Destek', action: onOpenSupport }] : []),
+      ...(onOpenPrivacy ? [{ title: 'KVKK ve Gizlilik', action: onOpenPrivacy }] : []),
+    ] },
+  ].filter((section) => section.links.length > 0);
 
   return (
-    <footer
-      ref={rootRef}
-      className={`kcf${compact ? ' kcf-compact' : ''}${isRevealed ? ' kcf-revealed' : ''}`}
-      aria-label="Kıstas alt bilgi"
-    >
-      <div className="kcf-grid" aria-hidden="true" />
-      <div className="kcf-aurora" aria-hidden="true" />
-      <div className="kcf-giant" aria-hidden="true">KISTAS</div>
-      <div className="kcf-center">
-        <h2 className="kcf-title">Yeni bir şey keşfetmeye hazır mısın?</h2>
-        <div className="kcf-actions">
-          <span className="kcf-pill kcf-pill-soon" aria-label="Kıstas iOS uygulaması yakında">
-            <span className="kcf-icon"><Ionicons name="logo-apple" size={22} color="#25364E" /></span><span className="kcf-platform">iOS uygulaması<small>Yakında</small></span>
-          </span>
-          <span className="kcf-pill kcf-pill-soon" aria-label="Kıstas Android uygulaması yakında">
-            <span className="kcf-icon"><Ionicons name="logo-google-playstore" size={21} color="#25364E" /></span><span className="kcf-platform">Android uygulaması<small>Yakında</small></span>
-          </span>
+    <footer ref={rootRef} className={`kcf${compact ? ' kcf-compact' : ''}${isRevealed ? ' kcf-revealed' : ''}`} aria-label="Kıstas alt bilgi">
+      <div className="kcf-glow" aria-hidden="true" />
+      <div className="kcf-shell">
+        <div className="kcf-brand kcf-animate" style={{ '--kcf-delay': '.06s' } as React.CSSProperties}>
+          <KistasLogo size={35} showWordmark glow />
+          <p className="kcf-tagline">Bağımsız dijital projelerin keşfedildiği, desteklendiği ve büyüdüğü topluluk vitrini.</p>
         </div>
-        <nav className="kcf-links" aria-label="Yasal ve destek bağlantıları">
-          {onOpenAbout ? <a className="kcf-pill kcf-pill-small" href="/about" onClick={(event) => openInternalPage(event, onOpenAbout)}>Hakkımızda</a> : null}
-          {onOpenHowItWorks ? <a className="kcf-pill kcf-pill-small" href="/how-it-works" onClick={(event) => openInternalPage(event, onOpenHowItWorks)}>Nasıl Çalışır?</a> : null}
-          {onOpenBlog ? <a className="kcf-pill kcf-pill-small" href="/blog" onClick={(event) => openInternalPage(event, () => onOpenBlog())}>Blog</a> : null}
-          {onOpenPrivacy ? <a className="kcf-pill kcf-pill-small" href="/privacy" onClick={(event) => openInternalPage(event, onOpenPrivacy)}>KVKK ve Gizlilik</a> : null}
-          {onOpenSupport ? <button className="kcf-pill kcf-pill-small" type="button" onClick={onOpenSupport}>Destek</button> : null}
+        <nav className="kcf-sections" aria-label="Alt bilgi bağlantıları">
+          {sections.map((section, index) => (
+            <div className="kcf-animate" style={{ '--kcf-delay': `${0.14 + index * 0.1}s` } as React.CSSProperties} key={section.label}>
+              <h3 className="kcf-section-title">{section.label}</h3>
+              <ul className="kcf-list">
+                {section.links.map((link) => (
+                  <li key={link.title}><button className="kcf-link" type="button" onClick={link.action}>{link.title}<span className="kcf-link-icon" aria-hidden="true">→</span></button></li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <div className="kcf-animate" style={{ '--kcf-delay': `${0.14 + sections.length * 0.1}s` } as React.CSSProperties}>
+            <h3 className="kcf-section-title">Uygulamalar</h3>
+            <ul className="kcf-list">
+              <li className="kcf-static"><Ionicons name="logo-apple" size={16} color="#25364E" />iOS <span className="kcf-soon">Yakında</span></li>
+              <li className="kcf-static"><Ionicons name="logo-google-playstore" size={15} color="#25364E" />Android <span className="kcf-soon">Yakında</span></li>
+            </ul>
+          </div>
         </nav>
       </div>
-      <div className="kcf-bottom">
-        <div className="kcf-copy">© 2026 Kıstas · Tüm hakları saklıdır.</div>
-        <button
-          className="kcf-pill kcf-top"
-          type="button"
-          onClick={scrollToTop}
-          aria-label="Sayfanın başına dön"
-        >
-          ↑
-        </button>
+      <div className="kcf-bottom kcf-animate" style={{ '--kcf-delay': '.42s' } as React.CSSProperties}>
+        <span className="kcf-copy">© {new Date().getFullYear()} Kıstas · Tüm hakları saklıdır.</span>
+        <button className="kcf-top" type="button" onClick={scrollToTop} aria-label="Sayfanın başına dön"><Ionicons name="arrow-up" size={18} color="#013196" /></button>
       </div>
     </footer>
   );
