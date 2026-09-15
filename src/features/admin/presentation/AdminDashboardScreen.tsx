@@ -682,7 +682,8 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
     const query = searchQuery.toLocaleLowerCase('tr-TR');
     return item.title.toLocaleLowerCase('tr-TR').includes(query)
       || (item.tagline || '').toLocaleLowerCase('tr-TR').includes(query)
-      || (item.seller?.fullName || '').toLocaleLowerCase('tr-TR').includes(query);
+      || (item.seller?.fullName || '').toLocaleLowerCase('tr-TR').includes(query)
+      || (item.developerName || '').toLocaleLowerCase('tr-TR').includes(query);
   }), [listings, listingFilter, searchQuery]);
 
   const filteredUsers = useMemo(() => {
@@ -819,7 +820,8 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
     const query = searchQuery.toLocaleLowerCase('tr-TR');
     return item.title.toLocaleLowerCase('tr-TR').includes(query)
       || (item.tagline || '').toLocaleLowerCase('tr-TR').includes(query)
-      || (item.seller?.fullName || '').toLocaleLowerCase('tr-TR').includes(query);
+      || (item.seller?.fullName || '').toLocaleLowerCase('tr-TR').includes(query)
+      || (item.developerName || '').toLocaleLowerCase('tr-TR').includes(query);
   }), [listings, searchQuery]);
   const sponsorListings = useMemo(() => listings.filter((item) => {
     if (item.status !== 'active' && !item.isBoosted) return false;
@@ -828,7 +830,8 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
     const query = searchQuery.toLocaleLowerCase('tr-TR');
     return item.title.toLocaleLowerCase('tr-TR').includes(query)
       || (item.tagline || '').toLocaleLowerCase('tr-TR').includes(query)
-      || (item.seller?.fullName || '').toLocaleLowerCase('tr-TR').includes(query);
+      || (item.seller?.fullName || '').toLocaleLowerCase('tr-TR').includes(query)
+      || (item.developerName || '').toLocaleLowerCase('tr-TR').includes(query);
   }), [listings, searchQuery, sponsorView]);
 
   const activeRatio = stats && stats.totalProjects > 0
@@ -852,7 +855,11 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
       <View style={styles.projectCopy}>
         <Text style={styles.projectTitle} numberOfLines={1}>{project.title}</Text>
         <Text style={styles.projectTagline} numberOfLines={1}>{project.tagline || 'Dijital proje'}</Text>
-        <Text style={styles.projectOwner} numberOfLines={1}>{project.seller?.fullName || 'Anonim geliştirici'}</Text>
+        <Text style={styles.projectOwner} numberOfLines={1}>
+          {project.isEditorial
+            ? `${project.developerName || 'Bilinmeyen geliştirici'} · Kıstas Editör`
+            : project.seller?.fullName || 'Anonim geliştirici'}
+        </Text>
       </View>
       {onSelectProject ? (
         <GlassIconButton

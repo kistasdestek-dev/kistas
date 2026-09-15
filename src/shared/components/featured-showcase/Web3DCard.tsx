@@ -171,7 +171,9 @@ export const Web3DCard: React.FC<Single3DCardProps> = ({
               <div className="crd-f3d-dock-info">
                 <div className="crd-f3d-dock-title">{project.title}</div>
                 <div className="crd-f3d-dock-sub">
-                  {project.seller?.fullName ? `Geliştiren: ${project.seller.fullName}` : primaryPlatform}
+                  {project.developerName || project.seller?.fullName
+                    ? `Geliştiren: ${project.developerName || project.seller?.fullName}`
+                    : primaryPlatform}
                 </div>
               </div>
             </div>

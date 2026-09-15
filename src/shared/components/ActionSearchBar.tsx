@@ -372,7 +372,7 @@ export const calculateSearchRelevance = (project: Listing, rawQuery: string): nu
 
   const title = normalizeSearchText(project.title);
   const tagline = normalizeSearchText(project.tagline);
-  const maker = normalizeSearchText(project.seller?.fullName);
+  const maker = normalizeSearchText(project.developerName || project.seller?.fullName);
   const category = normalizeSearchText(project.showcaseCategoryName);
   const desc = normalizeSearchText(project.description);
 

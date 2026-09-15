@@ -124,7 +124,7 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
         {featuredProjects.map((project) => {
           const sourceImage = project.coverImageUrl || project.logoUrl || IMAGE_FALLBACK;
           const coverImage = getOptimizedImageUrl(sourceImage, isPhone ? 640 : 800) || sourceImage;
-          const makerName = project.seller?.fullName || 'Bağımsız geliştirici';
+          const makerName = project.developerName || project.seller?.fullName || 'Bağımsız geliştirici';
           const initials = project.title.slice(0, 2).toUpperCase();
           const platform = project.platforms?.[0];
 

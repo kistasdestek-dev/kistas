@@ -195,7 +195,9 @@ export const Native3DCard: React.FC<Single3DCardProps> = ({
             <View style={nativeCardStyles.dockInfo}>
               <Text style={nativeCardStyles.dockTitle} numberOfLines={1}>{project.title}</Text>
               <Text style={nativeCardStyles.dockSub} numberOfLines={1}>
-                {project.seller?.fullName ? `Geliştiren: ${project.seller.fullName}` : primaryPlatform}
+                {project.developerName || project.seller?.fullName
+                  ? `Geliştiren: ${project.developerName || project.seller?.fullName}`
+                  : primaryPlatform}
               </Text>
             </View>
           </View>

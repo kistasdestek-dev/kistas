@@ -21,6 +21,8 @@ export interface Listing {
   title: string;
   tagline?: string;
   description: string;
+  developerName?: string | null;
+  isEditorial?: boolean;
   logoUrl?: string;
   coverImageUrl?: string;
   appStoreUrl?: string;

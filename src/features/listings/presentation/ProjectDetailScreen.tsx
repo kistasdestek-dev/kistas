@@ -167,7 +167,7 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
   const detailScrollRef = useRef<ScrollView>(null);
   const storeActionsOffsetRef = useRef(0);
   const [carouselDirection, setCarouselDirection] = useState<-1 | 0 | 1>(0);
-  const isProjectOwner = currentUser?.id === project.sellerId;
+  const isProjectOwner = currentUser?.id === project.sellerId && !project.isEditorial;
   const canCreateComment = !!currentUser?.isVerified;
 
   const loadComments = useCallback(async () => {
@@ -509,8 +509,9 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
     Platform.OS === 'web' && windowWidth > 700 && screenshotItems.length <= 2;
 
   const initialLetter = (project.title || 'K').charAt(0).toUpperCase();
-  const cleanMakerName = getCleanDeveloperName(project.seller?.fullName);
-  const isMakerVerified = Boolean(project.seller?.isVerified || project.status === 'active');
+  const cleanMakerName = getCleanDeveloperName(project.developerName || project.seller?.fullName);
+  const isMakerVerified = !project.isEditorial
+    && Boolean(project.seller?.isVerified || project.status === 'active');
   const hasRatings =
     project.seller?.ratingCount && project.seller.ratingCount > 0;
   const hasStoreActions = Boolean(project.appStoreUrl || project.playStoreUrl || project.webUrl);
@@ -935,7 +936,9 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
                     </View>
                   </View>
                   <Text style={styles.devSpeechMessage}>
-                    {comments.length === 0
+                    {project.isEditorial
+                      ? '“Bu kayıt Kıstas editörleri tarafından resmi mağaza bilgileriyle hazırlandı.”'
+                      : comments.length === 0
                       ? '“Teknik sorularınızı ve geliştirme önerilerinizi doğrudan geliştiriciye iletebilirsiniz.”'
                       : '“Proje hakkındaki teknik değerlendirmelerinizi ve geliştirme önerilerinizi toplulukla paylaşabilirsiniz.”'}
                   </Text>
@@ -953,7 +956,7 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
                 <View style={styles.devReplyInputRow}>
                   <Ionicons name="create-outline" size={17} color="#7A8799" />
                   <Text style={styles.devReplyPlaceholder} numberOfLines={1}>
-                    {cleanMakerName}'e doğrudan yanıt yaz...
+                    {project.isEditorial ? 'Proje hakkında yorum yaz...' : `${cleanMakerName}'e doğrudan yanıt yaz...`}
                   </Text>
                 </View>
 
@@ -1139,7 +1142,11 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
           <Text style={styles.sectionHeading}>Geliştirici</Text>
           <View style={styles.developerCard}>
             <View style={styles.developerAvatarBox}>
-              <ProfileAvatar avatarUrl={project.seller?.avatarUrl} size={44} logoSize={37} />
+              <ProfileAvatar
+                avatarUrl={project.isEditorial ? project.logoUrl : project.seller?.avatarUrl}
+                size={44}
+                logoSize={37}
+              />
             </View>
 
             <View style={styles.developerDetailsCol}>
@@ -1158,13 +1165,15 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
               </View>
 
               <Text style={styles.developerCardSub}>
-                {hasRatings
+                {project.isEditorial
+                  ? 'Google Play kaynaklı editoryal kayıt'
+                  : hasRatings
                   ? `${(project.seller?.ratingAverage || 0).toFixed(1)} Puan (${project.seller?.ratingCount} değerlendirme)`
                   : 'Kıstas Doğrulanmış Geliştirici'}
               </Text>
             </View>
 
-            {onOpenChat ? (
+            {onOpenChat && !project.isEditorial ? (
               <TouchableOpacity
                 style={styles.messageMakerBtn}
                 activeOpacity={0.8}
@@ -1194,6 +1203,13 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
                 {cleanMakerName}
               </Text>
             </View>
+
+            {project.isEditorial ? (
+              <View style={styles.infoRow}>
+                <Text style={styles.infoKey}>Yayınlayan</Text>
+                <Text style={styles.infoVal}>Kıstas Editör</Text>
+              </View>
+            ) : null}
 
             {categoryName ? (
               <View style={styles.infoRow}>

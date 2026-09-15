@@ -619,6 +619,25 @@ runTest('Editoryal katalog: Google Play kaynakları açıkça belirtilmeli ve y�
   assert.match(seedSource, /ON DELETE CASCADE/i, 'Editoryal görseller proje silinince temizlenebilir kalmalı!');
 });
 
+runTest('Editoryal katalog: gerçek geliştirici ile Kıstas yayıncısı ayrılmalı', () => {
+  const attributionSql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260915000002_editorial_listing_attribution.sql'),
+    'utf8'
+  );
+  const detailSource = fs.readFileSync(
+    path.join(ROOT, 'src', 'features', 'listings', 'presentation', 'ProjectDetailScreen.tsx'),
+    'utf8'
+  );
+
+  assert.match(attributionSql, /ADD COLUMN IF NOT EXISTS developer_name/i, 'Gerçek geliştirici alanı yok!');
+  assert.match(attributionSql, /ADD COLUMN IF NOT EXISTS is_editorial/i, 'Editoryal kayıt işareti yok!');
+  assert.match(attributionSql, /price = NULL/i, 'Editoryal ücretsiz kayıt sahte fiyat göstermemeli!');
+  assert.match(detailSource, /project\.developerName \|\| project\.seller\?\.fullName/i, 'Detay ekranı gerçek geliştiriciyi öncelemiyor!');
+  assert.match(detailSource, /Google Play kaynaklı editoryal kayıt/i, 'Editoryal kaynak etiketi görünmüyor!');
+  assert.match(detailSource, /onOpenChat && !project\.isEditorial/i, 'Kıstas editörü gerçek geliştirici gibi mesaj kabul ediyor!');
+  assert.match(detailSource, /Yayınlayan[\s\S]*Kıstas Editör/i, 'Editoryal yayınlayan bilgisi ayrıştırılmamış!');
+});
+
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);
 
 if (failedTests > 0) {
