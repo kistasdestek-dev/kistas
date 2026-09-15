@@ -19,6 +19,8 @@ const toBoostErrorMessage = (message?: string): string => {
   if (normalized.includes('forbidden')) return 'Yalnızca kendi projenizi Vitrin Desteğine alabilirsiniz.';
   if (normalized.includes('listing_not_found')) return 'Aktif proje bulunamadı.';
   if (normalized.includes('invalid_boost_package')) return 'Seçilen Vitrin Desteği paketi geçerli değil.';
+  if (normalized.includes('unauthorized')) return 'Bu işlem için oturum açmalısınız.';
+  if (message) return `Vitrin Desteği tamamlanamadı (${message}).`;
   return 'Vitrin Desteği şu anda tamamlanamadı. Lütfen yeniden deneyin.';
 };
 
@@ -146,6 +148,7 @@ export class CreditService {
       });
 
       if (error || !data?.success) {
+        console.error('[CreditService.boostListingScoped] RPC error:', error || data);
         return { success: false, error: toBoostErrorMessage(error?.message) };
       }
 
@@ -154,7 +157,8 @@ export class CreditService {
         newCredits: data.new_credits,
         scope: data.scope,
       };
-    } catch {
+    } catch (err) {
+      console.error('[CreditService.boostListingScoped] Unexpected exception:', err);
       return { success: false, error: 'Vitrin Desteği bağlantısı kurulamadı. Lütfen yeniden deneyin.' };
     }
   }
