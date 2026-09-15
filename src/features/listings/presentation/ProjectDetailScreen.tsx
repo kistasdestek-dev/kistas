@@ -1159,13 +1159,28 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
                 ) : null}
               </View>
 
-              <Text style={styles.developerCardSub}>
-                {project.isEditorial
-                  ? 'Google Play kaynaklı editoryal kayıt'
-                  : hasRatings
-                  ? `${(project.seller?.ratingAverage || 0).toFixed(1)} Puan (${project.seller?.ratingCount} değerlendirme)`
-                  : 'Kıstas Doğrulanmış Geliştirici'}
-              </Text>
+              {project.isEditorial ? (
+                <View
+                  style={styles.developerVerificationRow}
+                  accessibilityLabel="Kıstas Doğrulanmış Geliştirici"
+                >
+                  <Text style={[styles.developerCardSub, styles.developerVerificationText]}>
+                    Kıstas Doğrulanmış Geliştirici
+                  </Text>
+                  <MaterialIcons
+                    name="verified"
+                    size={14}
+                    color="#1D9BF0"
+                    style={styles.verifiedIcon}
+                  />
+                </View>
+              ) : (
+                <Text style={styles.developerCardSub}>
+                  {hasRatings
+                    ? `${(project.seller?.ratingAverage || 0).toFixed(1)} Puan (${project.seller?.ratingCount} değerlendirme)`
+                    : 'Kıstas Doğrulanmış Geliştirici'}
+                </Text>
+              )}
             </View>
 
             {onOpenChat && !project.isEditorial ? (
@@ -2481,6 +2496,15 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#686474',
     marginTop: 2,
+  },
+  developerVerificationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginTop: 2,
+  },
+  developerVerificationText: {
+    marginTop: 0,
   },
   messageMakerBtn: {
     flexDirection: 'row',

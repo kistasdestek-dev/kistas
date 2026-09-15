@@ -633,7 +633,11 @@ runTest('Editoryal katalog: gerçek geliştirici ile Kıstas yayıncısı ayrıl
   assert.match(attributionSql, /ADD COLUMN IF NOT EXISTS is_editorial/i, 'Editoryal kayıt işareti yok!');
   assert.match(attributionSql, /price = NULL/i, 'Editoryal ücretsiz kayıt sahte fiyat göstermemeli!');
   assert.match(detailSource, /project\.developerName \|\| project\.seller\?\.fullName/i, 'Detay ekranı gerçek geliştiriciyi öncelemiyor!');
-  assert.match(detailSource, /Google Play kaynaklı editoryal kayıt/i, 'Editoryal kaynak etiketi görünmüyor!');
+  assert.match(
+    detailSource,
+    /project\.isEditorial[\s\S]*Kıstas Doğrulanmış Geliştirici[\s\S]*name="verified"/i,
+    'Mağazadan doğrulanan editoryal geliştirici etiketi ve onay tiki görünmüyor!',
+  );
   assert.match(detailSource, /onOpenChat && !project\.isEditorial/i, 'Kıstas editörü gerçek geliştirici gibi mesaj kabul ediyor!');
   assert.match(detailSource, /Yayınlayan[\s\S]*Kıstas Editör/i, 'Editoryal yayınlayan bilgisi ayrıştırılmamış!');
   assert.doesNotMatch(
