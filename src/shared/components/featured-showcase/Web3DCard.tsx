@@ -189,7 +189,7 @@ export const Web3DCard: React.FC<Single3DCardProps> = ({
                 Projeyi İncele
               </button>
               <span className="crd-f3d-dock-micro">
-                ▲ {project.upvotesCount} Oy
+                ◉ {project.viewCount} · ▲ {project.upvotesCount}
               </span>
             </div>
           </div>

@@ -647,6 +647,35 @@ runTest('Editoryal katalog: gerçek geliştirici ile Kıstas yayıncısı ayrıl
   );
 });
 
+runTest('Proje görüntülenmesi: gerçek ziyaret tekilleştirilir ve sahip görüntülenmesi dışlanır', () => {
+  const migrationPath = path.join(ROOT, 'supabase', 'migrations', '20260915000004_listing_view_tracking.sql');
+  assert.strictEqual(fs.existsSync(migrationPath), true, 'Proje görüntülenme migration dosyası eksik!');
+  const sql = fs.readFileSync(migrationPath, 'utf8');
+
+  assert.match(sql, /PRIMARY KEY \(listing_id, viewer_key, viewed_on\)/i, 'Günlük görüntülenme tekilleştirmesi eksik!');
+  assert.match(sql, /v_actor_id = v_seller_id/i, 'Proje sahibinin görüntülenmesi dışlanmıyor!');
+  assert.match(sql, /v_status <> 'active'/i, 'Aktif olmayan projeler görüntülenme alamamalı!');
+  assert.match(sql, /SECURITY DEFINER[\s\S]*SET search_path = ''/i, 'Görüntülenme RPC güvenli search_path kullanmıyor!');
+  assert.match(sql, /REVOKE ALL ON TABLE public\.listing_view_events FROM PUBLIC, anon, authenticated/i, 'Ham görüntülenme kayıtları istemci rollerine açık!');
+});
+
+runTest('Vitrin sponsorluğu: kredi harcaması geçerli spend_boost işlem türünü kullanmalı', () => {
+  const scopedBoostSql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260910000001_category_sponsorship_and_ranking.sql'),
+    'utf8'
+  );
+  const repairSql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260915000005_fix_scoped_boost_transaction_type.sql'),
+    'utf8'
+  );
+
+  assert.match(scopedBoostSql, /INSERT INTO public\.credit_transactions[\s\S]*'spend_boost'/i, 'Vitrin harcaması spend_boost türünde kaydedilmiyor!');
+  assert.doesNotMatch(scopedBoostSql, /["']usage["']/i, 'Geçersiz usage enum değeri kaynak migration içinde kaldı!');
+  assert.match(repairSql, /CREATE OR REPLACE FUNCTION public\.boost_listing_scoped[\s\S]*INSERT INTO public\.credit_transactions[\s\S]*'spend_boost'/i, 'Canlı RPC onarım migrationı işlem türünü düzeltmiyor!');
+  assert.doesNotMatch(repairSql, /^\s*EXECUTE\s+/im, 'Canlı RPC onarım migrationı dinamik SQL kullanmamalı!');
+  assert.doesNotMatch(repairSql, /["']usage["']/i, 'Geçersiz usage enum değeri onarım migrationı içinde kaldı!');
+});
+
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);
 
 if (failedTests > 0) {

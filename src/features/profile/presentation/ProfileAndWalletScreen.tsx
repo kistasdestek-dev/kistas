@@ -752,7 +752,7 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
           <ActionRow
             icon="analytics-outline"
             title="Vitrin Yönetimi"
-            subtitle="Görünürlük kredilerini ve sponsor seçeneklerini yönet"
+            subtitle="Kıstas Vitrin Kredilerini ve sponsor seçeneklerini yönet"
             onPress={() => onOpenVisibilityManagement?.()}
           />
           <View style={styles.rowDivider} />

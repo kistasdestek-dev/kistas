@@ -24,7 +24,6 @@ import {
 interface CreditStoreScreenProps {
   currentUser?: UserProfile | null;
   onRefreshProfile?: () => void;
-  onNavigateToLaunch?: () => void;
 }
 
 interface CreditPackage {
@@ -44,11 +43,11 @@ const CREDIT_PACKAGES: CreditPackage[] = [
     id: 'starter',
     storeProductId: CREDIT_PRODUCT_IDS.starter,
     name: 'Başlangıç',
-    tagline: 'İlk sponsorlu görünürlük deneyimin için.',
+    tagline: 'İlk Sponsorlu Vitrin kullanımın için.',
     credits: 100,
     price: 299,
     features: [
-      '100 görünürlük kredisi',
+      '100 Vitrin kredisi',
       'Sponsorlu Vitrin süresi',
       'Saatlik eşit rotasyon',
     ],
@@ -57,13 +56,13 @@ const CREDIT_PACKAGES: CreditPackage[] = [
     id: 'pro_launch',
     storeProductId: CREDIT_PRODUCT_IDS.pro_launch,
     name: 'Profesyonel',
-    tagline: 'Daha uzun süre görünür kalmak için.',
+    tagline: 'Daha uzun vitrin süreleri için.',
     credits: 350,
     price: 699,
     badge: 'Önerilen paket',
     isPopular: true,
     features: [
-      '350 görünürlük kredisi',
+      '350 Vitrin kredisi',
       'Sponsorlu proje rozeti',
       'Saatlik eşit rotasyon',
     ],
@@ -77,63 +76,12 @@ const CREDIT_PACKAGES: CreditPackage[] = [
     price: 1699,
     badge: 'Geniş erişim',
     features: [
-      '1.000 görünürlük kredisi',
+      '1.000 Vitrin kredisi',
       'Uzun süreli vitrin kullanımı',
       'Saatlik eşit rotasyon',
     ],
   },
 ];
-
-interface CreditBalanceCardProps {
-  balance: number;
-  onNavigateToLaunch?: () => void;
-}
-
-const CreditBalanceCard: React.FC<CreditBalanceCardProps> = ({
-  balance,
-  onNavigateToLaunch,
-}) => (
-  <View style={styles.balanceCard}>
-    <LinearGradient
-      pointerEvents="none"
-      colors={['#25485c', '#EAF2FC', '#FAFBFD']}
-      locations={[0, 0.46, 1]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.balanceGradient}
-    />
-    <View pointerEvents="none" style={styles.balanceGlowOrb} />
-    <View pointerEvents="none" style={styles.balanceSpecular} />
-    <View style={styles.balanceHeader}>
-      <Text style={styles.balanceEyebrow}>KULLANILABİLİR BAKİYE</Text>
-      <View style={styles.flashIconPill}>
-        <Ionicons name="flash" size={20} color="#25364E" />
-      </View>
-    </View>
-
-    <View style={styles.balanceValueRow}>
-      <Text style={styles.balanceNumber}>{balance}</Text>
-      <Text style={styles.balanceUnit}>kredi</Text>
-    </View>
-
-    <Text style={styles.balanceDescription}>
-      Kredilerini projelerinin görünürlüğünü artırmak için kullanabilirsin.
-    </Text>
-
-    {onNavigateToLaunch ? (
-      <TouchableOpacity
-        style={styles.balanceAction}
-        activeOpacity={0.7}
-        onPress={onNavigateToLaunch}
-        accessibilityRole="button"
-        accessibilityLabel="Projeyi öne çıkar"
-      >
-        <Text style={styles.balanceActionText}>Lansman alanına git</Text>
-        <Ionicons name="arrow-forward" size={14} color="#25364E" />
-      </TouchableOpacity>
-    ) : null}
-  </View>
-);
 
 interface BenefitItemProps {
   icon: React.ComponentProps<typeof Ionicons>['name'];
@@ -322,7 +270,6 @@ const PurchaseBar: React.FC<PurchaseBarProps> = ({
 export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
   currentUser: propUser,
   onRefreshProfile,
-  onNavigateToLaunch,
 }) => {
   const { profile: authUser } = useAuth();
   const { credits } = useWallet();
@@ -457,20 +404,14 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
         <KistasTopBrandBar />
 
         {/* 1. ÜST BAŞLIK */}
-        <View style={[styles.hero, contentWidth >= 850 && styles.heroWide]}>
+        <View style={styles.hero}>
         <View style={styles.header}>
-          <Text style={styles.heroEyebrow}>GÖRÜNÜRLÜK KREDİLERİ</Text>
-          <Text style={styles.pageTitle}>{'Projeni daha\ngörünür kıl.'}</Text>
+          <Text style={styles.heroEyebrow}>KISTAS VİTRİN KREDİLERİ</Text>
+          <Text style={styles.pageTitle}>Sponsorlu erişiminizi planlayın.</Text>
           <Text style={styles.pageSubtitle}>
-            Tek seferlik kredi paketini seç; Sponsorlu Vitrin süreni ihtiyacına göre kullan.
+            Tek seferlik kredi paketleriyle Sponsorlu Vitrin sürenizi ihtiyacınıza göre yönetin.
           </Text>
         </View>
-
-        {/* 2. BAKİYE KARTI */}
-        <CreditBalanceCard
-          balance={activeBalance}
-          onNavigateToLaunch={onNavigateToLaunch}
-        />
         </View>
 
         {/* 3. KISA BİLGİ ALANI */}
@@ -507,7 +448,7 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
             style={styles.transparencyIcon}
           />
           <Text style={styles.transparencyText}>
-            Krediler yalnızca Kıstas içindeki proje görünürlüğü için kullanılır.
+            Vitrin Kredileri yalnızca Kıstas içindeki Sponsorlu Vitrin hizmetinde kullanılır.
           </Text>
         </View>
       {/* Seçim özeti, mobil navbarın üstünde kaydırılarak erişilir. */}
@@ -541,7 +482,6 @@ const styles = StyleSheet.create({
     paddingBottom: 136,
   },
   hero: { gap: 24, marginBottom: 24 },
-  heroWide: { flexDirection: 'row', alignItems: 'stretch', gap: 40 },
   heroEyebrow: { ...theme.typography.kistas, color: '#3269C7', marginTop: 24 },
   sectionEyebrow: { ...theme.typography.kistas, color: '#3269C7', marginBottom: 8 },
   sectionDescription: { fontSize: 14, lineHeight: 21, color: '#686474', marginBottom: 22 },
@@ -573,99 +513,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     lineHeight: 23,
     maxWidth: 420,
-  },
-  balanceCard: {
-    flex: 1,
-    minHeight: 256,
-    backgroundColor: '#EAF2FC',
-    borderRadius: 28,
-    borderWidth: 1,
-    borderColor: 'rgba(50,105,199,0.14)',
-    padding: 26,
-    position: 'relative',
-    overflow: 'hidden',
-    shadowColor: '#25364E',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 2,
-  },
-  balanceGradient: {
-    ...StyleSheet.absoluteFill,
-    borderRadius: 28,
-  },
-  balanceGlowOrb: {
-    position: 'absolute',
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    top: 65,
-    right: -100,
-    borderWidth: 34,
-    borderColor: 'rgba(50,105,199,0.035)',
-    backgroundColor: 'rgba(37,35,51,0.035)',
-  },
-  balanceSpecular: {
-    position: 'absolute',
-    top: 0,
-    left: 24,
-    right: 24,
-    height: 1,
-    backgroundColor: 'rgba(50,105,199,0.22)',
-  },
-  balanceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  balanceEyebrow: {
-    ...theme.typography.kistas,
-    color: '#25364E',
-  },
-  flashIconPill: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    backgroundColor: 'rgba(37,35,51,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  balanceValueRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 6,
-  },
-  balanceNumber: {
-    fontSize: 56,
-    fontWeight: '700',
-    color: '#25364E',
-    letterSpacing: -0.5,
-  },
-  balanceUnit: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#25364E',
-    marginLeft: 6,
-  },
-  balanceDescription: {
-    fontSize: 12.5,
-    color: '#25364E',
-    lineHeight: 18,
-    marginBottom: 12,
-  },
-  balanceAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingVertical: 10,
-    minHeight: 44,
-  },
-  balanceActionText: {
-    fontSize: 12.5,
-    fontWeight: '600',
-    color: '#25364E',
-    marginRight: 4,
   },
   benefitsContainer: {
     flexDirection: 'row',

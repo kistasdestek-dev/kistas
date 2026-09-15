@@ -1364,7 +1364,6 @@ function AppContent() {
         ) : activeTab === 'credits' ? (
           <CreditStoreScreen
             currentUser={currentUser}
-            onNavigateToLaunch={() => handleTabChange('create')}
           />
         ) : (
           currentUser ? (

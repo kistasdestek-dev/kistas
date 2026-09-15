@@ -39,6 +39,7 @@ const LISTING_SELECT = `
   promo_code,
   pricing_model,
   upvotes_count,
+  view_count,
   price,
   status,
   review_feedback,
@@ -73,6 +74,17 @@ interface SponsoredListingRow {
   active_sponsor_count: number | string;
   boosted_until: string;
 }
+
+const viewedListingIds = new Set<string>();
+const listingViewSessionId = (() => {
+  const randomUuid = globalThis.crypto?.randomUUID?.();
+  if (randomUuid) return randomUuid;
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+    const value = Math.floor(Math.random() * 16);
+    const nibble = char === 'x' ? value : (value & 0x3) | 0x8;
+    return nibble.toString(16);
+  });
+})();
 
 const mapListingRow = (row: any): Listing => {
   const coverImg = row.listing_images?.find((img: any) => img.is_cover)?.image_url
@@ -124,7 +136,7 @@ const mapListingRow = (row: any): Listing => {
           isVerified: !!sellerProfile.is_verified || row.status === 'active',
         }
       : undefined,
-    viewCount: 0,
+    viewCount: Number(row.view_count || 0),
     likesCount: row.upvotes_count || 0,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -132,6 +144,23 @@ const mapListingRow = (row: any): Listing => {
 };
 
 export class ListingService {
+  public static async recordView(listingId: string): Promise<number | null> {
+    if (viewedListingIds.has(listingId)) return null;
+    viewedListingIds.add(listingId);
+
+    const { data, error } = await supabase.rpc('record_listing_view', {
+      p_listing_id: listingId,
+      p_session_id: listingViewSessionId,
+    });
+
+    if (error || !data?.success) {
+      viewedListingIds.delete(listingId);
+      return null;
+    }
+
+    return Number(data.view_count || 0);
+  }
+
   /**
    * Yeni Proje / Mobil Uygulama Yayınlama (Lansman)
    */

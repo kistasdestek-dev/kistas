@@ -148,7 +148,7 @@ BEGIN
     VALUES (
         v_user_id,
         -p_credit_cost,
-        'usage',
+        'spend_boost',
         CASE WHEN v_clean_scope = 'global'
              THEN 'Genel Keşfet Vitrini (' || p_duration_hours || ' saat)'
              ELSE 'Kategori Vitrini (' || p_duration_hours || ' saat)'

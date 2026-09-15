@@ -205,7 +205,7 @@ export const Native3DCard: React.FC<Single3DCardProps> = ({
             <View style={nativeCardStyles.ctaBtn}>
               <Text style={nativeCardStyles.ctaText}>Projeyi İncele</Text>
             </View>
-            <Text style={nativeCardStyles.dockMicro}>▲ {project.upvotesCount} Oy</Text>
+            <Text style={nativeCardStyles.dockMicro}>◉ {project.viewCount} · ▲ {project.upvotesCount}</Text>
           </View>
         </View>
       </LinearGradient>

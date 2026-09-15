@@ -13,6 +13,15 @@ export interface BoostPackage {
   description?: string;
 }
 
+const toBoostErrorMessage = (message?: string): string => {
+  const normalized = (message || '').toLowerCase();
+  if (normalized.includes('insufficient_credits')) return 'Bu işlem için yeterli Vitrin Krediniz bulunmuyor.';
+  if (normalized.includes('forbidden')) return 'Yalnızca kendi projenizi Vitrin Desteğine alabilirsiniz.';
+  if (normalized.includes('listing_not_found')) return 'Aktif proje bulunamadı.';
+  if (normalized.includes('invalid_boost_package')) return 'Seçilen Vitrin Desteği paketi geçerli değil.';
+  return 'Vitrin Desteği şu anda tamamlanamadı. Lütfen yeniden deneyin.';
+};
+
 export class CreditService {
   public static async getVisibilityCreditsSpent(): Promise<number> {
     const { data, error } = await supabase.rpc('get_my_visibility_credits_spent');
@@ -137,7 +146,7 @@ export class CreditService {
       });
 
       if (error || !data?.success) {
-        return { success: false, error: error?.message || 'Öne çıkarma işlemi başarısız.' };
+        return { success: false, error: toBoostErrorMessage(error?.message) };
       }
 
       return {
@@ -145,8 +154,8 @@ export class CreditService {
         newCredits: data.new_credits,
         scope: data.scope,
       };
-    } catch (err: any) {
-      return { success: false, error: err?.message || 'Bağlantı hatası.' };
+    } catch {
+      return { success: false, error: 'Vitrin Desteği bağlantısı kurulamadı. Lütfen yeniden deneyin.' };
     }
   }
 

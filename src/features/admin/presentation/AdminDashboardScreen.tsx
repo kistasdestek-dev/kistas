@@ -321,14 +321,14 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
     const willSponsor = hours > 0;
     const result = await AdminService.setProjectSponsorship(project.id, hours);
     if (!result.success) {
-      Alert.alert('İşlem tamamlanamadı', result.error || 'Sponsor süresi güncellenemedi.');
+      Alert.alert('İşlem tamamlanamadı', result.error || 'Vitrin Desteği süresi güncellenemedi.');
       return;
     }
     Alert.alert(
-      willSponsor ? 'Sponsor süresi güncellendi' : 'Sponsorluk kaldırıldı',
+      willSponsor ? 'Vitrin Desteği güncellendi' : 'Vitrin Desteği sonlandırıldı',
       willSponsor
-        ? `“${project.title}” projesine ${hours} saat görünürlük eklendi. Proje eşit rotasyona katılacak.`
-        : `“${project.title}” projesi Sponsorlu Vitrin'den çıkarıldı.`
+        ? `“${project.title}” projesine ${hours} saat Vitrin Desteği tanımlandı. Proje eşit rotasyona katılacak.`
+        : `“${project.title}” projesinin Vitrin Desteği sonlandırıldı.`
     );
     loadData();
   };
@@ -926,7 +926,7 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
             {[
               ['time-outline', '#936413', pendingListings.length, 'Onay bekleyen', 'moderation'],
               ['chatbubbles-outline', '#3269C7', supportConversations.length, 'Açık destek', 'support'],
-              ['rocket-outline', '#3269C7', stats?.sponsoredProjects || 0, 'Aktif sponsor', 'sponsors'],
+              ['eye-outline', '#3269C7', stats?.sponsoredProjects || 0, 'Aktif Vitrin Desteği', 'sponsors'],
               ['apps-outline', '#3269C7', stats?.totalProjects || 0, 'Toplam proje', 'listings'],
               ['people-outline', '#187657', stats?.totalUsers || 0, 'Topluluk', 'users'],
               ['newspaper-outline', '#3269C7', blogPosts.length, 'Blog yazıları', 'blog'],
@@ -1142,24 +1142,24 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
 
         {adminAccess && canAccessAdminTab(adminAccess, 'sponsors') && activeTab === 'sponsors' ? (
           <View style={styles.section}>
-            <SectionHeading icon="sparkles-outline" iconColor="#3269C7" title="Sponsor logo şeridi" subtitle="Buradaki değişiklikler Keşfet ekranındaki kayan sponsor alanına doğrudan yansır." />
+            <SectionHeading icon="eye-outline" iconColor="#3269C7" title="Vitrin Desteği" subtitle="Seçtiğiniz projeye süreli editoryal erişim sağlayın. Gerçek görüntülenme sayısı ayrı tutulur." />
             <View style={styles.sponsorPreview}>
               <View style={styles.sponsorPreviewHeader}>
                 <View>
                   <Text style={styles.sponsorPreviewEyebrow}>CANLI ÖNİZLEME</Text>
-                  <Text style={styles.sponsorPreviewTitle}>{activeSponsors.length} aktif sponsor</Text>
+                  <Text style={styles.sponsorPreviewTitle}>{activeSponsors.length} aktif Vitrin Desteği</Text>
                 </View>
                 <StatusPill label="Otomatik akış" tone="green" icon="sync-outline" />
               </View>
               <SponsorLogoMarquee
                 projects={activeSponsors}
-                label="YAYINDAKİ SPONSORLAR"
-                emptyMessage="Şerit henüz boş. Aşağıdan bir projeyi sponsora dönüştürün."
+                label="VİTRİN DESTEĞİ ALAN PROJELER"
+                emptyMessage="Aktif Vitrin Desteği yok. Aşağıdan bir projeye süre tanımlayın."
               />
             </View>
             <View style={styles.sponsorToolbar}>
               {([
-                ['active', `Şeritte (${activeSponsors.length})`],
+                ['active', `Destek alan (${activeSponsors.length})`],
                 ['all', `Tüm uygun projeler (${listings.filter((item) => item.status === 'active' || item.isBoosted).length})`],
               ] as Array<[SponsorView, string]>).map(([key, label]) => {
                 const selected = sponsorView === key;
@@ -1170,19 +1170,19 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
                 );
               })}
             </View>
-            {sponsorListings.length === 0 ? emptyState(sponsorView === 'active' ? 'Şeritte sponsor bulunmuyor. Tüm uygun projelerden birini ekleyebilirsiniz.' : 'Aramanıza uygun bir proje bulunamadı.') : sponsorListings.map((project) => (
+            {sponsorListings.length === 0 ? emptyState(sponsorView === 'active' ? 'Aktif Vitrin Desteği bulunmuyor. Uygun projelerden birini seçebilirsiniz.' : 'Aramanıza uygun bir proje bulunamadı.') : sponsorListings.map((project) => (
               <View key={project.id} style={[styles.dataCard, project.isBoosted && styles.dataCardBoosted]}>
                 {projectIdentity(project)}
                 <View style={styles.statusRow}>
-                  {project.isBoosted ? <StatusPill label="Şeritte" tone="blue" icon="sync-outline" /> : <StatusPill label="Uygun proje" tone="neutral" icon="add-circle-outline" />}
+                  {project.isBoosted ? <StatusPill label="Vitrin Desteği aktif" tone="blue" icon="eye-outline" /> : <StatusPill label="Desteğe uygun" tone="neutral" icon="add-circle-outline" />}
                   {!project.logoUrl ? <StatusPill label="Logo eksik" tone="gold" icon="image-outline" /> : null}
-                  <Text style={styles.inlineMeta}>{formatNumber(project.upvotesCount)} destek</Text><View style={styles.metaDot} /><Text style={styles.inlineMeta}>{formatSponsorExpiry(project.boostedUntil)}</Text>
+                  <Text style={styles.inlineMeta}>{formatNumber(project.viewCount)} görüntülenme</Text><View style={styles.metaDot} /><Text style={styles.inlineMeta}>{formatNumber(project.upvotesCount)} destek</Text><View style={styles.metaDot} /><Text style={styles.inlineMeta}>{formatSponsorExpiry(project.boostedUntil)}</Text>
                 </View>
                 <View style={styles.actionsRow}>
-                  <ActionButton label={project.isBoosted ? '+24 saat' : 'Şeride ekle · 24 saat'} icon={project.isBoosted ? 'time-outline' : 'add-circle-outline'} tone="blue" onPress={() => handleSponsorship(project, 24)} />
+                  <ActionButton label={project.isBoosted ? '+24 saat' : '24 saat destek ver'} icon={project.isBoosted ? 'time-outline' : 'eye-outline'} tone="blue" onPress={() => handleSponsorship(project, 24)} />
                   <ActionButton label="+3 gün" icon="calendar-outline" tone="blue" onPress={() => handleSponsorship(project, 72)} />
                   <ActionButton label="+7 gün" icon="calendar-number-outline" tone="gold" onPress={() => handleSponsorship(project, 168)} />
-                  {project.isBoosted ? <ActionButton label="Şeritten çıkar" icon="close-outline" tone="red" onPress={() => handleSponsorship(project, 0)} /> : null}
+                  {project.isBoosted ? <ActionButton label="Desteği sonlandır" icon="close-outline" tone="red" onPress={() => handleSponsorship(project, 0)} /> : null}
                 </View>
               </View>
             ))}

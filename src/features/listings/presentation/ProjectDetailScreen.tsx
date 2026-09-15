@@ -136,6 +136,7 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
 
   // İyimser Upvote Durumu
   const [upvotesCount, setUpvotesCount] = useState<number>(project.upvotesCount || 0);
+  const [viewCount, setViewCount] = useState<number>(project.viewCount || 0);
   const [hasUpvoted, setHasUpvoted] = useState<boolean>(!!project.hasUpvoted);
   const [isVoting, setIsVoting] = useState<boolean>(false);
   const isSupportLocked = isListingSponsored(project);
@@ -147,6 +148,16 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
       if (isMounted && alreadyVoted) {
         setHasUpvoted(true);
       }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [project.id]);
+
+  useEffect(() => {
+    let isMounted = true;
+    void ListingService.recordView(project.id).then((nextViewCount) => {
+      if (isMounted && nextViewCount !== null) setViewCount(nextViewCount);
     });
     return () => {
       isMounted = false;
@@ -640,6 +651,11 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
           <View style={styles.metadataItem}>
             <Text style={styles.metadataLabel}>DESTEK</Text>
             <Text style={styles.metadataValue}>{upvotesCount}</Text>
+          </View>
+
+          <View style={styles.metadataItem}>
+            <Text style={styles.metadataLabel}>GÖRÜNTÜLENME</Text>
+            <Text style={styles.metadataValue}>{viewCount.toLocaleString('tr-TR')}</Text>
           </View>
 
           {/* PUAN VEYA YENİ GELİŞTİRİCİ */}

@@ -37,6 +37,12 @@ const getProjectInitials = (title: string): string => {
     .toUpperCase();
 };
 
+const formatCompactCount = (count: number): string => {
+  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace('.0', '')} Mn`;
+  if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace('.0', '')} B`;
+  return String(count || 0);
+};
+
 export const PopularProjectPager: React.FC<PopularProjectPagerProps> = React.memo(({
   title,
   subtitle,
@@ -162,6 +168,12 @@ export const PopularProjectPager: React.FC<PopularProjectPagerProps> = React.mem
                 </View>
 
                 <View style={styles.popularTrailing}>
+                  <View style={styles.popularViewBadge}>
+                    <Ionicons name="eye-outline" size={12} color="#3269C7" />
+                    <Text style={styles.popularViewBadgeText}>
+                      {formatCompactCount(project.viewCount)}
+                    </Text>
+                  </View>
                   <View style={[styles.popularSupportBadge, isSupportLocked && styles.popularSupportBadgeLocked]}>
                     <Ionicons
                       name={isSupportLocked ? 'lock-closed' : 'chevron-up'}
@@ -389,6 +401,23 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15, 163, 54, 0.08)',
     borderWidth: 1,
     borderColor: 'rgba(15, 163, 54, 0.20)',
+  },
+  popularViewBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 5,
+    borderRadius: 9,
+    backgroundColor: 'rgba(50,105,199,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(50,105,199,0.18)',
+  },
+  popularViewBadgeText: {
+    color: '#3269C7',
+    fontSize: 10.5,
+    fontWeight: '700',
+    letterSpacing: -0.15,
   },
   popularSupportBadgeLocked: {
     backgroundColor: 'rgba(104, 100, 116, 0.07)',

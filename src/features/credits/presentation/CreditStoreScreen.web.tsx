@@ -46,12 +46,8 @@ const STORE_CSS = `
   z-index: 1;
 }
 
-/* Hero & Balance */
+/* Hero */
 .k-pricing-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
-  gap: 24px;
-  align-items: stretch;
   margin-bottom: 22px;
 }
 
@@ -118,52 +114,6 @@ const STORE_CSS = `
   font-weight: 600;
   letter-spacing: -0.1px;
 }
-
-.k-balance-panel {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 260px;
-  padding: 28px;
-  border-radius: 30px;
-  color: #FFFFFF;
-  background: linear-gradient(145deg, #173866 0%, #285EA5 58%, #43889B 100%);
-  box-shadow: 0 20px 46px rgba(23,56,102,0.22), inset 0 1px 0 rgba(255,255,255,0.28);
-  box-sizing: border-box;
-}
-
-.k-balance-panel::after {
-  content: '';
-  position: absolute;
-  width: 220px;
-  height: 220px;
-  border: 34px solid rgba(255,255,255,0.06);
-  border-radius: 50%;
-  right: -118px;
-  bottom: -112px;
-}
-
-.k-balance-label, .k-balance-value, .k-balance-help, .k-balance-btn { position: relative; z-index: 1; }
-.k-balance-label { font-size: 12px; font-weight: 600; letter-spacing: -0.1px; color: rgba(255,255,255,0.72); }
-.k-balance-value { margin-top: 8px; font-size: 48px; line-height: 1; font-weight: 700; letter-spacing: -1.8px; }
-.k-balance-value span { margin-left: 6px; font-size: 14px; font-weight: 600; letter-spacing: -0.1px; color: rgba(255,255,255,0.72); }
-.k-balance-help { max-width: 240px; margin: 12px 0 20px; font-size: 12px; line-height: 1.5; font-weight: 600; letter-spacing: -0.1px; color: rgba(255,255,255,0.76); }
-.k-balance-btn {
-  align-self: flex-start;
-  background: rgba(255,255,255,0.94);
-  color: #173866;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: -0.1px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.5);
-  cursor: pointer;
-  transition: transform 0.18s ease, background 0.18s ease;
-}
-.k-balance-btn:hover { transform: translateY(-1px); background: #FFFFFF; }
 
 .k-benefit-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 42px; }
 .k-benefit-item { display: flex; align-items: center; gap: 10px; padding: 13px 15px; border-radius: 16px; background: rgba(255,255,255,0.78); border: 1px solid rgba(50,105,199,0.12); box-shadow: inset 0 1px 0 #FFFFFF; color: #475569; font-size: 12px; font-weight: 600; letter-spacing: -0.1px; }
@@ -393,9 +343,6 @@ const STORE_CSS = `
   .k-pricing-title { font-size: 36px; letter-spacing: -1.6px; margin-bottom: 14px; }
   .k-pricing-desc { font-size: 14px; }
   .k-store-notice { align-items: flex-start; margin-top: 15px; }
-  .k-balance-panel { min-height: 194px; padding: 22px; border-radius: 24px; }
-  .k-balance-value { font-size: 44px; }
-  .k-balance-help { margin: 9px 0 13px; }
   .k-benefit-strip { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 30px; }
   .k-benefit-item { min-height: 74px; flex-direction: column; justify-content: center; gap: 7px; padding: 9px 6px; text-align: center; font-size: 11.5px; line-height: 1.25; box-sizing: border-box; }
   .k-benefit-icon { width: 27px; height: 27px; flex-basis: 27px; border-radius: 9px; }
@@ -411,7 +358,6 @@ const STORE_CSS = `
 export interface CreditStoreScreenProps {
   currentUser?: UserProfile | null;
   onRefreshProfile?: () => void;
-  onNavigateToLaunch?: () => void;
 }
 
 interface PlanItem {
@@ -432,9 +378,9 @@ const PLANS: PlanItem[] = [
     name: 'Başlangıç',
     credits: 100,
     price: 299,
-    description: 'İlk sponsorlu görünürlük deneyimin için.',
+    description: 'İlk Sponsorlu Vitrin kullanımın için.',
     features: [
-      '100 görünürlük kredisi',
+      '100 Vitrin kredisi',
       'Sponsorlu Vitrin süresi',
       'Saatlik eşit rotasyon',
     ],
@@ -445,10 +391,10 @@ const PLANS: PlanItem[] = [
     name: 'Profesyonel',
     credits: 350,
     price: 699,
-    description: 'Daha uzun süre görünür kalmak için.',
+    description: 'Daha uzun vitrin süreleri için.',
     isPopular: true,
     features: [
-      '350 görünürlük kredisi',
+      '350 Vitrin kredisi',
       'Sponsorlu proje rozeti',
       'Saatlik eşit rotasyon',
     ],
@@ -461,7 +407,7 @@ const PLANS: PlanItem[] = [
     price: 1699,
     description: 'Uzun kampanyalar ve birden fazla lansman için.',
     features: [
-      '1.000 görünürlük kredisi',
+      '1.000 Vitrin kredisi',
       'Uzun süreli vitrin kullanımı',
       'Saatlik eşit rotasyon',
     ],
@@ -606,7 +552,6 @@ const InteractiveStarfield: React.FC<{
 export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
   currentUser: propUser,
   onRefreshProfile,
-  onNavigateToLaunch,
 }) => {
   const { profile: authUser } = useAuth();
   const { credits } = useWallet();
@@ -735,10 +680,10 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
       <div className="k-pricing-container">
         <div className="k-pricing-hero">
           <div className="k-pricing-header">
-            <div className="k-pricing-kicker">Görünürlük kredileri</div>
-            <h1 className="k-pricing-title">Projeni daha görünür kıl.</h1>
+            <div className="k-pricing-kicker">Kıstas Vitrin Kredileri</div>
+            <h1 className="k-pricing-title">Sponsorlu erişiminizi planlayın.</h1>
             <p className="k-pricing-desc">
-              Tek seferlik kredi paketini seç; Sponsorlu Vitrin süreni ihtiyacına göre kullan.
+              Tek seferlik kredi paketleriyle Sponsorlu Vitrin sürenizi ihtiyacınıza göre yönetin.
             </p>
             {storeState !== 'ready' && (
               <div className="k-store-notice" role="status">
@@ -748,22 +693,6 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
             )}
           </div>
 
-          <div className="k-balance-panel">
-            <div>
-              <div className="k-balance-label">Kullanılabilir bakiyen</div>
-              <div className="k-balance-value">{activeBalance.toLocaleString('tr-TR')}<span>kredi</span></div>
-              <p className="k-balance-help">Projelerini Sponsorlu Vitrin'de öne çıkarmak için kredilerini kullan.</p>
-            </div>
-            {onNavigateToLaunch ? (
-              <button
-                type="button"
-                className="k-balance-btn"
-                onClick={onNavigateToLaunch}
-              >
-                Lansman alanına git &rarr;
-              </button>
-            ) : null}
-          </div>
         </div>
 
         <div className="k-benefit-strip" aria-label="Kredi avantajları">
@@ -873,7 +802,7 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
             <path d="M9 12l2 2 4-4" />
           </svg>
           <span>
-            Krediler yalnızca proje görünürlüğü için kullanılır; paketler abonelik başlatmaz.
+            Vitrin Kredileri yalnızca Sponsorlu Vitrin hizmetinde kullanılır; paketler abonelik başlatmaz.
           </span>
         </div>
       </div>

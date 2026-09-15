@@ -167,6 +167,10 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
                     <Text style={styles.platformText}>{platform || 'Dijital'}</Text>
                   </View>
                 </View>
+                <View style={styles.viewBadge}>
+                  <Ionicons name="eye-outline" size={13} color="#25364E" />
+                  <Text style={styles.viewBadgeText}>{formatSupportCount(project.viewCount)}</Text>
+                </View>
               </View>
 
               <View style={styles.cardBody}>
@@ -360,6 +364,21 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.9)',
   },
   platformText: { ...theme.typography.kistas, marginLeft: 5, color: NEO.ink, fontSize: 9, fontWeight: '700' },
+  viewBadge: {
+    position: 'absolute',
+    top: 52,
+    right: 14,
+    minHeight: 28,
+    paddingHorizontal: 9,
+    borderRadius: 999,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(247,250,255,0.94)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.9)',
+  },
+  viewBadgeText: { ...theme.typography.kistas, color: NEO.ink, fontSize: 10, fontWeight: '700' },
   cardBody: {
     flex: 1,
     zIndex: 2,

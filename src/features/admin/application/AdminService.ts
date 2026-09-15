@@ -19,6 +19,7 @@ const ADMIN_LISTING_SELECT = `
   promo_code,
   pricing_model,
   upvotes_count,
+  view_count,
   price,
   status,
   review_feedback,
@@ -111,7 +112,7 @@ const mapListing = (row: any): AdminListingItem => {
           isVerified: !!sellerProfile.is_verified || row.status === 'active',
         }
       : undefined,
-    viewCount: 0,
+    viewCount: Number(row.view_count || 0),
     likesCount: Number(row.upvotes_count || 0),
     createdAt: row.created_at,
     updatedAt: row.updated_at,

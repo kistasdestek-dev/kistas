@@ -19,7 +19,7 @@ BEGIN
     WHERE credit_tx.user_id = v_user_id
       AND credit_tx.amount < 0
       AND (
-          credit_tx.type::TEXT IN ('spend_boost', 'usage')
+          credit_tx.type::TEXT = 'spend_boost'
           OR credit_tx.description ILIKE '%vitrin%'
           OR credit_tx.description ILIKE '%sponsorlu%'
       );
