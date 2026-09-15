@@ -45,7 +45,6 @@ interface ProfileAndWalletScreenProps {
   onOpenAdminDashboard?: () => void;
   onSelectProject?: (project: Listing) => void;
   onEditProject?: (project: Listing) => void;
-  onScrollOffsetChange?: (offsetY: number) => void;
 }
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -122,7 +121,6 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
   onOpenAdminDashboard,
   onSelectProject,
   onEditProject,
-  onScrollOffsetChange,
 }) => {
   const { profile: authProfile } = useAuth();
   const { width } = useWindowDimensions();
@@ -437,11 +435,6 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
       decelerationRate={0.99}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
-      onScroll={(event) => onScrollOffsetChange?.(event.nativeEvent.contentOffset.y)}
-      onScrollEndDrag={(event) => onScrollOffsetChange?.(event.nativeEvent.contentOffset.y)}
-      onMomentumScrollEnd={(event) => onScrollOffsetChange?.(event.nativeEvent.contentOffset.y)}
-      onScrollToTop={() => onScrollOffsetChange?.(0)}
-      scrollEventThrottle={32}
     >
       <KistasTopBrandBar style={styles.brandBar} />
       <View style={styles.pageHeader}>

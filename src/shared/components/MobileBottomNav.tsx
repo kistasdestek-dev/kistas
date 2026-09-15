@@ -1,6 +1,5 @@
 import React from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { BlurView } from 'expo-blur';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useChatUnreadCount } from '../../core/state';
 import { AppNavigationProps, TabKey } from '../navigation/navigationTypes';
@@ -16,7 +15,7 @@ const ITEMS: ReadonlyArray<{ key: TabKey; label: string; icon: IconName }> = [
 ];
 
 export const MobileBottomNav = React.memo(function MobileBottomNav({
-  activeTab, onTabPress, isAuthenticated = false, unreadMessagesCount, blurTarget,
+  activeTab, onTabPress, isAuthenticated = false, unreadMessagesCount,
 }: AppNavigationProps) {
   const storeUnreadCount = useChatUnreadCount();
   const unread = unreadMessagesCount ?? storeUnreadCount;
@@ -25,7 +24,6 @@ export const MobileBottomNav = React.memo(function MobileBottomNav({
     <View pointerEvents="box-none" style={styles.container}>
       <View style={styles.shadow}>
         <View style={styles.bar}>
-          <BlurView pointerEvents="none" tint="light" intensity={24} blurTarget={blurTarget} blurMethod="dimezisBlurViewSdk31Plus" style={StyleSheet.absoluteFill} />
           <View pointerEvents="none" style={styles.tint} />
           {ITEMS.filter(item => isAuthenticated || (item.key !== 'create' && item.key !== 'messages')).map(item => {
             const selected = item.key === activeKey;
@@ -48,8 +46,8 @@ export const MobileBottomNav = React.memo(function MobileBottomNav({
 const styles = StyleSheet.create({
   container: { position: 'absolute', left: 0, right: 0, bottom: Platform.OS === 'ios' ? 10 : 14, paddingHorizontal: 14, zIndex: 100 },
   shadow: { width: '100%', maxWidth: 390, alignSelf: 'center', borderRadius: 30, shadowColor: '#1B2B48', shadowOffset: { width: 0, height: 7 }, shadowOpacity: 0.16, shadowRadius: 18, elevation: 8 },
-  bar: { height: 62, padding: 5, gap: 3, flexDirection: 'row', borderRadius: 30, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)' },
-  tint: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(248,250,255,0.06)' },
+  bar: { height: 62, padding: 5, gap: 3, flexDirection: 'row', borderRadius: 30, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)', backgroundColor: '#F8FAFD' },
+  tint: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(255,255,255,0.22)' },
   tab: { flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'center', borderRadius: 23, gap: 3 },
   selected: { backgroundColor: 'rgba(50,105,199,0.12)' },
   pressed: { opacity: 0.7 },

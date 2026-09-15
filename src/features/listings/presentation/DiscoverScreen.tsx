@@ -40,7 +40,6 @@ interface DiscoverScreenProps {
   onOpenSupport?: () => void;
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
-  onScrollOffsetChange?: (offsetY: number) => void;
   onOpenShowcase?: (filters: {
     categoryId: string | null;
     platform: PlatformFilterType;
@@ -76,7 +75,6 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
   onOpenSupport,
   onOpenHowItWorks,
   onOpenBlog,
-  onScrollOffsetChange,
   onOpenShowcase,
   onOpenPopular,
   onOpenNew,
@@ -412,8 +410,6 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
         showsVerticalScrollIndicator={false}
         decelerationRate={0.99}
         keyboardShouldPersistTaps="handled"
-        onScroll={(event) => onScrollOffsetChange?.(event.nativeEvent.contentOffset.y)}
-        scrollEventThrottle={32}
       >
         {renderListHeader()}
         {(feedSort === 'top_voted' && filteredPopularProjects.length === 0)

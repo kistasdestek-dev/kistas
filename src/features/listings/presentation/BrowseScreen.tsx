@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, Pressable, useWindowDimensions, Image } from 'react-native';
+import { View, Text, FlatList, Pressable, Platform, useWindowDimensions, Image } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CinematicFooter } from '../../../shared/components/CinematicFooter';
@@ -20,7 +20,6 @@ export interface BrowseScreenProps {
   onOpenSupport?: () => void;
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
-  onScrollOffsetChange?: (offsetY: number) => void;
 }
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -365,7 +364,6 @@ const BrowseScreenComponent: React.FC<BrowseScreenProps> = ({
   onOpenSupport,
   onOpenHowItWorks,
   onOpenBlog,
-  onScrollOffsetChange,
 }) => {
   const { width } = useWindowDimensions();
   const columnCount = width > breakpoints.tabletMax ? 4 : width > breakpoints.phoneMax ? 3 : 2;
@@ -512,16 +510,11 @@ const BrowseScreenComponent: React.FC<BrowseScreenProps> = ({
         }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
-        initialNumToRender={24}
-        maxToRenderPerBatch={24}
-        updateCellsBatchingPeriod={32}
+        initialNumToRender={Platform.OS === 'web' ? 24 : 8}
+        maxToRenderPerBatch={Platform.OS === 'web' ? 24 : 8}
+        updateCellsBatchingPeriod={Platform.OS === 'web' ? 32 : 50}
         windowSize={5}
-        removeClippedSubviews={false}
-        onScroll={(event) => onScrollOffsetChange?.(event.nativeEvent.contentOffset.y)}
-        onScrollEndDrag={(event) => onScrollOffsetChange?.(event.nativeEvent.contentOffset.y)}
-        onMomentumScrollEnd={(event) => onScrollOffsetChange?.(event.nativeEvent.contentOffset.y)}
-        onScrollToTop={() => onScrollOffsetChange?.(0)}
-        scrollEventThrottle={32}
+        removeClippedSubviews={Platform.OS === 'android'}
       />
     </View>
   );

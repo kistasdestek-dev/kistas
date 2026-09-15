@@ -37,7 +37,6 @@ export interface CategoryScreenProps {
   onOpenSupport?: () => void;
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
-  onScrollOffsetChange?: (offsetY: number) => void;
   onOpenPopular?: (filters: { categoryId: string | null; platform: PlatformFilterType }) => void;
   onOpenNew?: (filters: { categoryId: string | null; platform: PlatformFilterType }) => void;
 }
@@ -66,7 +65,6 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
   onOpenSupport,
   onOpenHowItWorks,
   onOpenBlog,
-  onScrollOffsetChange,
   onOpenPopular,
   onOpenNew,
 }) => {
@@ -463,12 +461,6 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
         showsVerticalScrollIndicator={false}
         decelerationRate={0.99}
         keyboardShouldPersistTaps="handled"
-        onScroll={
-          onScrollOffsetChange
-            ? (e) => onScrollOffsetChange(e.nativeEvent.contentOffset.y)
-            : undefined
-        }
-        scrollEventThrottle={32}
       >
         {renderHeader()}
         {isListEmpty ? renderEmptyComponent() : null}
