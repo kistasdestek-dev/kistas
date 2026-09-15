@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import type { GoogleIdentityButtonProps } from './GoogleIdentityButton';
 
 const GOOGLE_IDENTITY_SCRIPT = 'https://accounts.google.com/gsi/client';
@@ -18,19 +19,9 @@ interface GoogleIdentityApi {
         client_id: string;
         callback: (response: GoogleCredentialResponse) => void;
         nonce: string;
-        ux_mode: 'popup';
-        use_fedcm_for_button: boolean;
+        use_fedcm_for_prompt: boolean;
       }) => void;
-      renderButton: (parent: HTMLElement, options: {
-        type: 'standard';
-        theme: 'outline';
-        size: 'large';
-        text: 'continue_with';
-        shape: 'pill';
-        logo_alignment: 'left';
-        locale: 'tr';
-        width: number;
-      }) => void;
+      prompt: () => void;
     };
   };
 }
@@ -87,7 +78,7 @@ const createNonce = async () => {
 };
 
 export function GoogleIdentityButton({ disabled, onCredential, onError }: GoogleIdentityButtonProps) {
-  const hostRef = useRef<HTMLElement | null>(null);
+  const googleRef = useRef<GoogleIdentityApi | null>(null);
   const callbacks = useRef({ onCredential, onError });
   const [failed, setFailed] = useState(false);
   const [ready, setReady] = useState(false);
@@ -96,17 +87,14 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
 
   useEffect(() => {
     let active = true;
-    const render = async () => {
+    const prepare = async () => {
       try {
         const [google, noncePair] = await Promise.all([loadGoogleIdentity(), createNonce()]);
-        if (!active || !hostRef.current) return;
-        const host = hostRef.current;
-        const width = Math.max(180, Math.min(320, Math.floor(host.getBoundingClientRect().width || 240)));
+        if (!active) return;
         google.accounts.id.initialize({
           client_id: GOOGLE_WEB_CLIENT_ID,
           nonce: noncePair.hashedNonce,
-          ux_mode: 'popup',
-          use_fedcm_for_button: true,
+          use_fedcm_for_prompt: true,
           callback: (response) => {
             if (!response.credential) {
               callbacks.current.onError('Google kimlik doğrulaması tamamlanamadı.');
@@ -115,96 +103,63 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
             callbacks.current.onCredential(response.credential, noncePair.nonce);
           },
         });
-        host.replaceChildren();
-        google.accounts.id.renderButton(host, {
-          type: 'standard',
-          theme: 'outline',
-          size: 'large',
-          text: 'continue_with',
-          shape: 'pill',
-          logo_alignment: 'left',
-          locale: 'tr',
-          width,
-        });
+        googleRef.current = google;
         if (active) setReady(true);
       } catch {
         if (active) setFailed(true);
       }
     };
-    void render();
+    void prepare();
     return () => { active = false; };
   }, []);
 
-  if (failed) {
-    return (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Google ile devam et"
-        disabled={disabled}
-        onPress={() => callbacks.current.onError('Google giriş hizmeti yüklenemedi. Lütfen bağlantınızı kontrol edip tekrar deneyin.')}
-        style={({ pressed }) => [styles.fallback, pressed && styles.pressed]}
-      >
-        <Text style={styles.fallbackText}>Google</Text>
-      </Pressable>
-    );
-  }
-
   return (
-    <View
+    <Pressable
       {...glassWebProps}
       nativeID="google-identity-button"
+      accessibilityRole="button"
       accessibilityLabel="Google ile devam et"
-      pointerEvents={disabled ? 'none' : 'auto'}
-      style={[styles.wrapper, disabled && styles.disabled]}
+      disabled={disabled}
+      onPress={() => {
+        if (failed) {
+          callbacks.current.onError('Google giriş hizmeti yüklenemedi. Lütfen bağlantınızı kontrol edip tekrar deneyin.');
+          return;
+        }
+        if (!ready || !googleRef.current) {
+          callbacks.current.onError('Google giriş hizmeti hazırlanıyor. Lütfen kısa bir süre sonra tekrar deneyin.');
+          return;
+        }
+        googleRef.current.accounts.id.prompt();
+      }}
+      style={({ pressed }) => [styles.button, disabled && styles.disabled, pressed && styles.pressed]}
     >
-      <View
-        ref={(element) => { hostRef.current = element as unknown as HTMLElement | null; }}
-        style={styles.host}
-      />
-      {!ready && <ActivityIndicator color="#3269C7" style={styles.loading} />}
-    </View>
+      <Ionicons name="logo-google" size={21} color="#3269C7" />
+      <Text style={styles.text}>Google</Text>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
+  button: {
     minWidth: 180,
     minHeight: 48,
+    paddingHorizontal: 24,
     flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 9,
     borderWidth: 1,
     borderColor: '#CBD9EC',
     borderRadius: 28,
     backgroundColor: '#F6FAFF',
-    overflow: 'hidden',
-  },
-  host: {
-    width: '100%',
-    minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loading: {
-    position: 'absolute',
   },
   disabled: {
     opacity: 0.55,
   },
-  fallback: {
-    minWidth: 180,
-    minHeight: 48,
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#D4DCE8',
-    borderRadius: 28,
-    backgroundColor: '#F6FAFF',
-  },
-  fallbackText: {
-    color: '#252333',
-    fontSize: 14,
+  text: {
+    color: '#34445C',
+    fontSize: 13,
     fontWeight: '600',
   },
   pressed: {
