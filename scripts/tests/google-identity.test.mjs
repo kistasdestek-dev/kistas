@@ -18,6 +18,9 @@ assert.doesNotMatch(button, /accounts\.id\.prompt\(/, 'Kapatildiginda soguma sur
 assert.match(button, /text:\s*'continue_with'/, 'Google dugmesi devam et metnini kullanmiyor.');
 assert.match(button, /locale:\s*'tr'/, 'Google dugmesi Turkce yerellestirilmiyor.');
 assert.match(button, /authGlass:\s*'true'/, 'Google dugmesinin Kistas cam kabugu korunmuyor.');
+assert.match(button, /<Text style=\{styles\.text\}>Google<\/Text>/, 'Google dugmesinin Kistas gorunur etiketi korunmuyor.');
+assert.match(button, /pointerEvents="none" style=\{styles\.buttonContent\}/, 'Gorunur Kistas katmani resmi Google tiklamasini engelliyor.');
+assert.match(button, /googleClickTarget:[\s\S]*opacity:\s*0\.001/, 'Resmi GIS dugmesi guvenilir tiklama hedefi olarak korunmuyor.');
 assert.match(authExperience, /social:\s*\{[^}]*flex:\s*1,[^}]*borderRadius:\s*28/s, 'Sosyal giris dugmeleri esit genislikte ve hap biciminde degil.');
 assert.match(authService, /signInWithIdToken\(\{[\s\S]*provider:\s*'google'[\s\S]*token,[\s\S]*nonce,/m, 'Google ID token Supabase tarafinda nonce ile dogrulanmiyor.');
 assert.doesNotMatch(authExperience, /signInWithOAuth\(['"]google['"]\)/, 'Eski Supabase Google yonlendirmesi arayuzde kalmis.');

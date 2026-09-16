@@ -172,11 +172,22 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
   }
 
   return (
-    <View {...glassWebProps} pointerEvents={disabled ? 'none' : 'auto'} style={[styles.buttonShell, disabled && styles.disabled]}>
-      <View ref={buttonRef} nativeID="google-identity-button" style={styles.renderTarget} />
-      {!ready && (
-        <ActivityIndicator pointerEvents="none" size="small" color="#3269C7" style={styles.loading} />
-      )}
+    <View
+      {...glassWebProps}
+      pointerEvents={disabled ? 'none' : 'auto'}
+      style={[styles.buttonShell, disabled && styles.disabled]}
+    >
+      <View ref={buttonRef} nativeID="google-identity-button" style={styles.googleClickTarget} />
+      <View pointerEvents="none" style={styles.buttonContent}>
+        {ready ? (
+          <>
+            <Ionicons name="logo-google" size={21} color="#3269C7" />
+            <Text style={styles.text}>Google</Text>
+          </>
+        ) : (
+          <ActivityIndicator size="small" color="#3269C7" />
+        )}
+      </View>
     </View>
   );
 }
@@ -194,14 +205,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#F6FAFF',
     overflow: 'hidden',
   },
-  renderTarget: {
-    width: '100%',
-    minHeight: 44,
+  googleClickTarget: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 2,
+    opacity: 0.001,
+  },
+  buttonContent: {
+    minHeight: 48,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  loading: {
-    position: 'absolute',
+    gap: 9,
   },
   fallbackButton: {
     minWidth: 180,
