@@ -11,10 +11,11 @@ const [button, authService, authExperience, headers] = await Promise.all([
 assert.match(button, /https:\/\/accounts\.google\.com\/gsi\/client/, 'Resmi Google Identity betigi kullanilmiyor.');
 assert.match(button, /crypto\.getRandomValues\(new Uint8Array\(32\)\)/, 'Kriptografik Google nonce uretilmiyor.');
 assert.match(button, /crypto\.subtle\.digest\('SHA-256'/, 'Google nonce SHA-256 ile baglanmiyor.');
-assert.match(button, /use_fedcm_for_prompt:\s*true/, 'Google FedCM istem akisi etkin degil.');
-assert.match(button, /accounts\.id\.prompt\(\)/, 'Kistas Google dugmesi Google kimlik istemini baslatmiyor.');
-assert.doesNotMatch(button, /renderButton\(/, 'Ic ice resmi Google dugmesi yeniden eklenmis.');
-assert.match(button, /authGlass:\s*'true'/, 'Google dugmesinde Kistas cam yuzeyi kullanilmiyor.');
+assert.match(button, /use_fedcm_for_button:\s*true/, 'Google FedCM dugme akisi etkin degil.');
+assert.match(button, /accounts\.id\.renderButton\(/, 'Resmi ve tekrar kullanilabilir Google dugmesi render edilmiyor.');
+assert.doesNotMatch(button, /accounts\.id\.prompt\(/, 'Kapatildiginda soguma suresine giren One Tap istemi dugme akisi olarak kullaniliyor.');
+assert.match(button, /text:\s*'continue_with'/, 'Google dugmesi devam et metnini kullanmiyor.');
+assert.match(button, /locale:\s*'tr'/, 'Google dugmesi Turkce yerellestirilmiyor.');
 assert.match(authExperience, /social:\s*\{[^}]*flex:\s*1,[^}]*borderRadius:\s*28/s, 'Sosyal giris dugmeleri esit genislikte ve hap biciminde degil.');
 assert.match(authService, /signInWithIdToken\(\{[\s\S]*provider:\s*'google'[\s\S]*token,[\s\S]*nonce,/m, 'Google ID token Supabase tarafinda nonce ile dogrulanmiyor.');
 assert.doesNotMatch(authExperience, /signInWithOAuth\(['"]google['"]\)/, 'Eski Supabase Google yonlendirmesi arayuzde kalmis.');

@@ -87,7 +87,7 @@ export const profileStyles = StyleSheet.create({
   statValue: { ...theme.typography.kistas, color: PROFILE_NEO.ink, fontSize: 22, lineHeight: 28, fontWeight: '700', letterSpacing: -0.5, fontFamily: UI_FONT_FAMILY },
   statLabel: { ...theme.typography.kistas, marginTop: 3, color: '#627590', fontSize: 9.5, lineHeight: 14, textAlign: 'center' },
   statDivider: { width: 1, height: 30, backgroundColor: '#D4DFEC' },
-  walletCard: { ...profileNeoRaised, borderRadius: 24, padding: 20, backgroundColor: PROFILE_NEO.global },
+  walletCard: { ...profileNeoRaised, borderRadius: 24, padding: 20, backgroundColor: '#D9E1DE', borderColor: 'rgba(57,77,69,0.16)' },
 
   walletHeader: { gap: 8 },
   walletEyebrow: { ...theme.typography.kistas, color: PROFILE_NEO.ink, fontSize: 10, letterSpacing: 1.1 },

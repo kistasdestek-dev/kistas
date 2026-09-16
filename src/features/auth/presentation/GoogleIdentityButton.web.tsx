@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { GoogleIdentityButtonProps } from './GoogleIdentityButton';
 
 const GOOGLE_IDENTITY_SCRIPT = 'https://accounts.google.com/gsi/client';
@@ -19,9 +19,18 @@ interface GoogleIdentityApi {
         client_id: string;
         callback: (response: GoogleCredentialResponse) => void;
         nonce: string;
-        use_fedcm_for_prompt: boolean;
+        use_fedcm_for_button: boolean;
       }) => void;
-      prompt: () => void;
+      renderButton: (parent: HTMLElement, options: {
+        type: 'standard';
+        theme: 'outline';
+        size: 'large';
+        text: 'continue_with';
+        shape: 'pill';
+        logo_alignment: 'left';
+        width: string;
+        locale: 'tr';
+      }) => void;
     };
   };
 }
@@ -78,7 +87,7 @@ const createNonce = async () => {
 };
 
 export function GoogleIdentityButton({ disabled, onCredential, onError }: GoogleIdentityButtonProps) {
-  const googleRef = useRef<GoogleIdentityApi | null>(null);
+  const buttonRef = useRef<View>(null);
   const callbacks = useRef({ onCredential, onError });
   const [failed, setFailed] = useState(false);
   const [ready, setReady] = useState(false);
@@ -87,6 +96,9 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
 
   useEffect(() => {
     let active = true;
+    let resizeObserver: ResizeObserver | null = null;
+    let renderedWidth = 0;
+
     const prepare = async () => {
       try {
         const [google, noncePair] = await Promise.all([loadGoogleIdentity(), createNonce()]);
@@ -94,7 +106,7 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
         google.accounts.id.initialize({
           client_id: GOOGLE_WEB_CLIENT_ID,
           nonce: noncePair.hashedNonce,
-          use_fedcm_for_prompt: true,
+          use_fedcm_for_button: true,
           callback: (response) => {
             if (!response.credential) {
               callbacks.current.onError('Google kimlik doğrulaması tamamlanamadı.');
@@ -103,44 +115,100 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
             callbacks.current.onCredential(response.credential, noncePair.nonce);
           },
         });
-        googleRef.current = google;
-        if (active) setReady(true);
+
+        const target = buttonRef.current as unknown as HTMLElement | null;
+        if (!target) throw new Error('Google giriş düğmesi hazırlanamadı.');
+
+        const render = () => {
+          const width = Math.max(180, Math.min(400, Math.round(target.getBoundingClientRect().width || 180)));
+          if (width === renderedWidth) return;
+          renderedWidth = width;
+          target.replaceChildren();
+          google.accounts.id.renderButton(target, {
+            type: 'standard',
+            theme: 'outline',
+            size: 'large',
+            text: 'continue_with',
+            shape: 'pill',
+            logo_alignment: 'left',
+            width: String(width),
+            locale: 'tr',
+          });
+          if (active) setReady(true);
+        };
+
+        render();
+        if (typeof ResizeObserver !== 'undefined') {
+          resizeObserver = new ResizeObserver(render);
+          resizeObserver.observe(target);
+        }
       } catch {
         if (active) setFailed(true);
       }
     };
     void prepare();
-    return () => { active = false; };
+    return () => {
+      active = false;
+      resizeObserver?.disconnect();
+    };
   }, []);
 
+  if (failed) {
+    return (
+      <Pressable
+        {...glassWebProps}
+        accessibilityRole="button"
+        accessibilityLabel="Google giriş hizmetini yeniden dene"
+        disabled={disabled}
+        onPress={() => callbacks.current.onError('Google giriş hizmeti yüklenemedi. Sayfayı yenileyip tekrar deneyin.')}
+        style={({ pressed }) => [styles.fallbackButton, disabled && styles.disabled, pressed && styles.pressed]}
+      >
+        <Ionicons name="logo-google" size={21} color="#3269C7" />
+        <Text style={styles.text}>Google</Text>
+      </Pressable>
+    );
+  }
+
   return (
-    <Pressable
-      {...glassWebProps}
-      nativeID="google-identity-button"
-      accessibilityRole="button"
-      accessibilityLabel="Google ile devam et"
-      disabled={disabled}
-      onPress={() => {
-        if (failed) {
-          callbacks.current.onError('Google giriş hizmeti yüklenemedi. Lütfen bağlantınızı kontrol edip tekrar deneyin.');
-          return;
-        }
-        if (!ready || !googleRef.current) {
-          callbacks.current.onError('Google giriş hizmeti hazırlanıyor. Lütfen kısa bir süre sonra tekrar deneyin.');
-          return;
-        }
-        googleRef.current.accounts.id.prompt();
-      }}
-      style={({ pressed }) => [styles.button, disabled && styles.disabled, pressed && styles.pressed]}
-    >
-      <Ionicons name="logo-google" size={21} color="#3269C7" />
-      <Text style={styles.text}>Google</Text>
-    </Pressable>
+    <View pointerEvents={disabled ? 'none' : 'auto'} style={[styles.buttonShell, disabled && styles.disabled]}>
+      <View ref={buttonRef} nativeID="google-identity-button" style={styles.renderTarget} />
+      {!ready && (
+        <View pointerEvents="none" style={styles.loading}>
+          <ActivityIndicator size="small" color="#3269C7" />
+          <Text style={styles.text}>Google hazırlanıyor…</Text>
+        </View>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
+  buttonShell: {
+    minWidth: 180,
+    minHeight: 48,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  renderTarget: {
+    width: '100%',
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loading: {
+    position: 'absolute',
+    inset: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 9,
+    borderWidth: 1,
+    borderColor: '#CBD9EC',
+    borderRadius: 28,
+    backgroundColor: '#F6FAFF',
+  },
+  fallbackButton: {
     minWidth: 180,
     minHeight: 48,
     paddingHorizontal: 24,
