@@ -1,4 +1,4 @@
--- Her gerçek proje detay açılışını ayrı bir görüntülenme olarak kaydeder.
+-- 20260915000007: Her gerçek proje detay açılışını ayrı bir görüntülenme olarak kaydeder.
 -- Yönetici Vitrin Desteği boosted_until üzerinden ayrı ve şeffaf kalır.
 
 CREATE TABLE IF NOT EXISTS public.listing_view_events (

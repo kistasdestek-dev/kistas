@@ -227,6 +227,8 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
         return 'mail-outline';
       case 'revision_requested':
         return 'construct-outline';
+      case 'credit_purchase':
+        return 'sparkles-outline';
       default:
         return 'notifications-outline';
     }
@@ -244,6 +246,8 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
         return '#3269C7';
       case 'revision_requested':
         return '#B98916';
+      case 'credit_purchase':
+        return '#187657';
       default:
         return '#3269C7';
     }

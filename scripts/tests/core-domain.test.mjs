@@ -648,7 +648,7 @@ runTest('Editoryal katalog: gerçek geliştirici ile Kıstas yayıncısı ayrıl
 });
 
 runTest('Proje görüntülenmesi: her detay açılışı sayılır ve sahip görüntülenmesi dışlanır', () => {
-  const migrationPath = path.join(ROOT, 'supabase', 'migrations', '20260915000004_listing_view_tracking.sql');
+  const migrationPath = path.join(ROOT, 'supabase', 'migrations', '20260915000007_listing_view_tracking.sql');
   const counterMigrationPath = path.join(ROOT, 'supabase', 'migrations', '20260915000006_count_every_listing_open.sql');
   assert.strictEqual(fs.existsSync(migrationPath), true, 'Proje görüntülenme migration dosyası eksik!');
   assert.strictEqual(fs.existsSync(counterMigrationPath), true, 'Her açılışı sayan migration dosyası eksik!');

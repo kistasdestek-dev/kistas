@@ -1,277 +1,151 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import {
+  decodeShopierPayload,
+  extractEmail,
+  normalizeShopierCurrency,
+  parsePriceMinor,
+  resolveShopierCreditPackage,
+  verifyShopierOsbSignature,
+} from './shopier-osb.ts';
 
-/**
- * Shopier Otomatik Sipariş Bildirimi (OSB) ve Webhook Servisi.
- * Shopier'de ödeme tamamlandığında çağrılır; kullanıcıyı tespit edip
- * kredi bakiyesini otomatik olarak tanımlar.
- */
+const MAX_BODY_BYTES = 64 * 1024;
 
-// Kredi Paketleri Eşleşme Tablosu
-const PRODUCT_CREDITS_MAP: Record<string, number> = {
-  '50900373': 100,  // Başlangıç Paketi (100 Kredi - ₺299)
-  '50900401': 350,  // Profesyonel Paket (350 Kredi - ₺699)
-  '50900419': 1000, // Ölçek Paketi (1.000 Kredi - ₺1.699)
-};
+function textResponse(body: string, status: number): Response {
+  return new Response(body, {
+    status,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  });
+}
 
-const isUuid = (value: string): boolean =>
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+async function readOsbEnvelope(request: Request): Promise<{ res: string; hash: string }> {
+  const contentLength = Number(request.headers.get('content-length') || 0);
+  if (contentLength > MAX_BODY_BYTES) throw new Error('PAYLOAD_TOO_LARGE');
 
-const extractEmail = (text: string): string | null => {
-  const match = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-  return match ? match[0].toLowerCase() : null;
-};
+  const contentType = request.headers.get('content-type') || '';
+  let rawPayload: Record<string, unknown> = {};
 
-Deno.serve(async (request: Request): Promise<Response> => {
-  // Shopier veya sistem test pingleri için başarı yanıtı
-  if (request.method === 'GET' || request.method === 'HEAD') {
-    return new Response('success', {
-      status: 200,
-      headers: { 'Content-Type': 'text/plain' },
+  if (contentType.includes('application/json')) {
+    const json = await request.json();
+    if (json && typeof json === 'object' && !Array.isArray(json)) {
+      rawPayload = json as Record<string, unknown>;
+    }
+  } else if (
+    contentType.includes('application/x-www-form-urlencoded') ||
+    contentType.includes('multipart/form-data')
+  ) {
+    const formData = await request.formData();
+    formData.forEach((value, key) => {
+      if (typeof value === 'string') rawPayload[key] = value;
+    });
+  } else {
+    const text = await request.text();
+    if (text.length > MAX_BODY_BYTES) throw new Error('PAYLOAD_TOO_LARGE');
+    const params = new URLSearchParams(text);
+    params.forEach((value, key) => {
+      rawPayload[key] = value;
     });
   }
 
+  if (typeof rawPayload.res !== 'string' || typeof rawPayload.hash !== 'string') {
+    throw new Error('MISSING_SIGNATURE');
+  }
+
+  return { res: rawPayload.res, hash: rawPayload.hash };
+}
+
+Deno.serve(async (request: Request): Promise<Response> => {
+  if (request.method === 'GET' || request.method === 'HEAD') {
+    return textResponse('success', 200);
+  }
   if (request.method !== 'POST') {
-    return new Response('METHOD_NOT_ALLOWED', { status: 405 });
+    return textResponse('METHOD_NOT_ALLOWED', 405);
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  if (!supabaseUrl || !serviceRoleKey) {
-    console.error('Shopier Webhook: Supabase ortam değişkenleri eksik.');
-    return new Response('SERVER_NOT_CONFIGURED', { status: 500 });
+  const osbUsername = Deno.env.get('SHOPIER_OSB_USERNAME');
+  const osbPassword = Deno.env.get('SHOPIER_OSB_PASSWORD');
+  if (!supabaseUrl || !serviceRoleKey || !osbUsername || !osbPassword) {
+    console.error('Shopier Webhook: Sunucu yapılandırması eksik.');
+    return textResponse('SERVER_NOT_CONFIGURED', 503);
+  }
+
+  let envelope: { res: string; hash: string };
+  try {
+    envelope = await readOsbEnvelope(request);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : 'INVALID_PAYLOAD';
+    return textResponse(reason, reason === 'PAYLOAD_TOO_LARGE' ? 413 : 400);
+  }
+
+  let signatureIsValid = false;
+  try {
+    signatureIsValid = await verifyShopierOsbSignature(
+      envelope.res,
+      envelope.hash,
+      osbUsername,
+      osbPassword
+    );
+  } catch (error) {
+    console.error('Shopier Webhook: İmza doğrulama işlemi başarısız.', error);
+    return textResponse('SIGNATURE_CHECK_FAILED', 500);
+  }
+  if (!signatureIsValid) {
+    console.warn('Shopier Webhook: Geçersiz OSB imzası reddedildi.');
+    return textResponse('INVALID_SIGNATURE', 401);
+  }
+
+  let orderData: Record<string, unknown>;
+  try {
+    orderData = decodeShopierPayload(envelope.res);
+  } catch {
+    return textResponse('INVALID_PAYLOAD', 400);
+  }
+
+  const isTest = String(orderData.istest ?? orderData.is_test ?? '') === '1';
+  if (isTest) return textResponse('success', 200);
+
+  const orderId = String(orderData.orderid ?? '').trim();
+  const productId = String(orderData.productid ?? '').trim();
+  const currency = normalizeShopierCurrency(orderData.currency);
+  const priceMinor = parsePriceMinor(orderData.price);
+  const creditPackage = resolveShopierCreditPackage(productId, priceMinor, currency);
+
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(orderId)) {
+    return textResponse('INVALID_ORDER_ID', 400);
+  }
+  if (!creditPackage || priceMinor === null) {
+    console.warn(`Shopier Webhook #${orderId}: Ürün veya tutar eşleşmedi.`);
+    return textResponse('PRODUCT_OR_AMOUNT_MISMATCH', 400);
+  }
+
+  const targetEmail = extractEmail(orderData.customernote) ?? extractEmail(orderData.email);
+  if (!targetEmail) {
+    console.warn(`Shopier Webhook #${orderId}: Kullanıcı eşleme bilgisi bulunamadı.`);
+    return textResponse('USER_IDENTIFIER_MISSING', 422);
   }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-
-  let rawPayload: Record<string, unknown> = {};
-
-  try {
-    const contentType = request.headers.get('content-type') || '';
-
-    if (contentType.includes('application/json')) {
-      const json = await request.json();
-      if (json && typeof json === 'object') {
-        rawPayload = json as Record<string, unknown>;
-      }
-    } else if (
-      contentType.includes('application/x-www-form-urlencoded') ||
-      contentType.includes('multipart/form-data')
-    ) {
-      const formData = await request.formData();
-      formData.forEach((value, key) => {
-        rawPayload[key] = value;
-      });
-    } else {
-      // Düz metin veya bilinmeyen format desteği
-      const text = await request.text();
-      try {
-        rawPayload = JSON.parse(text);
-      } catch {
-        const params = new URLSearchParams(text);
-        params.forEach((value, key) => {
-          rawPayload[key] = value;
-        });
-      }
-    }
-  } catch (err) {
-    console.error('Shopier Webhook: İstek gövdesi okunamadı:', err);
-    return new Response('INVALID_PAYLOAD', { status: 400 });
-  }
-
-  // Shopier OSB Base64 'res' Alanını Çözümleme
-  let orderData: Record<string, unknown> = rawPayload;
-  if (typeof rawPayload.res === 'string' && rawPayload.res.length > 0) {
-    try {
-      const decodedRes = atob(rawPayload.res);
-      orderData = JSON.parse(decodedRes);
-    } catch (decodeErr) {
-      console.warn('Shopier Webhook: res alanı base64 çözülemedi, ham veri deneniyor:', decodeErr);
-    }
-  }
-
-  // Güvenlik: İsteğe Bağlı OSB Hash Kontrolü
-  const osbSecret = Deno.env.get('SHOPIER_OSB_SECRET');
-  if (osbSecret && typeof rawPayload.hash === 'string' && typeof rawPayload.res === 'string') {
-    try {
-      const encoder = new TextEncoder();
-      const keyData = encoder.encode(osbSecret);
-      const messageData = encoder.encode(rawPayload.res);
-      const cryptoKey = await crypto.subtle.importKey(
-        'raw',
-        keyData,
-        { name: 'HMAC', hash: 'SHA-256' },
-        false,
-        ['sign']
-      );
-      const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
-      const hashHex = Array.from(new Uint8Array(signature))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
-
-      if (hashHex.toLowerCase() !== rawPayload.hash.toLowerCase()) {
-        console.error('Shopier Webhook: Geçersiz HMAC imzası.');
-        return new Response('INVALID_SIGNATURE', { status: 401 });
-      }
-    } catch (cryptoErr) {
-      console.error('Shopier Webhook: İmza doğrulama hatası:', cryptoErr);
-    }
-  }
-
-  // Alanları Çıkarma
-  const orderId = String(
-    orderData.orderid || orderData.order_id || orderData.id || ''
-  ).trim();
-
-  const productId = String(
-    orderData.productid || orderData.product_id || ''
-  ).trim();
-
-  const productName = String(
-    orderData.productname || orderData.product_name || orderData.title || ''
-  ).trim();
-
-  const customerNote = String(
-    orderData.customernote || orderData.order_note || orderData.note || ''
-  ).trim();
-
-  const buyerEmail = String(
-    orderData.email || orderData.buyer_email || ''
-  ).trim().toLowerCase();
-
-  const price = parseFloat(String(orderData.price || orderData.total || '0'));
-
-  // Shopier OSB panel testi veya doğrulama pingi
-  if (!orderId || orderId.toLowerCase().includes('test') || String(orderData.is_test) === '1') {
-    console.log('Shopier Webhook: Test bildirimi veya doğrulama isteği başarıyla yanıtlandı.');
-    return new Response('success', {
-      status: 200,
-      headers: { 'Content-Type': 'text/plain' },
-    });
-  }
-
-  // 1. Kredi Miktarını Belirleme
-  let creditDelta = PRODUCT_CREDITS_MAP[productId] || 0;
-
-  if (!creditDelta) {
-    // Ürün adı veya fiyattan çözümleme yedeği
-    if (productName.includes('1000') || productName.toLowerCase().includes('ölçek')) {
-      creditDelta = 1000;
-    } else if (productName.includes('350') || productName.toLowerCase().includes('profesyonel')) {
-      creditDelta = 350;
-    } else if (productName.includes('100') || productName.toLowerCase().includes('başlangıç')) {
-      creditDelta = 100;
-    } else if (price >= 1500) {
-      creditDelta = 1000;
-    } else if (price >= 500) {
-      creditDelta = 350;
-    } else if (price >= 200) {
-      creditDelta = 100;
-    }
-  }
-
-  if (creditDelta <= 0) {
-    console.warn(`Shopier Webhook #${orderId}: Ürün eşleşmedi (${productId} - ${productName}).`);
-    return new Response('UNKNOWN_PRODUCT', { status: 400 });
-  }
-
-  // 2. Kullanıcıyı Tespit Etme
-  let targetEmail = extractEmail(customerNote);
-  if (!targetEmail && buyerEmail) {
-    targetEmail = extractEmail(buyerEmail);
-  }
-
-  let profile: { id: string; email?: string | null; boost_credits?: number | null } | null = null;
-
-  if (targetEmail) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, email, boost_credits')
-      .ilike('email', targetEmail)
-      .maybeSingle();
-
-    if (!error && data) {
-      profile = data;
-    }
-  }
-
-  // Not alanında doğrudan UUID girilmişse
-  if (!profile && isUuid(customerNote)) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, email, boost_credits')
-      .eq('id', customerNote)
-      .maybeSingle();
-
-    if (!error && data) {
-      profile = data;
-    }
-  }
-
-  if (!profile) {
-    console.error(
-      `Shopier Webhook #${orderId}: Kullanıcı profili bulunamadı (Not: "${customerNote}", E-posta: "${buyerEmail}").`
-    );
-    // Siparişin tekrar tekrar gelip tıkanmaması için 200 success dönülür, log bırakılır
-    return new Response('USER_NOT_FOUND_LOGGED', { status: 200 });
-  }
-
-  // 3. Idempotency (Mükerrer Yükleme Koruması)
-  const { data: existingTx } = await supabase
-    .from('credit_transactions')
-    .select('id')
-    .eq('user_id', profile.id)
-    .ilike('description', `%Shopier #${orderId}%`)
-    .maybeSingle();
-
-  if (existingTx) {
-    console.log(`Shopier Webhook #${orderId}: Sipariş daha önce işlenmiş, mükerrer işlem engellendi.`);
-    return new Response('success', {
-      status: 200,
-      headers: { 'Content-Type': 'text/plain' },
-    });
-  }
-
-  // 4. Krediyi Hesaba Tanımlama
-  const currentCredits = Number(profile.boost_credits || 0);
-  const newCredits = currentCredits + creditDelta;
-
-  const { error: updateError } = await supabase
-    .from('profiles')
-    .update({
-      boost_credits: newCredits,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', profile.id);
-
-  if (updateError) {
-    console.error(`Shopier Webhook #${orderId}: Profil bakiye güncelleme hatası:`, updateError);
-    return new Response('BALANCE_UPDATE_FAILED', { status: 500 });
-  }
-
-  // 5. İşlem Kaydını (Transaction Log) Yazma
-  const { error: txError } = await supabase
-    .from('credit_transactions')
-    .insert({
-      user_id: profile.id,
-      amount: creditDelta,
-      balance_after: newCredits,
-      type: 'purchase',
-      description: `Shopier #${orderId} (${creditDelta} Vitrin Kredisi)`,
+  const { data: result, error: applyError } = await supabase.rpc('apply_shopier_credit_event_by_email', {
+      p_order_id: orderId,
+      p_user_email: targetEmail,
+      p_product_id: productId,
+      p_credit_delta: creditPackage.credits,
+      p_amount_minor: priceMinor,
+      p_currency: currency,
     });
 
-  if (txError) {
-    console.warn(`Shopier Webhook #${orderId}: Transaction log yazılamadı:`, txError);
+  if (applyError) {
+    console.error(`Shopier Webhook #${orderId}: Atomik kredi işlemi başarısız.`, applyError);
+    const userWasMissing = applyError.message?.includes('USER_NOT_FOUND');
+    return textResponse(userWasMissing ? 'USER_NOT_FOUND' : 'CREDIT_APPLY_FAILED', userWasMissing ? 422 : 500);
   }
 
+  const duplicate = Boolean((result as { duplicate?: boolean } | null)?.duplicate);
   console.log(
-    `Shopier Webhook: #${orderId} siparişiyle ${profile.id} kullanıcısına +${creditDelta} kredi yüklendi. Yeni bakiye: ${newCredits}`
+    `Shopier Webhook #${orderId}: ${duplicate ? 'Mükerrer bildirim atlandı.' : 'Kredi yüklendi.'}`
   );
-
-  // Shopier OSB başarılı yanıt olarak "success" düz metnini bekler
-  return new Response('success', {
-    status: 200,
-    headers: { 'Content-Type': 'text/plain' },
-  });
+  return textResponse('success', 200);
 });

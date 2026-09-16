@@ -160,18 +160,19 @@ const MODAL_CSS = `
 }
 
 .k-modal-instruction-box {
-  padding: 16px;
-  border-radius: 16px;
-  background: rgba(50, 105, 199, 0.05);
-  border: 1px solid rgba(50, 105, 199, 0.16);
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(235, 243, 255, 0.92));
+  border: 1px solid rgba(50, 105, 199, 0.22);
+  box-shadow: 0 10px 28px rgba(50, 105, 199, 0.10), inset 0 1px 0 #FFFFFF;
   margin-bottom: 22px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .k-modal-instruction-title {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   color: #2554A5;
   text-transform: uppercase;
@@ -181,15 +182,28 @@ const MODAL_CSS = `
   gap: 6px;
 }
 
+.k-modal-instruction-lead {
+  margin: -2px 0 0;
+  color: #25364E;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
 .k-modal-user-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: #FFFFFF;
-  padding: 10px 14px;
+  padding: 12px 14px;
   border-radius: 12px;
   border: 1px solid rgba(50, 105, 199, 0.18);
   gap: 8px;
+}
+
+.k-modal-user-row.missing {
+  border-color: rgba(185, 137, 22, 0.30);
+  background: #FFFBEB;
 }
 
 .k-modal-user-email {
@@ -216,11 +230,52 @@ const MODAL_CSS = `
   background: #DBEAFE;
 }
 
-.k-modal-instruction-text {
-  font-size: 12px;
-  line-height: 1.5;
+.k-modal-match-points {
+  display: grid;
+  gap: 7px;
+}
+
+.k-modal-match-point {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   color: #475569;
-  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.k-modal-match-number {
+  flex: 0 0 19px;
+  width: 19px;
+  height: 19px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(50, 105, 199, 0.10);
+  border: 1px solid rgba(50, 105, 199, 0.18);
+  color: #2554A5;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.k-modal-auto-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(50, 105, 199, 0.13);
+  color: #187657;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.k-modal-auto-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #21A179;
+  box-shadow: 0 0 0 4px rgba(33, 161, 121, 0.12);
 }
 
 .k-modal-status-badge {
@@ -265,6 +320,13 @@ const MODAL_CSS = `
   background: #2554A5;
   box-shadow: 0 8px 24px rgba(50, 105, 199, 0.45);
   transform: translateY(-1px);
+}
+
+.k-modal-primary-btn:disabled {
+  cursor: not-allowed;
+  background: #94A3B8;
+  box-shadow: none;
+  transform: none;
 }
 
 .k-modal-secondary-btn {
@@ -354,6 +416,7 @@ export const CreditCheckoutModal: React.FC<CreditCheckoutModalProps> = ({
   if (!isOpen || !selectedPlan) return null;
 
   const handleProceedToShopier = () => {
+    if (!user?.email?.trim()) return;
     const popup = CreditPurchaseService.openShopierCheckout(selectedPlan.storeProductId);
     if (popup) {
       setHasOpenedWindow(true);
@@ -367,7 +430,7 @@ export const CreditCheckoutModal: React.FC<CreditCheckoutModalProps> = ({
   };
 
   const handleCopyEmail = () => {
-    const textToCopy = user?.email || user?.fullName || '';
+    const textToCopy = user?.email?.trim() || '';
     if (typeof navigator !== 'undefined' && navigator.clipboard && textToCopy) {
       navigator.clipboard.writeText(textToCopy).then(() => {
         setCopiedEmail(true);
@@ -404,7 +467,7 @@ export const CreditCheckoutModal: React.FC<CreditCheckoutModalProps> = ({
   };
 
   const priceLabel = storeProduct?.priceString || `₺${selectedPlan.price.toLocaleString('tr-TR')}`;
-  const userIdentifier = user?.email || user?.fullName || 'Giriş Yapılmış Hesap';
+  const accountEmail = user?.email?.trim() || '';
 
   return (
     <div
@@ -453,21 +516,38 @@ export const CreditCheckoutModal: React.FC<CreditCheckoutModalProps> = ({
               <line x1="12" y1="16" x2="12" y2="12" />
               <line x1="12" y1="8" x2="12.01" y2="8" />
             </svg>
-            <span>Hesap Eşleme Bilgisi</span>
+            <span>Kredinin Doğru Hesaba Yüklenmesi İçin</span>
           </div>
-          <div className="k-modal-user-row">
-            <span className="k-modal-user-email">{userIdentifier}</span>
+          <p className="k-modal-instruction-lead">
+            Shopier siparişiniz aşağıdaki Kıstas hesap e-postasıyla eşleşmelidir.
+          </p>
+          <div className={`k-modal-user-row${accountEmail ? '' : ' missing'}`}>
+            <span className="k-modal-user-email">
+              {accountEmail || 'Hesabınızda doğrulanmış e-posta bulunamadı'}
+            </span>
             <button
               type="button"
               className="k-modal-copy-btn"
               onClick={handleCopyEmail}
+              disabled={!accountEmail}
             >
               {copiedEmail ? '✓ Kopyalandı' : 'Kopyala'}
             </button>
           </div>
-          <p className="k-modal-instruction-text">
-            Ödeme ekranındaki sipariş notu alanına bu bilginizi doğrulayarak ödemenizi tamamlayınız. Kredileriniz hesabınıza tanımlanacaktır.
-          </p>
+          <div className="k-modal-match-points">
+            <div className="k-modal-match-point">
+              <span className="k-modal-match-number">1</span>
+              <span>Bu e-posta adresini Shopier ödeme ekranındaki <strong>sipariş notuna</strong> aynen yazın.</span>
+            </div>
+            <div className="k-modal-match-point">
+              <span className="k-modal-match-number">2</span>
+              <span>Sipariş notunu boş bırakırsanız Shopier alıcı e-postanız bu adresle aynı olmalıdır.</span>
+            </div>
+          </div>
+          <div className="k-modal-auto-note">
+            <span className="k-modal-auto-dot" />
+            <span>Ödeme doğrulanınca krediniz otomatik yüklenir ve uygulama içi bildirim gelir.</span>
+          </div>
         </div>
 
         {hasOpenedWindow && (
@@ -489,8 +569,9 @@ export const CreditCheckoutModal: React.FC<CreditCheckoutModalProps> = ({
             type="button"
             className="k-modal-primary-btn"
             onClick={handleProceedToShopier}
+            disabled={!accountEmail}
           >
-            <span>{hasOpenedWindow ? 'Ödeme Penceresini Tekrar Aç' : 'Shopier ile Güvenli Öde'}</span>
+            <span>{!accountEmail ? 'Ödeme İçin E-posta Gerekli' : hasOpenedWindow ? 'Ödeme Penceresini Tekrar Aç' : 'Shopier ile Güvenli Öde'}</span>
             <span>&rarr;</span>
           </button>
 

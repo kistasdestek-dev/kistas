@@ -4,6 +4,7 @@ export type NotificationType =
   | 'review'
   | 'message'
   | 'revision_requested'
+  | 'credit_purchase'
   | 'system';
 
 export interface NotificationItem {
