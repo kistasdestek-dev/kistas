@@ -1,6 +1,55 @@
 import { supabase } from '../../../core/supabase/supabaseClient';
 
 export type BoostScope = 'global' | 'category';
+export type CreditTransactionType = 'purchase' | 'spend_boost' | 'reward' | 'refund';
+
+export interface CreditTransactionMetadata {
+  provider?: string;
+  productId?: string;
+  amountMinor?: number;
+  currency?: string;
+  listingId?: string;
+  listingTitle?: string;
+  scope?: BoostScope;
+  durationHours?: number;
+}
+
+export interface CreditTransaction {
+  id: string;
+  amount: number;
+  balanceAfter: number;
+  type: CreditTransactionType;
+  description: string;
+  createdAt: string;
+  metadata: CreditTransactionMetadata;
+}
+
+interface CreditTransactionRow {
+  id: string;
+  amount: number;
+  balance_after: number;
+  type: CreditTransactionType;
+  description: string;
+  created_at: string;
+  metadata: Record<string, unknown> | null;
+}
+
+const stringValue = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim() ? value : undefined;
+
+const numberValue = (value: unknown): number | undefined =>
+  typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+
+const parseTransactionMetadata = (raw: Record<string, unknown> | null): CreditTransactionMetadata => ({
+  provider: stringValue(raw?.provider),
+  productId: stringValue(raw?.product_id),
+  amountMinor: numberValue(raw?.amount_minor),
+  currency: stringValue(raw?.currency),
+  listingId: stringValue(raw?.listing_id),
+  listingTitle: stringValue(raw?.listing_title),
+  scope: raw?.scope === 'global' || raw?.scope === 'category' ? raw.scope : undefined,
+  durationHours: numberValue(raw?.duration_hours),
+});
 
 export interface BoostPackage {
   id: string;
@@ -128,6 +177,36 @@ export class CreditService {
 
     if (error) throw error;
     return data?.boost_credits || 0;
+  }
+
+  /**
+   * Oturum sahibinin kredi yükleme, ödül, iade ve harcama hareketlerini getirir.
+   * Sunucudaki RLS politikası yalnızca kullanıcının kendi satırlarını döndürür.
+   */
+  public static async getMyCreditTransactions(limit = 100): Promise<CreditTransaction[]> {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!authData?.user) return [];
+
+    const safeLimit = Math.min(100, Math.max(1, Math.trunc(limit)));
+    const { data, error } = await supabase
+      .from('credit_transactions')
+      .select('id, amount, balance_after, type, description, created_at, metadata')
+      .eq('user_id', authData.user.id)
+      .order('created_at', { ascending: false })
+      .limit(safeLimit);
+
+    if (error) throw error;
+
+    return ((data ?? []) as CreditTransactionRow[]).map((row) => ({
+      id: row.id,
+      amount: Number(row.amount) || 0,
+      balanceAfter: Number(row.balance_after) || 0,
+      type: row.type,
+      description: row.description,
+      createdAt: row.created_at,
+      metadata: parseTransactionMetadata(row.metadata),
+    }));
   }
 
   /**

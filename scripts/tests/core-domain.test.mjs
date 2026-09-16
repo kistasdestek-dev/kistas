@@ -688,6 +688,26 @@ runTest('Vitrin sponsorluğu: kredi harcaması geçerli spend_boost işlem tür�
   assert.doesNotMatch(repairSql, /["']usage["']/i, 'Geçersiz usage enum değeri onarım migrationı içinde kaldı!');
 });
 
+runTest('Kredi cüzdanı: hareketler yalnız sahibine açık ve harcama hedefiyle kaydedilmeli', () => {
+  const baseSql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260903000004_boosting_credits_reviews_categories.sql'),
+    'utf8'
+  );
+  const ledgerSql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260916000006_credit_ledger_details.sql'),
+    'utf8'
+  );
+  const serviceSource = fs.readFileSync(
+    path.join(ROOT, 'src', 'features', 'credits', 'application', 'CreditService.ts'),
+    'utf8'
+  );
+
+  assert.match(baseSql, /Users view own credit transactions[\s\S]*auth\.uid\(\) = user_id/i, 'Kredi hareketleri sahibi dışına açık!');
+  assert.match(ledgerSql, /user_id, amount, balance_after, type, description, metadata/i, 'Harcama hareketinde işlem sonrası bakiye veya ayrıntı eksik!');
+  assert.match(ledgerSql, /'listing_id', p_listing_id[\s\S]*'listing_title', v_listing_title[\s\S]*'scope', v_clean_scope/i, 'Kredinin harcandığı proje ve vitrin kaydedilmiyor!');
+  assert.match(serviceSource, /getMyCreditTransactions[\s\S]*\.eq\('user_id', authData\.user\.id\)/i, 'İstemci sorgusunda oturum sahibi filtresi eksik!');
+});
+
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);
 
 if (failedTests > 0) {

@@ -29,6 +29,7 @@ import { Listing } from '../../listings/domain/Listing';
 import { ListingService } from '../../listings/application/ListingService';
 import { NotificationItem } from '../../notifications/domain/Notification';
 import { NotificationService } from '../../notifications/application/NotificationService';
+import { CreditService, CreditTransaction } from '../../credits/application/CreditService';
 import { R2StorageService } from '../../../core/storage/R2StorageService';
 import { profileStyles as styles, PROFILE_NEO } from './ProfileAndWalletScreen.styles';
 
@@ -109,6 +110,38 @@ const formatRelativeTime = (isoString: string): string => {
   return new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'short' }).format(new Date(isoString));
 };
 
+const formatCreditTransactionDate = (isoString: string): string =>
+  new Intl.DateTimeFormat('tr-TR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(isoString));
+
+const formatPaidAmount = (amountMinor?: number, currency = 'TRY'): string | null => {
+  if (amountMinor === undefined) return null;
+  try {
+    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(amountMinor / 100);
+  } catch {
+    return `${(amountMinor / 100).toLocaleString('tr-TR')} ${currency}`;
+  }
+};
+
+const getCreditTransactionTitle = (type: CreditTransaction['type']): string => {
+  if (type === 'purchase') return 'Kredi yüklemesi';
+  if (type === 'spend_boost') return 'Vitrin kullanımı';
+  if (type === 'reward') return 'Kredi ödülü';
+  return 'Kredi iadesi';
+};
+
+const getCreditTransactionIcon = (type: CreditTransaction['type']): IoniconName => {
+  if (type === 'purchase') return 'add-circle-outline';
+  if (type === 'spend_boost') return 'megaphone-outline';
+  if (type === 'reward') return 'gift-outline';
+  return 'return-up-back-outline';
+};
+
 export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
   profile: propProfile,
   onOpenAuth,
@@ -157,6 +190,12 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
   const [isConfirmingDeleteAll, setIsConfirmingDeleteAll] = useState(false);
   const [isDeletingAllNotifications, setIsDeletingAllNotifications] = useState(false);
+
+  // Kredi cüzdanı hareketleri
+  const [creditTransactions, setCreditTransactions] = useState<CreditTransaction[]>([]);
+  const [isCreditHistoryOpen, setIsCreditHistoryOpen] = useState(false);
+  const [isLoadingCreditHistory, setIsLoadingCreditHistory] = useState(false);
+  const [creditHistoryError, setCreditHistoryError] = useState('');
 
   const profile = propProfile !== undefined ? propProfile : authProfile;
   const isGuest = !profile;
@@ -404,6 +443,24 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
     signOut();
   };
 
+  const loadCreditHistory = async () => {
+    setIsLoadingCreditHistory(true);
+    setCreditHistoryError('');
+    try {
+      setCreditTransactions(await CreditService.getMyCreditTransactions(100));
+    } catch (error) {
+      console.error('Kredi hareketleri yüklenemedi:', error);
+      setCreditHistoryError('Kredi hareketleri şu anda yüklenemedi. Lütfen yeniden deneyin.');
+    } finally {
+      setIsLoadingCreditHistory(false);
+    }
+  };
+
+  const openCreditHistory = () => {
+    setIsCreditHistoryOpen(true);
+    void loadCreditHistory();
+  };
+
   if (isGuest) {
     return (
       <View style={styles.guestRoot}>
@@ -526,10 +583,16 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
                 <Text style={[styles.creditValue, boostCredits.toLocaleString('tr-TR').length > 6 && styles.creditValueCompact]}>{boostCredits.toLocaleString('tr-TR')}</Text>
                 <Text style={styles.creditUnit}>kredi</Text>
               </View>
-              <TouchableOpacity activeOpacity={0.72} onPress={onNavigateToCredits} style={styles.creditButton} accessibilityRole="button" accessibilityLabel="Kredi mağazasını aç">
-                <Text style={styles.creditButtonText}>Kredi al</Text>
-                <GlassIconButton icon="add" size={30} iconSize={18} />
-              </TouchableOpacity>
+              <View style={styles.walletActions}>
+                <TouchableOpacity activeOpacity={0.72} onPress={openCreditHistory} style={styles.creditHistoryButton} accessibilityRole="button" accessibilityLabel="Kredi hareketlerini aç">
+                  <Text style={styles.creditHistoryButtonText}>Hareketler</Text>
+                  <GlassIconButton icon="receipt-outline" size={30} iconSize={16} />
+                </TouchableOpacity>
+                <TouchableOpacity activeOpacity={0.72} onPress={onNavigateToCredits} style={styles.creditButton} accessibilityRole="button" accessibilityLabel="Kredi mağazasını aç">
+                  <Text style={styles.creditButtonText}>Kredi al</Text>
+                  <GlassIconButton icon="add" size={30} iconSize={18} />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
@@ -971,6 +1034,89 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
               </TouchableOpacity>
             </View>
           </BlurView>
+        </View>
+      </Modal>
+      <Modal
+        visible={isCreditHistoryOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsCreditHistoryOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.creditHistoryModal}>
+            <View style={styles.notifModalHeader}>
+              <View style={styles.notifModalTitleRow}>
+                <GlassIconButton icon="receipt-outline" size={42} iconSize={19} accessibilityLabel="Kredi hareketleri" />
+                <View>
+                  <Text style={styles.notifModalEyebrow}>KISTAS CÜZDANI</Text>
+                  <Text style={styles.notifModalTitle}>Kredi Hareketleri</Text>
+                </View>
+              </View>
+              <GlassIconButton icon="close" size={40} iconSize={19} onPress={() => setIsCreditHistoryOpen(false)} accessibilityLabel="Kapat" />
+            </View>
+
+            <View style={styles.creditHistorySummary}>
+              <View>
+                <Text style={styles.creditHistorySummaryLabel}>GÜNCEL BAKİYE</Text>
+                <Text style={styles.creditHistorySummaryValue}>{boostCredits.toLocaleString('tr-TR')} kredi</Text>
+              </View>
+              <Text style={styles.creditHistorySummaryCount}>Son {creditTransactions.length} işlem</Text>
+            </View>
+
+            <ScrollView decelerationRate={0.99} style={styles.creditHistoryList} contentContainerStyle={styles.creditHistoryListContent} showsVerticalScrollIndicator={false}>
+              {isLoadingCreditHistory ? (
+                <View style={styles.loadingBox}>
+                  <ActivityIndicator size="small" color="#3269C7" />
+                  <Text style={styles.loadingBoxText}>Kredi hareketleri yükleniyor…</Text>
+                </View>
+              ) : creditHistoryError ? (
+                <View style={styles.creditHistoryStateBox}>
+                  <Ionicons name="cloud-offline-outline" size={30} color="#9b3c27" />
+                  <Text style={styles.creditHistoryStateTitle}>{creditHistoryError}</Text>
+                  <TouchableOpacity style={styles.creditHistoryRetryButton} onPress={() => void loadCreditHistory()} activeOpacity={0.72}>
+                    <Text style={styles.creditHistoryRetryText}>Tekrar dene</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : creditTransactions.length === 0 ? (
+                <View style={styles.creditHistoryStateBox}>
+                  <GlassIconButton icon="receipt-outline" size={56} iconSize={25} />
+                  <Text style={styles.creditHistoryStateTitle}>Henüz kredi hareketiniz bulunmuyor.</Text>
+                </View>
+              ) : (
+                creditTransactions.map((transaction) => {
+                  const paidAmount = formatPaidAmount(transaction.metadata.amountMinor, transaction.metadata.currency);
+                  const isCreditIn = transaction.amount >= 0;
+                  const destination = transaction.type === 'purchase'
+                    ? 'Shopier üzerinden güvenli kredi alımı'
+                    : transaction.metadata.listingTitle
+                      ? `${transaction.metadata.listingTitle} · ${transaction.metadata.scope === 'category' ? 'Kategori vitrini' : 'Keşfet vitrini'}${transaction.metadata.durationHours ? ` · ${transaction.metadata.durationHours} saat` : ''}`
+                      : transaction.description;
+
+                  return (
+                    <View key={transaction.id} style={styles.creditTransactionItem}>
+                      <View style={[styles.creditTransactionIcon, isCreditIn ? styles.creditTransactionIconIn : styles.creditTransactionIconOut]}>
+                        <Ionicons name={getCreditTransactionIcon(transaction.type)} size={20} color={isCreditIn ? '#187657' : '#936413'} />
+                      </View>
+                      <View style={styles.creditTransactionCopy}>
+                        <View style={styles.creditTransactionTopRow}>
+                          <Text style={styles.creditTransactionTitle}>{getCreditTransactionTitle(transaction.type)}</Text>
+                          <Text style={[styles.creditTransactionAmount, isCreditIn ? styles.creditTransactionAmountIn : styles.creditTransactionAmountOut]}>
+                            {isCreditIn ? '+' : '−'}{Math.abs(transaction.amount).toLocaleString('tr-TR')} kredi
+                          </Text>
+                        </View>
+                        <Text style={styles.creditTransactionDate}>{formatCreditTransactionDate(transaction.createdAt)}</Text>
+                        <Text style={styles.creditTransactionDestination}>{destination}</Text>
+                        <View style={styles.creditTransactionDetails}>
+                          {paidAmount ? <Text style={styles.creditTransactionDetail}>Ödenen: {paidAmount}</Text> : null}
+                          <Text style={styles.creditTransactionDetail}>İşlem sonrası: {transaction.balanceAfter.toLocaleString('tr-TR')} kredi</Text>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })
+              )}
+            </ScrollView>
+          </View>
         </View>
       </Modal>
       {/* Notifications Modal */}

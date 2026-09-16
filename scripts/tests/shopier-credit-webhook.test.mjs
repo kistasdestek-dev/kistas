@@ -107,4 +107,17 @@ assert.match(notificationMigration, /'credit_purchase'/);
 assert.match(notificationMigration, /'balance_after', v_new_credits/);
 assert.match(notificationMigration, /IF v_inserted_event_id IS NULL[\s\S]*RETURN jsonb_build_object\('success', TRUE, 'duplicate', TRUE\);[\s\S]*INSERT INTO public\.notifications/);
 
+const creditLedgerMigration = await readFile(
+  new URL(
+    '../../supabase/migrations/20260916000006_credit_ledger_details.sql',
+    import.meta.url
+  ),
+  'utf8'
+);
+assert.match(creditLedgerMigration, /ADD COLUMN IF NOT EXISTS metadata JSONB NOT NULL/);
+assert.match(creditLedgerMigration, /'amount_minor', p_amount_minor/);
+assert.match(creditLedgerMigration, /'currency', p_currency/);
+assert.match(creditLedgerMigration, /SET search_path = ''/);
+assert.match(creditLedgerMigration, /REVOKE ALL ON FUNCTION public\.apply_shopier_credit_event[\s\S]*FROM PUBLIC, anon, authenticated/);
+
 console.log('Shopier webhook signature, strict product and atomic RPC checks passed.');
