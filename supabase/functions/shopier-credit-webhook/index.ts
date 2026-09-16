@@ -22,6 +22,14 @@ const extractEmail = (text: string): string | null => {
 };
 
 Deno.serve(async (request: Request): Promise<Response> => {
+  // Shopier veya sistem test pingleri için başarı yanıtı
+  if (request.method === 'GET' || request.method === 'HEAD') {
+    return new Response('success', {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain' },
+    });
+  }
+
   if (request.method !== 'POST') {
     return new Response('METHOD_NOT_ALLOWED', { status: 405 });
   }
@@ -134,9 +142,13 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
   const price = parseFloat(String(orderData.price || orderData.total || '0'));
 
-  if (!orderId) {
-    console.warn('Shopier Webhook: orderId bulunamadı.');
-    return new Response('MISSING_ORDER_ID', { status: 400 });
+  // Shopier OSB panel testi veya doğrulama pingi
+  if (!orderId || orderId.toLowerCase().includes('test') || String(orderData.is_test) === '1') {
+    console.log('Shopier Webhook: Test bildirimi veya doğrulama isteği başarıyla yanıtlandı.');
+    return new Response('success', {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain' },
+    });
   }
 
   // 1. Kredi Miktarını Belirleme
