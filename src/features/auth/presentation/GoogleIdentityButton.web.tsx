@@ -19,6 +19,7 @@ interface GoogleIdentityApi {
         client_id: string;
         callback: (response: GoogleCredentialResponse) => void;
         nonce: string;
+        ux_mode: 'popup';
         use_fedcm_for_button: boolean;
       }) => void;
       renderButton: (parent: HTMLElement, options: {
@@ -106,6 +107,7 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
         google.accounts.id.initialize({
           client_id: GOOGLE_WEB_CLIENT_ID,
           nonce: noncePair.hashedNonce,
+          ux_mode: 'popup',
           use_fedcm_for_button: true,
           callback: (response) => {
             if (!response.credential) {
@@ -120,7 +122,7 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
         if (!target) throw new Error('Google giriş düğmesi hazırlanamadı.');
 
         const render = () => {
-          const width = Math.max(180, Math.min(400, Math.round(target.getBoundingClientRect().width || 180)));
+          const width = Math.max(180, Math.min(320, Math.round(target.getBoundingClientRect().width || 180)));
           if (width === renderedWidth) return;
           renderedWidth = width;
           target.replaceChildren();
@@ -170,13 +172,10 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
   }
 
   return (
-    <View pointerEvents={disabled ? 'none' : 'auto'} style={[styles.buttonShell, disabled && styles.disabled]}>
+    <View {...glassWebProps} pointerEvents={disabled ? 'none' : 'auto'} style={[styles.buttonShell, disabled && styles.disabled]}>
       <View ref={buttonRef} nativeID="google-identity-button" style={styles.renderTarget} />
       {!ready && (
-        <View pointerEvents="none" style={styles.loading}>
-          <ActivityIndicator size="small" color="#3269C7" />
-          <Text style={styles.text}>Google hazırlanıyor…</Text>
-        </View>
+        <ActivityIndicator pointerEvents="none" size="small" color="#3269C7" style={styles.loading} />
       )}
     </View>
   );
@@ -189,6 +188,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#CBD9EC',
+    borderRadius: 28,
+    backgroundColor: '#F6FAFF',
+    overflow: 'hidden',
   },
   renderTarget: {
     width: '100%',
@@ -198,15 +202,6 @@ const styles = StyleSheet.create({
   },
   loading: {
     position: 'absolute',
-    inset: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 9,
-    borderWidth: 1,
-    borderColor: '#CBD9EC',
-    borderRadius: 28,
-    backgroundColor: '#F6FAFF',
   },
   fallbackButton: {
     minWidth: 180,
