@@ -11,10 +11,27 @@ export interface SplineSceneProps {
   className?: string;
 }
 
-export function SplineScene({ scene, className }: SplineSceneProps) {
-  return (
-    <Suspense
-      fallback={
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class SplineErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  ErrorBoundaryState
+> {
+  state: ErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.warn('Spline 3D sahnesi yuklenirken hata yakalandi:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
         <div
           className="w-full h-full flex items-center justify-center"
           style={{
@@ -26,18 +43,52 @@ export function SplineScene({ scene, className }: SplineSceneProps) {
             minHeight: 400,
           }}
         >
-          <span className="loader" />
+          <div
+            style={{
+              width: 140,
+              height: 140,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle at 35% 35%, rgba(96,165,250,0.7), rgba(37,99,235,0.2) 65%, transparent 100%)',
+              filter: 'drop-shadow(0 0 35px rgba(59,130,246,0.4))',
+            }}
+          />
         </div>
-      }
-    >
-      <Spline
-        scene={scene}
-        className={className}
-        style={{ width: '100%', height: '100%' }}
-      />
-    </Suspense>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export function SplineScene({ scene, className }: SplineSceneProps) {
+  return (
+    <SplineErrorBoundary>
+      <Suspense
+        fallback={
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 400,
+            }}
+          >
+            <span className="loader" />
+          </div>
+        }
+      >
+        <Spline
+          scene={scene}
+          className={className}
+          style={{ width: '100%', height: '100%' }}
+        />
+      </Suspense>
+    </SplineErrorBoundary>
   );
 }
+
 
 export interface SplineSceneBasicProps {
   title?: string;
