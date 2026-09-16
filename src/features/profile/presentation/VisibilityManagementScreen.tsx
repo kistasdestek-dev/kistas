@@ -257,9 +257,9 @@ export const VisibilityManagementScreen: React.FC<VisibilityManagementScreenProp
                 onPress={() => openManager(listing, 'category')}
                 activeOpacity={0.76}
               >
-                <Ionicons name={anySponsored ? 'refresh-outline' : 'sparkles'} size={17} color={active ? '#3269C7' : '#7A8799'} />
+                <Ionicons name={anySponsored ? 'refresh-outline' : 'sparkles'} size={17} color={active ? '#0FA336' : '#7A8799'} />
                 <Text style={[styles.manageButtonText, !active && styles.manageButtonTextDisabled]}>{active ? (anySponsored ? 'Görünürlüğü Uzat' : 'Vitrinde Öne Çıkar') : 'Onay sonrası kullanılabilir'}</Text>
-                {active ? <Ionicons name="arrow-forward" size={16} color="#3269C7" /> : null}
+                {active ? <Ionicons name="arrow-forward" size={16} color="#0FA336" /> : null}
               </TouchableOpacity>
             </View>
           );
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
   projectOpportunityText: { flex: 1, color: '#60718A', fontSize: 10, lineHeight: 14.5, fontFamily: UI_FONT_FAMILY },
   manageButton: { minHeight: 46, marginTop: 13, paddingHorizontal: 14, borderRadius: 13, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: kistasStyle.neumorphism.global, borderWidth: 1, borderColor: kistasStyle.neumorphism.border, shadowColor: kistasStyle.neumorphism.shadow, shadowOffset: { width: 4, height: 6 }, shadowOpacity: 0.17, shadowRadius: 10, elevation: 4 },
   manageButtonDisabled: { backgroundColor: '#F0F3F7', borderColor: '#E0E5EC', shadowOpacity: 0, elevation: 0 },
-  manageButtonText: { flex: 1, color: kistasStyle.neumorphism.ink, fontSize: 11.5, fontWeight: '700', textAlign: 'center', fontFamily: UI_FONT_FAMILY },
+  manageButtonText: { flex: 1, color: '#0FA336', fontSize: 11.5, fontWeight: '700', textAlign: 'center', fontFamily: UI_FONT_FAMILY },
   manageButtonTextDisabled: { color: '#7A8799' },
   loadingBox: { alignItems: 'center', gap: 9, paddingVertical: 38 }, loadingText: { color: '#686474', fontSize: 11 },
   emptyBox: { alignItems: 'center', padding: 30, borderRadius: 9, backgroundColor: 'rgba(250,251,253,0.75)', borderWidth: 1, borderColor: 'rgba(50,105,199,0.1)' },

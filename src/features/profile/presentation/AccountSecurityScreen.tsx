@@ -113,13 +113,13 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <GlassIconButton icon="chevron-back" size={43} iconSize={21} onPress={onBack} accessibilityLabel="Profile dön" />
-          <View style={styles.headerCopy}><Text style={styles.eyebrow}>PROFİL · GÜVENLİK MERKEZİ</Text><Text style={styles.title}>Hesabını koru</Text></View>
+          <View style={styles.headerCopy}><Text style={styles.title}>Güvenlik Merkezi</Text></View>
           <View style={styles.logoShell}><KistasLogo size={25} showWordmark={false} /></View>
         </View>
 
         <LinearGradient colors={[kistasStyle.neumorphism.surface, kistasStyle.neumorphism.global]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
           <View style={styles.heroIcon}>{loading ? <ActivityIndicator color="#3269C7" /> : <Ionicons name="shield-checkmark" size={32} color="#3269C7" />}</View>
-          <View style={styles.heroCopy}><Text style={styles.heroKicker}>HESAP GÜVENLİĞİ</Text><Text style={styles.heroTitle}>{loading ? 'Kontrol ediliyor' : overview?.emailVerified ? 'Hesabın doğrulandı' : 'Bir adım kaldı'}</Text><Text style={styles.heroText}>{overview?.emailVerified ? 'E-posta kimliğin doğrulandı ve bu oturum geçerli.' : 'E-posta adresini doğrulayarak hesap kurtarmayı güvenceye al.'}</Text></View>
+          <View style={styles.heroCopy}><Text style={styles.heroTitle}>{loading ? 'Kontrol ediliyor' : overview?.emailVerified ? 'Hesabın doğrulandı' : 'Bir adım kaldı'}</Text></View>
           {!loading && <View style={[styles.statePill, !overview?.emailVerified && styles.statePillPending]}><View style={[styles.stateDot, !overview?.emailVerified && styles.stateDotPending]} /><Text style={[styles.stateText, !overview?.emailVerified && styles.stateTextPending]}>{overview?.emailVerified ? 'KORUMALI' : 'EKSİK'}</Text></View>}
         </LinearGradient>
 
@@ -140,7 +140,6 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
           <View style={styles.sessionMeta}><Ionicons name="time-outline" size={14} color="#6A7D99" /><Text style={styles.sessionMetaText}>Erişim yenileme zamanı · {formatDate(overview?.expiresAt || null)}</Text></View>
           <TouchableOpacity style={styles.outlineAction} onPress={() => setConfirmSessions(true)} disabled={loading || Boolean(action)}>{action === 'sessions' ? <ActivityIndicator size="small" color="#263A58" /> : <Ionicons name="log-out-outline" size={18} color="#263A58" />}<Text style={styles.outlineActionText}>Diğer cihazlardaki oturumları kapat</Text></TouchableOpacity>
         </View>
-        <View style={styles.privacyNote}><Ionicons name="lock-closed" size={14} color="#3269C7" /><Text style={styles.privacyText}>Şifre ve oturum anahtarları cihaz ekranında hiçbir zaman gösterilmez.</Text></View>
       </ScrollView>
 
       <Modal visible={passwordModal} transparent animationType="fade" onRequestClose={closePasswordModal}><View style={styles.modalBackdrop}><BlurView intensity={55} tint="light" style={styles.modalCard}>
@@ -183,11 +182,11 @@ const styles = StyleSheet.create({
   ambientBottom: { pointerEvents: 'none', position: 'absolute', width: 280, height: 280, borderRadius: 140, bottom: -170, left: -100, backgroundColor: 'rgba(156,64,255,0.06)' },
   content: { width: '100%', maxWidth: 820, alignSelf: 'center', paddingHorizontal: 20, paddingTop: 24, paddingBottom: 54 },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 }, headerCopy: { flex: 1, marginLeft: 14 },
-  eyebrow: { ...kistasText, color: '#6D83A3', fontSize: 9, fontWeight: '700', letterSpacing: 0.8 }, title: { color: '#25364E', fontSize: 27, lineHeight: 32, fontWeight: '700', letterSpacing: -0.55, marginTop: 3 },
+  title: { color: '#25364E', fontSize: 27, lineHeight: 32, fontWeight: '700', letterSpacing: -0.55 },
   logoShell: { ...neoRaised, width: 43, height: 43, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   hero: { ...neoRaised, minHeight: 150, borderRadius: 24, padding: 22, flexDirection: 'row', alignItems: 'center' },
   heroIcon: { ...neoRaised, width: 64, height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E8F0FC' },
-  heroCopy: { flex: 1, minWidth: 0, marginHorizontal: 17 }, heroKicker: { ...kistasText, color: '#3269C7', fontSize: 9, fontWeight: '700', letterSpacing: 1 }, heroTitle: { color: '#25364E', fontSize: 22, fontWeight: '700', letterSpacing: -0.35, marginTop: 5 }, heroText: { color: '#61718A', fontSize: 12.5, lineHeight: 19, marginTop: 5 },
+  heroCopy: { flex: 1, minWidth: 0, marginHorizontal: 17 }, heroTitle: { color: '#25364E', fontSize: 22, fontWeight: '700', letterSpacing: -0.35 },
   statePill: { ...neoInset, flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 }, statePillPending: { backgroundColor: '#F3EBDD' }, stateDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#3269C7' }, stateDotPending: { backgroundColor: '#A57520' }, stateText: { ...kistasText, color: '#3269C7', fontSize: 9, fontWeight: '700', letterSpacing: 0.5 }, stateTextPending: { color: '#8A621B' },
   statusGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 18, marginBottom: 31 }, statusCard: { ...neoRaised, flexGrow: 1, flexBasis: 190, minHeight: 58, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, borderRadius: 16 }, statusCopy: { flex: 1 }, statusLabel: { ...kistasText, color: '#7A8AA1', fontSize: 9.5, fontWeight: '700' }, statusValue: { ...kistasText, color: '#263A58', fontSize: 11.5, fontWeight: '700', marginTop: 3 },
   sectionLabel: { ...kistasText, color: '#3269C7', fontSize: 9.5, fontWeight: '700', letterSpacing: 0.85, marginLeft: 4, marginBottom: 12 }, panel: { ...neoRaised, borderRadius: 22, padding: 18, marginBottom: 28 },
@@ -197,7 +196,7 @@ const styles = StyleSheet.create({
   providerNotice: { ...neoInset, minHeight: 44, borderRadius: 14, marginTop: 18, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7 }, providerNoticeText: { ...kistasText, color: '#58749D', fontSize: 11, textAlign: 'center' },
   primaryAction: { ...neoRaised, minHeight: 48, borderRadius: 14, marginTop: 18, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: neo.global }, primaryActionText: { ...kistasText, color: neo.ink, fontSize: 12, fontWeight: '700' },
   sessionMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 14, paddingTop: 13, borderTopWidth: 1, borderTopColor: 'rgba(50,105,199,0.08)' }, sessionMetaText: { ...kistasText, color: '#6A7D99', fontSize: 10 }, liveDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: '#38A17B', shadowColor: '#38A17B', shadowOpacity: 0.38, shadowRadius: 7 },
-  outlineAction: { ...neoInset, minHeight: 46, borderRadius: 14, marginTop: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }, outlineActionText: { ...kistasText, color: '#263A58', fontSize: 12, fontWeight: '700' }, privacyNote: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingHorizontal: 12 }, privacyText: { ...kistasText, color: '#6D83A3', fontSize: 10.5, lineHeight: 16, textAlign: 'center' },
+  outlineAction: { ...neoInset, minHeight: 46, borderRadius: 14, marginTop: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }, outlineActionText: { ...kistasText, color: '#263A58', fontSize: 12, fontWeight: '700' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(33,50,73,0.28)', alignItems: 'center', justifyContent: 'center', padding: 20 }, modalCard: { ...neoRaised, width: '100%', maxWidth: 430, overflow: 'hidden', padding: 22, borderRadius: 24 }, centeredModal: { alignItems: 'center' }, modalHeader: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }, modalTitle: { color: '#25364E', fontSize: 19, fontWeight: '700', letterSpacing: -0.25, textAlign: 'center', marginTop: 15 }, modalText: { color: '#66758B', fontSize: 12, lineHeight: 18, textAlign: 'center', marginTop: 7, marginBottom: 16 },
   inputShell: { ...neoInset, minHeight: 48, flexDirection: 'row', alignItems: 'center', marginTop: 10, paddingHorizontal: 13, borderRadius: 14 }, input: { flex: 1, color: '#25364E', fontSize: 13, paddingVertical: 12, outlineStyle: 'none' } as any,
   strengthRow: { flexDirection: 'row', gap: 5, marginTop: 10 }, strengthBar: { flex: 1, height: 3, borderRadius: 2, backgroundColor: '#DDE5F0' }, strengthBarActive: { backgroundColor: '#3269C7' }, strengthText: { ...kistasText, color: '#71829A', fontSize: 9.5, lineHeight: 14, marginTop: 7 }, modalSubmit: { width: '100%', marginTop: 18 },
