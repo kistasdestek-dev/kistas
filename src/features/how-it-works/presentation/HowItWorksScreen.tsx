@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { KistasTopBrandBar } from '../../../shared/components/KistasTopBrandBar';
+import { theme } from '../../../core/theme';
 import { CinematicFooter } from '../../../shared/components/CinematicFooter';
 
 export interface HowItWorksScreenProps {
@@ -14,6 +14,33 @@ export interface HowItWorksScreenProps {
   onOpenBlog?: () => void;
 }
 
+type Audience = 'explorer' | 'creator';
+
+interface Step {
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  title: string;
+  copy: string;
+}
+
+const STEPS: Record<Audience, Step[]> = {
+  explorer: [
+    { icon: 'compass-outline', title: 'Yeni projeleri bul', copy: 'Kategorileri gez. Yeni çıkan uygulama, oyun ve araçları tek yerde gör.' },
+    { icon: 'heart-outline', title: 'Beğendiğine destek ver', copy: 'Tek dokunuşla kalıcı destek ol. Popüler sıralama gerçek desteklere göre oluşur.' },
+    { icon: 'chatbubble-ellipses-outline', title: 'Üreticiyle bağlantı kur', copy: 'Sorunu sor, fikrini paylaş ve varsa projeye özel fırsatları yakala.' },
+  ],
+  creator: [
+    { icon: 'images-outline', title: 'Proje vitrinini hazırla', copy: 'Projenin ne yaptığını kısa bir anlatım ve güçlü görsellerle göster.' },
+    { icon: 'people-outline', title: 'Doğru kişilere ulaş', copy: 'Ürünün, yeni dijital fikirleri gerçekten merak eden kullanıcılarla buluşsun.' },
+    { icon: 'trending-up-outline', title: 'Destekle büyü', copy: 'Kalıcı destekleri ve geri bildirimleri ürününün bir sonraki adımına dönüştür.' },
+  ],
+};
+
+const VALUES = [
+  { icon: 'heart-outline' as const, title: 'Gerçek destek', copy: 'Popüler sıralama kalıcı desteklere göre oluşur.' },
+  { icon: 'sync-outline' as const, title: 'Eşit vitrin', copy: 'Sponsorlu projeler saatlik rotasyonda adilce yer alır.' },
+  { icon: 'chatbubbles-outline' as const, title: 'Doğrudan bağ', copy: 'Kullanıcı ve üretici aynı yerde buluşur.' },
+];
+
 export const HowItWorksScreen: React.FC<HowItWorksScreenProps> = ({
   onBack,
   onExplore,
@@ -23,258 +50,121 @@ export const HowItWorksScreen: React.FC<HowItWorksScreenProps> = ({
   onOpenSupport,
   onOpenBlog,
 }) => {
-  const [role, setRole] = useState<'explorer' | 'creator'>('explorer');
-
-  const explorerSteps = [
-    {
-      num: '01',
-      icon: 'compass-outline' as const,
-      title: 'Gezin & Keşfet',
-      desc: 'Her gün bağımsız geliştiricilerin ve tasarımcıların ürettiği en yeni projeleri kategoriye ve popülerliğe göre inceleyin.',
-    },
-    {
-      num: '02',
-      icon: 'arrow-up-circle-outline' as const,
-      title: 'Destek Ol & Oyla',
-      desc: 'Beğendiğin projelere oy vererek onları vitrinin üst sıralarına taşı. Senin oyun, projenin görünürlüğünü belirler.',
-    },
-    {
-      num: '03',
-      icon: 'gift-outline' as const,
-      title: 'Avantajları Kap',
-      desc: 'Erken benimseyenler için sunulan özel indirimleri, promosyon kodlarını yakala ve geliştiricilerle doğrudan iletişime geç.',
-    },
-  ];
-
-  const creatorSteps = [
-    {
-      num: '01',
-      icon: 'sparkles-outline' as const,
-      title: '2 Dakikada Lansman Yap',
-      desc: 'Projenin adını, logosunu, ekran görüntülerini ve sunduğun değeri ekle. Lansmanını hemen başlat.',
-    },
-    {
-      num: '02',
-      icon: 'people-outline' as const,
-      title: 'İlk Kullanıcılarını Bul',
-      desc: 'Reklam bütçesine gerek yok! Gerçek dijital meraklılar ve potansiyel müşteriler projenle doğrudan buluşsun.',
-    },
-    {
-      num: '03',
-      icon: 'trending-up-outline' as const,
-      title: 'Geri Bildirimle Büyü',
-      desc: 'Topluluktan gelen yorumlar ve destek oylarıyla ürününü mükemmelleştir, vitrinde öne çık.',
-    },
-  ];
-
-  const steps = role === 'explorer' ? explorerSteps : creatorSteps;
+  const [audience, setAudience] = useState<Audience>('explorer');
+  const isExplorer = audience === 'explorer';
 
   return (
     <ScrollView decelerationRate={0.99} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <TouchableOpacity style={styles.back} onPress={onBack} accessibilityRole="button">
-        <Ionicons name="arrow-back" size={17} color="#686474" />
-        <Text style={styles.backText}>Geri dön</Text>
+        <Ionicons name="arrow-back" size={16} color="#686474" />
+        <Text style={styles.smallLabel}>Geri dön</Text>
       </TouchableOpacity>
 
-      <KistasTopBrandBar onPress={onBack} />
+      <View style={styles.hero}>
+        <View style={styles.kickerPill}><Text style={styles.kicker}>KISTAS NASIL İŞLER?</Text></View>
+        <Text style={styles.title}>Keşfetmek kolay.</Text>
+        <Text style={styles.titleAccent}>Büyümek mümkün.</Text>
+        <Text style={styles.lead}>Kıstas, yeni ürün arayanlarla ürününü doğru insanlara anlatmak isteyenleri buluşturur.</Text>
+      </View>
 
-      <Text style={styles.kicker}>BASİT, ŞEFFAF & ADİL</Text>
-      <Text style={styles.title}>Kıstas Nasıl Çalışır?</Text>
-      <Text style={styles.lead}>
-        İster yeni dijital fikirler keşfetmek isteyen bir meraklı, ister dünyaya ürün sunan bir yaratıcı olun; Kıstas herkes için çok basittir.
-      </Text>
-
-      {/* Rol Seçici */}
-      <View style={styles.tabs}>
-        <TouchableOpacity
-          style={[styles.tab, role === 'explorer' && styles.tabActive]}
-          onPress={() => setRole('explorer')}
-          accessibilityRole="button"
-        >
-          <Ionicons name="compass" size={15} color={role === 'explorer' ? '#25364E' : '#687890'} />
-          <Text style={[styles.tabText, role === 'explorer' && styles.tabTextActive]}>Keşfedenler İçin</Text>
+      <View style={styles.tabs} accessibilityRole="tablist">
+        <TouchableOpacity style={[styles.tab, isExplorer && styles.tabActive]} onPress={() => setAudience('explorer')} accessibilityRole="tab">
+          <Ionicons name="compass-outline" size={16} color={isExplorer ? '#25364E' : '#687890'} />
+          <Text style={[styles.tabText, isExplorer && styles.tabTextActive]}>Keşfetmek istiyorum</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, role === 'creator' && styles.tabActive]}
-          onPress={() => setRole('creator')}
-          accessibilityRole="button"
-        >
-          <Ionicons name="rocket" size={15} color={role === 'creator' ? '#25364E' : '#687890'} />
-          <Text style={[styles.tabText, role === 'creator' && styles.tabTextActive]}>Üretenler İçin</Text>
+        <TouchableOpacity style={[styles.tab, !isExplorer && styles.tabActive]} onPress={() => setAudience('creator')} accessibilityRole="tab">
+          <Ionicons name="rocket-outline" size={16} color={!isExplorer ? '#25364E' : '#687890'} />
+          <Text style={[styles.tabText, !isExplorer && styles.tabTextActive]}>Projemi büyütmek istiyorum</Text>
         </TouchableOpacity>
       </View>
 
-      {/* 3 Adım Kartları */}
-      <View style={styles.stepsList}>
-        {steps.map((step) => (
-          <View style={styles.stepCard} key={step.num}>
-            <View style={styles.stepCardHeader}>
-              <View style={styles.stepIconWrap}>
-                <Ionicons name={step.icon} size={24} color="#3269C7" />
-              </View>
-              <Text style={styles.stepNum}>{step.num}</Text>
+      <Text style={styles.audienceIntro}>{isExplorer ? 'Yeni favorini üç adımda bul.' : 'Projenin hikâyesini üç adımda duyur.'}</Text>
+      <View style={styles.steps}>
+        {STEPS[audience].map((step, index) => (
+          <View style={styles.stepCard} key={step.title}>
+            <View style={styles.stepTop}>
+              <View style={styles.iconBox}><Ionicons name={step.icon} size={21} color="#3269C7" /></View>
+              <Text style={styles.stepNumber}>0{index + 1}</Text>
             </View>
             <Text style={styles.stepTitle}>{step.title}</Text>
-            <Text style={styles.stepDesc}>{step.desc}</Text>
+            <Text style={styles.stepCopy}>{step.copy}</Text>
           </View>
         ))}
       </View>
 
-      {/* Prensiplerimiz */}
-      <View style={styles.principlesBox}>
-        <Text style={styles.sectionHeader}>Temel Kurallarımız</Text>
-        <View style={styles.principleRow}>
-          <Ionicons name="shield-checkmark" size={18} color="#3269C7" />
-          <View style={styles.principleContent}>
-            <Text style={styles.principleTitle}>Reklamsız ve Eşit</Text>
-            <Text style={styles.principleDesc}>Parayı basanın öne geçtiği sponsorlu sıralamalar yok. Her proje eşit şansla başlar.</Text>
-          </View>
-        </View>
-        <View style={styles.principleRow}>
-          <Ionicons name="finger-print" size={18} color="#3269C7" />
-          <View style={styles.principleContent}>
-            <Text style={styles.principleTitle}>Gerçek ve Güvenilir</Text>
-            <Text style={styles.principleDesc}>Botlara ve sahte hesaplara karşı doğrulanmış topluluk mekanizması.</Text>
-          </View>
-        </View>
-        <View style={styles.principleRow}>
-          <Ionicons name="flash" size={18} color="#3269C7" />
-          <View style={styles.principleContent}>
-            <Text style={styles.principleTitle}>Doğrudan Temas</Text>
-            <Text style={styles.principleDesc}>Kullanıcılar ile geliştiriciler arasında aracı yok; doğrudan iletişim var.</Text>
-          </View>
+      <View style={styles.valuesSection}>
+        <Text style={styles.eyebrow}>KISTAS FARKI</Text>
+        <Text style={styles.sectionTitle}>İyi fikirlerin önünü açan üç basit ilke.</Text>
+        <View style={styles.values}>
+          {VALUES.map((value) => (
+            <View style={styles.valueCard} key={value.title}>
+              <View style={styles.valueIcon}><Ionicons name={value.icon} size={18} color="#3269C7" /></View>
+              <View style={styles.valueCopy}>
+                <Text style={styles.valueTitle}>{value.title}</Text>
+                <Text style={styles.valueDescription}>{value.copy}</Text>
+              </View>
+            </View>
+          ))}
         </View>
       </View>
 
-      {/* SSS */}
-      <View style={styles.faqBox}>
-        <Text style={styles.sectionHeader}>Sıkça Sorulanlar</Text>
-        <View style={styles.faqItem}>
-          <Text style={styles.faqQ}>Kıstas'ı kullanmak ücretli mi?</Text>
-          <Text style={styles.faqA}>Hayır! Proje keşfetmek, oylamak ve ürün yayınlamak tamamen ücretsizdir.</Text>
-        </View>
-        <View style={styles.faqItem}>
-          <Text style={styles.faqQ}>Hangi projeler onaylanır?</Text>
-          <Text style={styles.faqA}>Çalışan, yasalara uygun, bağımsız web/mobil/SaaS veya açık kaynak tüm dijital projeler uygundur.</Text>
-        </View>
-        <View style={styles.faqItem}>
-          <Text style={styles.faqQ}>Oy verirsem ne kazanırım?</Text>
-          <Text style={styles.faqA}>Kıstas topluluğunun saygın bir üyesi olur, erken erişim ve özel fırsatlardan ilk siz yararlanırsınız.</Text>
-        </View>
+      <View style={styles.cta}>
+        <Text style={styles.ctaTitle}>Kıstas'ta yerini al.</Text>
+        <Text style={styles.ctaCopy}>Yeni bir ürün keşfet veya kendi projenin doğru insanlar tarafından fark edilmesini sağla.</Text>
+        <TouchableOpacity style={styles.ctaPrimary} onPress={onExplore} accessibilityRole="button">
+          <Ionicons name="compass-outline" size={17} color="#25364E" />
+          <Text style={styles.ctaPrimaryText}>Projeleri Keşfet</Text>
+        </TouchableOpacity>
+        {onCreateProject ? (
+          <TouchableOpacity style={styles.ctaSecondary} onPress={onCreateProject} accessibilityRole="button">
+            <Ionicons name="rocket-outline" size={17} color="#FFFFFF" />
+            <Text style={styles.ctaSecondaryText}>Projeni Yayınla</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
-      {/* Alt Aksiyon */}
-      <TouchableOpacity
-        style={styles.primaryCta}
-        onPress={role === 'explorer' ? onExplore : (onCreateProject || onExplore)}
-        accessibilityRole="button"
-      >
-        <Text style={styles.primaryCtaText}>
-          {role === 'explorer' ? 'Hemen Keşfetmeye Başla' : 'Projemi 2 Dakikada Yayınla'}
-        </Text>
-        <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
-      </TouchableOpacity>
       <CinematicFooter compact onOpenAbout={onOpenAbout} onOpenPrivacy={onOpenPrivacy} onOpenSupport={onOpenSupport} onOpenBlog={onOpenBlog} />
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  content: { padding: 22, paddingBottom: 80, backgroundColor: '#F1F5FA' },
-  back: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 28 },
-  backText: { color: '#686474', fontSize: 13, fontWeight: '700' },
-  logoWrap: { marginBottom: 16 },
-  kicker: { color: '#3269C7', fontSize: 11, fontWeight: '700', letterSpacing: 1.5 },
-  title: { marginTop: 10, color: '#25364E', fontSize: 36, lineHeight: 40, fontWeight: '700', letterSpacing: -0.5 },
-  lead: { marginTop: 8, marginBottom: 28, color: '#5A6A80', fontSize: 15, lineHeight: 23 },
-  tabs: {
-    flexDirection: 'row',
-    backgroundColor: '#EEF4FD',
-    borderRadius: 24,
-    padding: 4,
-    gap: 6,
-    marginBottom: 26,
-    borderWidth: 1,
-    borderColor: '#D4E2F5',
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  tabActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#3269C7',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  tabText: { color: '#687890', fontSize: 13, fontWeight: '700' },
-  tabTextActive: { color: '#25364E', fontWeight: '700' },
-  stepsList: { gap: 16, marginBottom: 36 },
-  stepCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#DDE6F1',
-    borderTopWidth: 3,
-    borderTopColor: '#7FA5DA',
-    padding: 24,
-  },
-  stepCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 26 },
-  stepIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: '#EEF4FD',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepNum: { color: '#71849F', fontSize: 11, fontWeight: '700', letterSpacing: 0 },
-  stepTitle: { color: '#25364E', fontSize: 20, lineHeight: 28, fontWeight: '700', marginBottom: 12 },
-  stepDesc: { color: '#5B6E87', fontSize: 14, lineHeight: 25 },
-  principlesBox: {
-    backgroundColor: '#F8FAFD',
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#E2ECF8',
-    marginBottom: 30,
-    gap: 16,
-  },
-  sectionHeader: { color: '#25364E', fontSize: 18, fontWeight: '700', marginBottom: 4 },
-  principleRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
-  principleContent: { flex: 1 },
-  principleTitle: { color: '#25364E', fontSize: 14, fontWeight: '700', marginBottom: 2 },
-  principleDesc: { color: '#687890', fontSize: 12.5, lineHeight: 18 },
-  faqBox: { marginBottom: 32, gap: 14 },
-  faqItem: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E6EFF9',
-    padding: 16,
-  },
-  faqQ: { color: '#25364E', fontSize: 14, fontWeight: '700', marginBottom: 6 },
-  faqA: { color: '#687890', fontSize: 13, lineHeight: 19 },
-  primaryCta: {
-    backgroundColor: '#25364E',
-    borderRadius: 14,
-    paddingVertical: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    shadowColor: '#25364E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  primaryCtaText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
+  content: { padding: 20, paddingBottom: 72, backgroundColor: '#F3F6FB' },
+  back: { alignSelf: 'flex-start', minHeight: 40, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#DCE7F5', borderRadius: 12, backgroundColor: '#FFFFFF', ...theme.shadows.soft },
+  smallLabel: { ...theme.typography.kistas, color: '#686474' },
+  hero: { alignItems: 'center', paddingTop: 46, paddingBottom: 28 },
+  kickerPill: { paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: '#DCE7F5', borderRadius: 999, backgroundColor: '#FFFFFF' },
+  kicker: { ...theme.typography.kistas, color: '#3269C7', fontSize: 10, letterSpacing: 1.5 },
+  title: { marginTop: 20, color: '#25364E', fontSize: 42, lineHeight: 43, fontWeight: '700', letterSpacing: -1.7, textAlign: 'center' },
+  titleAccent: { color: '#3269C7', fontSize: 42, lineHeight: 43, fontWeight: '700', letterSpacing: -1.7, textAlign: 'center' },
+  lead: { maxWidth: 540, marginTop: 18, color: '#5F6877', fontSize: 15, lineHeight: 23, textAlign: 'center' },
+  tabs: { flexDirection: 'row', gap: 5, padding: 5, borderWidth: 1, borderColor: '#D9E6F6', borderRadius: 18, backgroundColor: '#EAF1FB' },
+  tab: { flex: 1, minHeight: 54, paddingHorizontal: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 13 },
+  tabActive: { backgroundColor: '#FFFFFF', ...theme.shadows.soft },
+  tabText: { ...theme.typography.kistas, color: '#687890', fontSize: 11, textAlign: 'center' },
+  tabTextActive: { color: '#25364E' },
+  audienceIntro: { ...theme.typography.kistas, marginTop: 24, color: '#3269C7', textAlign: 'center' },
+  steps: { gap: 10, marginTop: 16, marginBottom: 58 },
+  stepCard: { padding: 22, borderWidth: 1, borderColor: '#DCE7F5', borderRadius: 20, backgroundColor: '#FFFFFF', ...theme.shadows.card },
+  stepTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  iconBox: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#D6E4F7', borderRadius: 14, backgroundColor: '#EEF4FD' },
+  stepNumber: { ...theme.typography.kistas, color: '#7B8798', fontSize: 10, letterSpacing: 1 },
+  stepTitle: { marginTop: 24, color: '#25364E', fontSize: 20, lineHeight: 25, fontWeight: '700' },
+  stepCopy: { marginTop: 8, color: '#5F6877', fontSize: 13, lineHeight: 21 },
+  valuesSection: { marginHorizontal: -20, paddingHorizontal: 20, paddingVertical: 58, borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#DFE8F3', backgroundColor: '#F9FBFE' },
+  eyebrow: { ...theme.typography.kistas, color: '#3269C7', fontSize: 10, letterSpacing: 1.5 },
+  sectionTitle: { maxWidth: 520, marginTop: 10, color: '#25364E', fontSize: 32, lineHeight: 36, fontWeight: '700', letterSpacing: -0.8 },
+  values: { gap: 10, marginTop: 26 },
+  valueCard: { padding: 18, flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1, borderColor: '#DCE7F5', borderRadius: 18, backgroundColor: '#FFFFFF' },
+  valueIcon: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 13, backgroundColor: '#EEF4FD' },
+  valueCopy: { flex: 1 },
+  valueTitle: { color: '#25364E', fontSize: 16, fontWeight: '700' },
+  valueDescription: { marginTop: 4, color: '#5F6877', fontSize: 12, lineHeight: 18 },
+  cta: { marginVertical: 58, padding: 24, borderRadius: 22, backgroundColor: '#25364E', alignItems: 'center', ...theme.shadows.floating },
+  ctaTitle: { color: '#FFFFFF', fontSize: 30, lineHeight: 34, fontWeight: '700', letterSpacing: -0.7, textAlign: 'center' },
+  ctaCopy: { marginTop: 12, marginBottom: 22, color: '#CDD6E2', fontSize: 13, lineHeight: 20, textAlign: 'center' },
+  ctaPrimary: { width: '100%', minHeight: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, backgroundColor: '#FFFFFF' },
+  ctaPrimaryText: { ...theme.typography.kistas, color: '#25364E' },
+  ctaSecondary: { width: '100%', minHeight: 48, marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1, borderColor: '#52637A', borderRadius: 14 },
+  ctaSecondaryText: { ...theme.typography.kistas, color: '#FFFFFF' },
 });

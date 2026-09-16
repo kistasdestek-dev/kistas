@@ -43,14 +43,14 @@ const PUBLIC_PAGES: Record<PublicPage, PageDefinition> = {
   },
   about: {
     path: '/about/',
-    title: 'Kıstas Hakkında | Bağımsız Projeler İçin Adil Vitrin',
-    description: "Kıstas'ın bağımsız geliştiricileri ve dijital ürünleri adil, şeffaf ve topluluk odaklı bir keşif deneyiminde nasıl buluşturduğunu öğrenin.",
+    title: 'Kıstas Nedir? | Yeni Fikirleri Keşfet ve Destekle',
+    description: "Kıstas'ta yeni uygulamaları, oyunları ve dijital ürünleri keşfedin; beğendiğiniz projelere destek verin.",
     schemaType: 'AboutPage',
   },
   'how-it-works': {
     path: '/how-it-works/',
-    title: 'Kıstas Nasıl Çalışır? | Projeni Keşfet ve Tanıt',
-    description: "Kıstas'ta dijital projelerin nasıl keşfedildiğini, topluluk desteğinin nasıl çalıştığını ve kendi projenizi nasıl tanıtabileceğinizi öğrenin.",
+    title: 'Kıstas Nasıl Çalışır? | Keşfet, Destekle, Büyüt',
+    description: "Kıstas'ta yeni projeleri keşfedin, beğendiğinize kalıcı destek verin veya kendi projenizi doğru insanlarla buluşturun.",
     schemaType: 'WebPage',
   },
   privacy: {
