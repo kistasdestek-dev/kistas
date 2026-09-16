@@ -9,7 +9,12 @@ import {
   CREDIT_PRODUCT_IDS,
   CreditPurchaseService,
   StoreCreditProduct,
-} from '../application/CreditPurchaseService';
+} from '../application/CreditPurchaseService.web';
+import { CreditStoreStarfield } from './CreditStoreStarfield.web';
+import {
+  CreditCheckoutModal,
+  CreditPlanItem,
+} from './CreditCheckoutModal.web';
 
 // --- STYLES ID & CSS ---
 const STORE_STYLE_ID = 'kistas-credit-store-web-styles';
@@ -100,19 +105,35 @@ const STORE_CSS = `
   max-width: 620px;
 }
 
-.k-store-notice {
+.k-store-badge {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  margin-top: 20px;
-  padding: 9px 12px;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 8px 14px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.72);
-  border: 1px solid rgba(50,105,199,0.12);
-  color: #64748B;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(50, 105, 199, 0.18);
+  box-shadow: 0 4px 14px rgba(50, 105, 199, 0.08);
+  color: #2554A5;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: -0.1px;
+}
+
+.k-store-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
+  animation: kDotPulse 2s infinite;
+}
+
+@keyframes kDotPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
 .k-benefit-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 42px; }
@@ -227,7 +248,7 @@ const STORE_CSS = `
 
 .k-card-price {
   font-size: 46px;
-  font-weight:700;
+  font-weight: 700;
   letter-spacing: -1.5px;
   color: #25364E;
   font-variant-numeric: tabular-nums;
@@ -342,7 +363,7 @@ const STORE_CSS = `
   .k-pricing-kicker { margin-bottom: 15px; }
   .k-pricing-title { font-size: 36px; letter-spacing: -1.6px; margin-bottom: 14px; }
   .k-pricing-desc { font-size: 14px; }
-  .k-store-notice { align-items: flex-start; margin-top: 15px; }
+  .k-store-badge { margin-top: 15px; font-size: 11px; }
   .k-benefit-strip { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 30px; }
   .k-benefit-item { min-height: 74px; flex-direction: column; justify-content: center; gap: 7px; padding: 9px 6px; text-align: center; font-size: 11.5px; line-height: 1.25; box-sizing: border-box; }
   .k-benefit-icon { width: 27px; height: 27px; flex-basis: 27px; border-radius: 9px; }
@@ -360,18 +381,7 @@ export interface CreditStoreScreenProps {
   onRefreshProfile?: () => void;
 }
 
-interface PlanItem {
-  id: string;
-  storeProductId: string;
-  name: string;
-  credits: number;
-  price: number;
-  description: string;
-  features: string[];
-  isPopular?: boolean;
-}
-
-const PLANS: PlanItem[] = [
+const PLANS: CreditPlanItem[] = [
   {
     id: 'starter',
     storeProductId: CREDIT_PRODUCT_IDS.starter,
@@ -414,140 +424,6 @@ const PLANS: PlanItem[] = [
   },
 ];
 
-// --- INTERACTIVE STARFIELD (Canvas Spring Physics) ---
-interface StarParticle {
-  xPct: number;
-  yPct: number;
-  size: number;
-  color: string;
-  currentX: number;
-  currentY: number;
-  targetX: number;
-  targetY: number;
-  vx: number;
-  vy: number;
-  twinklePhase: number;
-  twinkleSpeed: number;
-}
-
-const InteractiveStarfield: React.FC<{
-  mousePos: { x: number | null; y: number | null };
-  containerRef: React.RefObject<HTMLDivElement | null>;
-}> = ({ mousePos, containerRef }) => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const particlesRef = useRef<StarParticle[]>([]);
-
-  // Initialize 150 stars with random positions & twinkling properties
-  useEffect(() => {
-    const starColors = [
-      'rgba(50, 105, 199, 0.75)',
-      'rgba(96, 165, 250, 0.65)',
-      'rgba(147, 100, 19, 0.55)',
-      'rgba(37, 35, 51, 0.45)',
-      'rgba(50, 105, 199, 0.50)',
-    ];
-
-    const particles: StarParticle[] = [];
-    for (let i = 0; i < 150; i++) {
-      particles.push({
-        xPct: Math.random(),
-        yPct: Math.random(),
-        size: 1 + Math.random() * 2.2,
-        color: starColors[Math.floor(Math.random() * starColors.length)],
-        currentX: 0,
-        currentY: 0,
-        targetX: 0,
-        targetY: 0,
-        vx: 0,
-        vy: 0,
-        twinklePhase: Math.random() * Math.PI * 2,
-        twinkleSpeed: 0.015 + Math.random() * 0.025,
-      });
-    }
-    particlesRef.current = particles;
-  }, []);
-
-  // Animation Loop with Spring Physics
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let animId: number;
-
-    const render = () => {
-      const width = (canvas.width = canvas.offsetWidth);
-      const height = (canvas.height = canvas.offsetHeight);
-
-      ctx.clearRect(0, 0, width, height);
-
-      const container = containerRef.current;
-      const rect = container ? container.getBoundingClientRect() : null;
-
-      const stiffness = 0.08;
-      const damping = 0.82;
-      const radius = 600;
-
-      for (const p of particlesRef.current) {
-        const baseX = p.xPct * width;
-        const baseY = p.yPct * height;
-
-        // Calculate magnetic spring pull
-        if (rect && mousePos.x !== null && mousePos.y !== null) {
-          const starScreenX = rect.left + baseX;
-          const starScreenY = rect.top + baseY;
-
-          const dx = mousePos.x - starScreenX;
-          const dy = mousePos.y - starScreenY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < radius) {
-            const force = 1 - dist / radius;
-            p.targetX = dx * force * 0.45;
-            p.targetY = dy * force * 0.45;
-          } else {
-            p.targetX = 0;
-            p.targetY = 0;
-          }
-        } else {
-          p.targetX = 0;
-          p.targetY = 0;
-        }
-
-        // Spring integration
-        const ax = (p.targetX - p.currentX) * stiffness;
-        p.vx = (p.vx + ax) * damping;
-        p.currentX += p.vx;
-
-        const ay = (p.targetY - p.currentY) * stiffness;
-        p.vy = (p.vy + ay) * damping;
-        p.currentY += p.vy;
-
-        // Twinkle phase
-        p.twinklePhase += p.twinkleSpeed;
-        const opacity = 0.15 + 0.85 * ((Math.sin(p.twinklePhase) + 1) / 2);
-
-        // Draw star
-        ctx.save();
-        ctx.globalAlpha = opacity;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(baseX + p.currentX, baseY + p.currentY, p.size / 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      animId = requestAnimationFrame(render);
-    };
-
-    animId = requestAnimationFrame(render);
-    return () => cancelAnimationFrame(animId);
-  }, [mousePos, containerRef]);
-
-  return <canvas ref={canvasRef} className="k-starfield-canvas" />;
-};
-
 // --- MAIN CREDIT STORE SCREEN (WEB) ---
 export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
   currentUser: propUser,
@@ -560,11 +436,9 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
   const user = propUser !== undefined ? propUser : authUser;
   const activeBalance = credits ?? user?.boostCredits ?? 0;
 
-  const [loadingPkgId, setLoadingPkgId] = useState<string | null>(null);
   const [storeProducts, setStoreProducts] = useState<Record<string, StoreCreditProduct>>({});
-  const [storeState, setStoreState] = useState<'loading' | 'ready' | 'unconfigured' | 'error'>(
-    CreditPurchaseService.isConfiguredForDevice() ? 'loading' : 'unconfigured'
-  );
+  const [selectedPlan, setSelectedPlan] = useState<CreditPlanItem | null>(null);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -584,33 +458,15 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
     }
   }, []);
 
-  // Load products from store service
+  // Load products directly
   useEffect(() => {
-    let active = true;
-
-    if (!user || !CreditPurchaseService.isConfiguredForDevice()) {
-      setStoreState('unconfigured');
-      return () => {
-        active = false;
-      };
-    }
-
-    setStoreState('loading');
-    CreditPurchaseService.getProducts(user.id)
+    CreditPurchaseService.getProducts(user?.id || '')
       .then((products) => {
-        if (!active) return;
         setStoreProducts(products);
-        const hasAny = PLANS.some((pkg) => products[pkg.storeProductId]);
-        setStoreState(hasAny ? 'ready' : 'error');
       })
       .catch((error) => {
         console.warn('Kredi ürünleri mağazadan alınamadı:', error);
-        if (active) setStoreState('error');
       });
-
-    return () => {
-      active = false;
-    };
   }, [user?.id]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -621,50 +477,14 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
     setMousePos({ x: null, y: null });
   };
 
-  // Purchase Handler
-  const handlePurchase = async (plan: PlanItem) => {
+  // Plan Seçildiğinde Checkout Modalını Aç
+  const handleOpenCheckoutModal = (plan: CreditPlanItem) => {
     if (!user) {
-      alert('Kredi satın almak için lütfen giriş yapınız.');
+      alert('Kredi satın almak için lütfen sağ üstten hesabınıza giriş yapınız.');
       return;
     }
-
-    if (storeState !== 'ready') {
-      alert('Mağaza bağlantısı henüz sandbox modunda hazır değil. Hesabınızdan ücret alınmadı.');
-      return;
-    }
-
-    setLoadingPkgId(plan.id);
-    try {
-      const result = await CreditPurchaseService.purchase(user.id, plan.storeProductId);
-
-      if (result.status === 'cancelled') return;
-      if (result.status === 'pending') {
-        alert('Ödeme Beklemede: Mağaza ödemeyi onayladığında kredileriniz otomatik yüklenecektir.');
-        return;
-      }
-
-      let delivered = false;
-      for (let attempt = 0; attempt < 6; attempt++) {
-        await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 700 : 1000));
-        const latestBalance = await refreshCredits();
-        if (latestBalance >= activeBalance + plan.credits) {
-          delivered = true;
-          break;
-        }
-      }
-
-      onRefreshProfile?.();
-      alert(
-        delivered
-          ? `${plan.credits} kredi başarıyla hesabınıza tanımlandı!`
-          : 'Ödeme alındı. Kredileriniz kısa süre içinde otomatik yansıyacaktır.'
-      );
-    } catch (error) {
-      console.warn('Kredi satın alma hatası:', error);
-      alert('Satın alma tamamlanamadı. Lütfen daha sonra tekrar deneyiniz.');
-    } finally {
-      setLoadingPkgId(null);
-    }
+    setSelectedPlan(plan);
+    setIsCheckoutModalOpen(true);
   };
 
   return (
@@ -675,7 +495,7 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
       className="k-pricing-root"
     >
       {/* Interactive Magnetic Starfield */}
-      <InteractiveStarfield mousePos={mousePos} containerRef={containerRef} />
+      <CreditStoreStarfield mousePos={mousePos} containerRef={containerRef} />
 
       <div className="k-pricing-container">
         <div className="k-pricing-hero">
@@ -685,14 +505,11 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
             <p className="k-pricing-desc">
               Tek seferlik kredi paketleriyle Sponsorlu Vitrin sürenizi ihtiyacınıza göre yönetin.
             </p>
-            {storeState !== 'ready' && (
-              <div className="k-store-notice" role="status">
-                <span aria-hidden="true">ⓘ</span>
-                <span>Web satın alımları henüz açık değil. Bu ekrandan ödeme alınmaz.</span>
-              </div>
-            )}
+            <div className="k-store-badge" role="status">
+              <span className="k-store-badge-dot" aria-hidden="true" />
+              <span>Shopier 256-Bit SSL & 3D Secure ile Güvenli Ödeme Aktif</span>
+            </div>
           </div>
-
         </div>
 
         <div className="k-benefit-strip" aria-label="Kredi avantajları">
@@ -712,7 +529,6 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
           {PLANS.map((plan) => {
             const isPopular = plan.isPopular;
             const priceLabel = storeProducts[plan.storeProductId]?.priceString || `₺${plan.price.toLocaleString('tr-TR')}`;
-            const isLoading = loadingPkgId === plan.id;
 
             return (
               <div
@@ -765,20 +581,11 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
                 <div className="k-card-btn-container">
                   <button
                     type="button"
-                    disabled={isLoading || storeState !== 'ready'}
-                    onClick={() => handlePurchase(plan)}
+                    onClick={() => handleOpenCheckoutModal(plan)}
                     className={`k-card-btn ${isPopular ? 'popular-btn' : 'outline-btn'}`}
                   >
-                    {storeState !== 'ready' ? (
-                      'Yakında'
-                    ) : isLoading ? (
-                      'İşleniyor…'
-                    ) : (
-                      <>
-                        <span>{plan.credits} Kredi Satın Al</span>
-                        <span>&rarr;</span>
-                      </>
-                    )}
+                    <span>{plan.credits} Kredi Satın Al</span>
+                    <span>&rarr;</span>
                   </button>
                 </div>
               </div>
@@ -806,6 +613,18 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
           </span>
         </div>
       </div>
+
+      {/* Glassmorphic Checkout Modal */}
+      <CreditCheckoutModal
+        isOpen={isCheckoutModalOpen}
+        selectedPlan={selectedPlan}
+        storeProduct={selectedPlan ? storeProducts[selectedPlan.storeProductId] : undefined}
+        user={user}
+        activeBalance={activeBalance}
+        onClose={() => setIsCheckoutModalOpen(false)}
+        onRefreshCredits={refreshCredits}
+        onRefreshProfile={onRefreshProfile}
+      />
     </div>
   );
 };

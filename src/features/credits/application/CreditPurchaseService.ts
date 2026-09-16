@@ -32,4 +32,12 @@ export class CreditPurchaseService {
   ): Promise<CreditPurchaseResult> {
     throw new Error('STORE_PURCHASES_UNAVAILABLE');
   }
+
+  static getCheckoutUrl(_productId: string): string | null {
+    return null;
+  }
+
+  static openShopierCheckout(_productId: string): Window | null {
+    return null;
+  }
 }

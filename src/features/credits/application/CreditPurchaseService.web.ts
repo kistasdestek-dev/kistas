@@ -1,8 +1,13 @@
 export {
   CREDIT_PRODUCT_IDS,
+  SHOPIER_CHECKOUT_URLS,
   CreditPackageId,
   CreditPurchaseResult,
   StoreCreditProduct,
+} from './CreditPurchaseContracts';
+import {
+  CREDIT_PRODUCT_IDS,
+  SHOPIER_CHECKOUT_URLS,
 } from './CreditPurchaseContracts';
 import type {
   CreditPurchaseResult,
@@ -10,26 +15,71 @@ import type {
 } from './CreditPurchaseContracts';
 
 /**
- * Web ödeme sağlayıcısı bağlanana kadar istemciden kredi üretmeyen güvenli sınır.
- * Böylece RevenueCat native SDK'sı web paketine girmez.
+ * Web Shopier Ödeme ve Kredi Entegrasyon Servisi.
+ * Web ortamında RevenueCat native SDK'sı yerine resmi Shopier entegrasyonu kullanılır.
  */
 export class CreditPurchaseService {
   static isConfiguredForDevice(): boolean {
-    return false;
+    return true;
   }
 
   static async initialize(_userId: string): Promise<void> {
-    throw new Error('WEB_PAYMENTS_NOT_CONFIGURED');
+    // Web için özel bir SDK ilklemesi gerekmez
+    return Promise.resolve();
   }
 
   static async getProducts(_userId: string): Promise<Record<string, StoreCreditProduct>> {
-    return {};
+    return {
+      [CREDIT_PRODUCT_IDS.starter]: {
+        identifier: CREDIT_PRODUCT_IDS.starter,
+        price: 299,
+        priceString: '₺299',
+        currencyCode: 'TRY',
+      },
+      [CREDIT_PRODUCT_IDS.pro_launch]: {
+        identifier: CREDIT_PRODUCT_IDS.pro_launch,
+        price: 699,
+        priceString: '₺699',
+        currencyCode: 'TRY',
+      },
+      [CREDIT_PRODUCT_IDS.unicorn]: {
+        identifier: CREDIT_PRODUCT_IDS.unicorn,
+        price: 1699,
+        priceString: '₺1.699',
+        currencyCode: 'TRY',
+      },
+    };
+  }
+
+  static getCheckoutUrl(productId: string): string | null {
+    return SHOPIER_CHECKOUT_URLS[productId] || null;
+  }
+
+  static openShopierCheckout(productId: string): Window | null {
+    const url = this.getCheckoutUrl(productId);
+    if (!url || typeof window === 'undefined') return null;
+
+    const width = 540;
+    const height = 820;
+    const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - width) / 2));
+    const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - height) / 2));
+
+    return window.open(
+      url,
+      'KistasShopierCheckout',
+      `width=${width},height=${height},left=${left},top=${top},menubar=no,status=no,toolbar=no,scrollbars=yes,resizable=yes`
+    );
   }
 
   static async purchase(
     _userId: string,
-    _productId: string
+    productId: string
   ): Promise<CreditPurchaseResult> {
-    throw new Error('WEB_PAYMENTS_NOT_CONFIGURED');
+    const popup = this.openShopierCheckout(productId);
+    if (!popup) {
+      return { status: 'cancelled' };
+    }
+
+    return { status: 'pending' };
   }
 }

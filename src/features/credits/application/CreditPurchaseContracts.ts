@@ -4,6 +4,12 @@ export const CREDIT_PRODUCT_IDS = {
   unicorn: 'kistas_credits_1000',
 } as const;
 
+export const SHOPIER_CHECKOUT_URLS: Record<string, string> = {
+  [CREDIT_PRODUCT_IDS.starter]: 'https://www.shopier.com/kistascom/50900373',
+  [CREDIT_PRODUCT_IDS.pro_launch]: 'https://www.shopier.com/kistascom/50900401',
+  [CREDIT_PRODUCT_IDS.unicorn]: 'https://www.shopier.com/kistascom/50900419',
+};
+
 export type CreditPackageId = keyof typeof CREDIT_PRODUCT_IDS;
 
 export interface StoreCreditProduct {
