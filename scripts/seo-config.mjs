@@ -176,6 +176,25 @@ export const SEO_ROUTES = [
     }, breadcrumb([['Ana Sayfa', `${SITE_ORIGIN}/`], ['Nasıl Çalışır?', `${SITE_ORIGIN}/how-it-works/`]])] },
   },
   {
+    path: '/sss/',
+    title: 'Sıkça Sorulan Sorular | Kıstas',
+    description: "Kıstas'ta proje keşfetme, kalıcı destek, proje yayınlama, Vitrin Kredisi ve hesap konularındaki sorularınıza kısa yanıtlar bulun.",
+    image: DEFAULT_IMAGE,
+    ogType: 'website',
+    heading: 'Sıkça sorulan sorular',
+    lead: "Kıstas'ı kullanırken merak ettiğiniz temel konuları kısa ve açık yanıtlarla inceleyin.",
+    lastmod: '2026-09-16',
+    schema: { '@context': 'https://schema.org', '@graph': [organization, website, {
+      '@type': 'FAQPage', '@id': `${SITE_ORIGIN}/sss/#webpage`, url: `${SITE_ORIGIN}/sss/`, name: 'Kıstas Sıkça Sorulan Sorular',
+      isPartOf: { '@id': website['@id'] }, inLanguage: 'tr-TR',
+      mainEntity: [
+        ['Projeler nerede görünür?', 'Onaylanan projeler Göz At alanında kendi kategorisinde yer alır ve ilk 30 gün Yeni Çıkanlar bölümünde de görünür.'],
+        ['Popüler sıralama nasıl oluşur?', 'Popüler projeler kullanıcılardan aldıkları kalıcı destek sayısına göre sıralanır.'],
+        ['Vitrin kredisi ne işe yarar?', 'Vitrin kredisi projenin Sponsorlu Vitrin rotasyonuna katılmasını sağlar ve abonelik değildir.'],
+      ].map(([name, text]) => ({ '@type': 'Question', name, acceptedAnswer: { '@type': 'Answer', text } })),
+    }, breadcrumb([['Ana Sayfa', `${SITE_ORIGIN}/`], ['SSS', `${SITE_ORIGIN}/sss/`]])] },
+  },
+  {
     path: '/blog/',
     title: 'Kıstas Blog | Yapay Zekâ, SaaS ve Girişimcilik',
     description: 'Bağımsız geliştiriciler ve girişimciler için yapay zekâ, SaaS, ürün tasarımı, sıfır bütçeyle lansman ve organik büyüme rehberleri.',

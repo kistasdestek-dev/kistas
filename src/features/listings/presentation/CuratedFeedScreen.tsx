@@ -31,7 +31,7 @@ export interface CuratedFeedScreenProps {
   onSelectProject?: (project: Listing) => void;
   onOpenAbout?: () => void;
   onOpenPrivacy?: () => void;
-  onOpenSupport?: () => void;
+  onOpenFaq?: () => void;
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
 }
@@ -94,7 +94,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
   onSelectProject,
   onOpenAbout,
   onOpenPrivacy,
-  onOpenSupport,
+  onOpenFaq,
   onOpenHowItWorks,
   onOpenBlog,
 }) => {
@@ -439,7 +439,7 @@ export const CuratedFeedScreen: React.FC<CuratedFeedScreenProps> = ({
       <CinematicFooter
         onOpenAbout={onOpenAbout}
         onOpenPrivacy={onOpenPrivacy}
-        onOpenSupport={onOpenSupport}
+        onOpenFaq={onOpenFaq}
         onOpenHowItWorks={onOpenHowItWorks}
         onOpenBlog={onOpenBlog}
       />

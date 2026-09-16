@@ -21,7 +21,7 @@ export interface BlogScreenProps {
   onCreateProject?: () => void;
   onOpenAbout?: () => void;
   onOpenPrivacy?: () => void;
-  onOpenSupport?: () => void;
+  onOpenFaq?: () => void;
   onOpenHowItWorks?: () => void;
   initialPostSlug?: string | null;
   onPostChange?: (slug: string | null) => void;
@@ -33,7 +33,7 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
   onCreateProject,
   onOpenAbout,
   onOpenPrivacy,
-  onOpenSupport,
+  onOpenFaq,
   onOpenHowItWorks,
   initialPostSlug,
 }) => {
@@ -240,7 +240,7 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
           )}
         </View>
       )}
-      <CinematicFooter compact onOpenAbout={onOpenAbout} onOpenPrivacy={onOpenPrivacy} onOpenSupport={onOpenSupport} onOpenHowItWorks={onOpenHowItWorks} />
+      <CinematicFooter compact onOpenAbout={onOpenAbout} onOpenPrivacy={onOpenPrivacy} onOpenFaq={onOpenFaq} onOpenHowItWorks={onOpenHowItWorks} />
     </ScrollView>
   );
 };

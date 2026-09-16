@@ -8,14 +8,14 @@ export interface CinematicFooterProps {
   compact?: boolean;
   onOpenAbout?: () => void;
   onOpenPrivacy?: () => void;
-  onOpenSupport?: () => void;
+  onOpenFaq?: () => void;
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
 }
 
 type FooterLink = { title: string; action: () => void };
 
-export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = false, onOpenAbout, onOpenPrivacy, onOpenSupport, onOpenHowItWorks, onOpenBlog }) => {
+export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = false, onOpenAbout, onOpenPrivacy, onOpenFaq, onOpenHowItWorks, onOpenBlog }) => {
   const reveals = useRef([0, 1, 2, 3].map(() => new Animated.Value(0))).current;
   const glowPulse = useRef(new Animated.Value(0.48)).current;
 
@@ -51,10 +51,10 @@ export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = fals
     ] },
     { label: 'Kaynaklar', links: [
       ...(onOpenBlog ? [{ title: 'Blog', action: onOpenBlog }] : []),
-      ...(onOpenSupport ? [{ title: 'Destek', action: onOpenSupport }] : []),
+      ...(onOpenFaq ? [{ title: 'SSS', action: onOpenFaq }] : []),
       ...(onOpenPrivacy ? [{ title: 'KVKK ve Gizlilik', action: onOpenPrivacy }] : []),
     ] },
-  ].filter((section) => section.links.length > 0), [onOpenAbout, onOpenBlog, onOpenHowItWorks, onOpenPrivacy, onOpenSupport]);
+  ].filter((section) => section.links.length > 0), [onOpenAbout, onOpenBlog, onOpenFaq, onOpenHowItWorks, onOpenPrivacy]);
 
   const revealStyle = (index: number) => ({
     opacity: reveals[index],

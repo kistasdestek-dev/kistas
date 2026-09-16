@@ -10,7 +10,7 @@ export interface HowItWorksScreenProps {
   onCreateProject?: () => void;
   onOpenAbout?: () => void;
   onOpenPrivacy?: () => void;
-  onOpenSupport?: () => void;
+  onOpenFaq?: () => void;
   onOpenBlog?: () => void;
 }
 
@@ -47,7 +47,7 @@ export const HowItWorksScreen: React.FC<HowItWorksScreenProps> = ({
   onCreateProject,
   onOpenAbout,
   onOpenPrivacy,
-  onOpenSupport,
+  onOpenFaq,
   onOpenBlog,
 }) => {
   const [audience, setAudience] = useState<Audience>('explorer');
@@ -123,7 +123,7 @@ export const HowItWorksScreen: React.FC<HowItWorksScreenProps> = ({
         ) : null}
       </View>
 
-      <CinematicFooter compact onOpenAbout={onOpenAbout} onOpenPrivacy={onOpenPrivacy} onOpenSupport={onOpenSupport} onOpenBlog={onOpenBlog} />
+      <CinematicFooter compact onOpenAbout={onOpenAbout} onOpenPrivacy={onOpenPrivacy} onOpenFaq={onOpenFaq} onOpenBlog={onOpenBlog} />
     </ScrollView>
   );
 };

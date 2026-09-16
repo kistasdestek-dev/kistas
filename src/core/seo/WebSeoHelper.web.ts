@@ -1,6 +1,6 @@
 import { SITE_ORIGIN } from '../config/siteUrls';
 
-type PublicPage = 'home' | 'browse' | 'showcase' | 'popular' | 'new' | 'about' | 'how-it-works' | 'privacy';
+type PublicPage = 'home' | 'browse' | 'showcase' | 'popular' | 'new' | 'about' | 'how-it-works' | 'faq' | 'privacy';
 
 interface PageDefinition {
   path: string;
@@ -51,6 +51,12 @@ const PUBLIC_PAGES: Record<PublicPage, PageDefinition> = {
     path: '/how-it-works/',
     title: 'Kıstas Nasıl Çalışır? | Keşfet, Destekle, Büyüt',
     description: "Kıstas'ta yeni projeleri keşfedin, beğendiğinize kalıcı destek verin veya kendi projenizi doğru insanlarla buluşturun.",
+    schemaType: 'WebPage',
+  },
+  faq: {
+    path: '/sss/',
+    title: 'Sıkça Sorulan Sorular | Kıstas',
+    description: "Kıstas'ta proje keşfetme, kalıcı destek, proje yayınlama, Vitrin Kredisi ve hesap konularındaki sorularınıza kısa yanıtlar bulun.",
     schemaType: 'WebPage',
   },
   privacy: {

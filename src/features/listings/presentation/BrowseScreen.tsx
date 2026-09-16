@@ -17,7 +17,7 @@ export interface BrowseScreenProps {
   onSelectPlatform?: (platform: PlatformType | 'all') => void;
   onOpenAbout?: () => void;
   onOpenPrivacy?: () => void;
-  onOpenSupport?: () => void;
+  onOpenFaq?: () => void;
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
   onScrollOffsetChange?: (offsetY: number) => void;
@@ -362,7 +362,7 @@ const BrowseScreenComponent: React.FC<BrowseScreenProps> = ({
   onSelectPlatform,
   onOpenAbout,
   onOpenPrivacy,
-  onOpenSupport,
+  onOpenFaq,
   onOpenHowItWorks,
   onOpenBlog,
   onScrollOffsetChange,
@@ -504,7 +504,7 @@ const BrowseScreenComponent: React.FC<BrowseScreenProps> = ({
               onOpenAbout={onOpenAbout}
               onOpenHowItWorks={onOpenHowItWorks}
               onOpenPrivacy={onOpenPrivacy}
-              onOpenSupport={onOpenSupport}
+              onOpenFaq={onOpenFaq}
               onOpenBlog={onOpenBlog}
             />
             <View style={styles.bottomSpacer} />

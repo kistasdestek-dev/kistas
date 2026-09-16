@@ -38,7 +38,7 @@ interface DiscoverScreenProps {
   onOpenCreditStore?: () => void;
   onOpenAbout?: () => void;
   onOpenPrivacy?: () => void;
-  onOpenSupport?: () => void;
+  onOpenFaq?: () => void;
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
   onScrollOffsetChange?: (offsetY: number) => void;
@@ -74,7 +74,7 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
   onOpenCreditStore,
   onOpenAbout,
   onOpenPrivacy,
-  onOpenSupport,
+  onOpenFaq,
   onOpenHowItWorks,
   onOpenBlog,
   onScrollOffsetChange,
@@ -425,7 +425,7 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
           ? renderEmptyComponent()
           : null}
         <FooterSloganBanner onPress={onOpenBrowse} />
-        <CinematicFooter onOpenAbout={onOpenAbout} onOpenHowItWorks={onOpenHowItWorks} onOpenPrivacy={onOpenPrivacy} onOpenSupport={onOpenSupport} onOpenBlog={onOpenBlog} />
+        <CinematicFooter onOpenAbout={onOpenAbout} onOpenHowItWorks={onOpenHowItWorks} onOpenPrivacy={onOpenPrivacy} onOpenFaq={onOpenFaq} onOpenBlog={onOpenBlog} />
         <View style={styles.listFooter} />
       </ScrollView>
     </View>

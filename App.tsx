@@ -34,6 +34,7 @@ const ShowcaseLeadersScreen = React.lazy(() => import('./src/features/listings/p
 const CuratedFeedScreen = React.lazy(() => import('./src/features/listings/presentation/CuratedFeedScreen').then((module) => ({ default: module.CuratedFeedScreen })));
 const AboutScreen = React.lazy(() => import('./src/features/about/presentation/AboutScreen').then((module) => ({ default: module.AboutScreen })));
 const HowItWorksScreen = React.lazy(() => import('./src/features/how-it-works/presentation/HowItWorksScreen').then((module) => ({ default: module.HowItWorksScreen })));
+const FaqScreen = React.lazy(() => import('./src/features/faq/presentation/FaqScreen').then((module) => ({ default: module.FaqScreen })));
 const PrivacyPolicyScreen = React.lazy(() => import('./src/features/legal/presentation/PrivacyPolicyScreen').then((module) => ({ default: module.PrivacyPolicyScreen })));
 const BlogScreen = React.lazy(() => import('./src/features/blog/presentation/BlogScreen').then((module) => ({ default: module.BlogScreen })));
 
@@ -85,7 +86,7 @@ const NavigationBackdrop = Platform.OS === 'android' ? BlurTargetView : View;
 
 interface WebRouteState {
   tab: TabKey;
-  screen: 'none' | 'about' | 'how-it-works' | 'privacy' | 'blog' | 'category' | 'showcase' | 'popular' | 'new';
+  screen: 'none' | 'about' | 'how-it-works' | 'faq' | 'privacy' | 'blog' | 'category' | 'showcase' | 'popular' | 'new';
   blogSlug?: string | null;
   categoryId?: string | null;
   platform?: PlatformType | 'all';
@@ -115,6 +116,9 @@ const parseWebRoute = (): WebRouteState => {
   }
   if (primary === 'how-it-works' || primary === 'nasil-calisir') {
     return { tab: 'discover', screen: 'how-it-works' };
+  }
+  if (primary === 'faq' || primary === 'sss') {
+    return { tab: 'discover', screen: 'faq' };
   }
   if (primary === 'privacy' || primary === 'gizlilik' || primary === 'gizlilik-politikasi') {
     return { tab: 'discover', screen: 'privacy' };
@@ -202,6 +206,7 @@ function AppContent() {
   const [isAuthSuccessVisible, setIsAuthSuccessVisible] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(initialWebRoute.screen === 'about');
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(initialWebRoute.screen === 'how-it-works');
+  const [isFaqOpen, setIsFaqOpen] = useState(initialWebRoute.screen === 'faq');
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(initialWebRoute.screen === 'privacy');
   const [analyticsConsent, setAnalyticsConsent] = useState<boolean | null>(readAnalyticsConsent);
   const [isBlogOpen, setIsBlogOpen] = useState(initialWebRoute.screen === 'blog');
@@ -294,6 +299,7 @@ function AppContent() {
     if (Platform.OS !== 'web' || isBlogOpen) return;
     if (isAboutOpen) return applyPublicPageSeo('about');
     if (isHowItWorksOpen) return applyPublicPageSeo('how-it-works');
+    if (isFaqOpen) return applyPublicPageSeo('faq');
     if (isPrivacyOpen) return applyPublicPageSeo('privacy');
     if (isShowcaseOpen) return applyPublicPageSeo('showcase');
     if (isPopularOpen) return applyPublicPageSeo('popular');
@@ -302,7 +308,7 @@ function AppContent() {
       return applyPrivatePageSeo();
     }
     return applyPublicPageSeo(activeTab === 'browse' ? 'browse' : 'home');
-  }, [activeTab, activeCategoryScreenId, isAboutOpen, isBlogOpen, isHowItWorksOpen, isPrivacyOpen, isShowcaseOpen, isPopularOpen, isNewOpen]);
+  }, [activeTab, activeCategoryScreenId, isAboutOpen, isBlogOpen, isFaqOpen, isHowItWorksOpen, isPrivacyOpen, isShowcaseOpen, isPopularOpen, isNewOpen]);
 
   // SPA sayfalarını yalnızca isteğe bağlı analitik izni verildikten sonra ölç.
   useEffect(() => {
@@ -320,6 +326,9 @@ function AppContent() {
     } else if (isHowItWorksOpen) {
       path = '/nasil-calisir';
       title = 'Nasıl Çalışır? · Kıstas';
+    } else if (isFaqOpen) {
+      path = '/sss';
+      title = 'Sıkça Sorulan Sorular · Kıstas';
     } else if (isAboutOpen) {
       path = '/hakkimizda';
       title = 'Hakkımızda · Kıstas';
@@ -374,6 +383,7 @@ function AppContent() {
     isBlogOpen,
     blogPostSlug,
     isHowItWorksOpen,
+    isFaqOpen,
     isAboutOpen,
     isPrivacyOpen,
     activeCategoryScreenId,
@@ -572,6 +582,7 @@ function AppContent() {
     }
 
     setIsAboutOpen(false);
+    setIsFaqOpen(false);
     setIsPrivacyOpen(false);
     setIsAdminDashboardOpen(false);
     setSelectedProject(null);
@@ -606,6 +617,7 @@ function AppContent() {
 
     setSelectedProject(null);
     setIsAboutOpen(false);
+    setIsFaqOpen(false);
     setIsPrivacyOpen(false);
     setVisibilityTargetListingId(listingId || null);
     setIsVisibilityManagementOpen(true);
@@ -650,10 +662,29 @@ function AppContent() {
     scrollDirectionDistanceRef.current = 0;
     updateNavCompact(false);
     setIsAboutOpen(false);
+    setIsFaqOpen(false);
     setIsHowItWorksOpen(false);
     setIsPrivacyOpen(false);
     setBlogPostSlug(typeof slug === 'string' ? slug : null);
     setIsBlogOpen(true);
+  }, [updateNavCompact]);
+
+  const handleOpenFaq = useCallback(() => {
+    lastScrollOffsetRef.current = 0;
+    scrollDirectionRef.current = null;
+    scrollDirectionDistanceRef.current = 0;
+    updateNavCompact(false);
+    setSelectedProject(null);
+    setActiveCategoryScreenId(null);
+    setIsShowcaseOpen(false);
+    setIsPopularOpen(false);
+    setIsNewOpen(false);
+    setIsAboutOpen(false);
+    setIsHowItWorksOpen(false);
+    setIsPrivacyOpen(false);
+    setIsBlogOpen(false);
+    setBlogPostSlug(null);
+    setIsFaqOpen(true);
   }, [updateNavCompact]);
 
   // Web tarayıcı geri/ileri butonları ve manuel hash değişikliklerini dinleme
@@ -663,6 +694,7 @@ function AppContent() {
     const handleWebHashChange = () => {
       const route = parseWebRoute();
       isHandlingPopstateRef.current = true;
+      setIsFaqOpen(route.screen === 'faq');
 
       if (route.screen === 'blog') {
         setIsShowcaseOpen(false);
@@ -688,6 +720,17 @@ function AppContent() {
         setIsAboutOpen(false);
         setIsBlogOpen(false);
         setBlogPostSlug(null);
+        setIsPrivacyOpen(false);
+        setActiveCategoryScreenId(null);
+        setSelectedProject(null);
+      } else if (route.screen === 'faq') {
+        setIsShowcaseOpen(false);
+        setIsPopularOpen(false);
+        setIsNewOpen(false);
+        setIsAboutOpen(false);
+        setIsBlogOpen(false);
+        setBlogPostSlug(null);
+        setIsHowItWorksOpen(false);
         setIsPrivacyOpen(false);
         setActiveCategoryScreenId(null);
         setSelectedProject(null);
@@ -806,6 +849,8 @@ function AppContent() {
       targetPath = 'about';
     } else if (isHowItWorksOpen) {
       targetPath = 'how-it-works';
+    } else if (isFaqOpen) {
+      targetPath = 'sss';
     } else if (isPrivacyOpen) {
       targetPath = 'privacy';
     } else if (activeCategoryScreenId) {
@@ -850,16 +895,17 @@ function AppContent() {
     } catch {
       window.location.hash = targetHash;
     }
-  }, [activeTab, isBlogOpen, blogPostSlug, isAboutOpen, isHowItWorksOpen, isPrivacyOpen, activeCategoryScreenId, isShowcaseOpen, showcaseFilters, isPopularOpen, isNewOpen, curatedFilters, isPasswordRecovery]);
+  }, [activeTab, isBlogOpen, blogPostSlug, isAboutOpen, isFaqOpen, isHowItWorksOpen, isPrivacyOpen, activeCategoryScreenId, isShowcaseOpen, showcaseFilters, isPopularOpen, isNewOpen, curatedFilters, isPasswordRecovery]);
 
   const handleTabChange = useCallback((tab: TabKey) => {
-    const wasStandalonePageOpen = isAboutOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || isPopularOpen || isNewOpen || Boolean(activeCategoryScreenId);
+    const wasStandalonePageOpen = isAboutOpen || isFaqOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || isPopularOpen || isNewOpen || Boolean(activeCategoryScreenId);
     if (isShowcaseOpen) setIsShowcaseOpen(false);
     if (isPopularOpen) setIsPopularOpen(false);
     if (isNewOpen) setIsNewOpen(false);
     if (isAboutOpen) setIsAboutOpen(false);
     if (isPrivacyOpen) setIsPrivacyOpen(false);
     if (isHowItWorksOpen) setIsHowItWorksOpen(false);
+    if (isFaqOpen) setIsFaqOpen(false);
     if (isBlogOpen) {
       setIsBlogOpen(false);
       setBlogPostSlug(null);
@@ -893,7 +939,7 @@ function AppContent() {
         platform: 'all',
       });
     }
-  }, [activeCategoryScreenId, activeTab, currentUser, isAboutOpen, isBlogOpen, isHowItWorksOpen, isPrivacyOpen, isShowcaseOpen, updateNavCompact]);
+  }, [activeCategoryScreenId, activeTab, currentUser, isAboutOpen, isBlogOpen, isFaqOpen, isHowItWorksOpen, isPrivacyOpen, isShowcaseOpen, updateNavCompact]);
 
   const handleOpenAbout = useCallback(() => {
     lastScrollOffsetRef.current = 0;
@@ -901,6 +947,7 @@ function AppContent() {
     scrollDirectionDistanceRef.current = 0;
     updateNavCompact(false);
     setIsAboutOpen(true);
+    setIsFaqOpen(false);
     setIsHowItWorksOpen(false);
     setIsPrivacyOpen(false);
     setIsBlogOpen(false);
@@ -913,6 +960,7 @@ function AppContent() {
     scrollDirectionDistanceRef.current = 0;
     updateNavCompact(false);
     setIsAboutOpen(false);
+    setIsFaqOpen(false);
     setIsHowItWorksOpen(true);
     setIsPrivacyOpen(false);
     setIsBlogOpen(false);
@@ -925,6 +973,7 @@ function AppContent() {
     scrollDirectionDistanceRef.current = 0;
     updateNavCompact(false);
     setIsAboutOpen(false);
+    setIsFaqOpen(false);
     setIsHowItWorksOpen(false);
     setIsPrivacyOpen(true);
     setIsBlogOpen(false);
@@ -933,6 +982,7 @@ function AppContent() {
 
   const handleAboutExplore = useCallback(() => {
     setIsAboutOpen(false);
+    setIsFaqOpen(false);
     setIsHowItWorksOpen(false);
     setIsBlogOpen(false);
     setBlogPostSlug(null);
@@ -1016,7 +1066,7 @@ function AppContent() {
   }, [updateNavCompact]);
 
   const isCheckoutLikeOpen = () => {
-    return isPasswordRecovery || isAuthModalOpen || isAuthSuccessVisible || !!selectedProject || isAdminDashboardOpen || isVisibilityManagementOpen || isAccountSecurityOpen || isAboutOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || isPopularOpen || isNewOpen;
+    return isPasswordRecovery || isAuthModalOpen || isAuthSuccessVisible || !!selectedProject || isAdminDashboardOpen || isVisibilityManagementOpen || isAccountSecurityOpen || isAboutOpen || isFaqOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || isPopularOpen || isNewOpen;
   };
 
   const backdropVariant: PremiumBackdropVariant = selectedProject
@@ -1044,6 +1094,7 @@ function AppContent() {
     isPrivacyOpen,
     isBlogOpen,
     isAboutOpen,
+    isFaqOpen,
     isHowItWorksOpen,
     isShowcaseOpen,
     isPopularOpen,
@@ -1152,6 +1203,16 @@ function AppContent() {
               setAnalyticsConsent(null);
             }}
           />
+        ) : isFaqOpen ? (
+          <FaqScreen
+            onBack={() => setIsFaqOpen(false)}
+            onExplore={handleAboutExplore}
+            onOpenSupport={handleOpenSupport}
+            onOpenAbout={handleOpenAbout}
+            onOpenPrivacy={handleOpenPrivacy}
+            onOpenHowItWorks={handleOpenHowItWorks}
+            onOpenBlog={handleOpenBlog}
+          />
         ) : isBlogOpen ? (
           <BlogScreen
             initialPostSlug={blogPostSlug || undefined}
@@ -1164,14 +1225,14 @@ function AppContent() {
             onOpenAbout={handleOpenAbout}
             onOpenHowItWorks={handleOpenHowItWorks}
             onOpenPrivacy={handleOpenPrivacy}
-            onOpenSupport={handleOpenSupport}
+            onOpenFaq={handleOpenFaq}
           />
         ) : isAboutOpen ? (
           <AboutScreen
             onBack={() => setIsAboutOpen(false)}
             onExplore={handleAboutExplore}
             onOpenPrivacy={handleOpenPrivacy}
-            onOpenSupport={handleOpenSupport}
+            onOpenFaq={handleOpenFaq}
             onOpenHowItWorks={handleOpenHowItWorks}
             onOpenBlog={handleOpenBlog}
           />
@@ -1189,7 +1250,7 @@ function AppContent() {
             }}
             onOpenAbout={handleOpenAbout}
             onOpenPrivacy={handleOpenPrivacy}
-            onOpenSupport={handleOpenSupport}
+            onOpenFaq={handleOpenFaq}
             onOpenBlog={handleOpenBlog}
           />
         ) : selectedProject ? (
@@ -1203,7 +1264,7 @@ function AppContent() {
             }}
             onOpenAbout={handleOpenAbout}
             onOpenPrivacy={handleOpenPrivacy}
-            onOpenSupport={handleOpenSupport}
+            onOpenFaq={handleOpenFaq}
             onOpenHowItWorks={handleOpenHowItWorks}
             onOpenBlog={handleOpenBlog}
             onOpenChat={async (_makerId, title) => {
@@ -1256,7 +1317,7 @@ function AppContent() {
             onSelectProject={(project) => setSelectedProject(project)}
             onOpenAbout={handleOpenAbout}
             onOpenPrivacy={handleOpenPrivacy}
-            onOpenSupport={handleOpenSupport}
+            onOpenFaq={handleOpenFaq}
             onOpenHowItWorks={handleOpenHowItWorks}
             onOpenBlog={handleOpenBlog}
           />
@@ -1275,7 +1336,7 @@ function AppContent() {
             onSelectProject={(project) => setSelectedProject(project)}
             onOpenAbout={handleOpenAbout}
             onOpenPrivacy={handleOpenPrivacy}
-            onOpenSupport={handleOpenSupport}
+            onOpenFaq={handleOpenFaq}
             onOpenHowItWorks={handleOpenHowItWorks}
             onOpenBlog={handleOpenBlog}
           />
@@ -1294,6 +1355,11 @@ function AppContent() {
             }}
             onOpenPopular={handleOpenPopular}
             onOpenNew={handleOpenNew}
+            onOpenAbout={handleOpenAbout}
+            onOpenPrivacy={handleOpenPrivacy}
+            onOpenFaq={handleOpenFaq}
+            onOpenHowItWorks={handleOpenHowItWorks}
+            onOpenBlog={handleOpenBlog}
           />
         ) : activeTab === 'discover' ? (
           <DiscoverScreen
@@ -1308,7 +1374,7 @@ function AppContent() {
             onOpenCreditStore={handleOpenSponsorManagement}
             onOpenAbout={handleOpenAbout}
             onOpenPrivacy={handleOpenPrivacy}
-            onOpenSupport={handleOpenSupport}
+            onOpenFaq={handleOpenFaq}
             onOpenHowItWorks={handleOpenHowItWorks}
             onOpenBlog={handleOpenBlog}
             onOpenShowcase={handleOpenShowcase}
@@ -1324,7 +1390,7 @@ function AppContent() {
             onSelectPlatform={handleBrowsePlatform}
             onOpenAbout={handleOpenAbout}
             onOpenPrivacy={handleOpenPrivacy}
-            onOpenSupport={handleOpenSupport}
+            onOpenFaq={handleOpenFaq}
             onOpenHowItWorks={handleOpenHowItWorks}
             onOpenBlog={handleOpenBlog}
             onScrollOffsetChange={Platform.OS === 'web' ? undefined : handleContentScroll}

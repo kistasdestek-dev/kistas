@@ -9,12 +9,12 @@ export interface AboutScreenProps {
   onBack: () => void;
   onExplore: () => void;
   onOpenPrivacy?: () => void;
-  onOpenSupport?: () => void;
+  onOpenFaq?: () => void;
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
 }
 
-export const AboutScreen: React.FC<AboutScreenProps> = ({ onBack, onExplore, onOpenPrivacy, onOpenSupport, onOpenHowItWorks, onOpenBlog }) => (
+export const AboutScreen: React.FC<AboutScreenProps> = ({ onBack, onExplore, onOpenPrivacy, onOpenFaq, onOpenHowItWorks, onOpenBlog }) => (
   <ScrollView decelerationRate={0.99} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
     <TouchableOpacity style={styles.back} onPress={onBack} accessibilityRole="button">
       <Ionicons name="arrow-back" size={17} color="#686474" />
@@ -29,9 +29,8 @@ export const AboutScreen: React.FC<AboutScreenProps> = ({ onBack, onExplore, onO
     </View>
     <View style={styles.valueGrid}>
       {[
-        ['compass-outline', 'Keşfet', 'Yeni uygulamaları, oyunları ve dijital ürünleri kolayca bul.'],
-        ['heart-outline', 'Destekle', 'Beğendiğin projeye tek dokunuşla kalıcı desteğini ver.'],
-        ['trending-up-outline', 'Büyüt', 'İyi fikirlerin daha fazla kişiye ulaşmasına yardım et.'],
+        ['compass-outline', 'Yeni bir ürün arıyorsan', 'Projeleri keşfet, incele ve beğendiğine destek ver.'],
+        ['rocket-outline', 'Bir projen varsa', 'Projeni yayınla, doğru insanlara ulaş ve geri bildirimle büyüt.'],
       ].map(([icon, title, copy]) => (
         <View style={styles.valueCard} key={title}>
           <View style={styles.valueIcon}><Ionicons name={icon as React.ComponentProps<typeof Ionicons>['name']} size={18} color="#3269C7" /></View>
@@ -54,7 +53,7 @@ export const AboutScreen: React.FC<AboutScreenProps> = ({ onBack, onExplore, onO
     <TouchableOpacity style={styles.cta} onPress={onExplore} accessibilityRole="button">
       <Text style={styles.ctaText}>Projeleri Keşfet</Text><Ionicons name="arrow-forward" size={17} color="#FAFBFD" />
     </TouchableOpacity>
-    <CinematicFooter compact onOpenPrivacy={onOpenPrivacy} onOpenSupport={onOpenSupport} onOpenHowItWorks={onOpenHowItWorks} onOpenBlog={onOpenBlog} />
+    <CinematicFooter compact onOpenPrivacy={onOpenPrivacy} onOpenFaq={onOpenFaq} onOpenHowItWorks={onOpenHowItWorks} onOpenBlog={onOpenBlog} />
   </ScrollView>
 );
 

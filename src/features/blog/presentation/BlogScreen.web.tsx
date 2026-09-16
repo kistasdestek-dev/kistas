@@ -13,7 +13,7 @@ export interface BlogScreenProps {
   onCreateProject?: () => void;
   onOpenAbout?: () => void;
   onOpenPrivacy?: () => void;
-  onOpenSupport?: () => void;
+  onOpenFaq?: () => void;
   onOpenHowItWorks?: () => void;
   initialPostSlug?: string | null;
   onPostChange?: (slug: string | null) => void;
@@ -149,7 +149,7 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
   onCreateProject,
   onOpenAbout,
   onOpenPrivacy,
-  onOpenSupport,
+  onOpenFaq,
   onOpenHowItWorks,
   initialPostSlug,
   onPostChange,
@@ -523,7 +523,7 @@ export const BlogScreen: React.FC<BlogScreenProps> = ({
         compact
         onOpenAbout={onOpenAbout}
         onOpenPrivacy={onOpenPrivacy}
-        onOpenSupport={onOpenSupport}
+        onOpenFaq={onOpenFaq}
         onOpenHowItWorks={onOpenHowItWorks}
       />
     </main>

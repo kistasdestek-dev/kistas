@@ -50,7 +50,7 @@ export interface ProjectDetailScreenProps {
   onOpenChat?: (makerId: string, projectTitle: string) => void;
   onOpenAbout?: () => void;
   onOpenPrivacy?: () => void;
-  onOpenSupport?: () => void;
+  onOpenFaq?: () => void;
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
   currentUser?: UserProfile | null;
@@ -123,7 +123,7 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
   onOpenChat,
   onOpenAbout,
   onOpenPrivacy,
-  onOpenSupport,
+  onOpenFaq,
   onOpenHowItWorks,
   onOpenBlog,
   currentUser,
@@ -1339,7 +1339,7 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
             kurmanızı sağlar.
           </Text>
         </View>
-        <CinematicFooter compact onOpenAbout={onOpenAbout} onOpenHowItWorks={onOpenHowItWorks} onOpenPrivacy={onOpenPrivacy} onOpenSupport={onOpenSupport} onOpenBlog={onOpenBlog} />
+        <CinematicFooter compact onOpenAbout={onOpenAbout} onOpenHowItWorks={onOpenHowItWorks} onOpenPrivacy={onOpenPrivacy} onOpenFaq={onOpenFaq} onOpenBlog={onOpenBlog} />
       </ScrollView>
 
       <Modal

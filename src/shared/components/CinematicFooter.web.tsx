@@ -6,7 +6,7 @@ export interface CinematicFooterProps {
   compact?: boolean;
   onOpenAbout?: () => void;
   onOpenPrivacy?: () => void;
-  onOpenSupport?: () => void;
+  onOpenFaq?: () => void;
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
 }
@@ -33,7 +33,7 @@ const smoothScrollToTop = (element: HTMLElement | Window) => {
   }
 };
 
-export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = false, onOpenAbout, onOpenPrivacy, onOpenSupport, onOpenHowItWorks, onOpenBlog }) => {
+export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = false, onOpenAbout, onOpenPrivacy, onOpenFaq, onOpenHowItWorks, onOpenBlog }) => {
   const rootRef = useRef<HTMLElement>(null);
   const [isRevealed, setIsRevealed] = useState(false);
 
@@ -81,7 +81,7 @@ export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = fals
     ] },
     { label: 'Kaynaklar', links: [
       ...(onOpenBlog ? [{ title: 'Blog', action: onOpenBlog }] : []),
-      ...(onOpenSupport ? [{ title: 'Destek', action: onOpenSupport }] : []),
+      ...(onOpenFaq ? [{ title: 'SSS', action: onOpenFaq }] : []),
       ...(onOpenPrivacy ? [{ title: 'KVKK ve Gizlilik', action: onOpenPrivacy }] : []),
     ] },
   ].filter((section) => section.links.length > 0);

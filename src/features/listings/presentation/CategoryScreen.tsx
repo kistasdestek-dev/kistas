@@ -34,7 +34,7 @@ export interface CategoryScreenProps {
   onOpenCreditStore?: () => void;
   onOpenAbout?: () => void;
   onOpenPrivacy?: () => void;
-  onOpenSupport?: () => void;
+  onOpenFaq?: () => void;
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
   onScrollOffsetChange?: (offsetY: number) => void;
@@ -63,7 +63,7 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
   onOpenCreditStore,
   onOpenAbout,
   onOpenPrivacy,
-  onOpenSupport,
+  onOpenFaq,
   onOpenHowItWorks,
   onOpenBlog,
   onScrollOffsetChange,
@@ -481,7 +481,7 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
           onOpenAbout={onOpenAbout}
           onOpenHowItWorks={onOpenHowItWorks}
           onOpenPrivacy={onOpenPrivacy}
-          onOpenSupport={onOpenSupport}
+          onOpenFaq={onOpenFaq}
           onOpenBlog={onOpenBlog}
         />
         <View style={styles.listFooter} />
