@@ -187,7 +187,7 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 | SEC-012 | Google OAuth teknik alan adi ve marka guveni | 1/6 | P2 | DUZELTILDI | Codex | Dogrudan Google Identity ID token, kriptografik nonce, FedCM ve CSP regresyon testi; canli hesap secici testi bekliyor |
 | SEC-013 | Bekleniyor | - | - | BEKLIYOR | - | - |
 | SEC-014 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-015 | Bekleniyor | - | - | BEKLIYOR | - | - |
+| SEC-015 | Shopier Webhook ve Otomatik Kredi Guvenligi | P1 | Webhook / Kredi | DOGRULANDI | 2026-09-16 | Idempotency, HMAC-SHA256, cift harcama engeli |
 | SEC-016 | Bekleniyor | - | - | BEKLIYOR | - | - |
 | SEC-017 | Bekleniyor | - | - | BEKLIYOR | - | - |
 | SEC-018 | Bekleniyor | - | - | BEKLIYOR | - | - |
@@ -410,3 +410,15 @@ Production veya magazaya cikis icin:
 - Nasil Calisir anlatimi ve tasarimi (2026-09-16): Web ve mobil ekranlardaki teknik terimler, karsilastirma tablosu ve uzun SSS bloklari kaldirildi; kesfeden ve proje ureten kullanicilar icin uc adimli, dogrulanabilir akisa gecildi. Kalici destek, sponsorlu saatlik rotasyon ve dogrudan iletisim mevcut urun davranisiyla uyumlu kisa metinlerle anlatildi. SEO baslik/aciklama, statik WebPage verisi ve sitemap tarihi ayni anlatimla guncellendi. Yeni veri, RPC, dis URL, secret, yetki, kimlik veya analitik davranisi eklenmedi. Geri donus: ekran ve SEO kaynaklari onceki commit'e alinabilir.
 - SSS sayfasi ve footer baglantisi (2026-09-16): Footer'daki genel `Destek` baglantisi, herkese acik ve giris gerektirmeyen `SSS` sayfasina tasindi. Web ve mobil SSS ekranlari arama, kategori filtresi ve acilir yanitlarla yalniz sabit urun bilgisini gosterir; kullanici girdisi sunucuya veya analitik servise gonderilmez. Cevap bulunamazsa mevcut kimlik dogrulamali destek gorusmesi akisi ayri bir eylemle korunur. Statik SEO, FAQPage semasi ve sitemap rotasi eklendi. Yeni veri, RPC, secret, yetki veya kimlik davranisi eklenmedi. Geri donus: SSS rotasi ve footer prop degisiklikleri onceki commit'e alinabilir.
 - Hakkimizda hedef kitle anlatimi (2026-09-16): Aciklamasiz puanlar ve kurgu proje adlari iceren vitrin maketi kaldirildi. Yerine `Yeni bir urun ariyorsan` ve `Bir projen varsa` ayrimini yapan, her iki kitle icin sonucu ve uc adimli akisi dogrudan anlatan sabit bilgi kartlari eklendi. Mobil anlatim ayni hedef kitle ayrimiyla esitlendi. Yeni veri toplama, RPC, dis URL, secret, yetki, kimlik veya analitik davranisi eklenmedi. Geri donus: Hakkimizda ekranlari onceki commit'e alinabilir.
+
+### SEC-015 - Shopier Webhook ve Otomatik Kredi Guvenligi
+
+- Tarih: 2026-09-16
+- Kapsam: `supabase/functions/shopier-credit-webhook/index.ts`, Shopier sipariş bildirimi ve kredi yükleme akışı.
+- Tehdit Modeli: Sahte webhook çağrıları, aynı siparişin mükerrer yüklenmesi (double-spending / replay attacks), yetkisiz kredi tanımlama.
+- Düzeltme ve Korumalar:
+  1. **Idempotency (Replay Koruması):** Her başarılı sipariş `#orderId` ile `credit_transactions` tablosuna kaydedilir. Aynı sipariş numarasıyla gelen tekrar bildirimlerde bakiye artırımı yapılmaz, işlem güvenle atlanır.
+  2. **Paket ve Tutar Doğrulaması:** Kredi miktarları sabit allowlist tablosu üzerinden (`50900373` -> 100, `50900401` -> 350, `50900419` -> 1000) sunucu tarafında belirlenir; istemciden veya harici parametreden keyfi kredi yüklenemez.
+  3. **Kullanıcı Eşleştirme:** `customernote` ve alıcı e-posta adresleri katı regex ile arındırılır; veritabanında profili bulunmayan işlemler için kredi yüklenmez, denetim kaydı tutulur.
+  4. **HMAC-SHA256 İmza Doğrulaması:** `SHOPIER_OSB_SECRET` ortam değişkeni tanımlandığında gelen `hash` imzası kriptografik olarak doğrulanır.
+- Sonuç: `DOGRULANDI`. Kredi bakiyeleri atomik olarak güncellenir ve transaction günlüğü tutulur.
