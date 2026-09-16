@@ -60,10 +60,38 @@ class SplineErrorBoundary extends React.Component<
 }
 
 export function SplineScene({ scene, className }: SplineSceneProps) {
+  const [mounted, setMounted] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    // Sayfa geçişi ve DOM layout tamamlandıktan hemen sonra 3D motoru başlat
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 120);
+    return () => clearTimeout(timer);
+  }, []);
+
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    // Fare tekerleği 3D tuvalin üzerindeyken sayfanın doğal kaymasını koru
+    const stopWheelHijack = (e: WheelEvent) => {
+      e.stopPropagation();
+    };
+    el.addEventListener('wheel', stopWheelHijack, { capture: true, passive: true });
+    return () => {
+      el.removeEventListener('wheel', stopWheelHijack, { capture: true });
+    };
+  }, []);
+
   return (
-    <SplineErrorBoundary>
-      <Suspense
-        fallback={
+    <div
+      ref={containerRef}
+      className={className}
+      style={{ width: '100%', height: '100%', position: 'relative' }}
+    >
+      <SplineErrorBoundary>
+        {!mounted ? (
           <div
             className="w-full h-full flex items-center justify-center"
             style={{
@@ -77,17 +105,35 @@ export function SplineScene({ scene, className }: SplineSceneProps) {
           >
             <span className="loader" />
           </div>
-        }
-      >
-        <Spline
-          scene={scene}
-          className={className}
-          style={{ width: '100%', height: '100%' }}
-        />
-      </Suspense>
-    </SplineErrorBoundary>
+        ) : (
+          <Suspense
+            fallback={
+              <div
+                className="w-full h-full flex items-center justify-center"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: 400,
+                }}
+              >
+                <span className="loader" />
+              </div>
+            }
+          >
+            <Spline
+              scene={scene}
+              style={{ width: '100%', height: '100%' }}
+            />
+          </Suspense>
+        )}
+      </SplineErrorBoundary>
+    </div>
   );
 }
+
 
 
 export interface SplineSceneBasicProps {

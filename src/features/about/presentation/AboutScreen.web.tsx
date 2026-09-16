@@ -27,7 +27,7 @@ const STYLES = `
 .k-card .relative{position:relative}
 .k-card .w-full{width:100%}
 .k-card .h-full{height:100%}
-.k-card canvas{width:100%!important;height:100%!important;display:block;outline:none}
+.k-card canvas{width:100%!important;height:100%!important;display:block;outline:none;touch-action:pan-y}
 
 /* Spotlight */
 .-top-40{top:-160px}.left-0{left:0px}
