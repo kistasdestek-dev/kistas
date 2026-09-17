@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { GlassIconButton } from '../../../shared/components/GlassIconButton';
 import { AdminService } from '../application/AdminService';
 import { ThreatEvent, ThreatIntelOverview, ThreatSeverity } from '../domain/ThreatIntelModels';
 
@@ -80,26 +81,26 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
   const getSeverityBadge = (sev: ThreatSeverity) => {
     switch (sev) {
       case 'CRITICAL':
-        return { label: 'KRİTİK', bg: 'rgba(239, 68, 68, 0.16)', text: '#EF4444', border: 'rgba(239, 68, 68, 0.4)' };
+        return { label: 'KRİTİK', bg: 'rgba(189,53,76,0.10)', text: '#BD354C', border: 'rgba(189,53,76,0.28)' };
       case 'HIGH':
-        return { label: 'YÜKSEK', bg: 'rgba(245, 158, 11, 0.16)', text: '#F59E0B', border: 'rgba(245, 158, 11, 0.4)' };
+        return { label: 'YÜKSEK', bg: 'rgba(147,100,19,0.10)', text: '#936413', border: 'rgba(147,100,19,0.28)' };
       case 'MEDIUM':
-        return { label: 'ORTA', bg: 'rgba(59, 130, 246, 0.14)', text: '#3B82F6', border: 'rgba(59, 130, 246, 0.35)' };
+        return { label: 'ORTA', bg: 'rgba(50,105,199,0.10)', text: '#3269C7', border: 'rgba(50,105,199,0.25)' };
       default:
-        return { label: 'DÜŞÜK', bg: 'rgba(107, 114, 128, 0.14)', text: '#9CA3AF', border: 'rgba(107, 114, 128, 0.25)' };
+        return { label: 'DÜŞÜK', bg: 'rgba(104,116,138,0.10)', text: '#68758A', border: 'rgba(104,116,138,0.22)' };
     }
   };
 
   const getActionBadge = (action: string) => {
     switch (action) {
       case 'HONEYPOT_DECEIVED':
-        return { label: '🍯 Bal Küpü Tuzağına Düştü', color: '#EAB308' };
+        return { label: '🍯 Bal Küpü Tuzağına Düştü', color: '#936413', bg: 'rgba(147,100,19,0.08)', border: 'rgba(147,100,19,0.25)' };
       case 'SILENT_NULL_ROUTED':
-        return { label: '🛡️ Sessizce Yutuldu (Null-Route)', color: '#10B981' };
+        return { label: '🛡️ Sessizce Yutuldu (Null-Route)', color: '#187657', bg: 'rgba(24,118,87,0.08)', border: 'rgba(24,118,87,0.25)' };
       case 'QUARANTINED':
-        return { label: '⛓️ Karantinada', color: '#EF4444' };
+        return { label: '⛓️ Karantinada', color: '#BD354C', bg: 'rgba(189,53,76,0.08)', border: 'rgba(189,53,76,0.25)' };
       default:
-        return { label: '👁️ Gözlemlendi & Kaydedildi', color: '#3B82F6' };
+        return { label: '👁️ Gözlemlendi & Kaydedildi', color: '#3269C7', bg: 'rgba(50,105,199,0.08)', border: 'rgba(50,105,199,0.25)' };
     }
   };
 
@@ -118,83 +119,120 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
       contentContainerStyle={[styles.contentContainer, isMobile && styles.contentContainerMobile]}
       showsVerticalScrollIndicator={false}
     >
-      {/* BAŞLIK & SİSTEM DURUMU */}
-      <LinearGradient
-        colors={['#10192A', '#0B111E']}
-        style={[styles.heroCard, isMobile && styles.heroCardMobile]}
-      >
-        <View style={styles.heroTopRow}>
-          <View style={styles.pulseContainer}>
-            <View style={styles.pulseDot} />
-            <Text style={styles.pulseText}>SAYRA SAVUNMA RADARI AKTİF</Text>
+      {/* 1. KISTAS ROYAL BLUE SAVUNMA HERO KARTI */}
+      <View style={styles.heroWrapper}>
+        <LinearGradient
+          colors={['#173B72', '#2858AA', '#3269C7']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.heroCard, isMobile && styles.heroCardMobile]}
+        >
+          <View style={styles.heroGlowLarge} />
+          <View style={styles.heroGlowSmall} />
+
+          <View style={styles.heroTopRow}>
+            <View style={styles.authorityPill}>
+              <View style={styles.pulseDot} />
+              <Text style={styles.pulseText}>SAYRA SAVUNMA RADARI AKTİF</Text>
+            </View>
+
+            <GlassIconButton
+              icon="refresh-outline"
+              size={36}
+              iconSize={18}
+              iconColor="#3269C7"
+              onPress={loadThreatData}
+              accessibilityLabel="Verileri Yenile"
+            />
           </View>
-          <TouchableOpacity style={styles.refreshBtn} onPress={loadThreatData} activeOpacity={0.7}>
-            <Ionicons name="refresh-outline" size={15} color="#93C5FD" />
-            <Text style={styles.refreshBtnText}>Yenile</Text>
-          </TouchableOpacity>
+
+          <Text style={[styles.heroTitle, isMobile && styles.heroTitleMobile]}>
+            Siber Tehdit ve Bal Küpü Radarı
+          </Text>
+          <Text style={[styles.heroSubtitle, isMobile && styles.heroSubtitleMobile]}>
+            Pars DevState güvenlik motoruyla senkronize; sisteme vuran pentest tarayıcılarını ve anormal istekleri tespit eder, tuzaklarla aldatır ve verilerini toplar.
+          </Text>
+        </LinearGradient>
+      </View>
+
+      {/* 2. KISTAS BEYAZ METRİK KARTLARI (2x2 Grid) */}
+      <View style={styles.metricsGrid}>
+        <View style={[styles.metricCard, isMobile && styles.metricCardMobile]}>
+          <View style={styles.metricTopRow}>
+            <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(189,53,76,0.10)' }]}>
+              <Ionicons name="warning-outline" size={18} color="#BD354C" />
+            </View>
+            <View style={[styles.miniBadge, { backgroundColor: 'rgba(189,53,76,0.08)' }]}>
+              <Text style={[styles.miniBadgeText, { color: '#BD354C' }]}>Engellendi</Text>
+            </View>
+          </View>
+          <Text style={[styles.metricValue, isMobile && styles.metricValueMobile]}>
+            {overview?.totalThreats ?? 0}
+          </Text>
+          <Text style={styles.metricLabel}>Engellenen Tehdit</Text>
         </View>
 
-        <Text style={[styles.heroTitle, isMobile && styles.heroTitleMobile]}>
-          Siber Tehdit İstihbaratı & Bal Küpü
-        </Text>
-        <Text style={[styles.heroSubtitle, isMobile && styles.heroSubtitleMobile]}>
-          Pars DevState motoruyla senkronize; sisteme vuran pentest tarayıcılarını, otomatik fuzzer'ları ve saldırganları profiller, tuzaklarla aldatır ve verilerini toplar.
-        </Text>
-
-        {/* METRİK ŞERİDİ */}
-        <View style={styles.metricsGrid}>
-          <View style={[styles.metricBox, isMobile && styles.metricBoxMobile]}>
-            <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
-              <Ionicons name="warning-outline" size={16} color="#EF4444" />
+        <View style={[styles.metricCard, isMobile && styles.metricCardMobile]}>
+          <View style={styles.metricTopRow}>
+            <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(147,100,19,0.10)' }]}>
+              <Ionicons name="fish-outline" size={18} color="#936413" />
             </View>
-            <Text style={[styles.metricVal, isMobile && styles.metricValMobile]}>
-              {overview?.totalThreats ?? 0}
-            </Text>
-            <Text style={styles.metricLbl} numberOfLines={1}>Engellenen</Text>
-          </View>
-
-          <View style={[styles.metricBox, isMobile && styles.metricBoxMobile]}>
-            <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(234, 179, 8, 0.15)' }]}>
-              <Ionicons name="fish-outline" size={16} color="#EAB308" />
+            <View style={[styles.miniBadge, { backgroundColor: 'rgba(147,100,19,0.08)' }]}>
+              <Text style={[styles.miniBadgeText, { color: '#936413' }]}>Tuzak</Text>
             </View>
-            <Text style={[styles.metricVal, isMobile && styles.metricValMobile, { color: '#FACC15' }]}>
-              {overview?.honeypotTrapped ?? 0}
-            </Text>
-            <Text style={styles.metricLbl} numberOfLines={1}>Bal Küpü</Text>
           </View>
-
-          <View style={[styles.metricBox, isMobile && styles.metricBoxMobile]}>
-            <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
-              <Ionicons name="shield-checkmark-outline" size={16} color="#10B981" />
-            </View>
-            <Text style={[styles.metricVal, isMobile && styles.metricValMobile, { color: '#34D399' }]}>
-              {overview?.nullRouted ?? 0}
-            </Text>
-            <Text style={styles.metricLbl} numberOfLines={1}>Sessiz Yutma</Text>
-          </View>
-
-          <View style={[styles.metricBox, isMobile && styles.metricBoxMobile]}>
-            <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]}>
-              <Ionicons name="lock-closed-outline" size={16} color="#A855F7" />
-            </View>
-            <Text style={[styles.metricVal, isMobile && styles.metricValMobile, { color: '#C084FC' }]}>
-              {overview?.quarantinedActors ?? 0}
-            </Text>
-            <Text style={styles.metricLbl} numberOfLines={1}>Karantinada</Text>
-          </View>
+          <Text style={[styles.metricValue, isMobile && styles.metricValueMobile]}>
+            {overview?.honeypotTrapped ?? 0}
+          </Text>
+          <Text style={styles.metricLabel}>Bal Küpü Tuzağı</Text>
         </View>
-      </LinearGradient>
 
-      {/* SALDIRI VEKTÖRLERİ & ARAÇ DAĞILIMI */}
+        <View style={[styles.metricCard, isMobile && styles.metricCardMobile]}>
+          <View style={styles.metricTopRow}>
+            <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(24,118,87,0.10)' }]}>
+              <Ionicons name="shield-checkmark-outline" size={18} color="#187657" />
+            </View>
+            <View style={[styles.miniBadge, { backgroundColor: 'rgba(24,118,87,0.08)' }]}>
+              <Text style={[styles.miniBadgeText, { color: '#187657' }]}>Eritildi</Text>
+            </View>
+          </View>
+          <Text style={[styles.metricValue, isMobile && styles.metricValueMobile]}>
+            {overview?.nullRouted ?? 0}
+          </Text>
+          <Text style={styles.metricLabel}>Sessiz Yutma</Text>
+        </View>
+
+        <View style={[styles.metricCard, isMobile && styles.metricCardMobile]}>
+          <View style={styles.metricTopRow}>
+            <View style={[styles.metricIconWrap, { backgroundColor: 'rgba(50,105,199,0.10)' }]}>
+              <Ionicons name="lock-closed-outline" size={18} color="#3269C7" />
+            </View>
+            <View style={[styles.miniBadge, { backgroundColor: 'rgba(50,105,199,0.08)' }]}>
+              <Text style={[styles.miniBadgeText, { color: '#3269C7' }]}>Aktif</Text>
+            </View>
+          </View>
+          <Text style={[styles.metricValue, isMobile && styles.metricValueMobile]}>
+            {overview?.quarantinedActors ?? 0}
+          </Text>
+          <Text style={styles.metricLabel}>Karantinada</Text>
+        </View>
+      </View>
+
+      {/* 3. İSTİHBARAT PANELLERİ (Hedef Vektörler & Pentest Araçları) */}
       <View style={[styles.intelligenceBanner, isMobile && styles.intelligenceBannerMobile]}>
-        <View style={styles.intelColumn}>
+        <View style={styles.intelCard}>
           <View style={styles.intelHeaderRow}>
-            <Ionicons name="locate-outline" size={15} color="#F87171" style={{ marginRight: 6 }} />
-            <Text style={styles.intelHeader}>En Çok Hedeflenen Vektörler</Text>
+            <View style={[styles.intelIconBox, { backgroundColor: 'rgba(189,53,76,0.10)' }]}>
+              <Ionicons name="locate-outline" size={15} color="#BD354C" />
+            </View>
+            <View>
+              <Text style={styles.intelTitle}>En Çok Hedeflenen Vektörler</Text>
+              <Text style={styles.intelSubtitle}>Saldırganların yokladığı zayıf noktalar</Text>
+            </View>
           </View>
           <View style={styles.chipRow}>
             {(overview?.topVectors || []).length === 0 ? (
-              <Text style={styles.emptyChipText}>Kayıtlı vektör bulunmuyor.</Text>
+              <Text style={styles.emptyChipText}>Kayıtlı saldırı vektörü bulunmuyor.</Text>
             ) : (
               (overview?.topVectors || []).map((v, i) => (
                 <View key={i} style={styles.vectorChip}>
@@ -205,18 +243,23 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
           </View>
         </View>
 
-        <View style={styles.intelColumn}>
+        <View style={styles.intelCard}>
           <View style={styles.intelHeaderRow}>
-            <Ionicons name="flash-outline" size={15} color="#60A5FA" style={{ marginRight: 6 }} />
-            <Text style={styles.intelHeader}>Tespit Edilen Pentest Araçları</Text>
+            <View style={[styles.intelIconBox, { backgroundColor: 'rgba(50,105,199,0.10)' }]}>
+              <Ionicons name="flash-outline" size={15} color="#3269C7" />
+            </View>
+            <View>
+              <Text style={styles.intelTitle}>Tespit Edilen Pentest Araçları</Text>
+              <Text style={styles.intelSubtitle}>Filtrelenen scanner ve bot imzaları</Text>
+            </View>
           </View>
           <View style={styles.chipRow}>
             {(overview?.topTools || []).length === 0 ? (
-              <Text style={styles.emptyChipText}>Kayıtlı araç bulunmuyor.</Text>
+              <Text style={styles.emptyChipText}>Kayıtlı tarayıcı aracı bulunmuyor.</Text>
             ) : (
               (overview?.topTools || []).map((t, i) => (
                 <View key={i} style={styles.toolChip}>
-                  <Ionicons name="bug-outline" size={12} color="#60A5FA" style={{ marginRight: 4 }} />
+                  <Ionicons name="bug-outline" size={12} color="#3269C7" style={{ marginRight: 4 }} />
                   <Text style={styles.toolChipText}>{t.tool_fingerprint}</Text>
                 </View>
               ))
@@ -225,28 +268,32 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
         </View>
       </View>
 
-      {/* FİLTRELEME ÇUBUĞU */}
-      <View style={[styles.filterRow, isMobile && styles.filterRowMobile]}>
-        <View style={styles.sectionHeaderWrap}>
-          <Text style={styles.sectionTitle}>Saldırgan Olay Akışı</Text>
-          <Text style={styles.sectionSubtitle}>Telemetri ve Kara Kutu Günlüğü</Text>
+      {/* 4. OLAY AKIŞI BAŞLIĞI VE FİLTRE RAYI */}
+      <View style={styles.sectionHeadingWrapper}>
+        <View style={styles.sectionHeading}>
+          <GlassIconButton icon="shield-checkmark-outline" size={38} iconSize={19} />
+          <View style={styles.sectionCopy}>
+            <Text style={styles.sectionTitle}>Saldırgan Kara Kutusu</Text>
+            <Text style={styles.sectionSubtitle}>Yakalanan anlık tehdit telemetrisi ve zararlı yükler</Text>
+          </View>
         </View>
+
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterChipsContainer}
+          contentContainerStyle={styles.filterRail}
         >
           {([null, 'CRITICAL', 'HIGH', 'MEDIUM'] as const).map((sev, idx) => {
             const active = selectedSeverity === sev;
             return (
               <TouchableOpacity
                 key={idx}
-                style={[styles.filterChip, active && styles.filterChipActive]}
+                style={[styles.filterButton, active && styles.filterButtonActive]}
                 onPress={() => setSelectedSeverity(sev)}
-                activeOpacity={0.7}
+                activeOpacity={0.75}
               >
-                <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
-                  {sev === null ? 'Tümü' : sev === 'CRITICAL' ? 'Kritik' : sev === 'HIGH' ? 'Yüksek' : 'Orta'}
+                <Text style={[styles.filterText, active && styles.filterTextActive]}>
+                  {sev === null ? 'Tüm Tehditler' : sev === 'CRITICAL' ? 'Kritik' : sev === 'HIGH' ? 'Yüksek' : 'Orta'}
                 </Text>
               </TouchableOpacity>
             );
@@ -254,15 +301,15 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
         </ScrollView>
       </View>
 
-      {/* OLAY LİSTESİ */}
+      {/* 5. OLAY KARTLARI (Kıstas Data Card Stili) */}
       {isLoading ? (
         <View style={styles.loaderBox}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+          <ActivityIndicator size="large" color="#3269C7" />
           <Text style={styles.loaderText}>Tehdit telemetrisi taranıyor...</Text>
         </View>
       ) : events.length === 0 ? (
         <View style={styles.emptyCard}>
-          <Ionicons name="shield-checkmark" size={44} color="#10B981" />
+          <GlassIconButton icon="shield-checkmark" size={48} iconSize={24} iconColor="#187657" />
           <Text style={styles.emptyTitle}>Aktif Tehdit Bulunmuyor</Text>
           <Text style={styles.emptySubtitle}>Sistem sınırları tam koruma altında ve siber anomali tespit edilmedi.</Text>
         </View>
@@ -276,7 +323,7 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
 
             return (
               <View key={event.id} style={[styles.eventCard, isMobile && styles.eventCardMobile]}>
-                {/* 1. ÜST KATMAN: ROZET VE SAAT */}
+                {/* 1. ÜST SATIR: KRİTİK / TATBİKAT ROZETİ VE SAAT */}
                 <View style={styles.eventHeaderRow}>
                   <View style={styles.headerLeftBadges}>
                     <View style={[styles.badge, { backgroundColor: sevBadge.bg, borderColor: sevBadge.border }]}>
@@ -284,43 +331,44 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
                     </View>
                     {isCanary ? (
                       <View style={styles.canaryBadge}>
-                        <Text style={styles.canaryBadgeText}>Tatbikat Simülasyonu</Text>
+                        <Ionicons name="flask-outline" size={10} color="#7E22CE" style={{ marginRight: 3 }} />
+                        <Text style={styles.canaryBadgeText}>Tatbikat Kaydı</Text>
                       </View>
                     ) : null}
                   </View>
                   <View style={styles.dateWrap}>
-                    <Ionicons name="time-outline" size={12} color="#64748B" style={{ marginRight: 3 }} />
+                    <Ionicons name="time-outline" size={12} color="#8A95A8" style={{ marginRight: 4 }} />
                     <Text style={styles.eventDate}>
                       {new Date(event.detectedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                     </Text>
                   </View>
                 </View>
 
-                {/* 2. ARAÇ PARMAK İZİ (MOBİLDE SIKIŞMAYACAK AYRI SATIR) */}
+                {/* 2. ARAÇ PARMAK İZİ ROZETİ */}
                 <View style={styles.toolFingerprintRow}>
                   <View style={styles.toolBadge}>
-                    <Ionicons name="terminal-outline" size={12} color="#93C5FD" style={{ marginRight: 5 }} />
+                    <Ionicons name="terminal-outline" size={12} color="#3269C7" style={{ marginRight: 5 }} />
                     <Text style={styles.toolBadgeText} numberOfLines={1}>{event.toolFingerprint}</Text>
                   </View>
                 </View>
 
-                {/* 3. VEKTÖR ADI */}
+                {/* 3. SALDIRI VEKTÖRÜ BAŞLIĞI */}
                 <Text style={[styles.eventVectorTitle, isMobile && styles.eventVectorTitleMobile]}>
                   {event.attackVector}
                 </Text>
 
-                {/* 4. AKSİYON & IP KUTUSU */}
+                {/* 4. AKSİYON & IP KUTULARI */}
                 <View style={[styles.actionRow, isMobile && styles.actionRowMobile]}>
-                  <View style={styles.actionPill}>
+                  <View style={[styles.actionPill, { backgroundColor: actBadge.bg, borderColor: actBadge.border }]}>
                     <Text style={[styles.actionText, { color: actBadge.color }]}>{actBadge.label}</Text>
                   </View>
                   <View style={styles.ipPill}>
-                    <Ionicons name="globe-outline" size={11} color="#60A5FA" style={{ marginRight: 4 }} />
-                    <Text style={styles.actorMeta}>{event.ipAddress}</Text>
+                    <Ionicons name="globe-outline" size={11} color="#3269C7" style={{ marginRight: 4 }} />
+                    <Text style={styles.actorMeta}>IP: {event.ipAddress}</Text>
                   </View>
                 </View>
 
-                {/* 5. PAYLOAD TERMİNALİ (MOBİLDE KAYDIRILABİLİR, ASLA EKRANI PATLATMAZ) */}
+                {/* 5. PAYLOAD DENETLEYİCİ KUTUSU (Kıstas Slate Inspector) */}
                 <View style={styles.payloadTerminal}>
                   <View style={styles.terminalTopBar}>
                     <View style={styles.macDots}>
@@ -342,7 +390,7 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
                   </ScrollView>
                 </View>
 
-                {/* 6. ALT KISIM: USER AGENT VE KARANTİNA BUTONU */}
+                {/* 6. ALT KISIM: USER AGENT VE KISTAS KARANTİNA BUTONU */}
                 <View style={[styles.eventFooter, isMobile && styles.eventFooterMobile]}>
                   <View style={styles.metaCol}>
                     <Text style={styles.uaLabel} numberOfLines={isMobile ? 2 : 1}>
@@ -354,11 +402,11 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
                     style={[
                       styles.quarantineBtn,
                       isMobile && styles.quarantineBtnMobile,
-                      event.isQuarantined && styles.quarantineBtnActive,
+                      event.isQuarantined ? styles.quarantineBtnRelease : styles.quarantineBtnBlock,
                     ]}
                     onPress={() => handleToggleQuarantine(event)}
                     disabled={inAction}
-                    activeOpacity={0.75}
+                    activeOpacity={0.78}
                   >
                     {inAction ? (
                       <ActivityIndicator size="small" color="#FFFFFF" />
@@ -366,7 +414,7 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
                       <>
                         <Ionicons
                           name={event.isQuarantined ? 'lock-open-outline' : 'lock-closed-outline'}
-                          size={14}
+                          size={15}
                           color="#FFFFFF"
                           style={{ marginRight: 6 }}
                         />
@@ -389,138 +437,166 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#070B13',
+    backgroundColor: '#F1F5FA',
   },
   contentContainer: {
-    padding: 20,
+    padding: 22,
     paddingBottom: 70,
   },
   contentContainerMobile: {
-    padding: 12,
-    paddingBottom: 80,
+    padding: 14,
+    paddingBottom: 85,
   },
-  heroCard: {
-    borderRadius: 20,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.25)',
+  heroWrapper: {
     marginBottom: 16,
   },
+  heroCard: {
+    position: 'relative',
+    borderRadius: 22,
+    padding: 24,
+    overflow: 'hidden',
+    shadowColor: '#173B72',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 18,
+    elevation: 6,
+  },
   heroCardMobile: {
-    borderRadius: 16,
-    padding: 15,
-    marginBottom: 14,
+    borderRadius: 18,
+    padding: 16,
+  },
+  heroGlowLarge: {
+    position: 'absolute',
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    right: -80,
+    top: -140,
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  heroGlowSmall: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    right: 120,
+    bottom: -80,
+    backgroundColor: 'rgba(115, 224, 183, 0.16)',
   },
   heroTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
   },
-  pulseContainer: {
+  authorityPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
-    paddingHorizontal: 9,
-    paddingVertical: 4,
+    gap: 6,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
     borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.22)',
   },
   pulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10B981',
-    marginRight: 6,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#73E0B7',
   },
   pulseText: {
-    color: '#34D399',
+    color: '#FFFFFF',
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.5,
   },
-  refreshBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-  },
-  refreshBtnText: {
-    color: '#93C5FD',
-    fontSize: 11,
-    fontWeight: '600',
-    marginLeft: 4,
-  },
   heroTitle: {
     color: '#FFFFFF',
-    fontSize: 21,
+    fontSize: 24,
     fontWeight: '700',
-    letterSpacing: -0.3,
+    letterSpacing: -0.5,
     marginBottom: 6,
   },
   heroTitleMobile: {
-    fontSize: 17,
-    letterSpacing: -0.2,
-    marginBottom: 4,
+    fontSize: 19,
+    letterSpacing: -0.3,
   },
   heroSubtitle: {
-    color: '#94A3B8',
-    fontSize: 13,
-    lineHeight: 19,
-    marginBottom: 18,
+    color: 'rgba(255, 255, 255, 0.82)',
+    fontSize: 12.5,
+    lineHeight: 18,
+    maxWidth: 620,
   },
   heroSubtitleMobile: {
-    fontSize: 12,
-    lineHeight: 17,
-    marginBottom: 14,
+    fontSize: 11.5,
+    lineHeight: 16,
   },
   metricsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 12,
+    marginBottom: 16,
   },
-  metricBox: {
+  metricCard: {
     flex: 1,
-    minWidth: 120,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: 12,
-    padding: 12,
+    minWidth: 130,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    alignItems: 'center',
+    borderColor: '#E0E6EF',
+    shadowColor: '#1D3557',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
   },
-  metricBoxMobile: {
+  metricCardMobile: {
     flex: undefined,
     width: '48%',
-    minWidth: 120,
-    padding: 10,
+    minWidth: 125,
+    padding: 12,
+  },
+  metricTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   metricIconWrap: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
   },
-  metricVal: {
-    color: '#FFFFFF',
-    fontSize: 19,
+  miniBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+  },
+  miniBadgeText: {
+    fontSize: 9.5,
     fontWeight: '700',
+  },
+  metricValue: {
+    color: '#25364E',
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: -0.4,
     marginBottom: 2,
   },
-  metricValMobile: {
-    fontSize: 17,
+  metricValueMobile: {
+    fontSize: 19,
   },
-  metricLbl: {
-    color: '#94A3B8',
+  metricLabel: {
+    color: '#68758A',
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   intelligenceBanner: {
     flexDirection: 'row',
@@ -532,136 +608,164 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 16,
   },
-  intelColumn: {
+  intelCard: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-    borderRadius: 14,
-    padding: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.07)',
+    borderColor: '#E0E6EF',
+    shadowColor: '#1D3557',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
   },
   intelHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    gap: 10,
+    marginBottom: 12,
   },
-  intelHeader: {
-    color: '#E2E8F0',
-    fontSize: 12,
+  intelIconBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  intelTitle: {
+    color: '#25364E',
+    fontSize: 13,
     fontWeight: '700',
+  },
+  intelSubtitle: {
+    color: '#748096',
+    fontSize: 10.5,
+    marginTop: 1,
   },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 7,
   },
   emptyChipText: {
-    color: '#64748B',
+    color: '#8A95A8',
     fontSize: 11,
   },
   vectorChip: {
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 7,
+    backgroundColor: '#FFF1F2',
+    borderColor: '#FECDD3',
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.25)',
+    paddingHorizontal: 9,
+    paddingVertical: 4.5,
+    borderRadius: 8,
   },
   vectorChipText: {
-    color: '#FCA5A5',
+    color: '#BE123C',
     fontSize: 11,
     fontWeight: '600',
   },
   toolChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(59, 130, 246, 0.12)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 7,
+    backgroundColor: '#EFF6FF',
+    borderColor: '#BFDBFE',
     borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.25)',
+    paddingHorizontal: 9,
+    paddingVertical: 4.5,
+    borderRadius: 8,
   },
   toolChipText: {
-    color: '#93C5FD',
+    color: '#1D4ED8',
     fontSize: 11,
     fontWeight: '600',
   },
-  filterRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  sectionHeadingWrapper: {
     marginBottom: 14,
-    gap: 10,
   },
-  filterRowMobile: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 8,
+  sectionHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
   },
-  sectionHeaderWrap: {
-    marginBottom: 2,
+  sectionCopy: {
+    flex: 1,
   },
   sectionTitle: {
-    color: '#FFFFFF',
-    fontSize: 15,
+    color: '#25364E',
+    fontSize: 17,
     fontWeight: '700',
+    letterSpacing: -0.2,
   },
   sectionSubtitle: {
-    color: '#64748B',
-    fontSize: 11,
-    marginTop: 1,
+    color: '#748096',
+    fontSize: 11.5,
+    lineHeight: 16,
+    marginTop: 2,
   },
-  filterChipsContainer: {
+  filterRail: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
+    paddingBottom: 4,
   },
-  filterChip: {
-    paddingHorizontal: 11,
-    paddingVertical: 5,
-    borderRadius: 7,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  filterButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: '#E2E7EF',
   },
-  filterChipActive: {
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-    borderColor: '#3B82F6',
+  filterButtonActive: {
+    backgroundColor: '#3269C7',
+    borderColor: '#3269C7',
+    shadowColor: '#3269C7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  filterChipText: {
-    color: '#94A3B8',
+  filterText: {
+    color: '#68758A',
     fontSize: 11,
     fontWeight: '600',
   },
-  filterChipTextActive: {
+  filterTextActive: {
     color: '#FFFFFF',
     fontWeight: '700',
   },
   loaderBox: {
-    padding: 36,
+    padding: 40,
     alignItems: 'center',
   },
   loaderText: {
-    color: '#94A3B8',
+    color: '#68758A',
     marginTop: 10,
     fontSize: 12,
   },
   emptyCard: {
-    padding: 32,
+    padding: 36,
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.06)',
-    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: '#E0E6EF',
+    shadowColor: '#1D3557',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
   },
   emptyTitle: {
-    color: '#FFFFFF',
-    fontSize: 15,
+    color: '#25364E',
+    fontSize: 15.5,
     fontWeight: '700',
     marginTop: 10,
   },
   emptySubtitle: {
-    color: '#94A3B8',
+    color: '#748096',
     fontSize: 12,
     textAlign: 'center',
     marginTop: 4,
@@ -670,14 +774,19 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   eventCard: {
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
-    borderRadius: 14,
-    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 17,
+    padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: '#E0E6EF',
+    shadowColor: '#1D3557',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.055,
+    shadowRadius: 14,
+    elevation: 2,
   },
   eventCardMobile: {
-    padding: 13,
+    padding: 14,
   },
   eventHeaderRow: {
     flexDirection: 'row',
@@ -692,9 +801,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   badge: {
-    paddingHorizontal: 7,
-    paddingVertical: 2.5,
-    borderRadius: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
     borderWidth: 1,
   },
   badgeText: {
@@ -703,16 +812,18 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   canaryBadge: {
-    backgroundColor: 'rgba(168, 85, 247, 0.15)',
-    paddingHorizontal: 6,
-    paddingVertical: 2.5,
-    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3E8FF',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(168, 85, 247, 0.35)',
+    borderColor: '#D8B4FE',
   },
   canaryBadgeText: {
-    color: '#C084FC',
-    fontSize: 9,
+    color: '#7E22CE',
+    fontSize: 9.5,
     fontWeight: '600',
   },
   dateWrap: {
@@ -720,9 +831,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   eventDate: {
-    color: '#64748B',
-    fontSize: 11,
-    fontWeight: '500',
+    color: '#8A95A8',
+    fontSize: 11.5,
+    fontWeight: '600',
   },
   toolFingerprintRow: {
     marginBottom: 8,
@@ -731,33 +842,34 @@ const styles = StyleSheet.create({
   toolBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    paddingHorizontal: 8,
-    paddingVertical: 3.5,
-    borderRadius: 6,
+    backgroundColor: '#F4F7FB',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 7,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: '#E2E8F0',
     maxWidth: '100%',
   },
   toolBadgeText: {
-    color: '#93C5FD',
+    color: '#3269C7',
     fontSize: 11,
     fontWeight: '600',
   },
   eventVectorTitle: {
-    color: '#F1F5F9',
-    fontSize: 14,
+    color: '#25364E',
+    fontSize: 15,
     fontWeight: '700',
+    letterSpacing: -0.2,
     marginBottom: 6,
   },
   eventVectorTitleMobile: {
-    fontSize: 13,
+    fontSize: 14,
   },
   actionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
     flexWrap: 'wrap',
     gap: 8,
   },
@@ -767,10 +879,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   actionPill: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 6,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+    borderRadius: 7,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderWidth: 1,
   },
   actionText: {
     fontSize: 11,
@@ -779,45 +891,47 @@ const styles = StyleSheet.create({
   ipPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   actorMeta: {
-    color: '#94A3B8',
+    color: '#475569',
     fontSize: 11,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   payloadTerminal: {
-    backgroundColor: '#030712',
-    borderRadius: 9,
-    padding: 10,
+    backgroundColor: '#131F33',
+    borderRadius: 12,
+    padding: 12,
     borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.18)',
-    marginBottom: 10,
+    borderColor: '#243754',
+    marginBottom: 12,
   },
   terminalTopBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
-    paddingBottom: 5,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    paddingBottom: 6,
   },
   macDots: {
     flexDirection: 'row',
-    gap: 4,
+    gap: 4.5,
   },
   dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 6.5,
+    height: 6.5,
+    borderRadius: 3.25,
   },
   terminalTitle: {
-    color: '#64748B',
-    fontSize: 9,
+    color: '#94A3B8',
+    fontSize: 9.5,
     fontWeight: '600',
   },
   payloadScrollContent: {
@@ -825,15 +939,18 @@ const styles = StyleSheet.create({
   },
   payloadCode: {
     color: '#38BDF8',
-    fontSize: 11,
+    fontSize: 11.5,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    lineHeight: 16,
+    lineHeight: 17,
   },
   eventFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F4F8',
+    paddingTop: 12,
   },
   eventFooterMobile: {
     flexDirection: 'column',
@@ -844,30 +961,42 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   uaLabel: {
-    color: '#64748B',
-    fontSize: 10,
-    lineHeight: 14,
+    color: '#748096',
+    fontSize: 10.5,
+    lineHeight: 15,
   },
   quarantineBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#DC2626',
-    paddingHorizontal: 13,
-    paddingVertical: 7,
-    borderRadius: 7,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 9,
+  },
+  quarantineBtnBlock: {
+    backgroundColor: '#BD354C',
+    shadowColor: '#BD354C',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  quarantineBtnRelease: {
+    backgroundColor: '#3269C7',
+    shadowColor: '#3269C7',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 2,
   },
   quarantineBtnMobile: {
     width: '100%',
-    paddingVertical: 9,
-    borderRadius: 8,
-  },
-  quarantineBtnActive: {
-    backgroundColor: '#2563EB',
+    paddingVertical: 10,
+    borderRadius: 10,
   },
   quarantineBtnText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '700',
   },
 });
