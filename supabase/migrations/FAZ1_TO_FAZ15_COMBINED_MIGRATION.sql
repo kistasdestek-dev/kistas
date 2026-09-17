@@ -1,5 +1,5 @@
 -- KISTAS FAZ 1 - FAZ 15 TUMLESİK MİGRASYON PAKETİ
--- Uretim Tarihi: 2026-09-17T15:37:25.795Z
+-- Uretim Tarihi: 2026-09-17T15:39:21.217Z
 
 
 
@@ -2539,6 +2539,12 @@ BEGIN
         (v_clean_action = 'QUARANTINED')
     )
     RETURNING id INTO v_event_id;
+
+    -- Otonom Şişme Kalkanı (Anti-Bloat Rolling Retention):
+    -- 14 günden eski ve aktif karantinada olmayan logları otomatik eriterek veritabanını daima hafif tutar.
+    DELETE FROM public.security_threat_events
+    WHERE detected_at < NOW() - INTERVAL '14 days'
+      AND is_quarantined = false;
 
     RETURN v_event_id;
 EXCEPTION WHEN OTHERS THEN

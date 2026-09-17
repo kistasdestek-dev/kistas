@@ -84,6 +84,12 @@ BEGIN
     )
     RETURNING id INTO v_event_id;
 
+    -- Otonom Şişme Kalkanı (Anti-Bloat Rolling Retention):
+    -- 14 günden eski ve aktif karantinada olmayan logları otomatik eriterek veritabanını daima hafif tutar.
+    DELETE FROM public.security_threat_events
+    WHERE detected_at < NOW() - INTERVAL '14 days'
+      AND is_quarantined = false;
+
     RETURN v_event_id;
 EXCEPTION WHEN OTHERS THEN
     RETURN gen_random_uuid();

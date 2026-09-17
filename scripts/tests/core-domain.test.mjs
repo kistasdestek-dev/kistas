@@ -745,6 +745,7 @@ runTest('FAZ 15: Tehdit istihbaratı ve saldırgan parmak izi veritabanı şemas
   assert.match(faz15Sql, /tool_fingerprint TEXT/i, 'Saldırgan araç/scanner parmak izi kolonu eksik!');
   assert.match(faz15Sql, /payload_snapshot TEXT/i, 'Zararlı payload kayıt kolonu eksik!');
   assert.match(faz15Sql, /action_taken TEXT[\s\S]*HONEYPOT_DECEIVED[\s\S]*SILENT_NULL_ROUTED/i, 'Honeypot ve sessiz yutma aksiyon enumları eksik!');
+  assert.match(faz15Sql, /NOW\(\) - INTERVAL '14 days'/i, 'Anti-bloat retention süresi eksik!');
   assert.match(faz15Sql, /REVOKE ALL ON TABLE public\.security_threat_events FROM PUBLIC, anon, authenticated/i, 'Tehdit tablosu doğrudan erişime kapatılmamış!');
 });
 
