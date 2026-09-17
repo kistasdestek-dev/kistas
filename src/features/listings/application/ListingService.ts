@@ -59,13 +59,14 @@ interface RankedListingRow {
   organic_rank: number | string;
 }
 
-interface WeeklyShowcaseRow {
+interface DailyShowcaseRow {
   project_id: string;
   category_id: string;
   support_score: number;
   category_rank: number;
   starts_at: string;
   ends_at: string;
+  rotation_rank: number;
 }
 
 interface SponsoredListingRow {
@@ -464,63 +465,36 @@ export class ListingService {
     });
   }
 
-  /**
-   * Pazartesi seçilip 7 gün boyunca sabit kalan organik kategori liderleri
-   * ve kendi kategorisinde 1. sıraya yükselen şampiyonlar.
-   */
-  public static async getWeeklyShowcaseListings(
+  /** Önceki tam Türkiye gününün kategori liderleri; saatlik adil sırada döner. */
+  public static async getDailyShowcaseListings(
     categoryId?: string | null,
     throwOnError = false,
   ): Promise<Listing[]> {
     try {
-      const { data, error } = await supabase.rpc('get_weekly_showcase_winners', {
+      const { data, error } = await supabase.rpc('get_daily_showcase_winners', {
         p_category_id: categoryId || null,
       });
       if (error) throw error;
-      if (data && data.length > 0) {
-        const winnerRows = data as WeeklyShowcaseRow[];
-        const listingsById = await this.getListingsByIds(
-          winnerRows.map((winner) => winner.project_id)
-        );
-
-        const winners = winnerRows.flatMap((winner, index) => {
-          const listing = listingsById.get(winner.project_id);
-          if (!listing) return [];
-          const supportScore = Number(winner.support_score || 0);
-          // Kural: Henüz hiç destek almamış proje vitrin lideri olamaz
-          if (supportScore <= 0 && (listing.upvotesCount || 0) <= 0) return [];
-          return [{
-            ...listing,
-            weeklySupportCount: supportScore,
-            isWeeklyWinner: true,
-            showcaseCategoryId: winner.category_id,
-            showcaseStartsAt: winner.starts_at,
-            showcaseEndsAt: winner.ends_at,
-            showcaseGlobalRank: index + 1,
-            organicRank: Number(winner.category_rank),
-            categoryRank: Number(winner.category_rank),
-          }];
-        });
-        if (winners.length > 0) {
-          return winners;
-        }
-      }
-
-      // Fallback: Haftalık kazananlar RPC'si henüz kazanan belirlememişse veya
-      // kazanan projeler kategori sponsorluğuna sahip olduğu için SQL tarafından elenmişse,
-      // vitrinin boş kalmaması için topluluk oyu (upvotesCount > 0) olan popüler projeleri vitrine sun
-      const fallbackListings = await this.getPopularListings(12, categoryId);
-      return fallbackListings
-        .filter((item) => (item.upvotesCount || 0) > 0)
-        .slice(0, 6)
-        .map((listing, index) => ({
+      if (!data?.length) return [];
+      const winnerRows = data as DailyShowcaseRow[];
+      const listingsById = await this.getListingsByIds(winnerRows.map((winner) => winner.project_id));
+      return winnerRows.flatMap((winner) => {
+        const listing = listingsById.get(winner.project_id);
+        const supportScore = Number(winner.support_score || 0);
+        if (!listing || supportScore <= 0) return [];
+        return [{
           ...listing,
-          weeklySupportCount: listing.upvotesCount || 1,
-          isWeeklyWinner: true,
-          showcaseGlobalRank: index + 1,
-          organicRank: index + 1,
-          categoryRank: index + 1,
-        }));
+          showcaseSupportCount: supportScore,
+          isDailyShowcaseWinner: true,
+          showcaseCategoryId: winner.category_id,
+          showcaseStartsAt: winner.starts_at,
+          showcaseEndsAt: winner.ends_at,
+          showcaseGlobalRank: Number(winner.rotation_rank),
+          rotationRank: Number(winner.rotation_rank),
+          organicRank: Number(winner.category_rank),
+          categoryRank: Number(winner.category_rank),
+        }];
+      });
     } catch (error) {
       if (throwOnError) throw error;
       return [];

@@ -349,7 +349,11 @@ export class ChatService {
   ) {
     const safeConversationId = toPostgrestUuid(conversationId, 'conversation id');
     const channel = supabase
-      .channel(`chat_${safeConversationId}`)
+      .channel(`chat_${safeConversationId}`, {
+        config: {
+          broadcast: { self: false },
+        },
+      })
       .on(
         'postgres_changes',
         {
@@ -360,6 +364,7 @@ export class ChatService {
         },
         (payload) => {
           const row = payload.new as any;
+          if (!row || typeof row !== 'object' || !row.id || !row.conversation_id) return;
           onNewMessage({
             id: row.id,
             conversationId: row.conversation_id,
@@ -384,7 +389,11 @@ export class ChatService {
   /** Yönetici ve kullanıcı gelen kutularını yeni destek hareketlerinde tazeler. */
   public static subscribeToInbox(onChange: () => void) {
     const channel = supabase
-      .channel(`chat_inbox_changes_${Math.random().toString(36).slice(2)}`)
+      .channel(`chat_inbox_changes_${Math.random().toString(36).slice(2)}`, {
+        config: {
+          broadcast: { self: false },
+        },
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, onChange)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, onChange)
       .subscribe();

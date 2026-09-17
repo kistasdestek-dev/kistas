@@ -21,4 +21,9 @@ export const supabase = createClient(SUPABASE_URL, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: Platform.OS === 'web',
   },
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
+  },
 });

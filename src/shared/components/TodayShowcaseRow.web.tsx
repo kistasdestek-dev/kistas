@@ -56,7 +56,7 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
   const { width } = useWindowDimensions();
   // Kural: Henüz hiç destek almamış (0 oy) projeler vitrin lideri olarak sergilenemez
   const featuredProjects = useMemo(
-    () => (projects || []).filter((p) => (p.weeklySupportCount ?? 0) > 0 || (p.upvotesCount ?? 0) > 0),
+    () => (projects || []).filter((p) => (p.showcaseSupportCount ?? 0) > 0),
     [projects]
   );
   const isPhone = width <= breakpoints.phoneMax;
@@ -137,7 +137,7 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
               style={({ pressed }) => [
                 styles.cardStage,
                 { width: cardWidth, height: cardHeight },
-                project.isWeeklyWinner && styles.cardStagePremium,
+                project.isDailyShowcaseWinner && styles.cardStagePremium,
                 pressed && styles.cardPressed,
               ]}
             >
@@ -196,7 +196,7 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
                     <View style={styles.supportRow}>
                       <Ionicons name="chevron-up" size={11} color="#3269C7" />
                       <Text style={styles.supportMeta} numberOfLines={1}>
-                        {formatSupportCount(project.weeklySupportCount)} haftalık destek
+                        {formatSupportCount(project.showcaseSupportCount)} günlük destek
                       </Text>
                     </View>
                   </View>

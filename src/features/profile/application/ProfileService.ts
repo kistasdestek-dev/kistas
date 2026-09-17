@@ -5,7 +5,6 @@ export interface UpdateProfileDTO {
   bio?: string;
   city?: string;
   district?: string;
-  iban?: string;
   avatarUrl?: string;
 }
 
@@ -38,14 +37,6 @@ export function isReservedBrandName(name?: string | null): boolean {
 }
 
 export class ProfileService {
-  /**
-   * Satıcı IBAN Doğrulama ve Kaydı (TR + 24 Hane = 26 Karakter)
-   */
-  public static validateTurkishIban(iban: string): boolean {
-    const cleaned = iban.replace(/\s+/g, '').toUpperCase();
-    return /^TR[0-9]{24}$/.test(cleaned);
-  }
-
   public static async updateProfile(dto: UpdateProfileDTO): Promise<{ success: boolean; error?: string }> {
     try {
       const { data: authData } = await supabase.auth.getUser();
@@ -53,22 +44,14 @@ export class ProfileService {
 
       // Kıstas marka adı koruması: Admin harici kullanıcılar Kıstas adını veya varyasyonlarını kullanamaz
       if (dto.fullName && isReservedBrandName(dto.fullName)) {
-        const { data: userProfile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', authData.user.id)
-          .maybeSingle();
+        const { data: adminAccess } = await supabase.rpc('get_current_admin_access');
 
-        if (userProfile?.role !== 'admin') {
+        if (adminAccess?.is_admin !== true) {
           return {
             success: false,
             error: '‘Kıstas’ adı ve varyasyonları yalnızca platform yöneticileri tarafından kullanılabilir.',
           };
         }
-      }
-
-      if (dto.iban && !this.validateTurkishIban(dto.iban)) {
-        return { success: false, error: 'Geçersiz Türkiye IBAN formatı (TR ile başlamalı ve 26 karakter olmalıdır).' };
       }
 
       const updatePayload: Record<string, unknown> = {};
@@ -77,7 +60,6 @@ export class ProfileService {
       if (dto.city !== undefined) updatePayload.city = dto.city;
       if (dto.district !== undefined) updatePayload.district = dto.district;
       if (dto.avatarUrl !== undefined) updatePayload.avatar_url = dto.avatarUrl;
-      if (dto.iban !== undefined) updatePayload.iban = dto.iban.replace(/\s+/g, '').toUpperCase();
 
       const { error } = await supabase
         .from('profiles')

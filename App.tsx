@@ -15,6 +15,7 @@ import { AppProviders, chatNotificationActions, useAuth, useAuthActions } from '
 import { breakpoints, theme } from './src/core/theme';
 import { readAnalyticsConsent, saveAnalyticsConsent, startAnalytics, trackPageView } from './src/core/analytics/analytics';
 import { applyPrivatePageSeo, applyPublicPageSeo } from './src/core/seo/WebSeoHelper';
+import { getLegacyHashReplacement, isAuthCallbackHash, isAuthCallbackSearch, parseWebRouteLocation } from './src/core/navigation/webRouting';
 
 const ProjectDetailScreen = React.lazy(() => import('./src/features/listings/presentation/ProjectDetailScreen').then((module) => ({ default: module.ProjectDetailScreen })));
 const CreateListingScreen = React.lazy(() => import('./src/features/listings/presentation/CreateListingScreen').then((module) => ({ default: module.CreateListingScreen })));
@@ -84,98 +85,11 @@ interface ShowcaseFilters {
 
 const NavigationBackdrop = Platform.OS === 'android' ? BlurTargetView : View;
 
-interface WebRouteState {
-  tab: TabKey;
-  screen: 'none' | 'about' | 'how-it-works' | 'faq' | 'privacy' | 'blog' | 'category' | 'showcase' | 'popular' | 'new';
-  blogSlug?: string | null;
-  categoryId?: string | null;
-  platform?: PlatformType | 'all';
-}
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const SHOWCASE_PLATFORMS: Array<PlatformType | 'all'> = ['all', 'iOS', 'Android', 'Web', 'macOS', 'SaaS'];
-
-const parseWebRoute = (): WebRouteState => {
+const parseWebRoute = () => {
   if (Platform.OS !== 'web' || typeof window === 'undefined') {
-    return { tab: 'discover', screen: 'none' };
+    return { tab: 'discover' as TabKey, screen: 'none' as const };
   }
-
-  const rawRoute = window.location.hash
-    ? window.location.hash.replace(/^#\/?/, '').trim()
-    : window.location.pathname.replace(/^\/+/, '').trim();
-  const [rawPath, rawQuery = ''] = rawRoute.split('?');
-  const segments = rawPath.split('/').filter(Boolean);
-  const primary = (segments[0] || '').toLowerCase();
-  const secondary = segments[1] || '';
-
-  if (primary === 'blog') {
-    return { tab: 'discover', screen: 'blog', blogSlug: secondary || null };
-  }
-  if (primary === 'about' || primary === 'hakkimizda') {
-    return { tab: 'discover', screen: 'about' };
-  }
-  if (primary === 'how-it-works' || primary === 'nasil-calisir') {
-    return { tab: 'discover', screen: 'how-it-works' };
-  }
-  if (primary === 'faq' || primary === 'sss') {
-    return { tab: 'discover', screen: 'faq' };
-  }
-  if (primary === 'privacy' || primary === 'gizlilik' || primary === 'gizlilik-politikasi') {
-    return { tab: 'discover', screen: 'privacy' };
-  }
-  if (primary === 'category' && secondary) {
-    return { tab: 'browse', screen: 'category', categoryId: decodeURIComponent(secondary) };
-  }
-  if (primary === 'showcase') {
-    const params = new URLSearchParams(rawQuery);
-    const rawCategoryId = params.get('category');
-    const rawPlatform = params.get('platform') as PlatformType | 'all' | null;
-    return {
-      tab: 'discover',
-      screen: 'showcase',
-      categoryId: rawCategoryId && UUID_PATTERN.test(rawCategoryId) ? rawCategoryId : null,
-      platform: rawPlatform && SHOWCASE_PLATFORMS.includes(rawPlatform) ? rawPlatform : 'all',
-    };
-  }
-  if (primary === 'popular' || primary === 'populer') {
-    const params = new URLSearchParams(rawQuery);
-    const rawCategoryId = params.get('category');
-    const rawPlatform = params.get('platform') as PlatformType | 'all' | null;
-    return {
-      tab: 'discover',
-      screen: 'popular',
-      categoryId: rawCategoryId && UUID_PATTERN.test(rawCategoryId) ? rawCategoryId : null,
-      platform: rawPlatform && SHOWCASE_PLATFORMS.includes(rawPlatform) ? rawPlatform : 'all',
-    };
-  }
-  if (primary === 'new' || primary === 'yeni' || primary === 'yeni-cikanlar') {
-    const params = new URLSearchParams(rawQuery);
-    const rawCategoryId = params.get('category');
-    const rawPlatform = params.get('platform') as PlatformType | 'all' | null;
-    return {
-      tab: 'discover',
-      screen: 'new',
-      categoryId: rawCategoryId && UUID_PATTERN.test(rawCategoryId) ? rawCategoryId : null,
-      platform: rawPlatform && SHOWCASE_PLATFORMS.includes(rawPlatform) ? rawPlatform : 'all',
-    };
-  }
-
-  const validTabs: TabKey[] = ['discover', 'browse', 'messages', 'create', 'credits', 'profile'];
-  if (validTabs.includes(primary as TabKey)) {
-    return { tab: primary as TabKey, screen: 'none' };
-  }
-
-  // Tarayıcı yenilendiğinde (F5) son sekmeyi sessionStorage'dan geri yükle
-  try {
-    const savedSessionTab = sessionStorage.getItem('kistas_active_tab') as TabKey | null;
-    if (savedSessionTab && validTabs.includes(savedSessionTab)) {
-      return { tab: savedSessionTab, screen: 'none' };
-    }
-  } catch {
-    // sessionStorage erişim engeli varsa yoksay
-  }
-
-  return { tab: 'discover', screen: 'none' };
+  return parseWebRouteLocation(window.location.pathname, window.location.search, window.location.hash);
 };
 
 function AppContent() {
@@ -687,11 +601,18 @@ function AppContent() {
     setIsFaqOpen(true);
   }, [updateNavCompact]);
 
-  // Web tarayıcı geri/ileri butonları ve manuel hash değişikliklerini dinleme
+  // Eski #/ rotalarını tek seferde gerçek, paylaşılabilir URL'lere taşı.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    const replacement = getLegacyHashReplacement(window.location.hash);
+    if (replacement) window.history.replaceState(null, '', replacement);
+  }, []);
+
+  // Web tarayıcı geri/ileri butonlarını gerçek pathname rotalarıyla dinleme.
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
 
-    const handleWebHashChange = () => {
+    const handleWebRouteChange = () => {
       const route = parseWebRoute();
       isHandlingPopstateRef.current = true;
       setIsFaqOpen(route.screen === 'faq');
@@ -824,11 +745,9 @@ function AppContent() {
       }, 50);
     };
 
-    window.addEventListener('popstate', handleWebHashChange);
-    window.addEventListener('hashchange', handleWebHashChange);
+    window.addEventListener('popstate', handleWebRouteChange);
     return () => {
-      window.removeEventListener('popstate', handleWebHashChange);
-      window.removeEventListener('hashchange', handleWebHashChange);
+      window.removeEventListener('popstate', handleWebRouteChange);
     };
   }, []);
 
@@ -842,58 +761,53 @@ function AppContent() {
 
     if (isHandlingPopstateRef.current) return;
 
-    let targetPath = '';
+    let targetPath = '/';
     if (isBlogOpen) {
-      targetPath = blogPostSlug ? `blog/${blogPostSlug}` : 'blog';
+      targetPath = blogPostSlug ? `/blog/${encodeURIComponent(blogPostSlug)}/` : '/blog/';
     } else if (isAboutOpen) {
-      targetPath = 'about';
+      targetPath = '/about/';
     } else if (isHowItWorksOpen) {
-      targetPath = 'how-it-works';
+      targetPath = '/how-it-works/';
     } else if (isFaqOpen) {
-      targetPath = 'sss';
+      targetPath = '/sss/';
     } else if (isPrivacyOpen) {
-      targetPath = 'privacy';
+      targetPath = '/privacy/';
     } else if (activeCategoryScreenId) {
-      targetPath = `category/${activeCategoryScreenId}`;
+      targetPath = `/category/${encodeURIComponent(activeCategoryScreenId)}`;
     } else if (isShowcaseOpen) {
       const params = new URLSearchParams();
       if (showcaseFilters.categoryId) params.set('category', showcaseFilters.categoryId);
       if (showcaseFilters.platform !== 'all') params.set('platform', showcaseFilters.platform);
       const query = params.toString();
-      targetPath = `showcase${query ? `?${query}` : ''}`;
+      targetPath = `/showcase/${query ? `?${query}` : ''}`;
     } else if (isPopularOpen) {
       const params = new URLSearchParams();
       if (curatedFilters.categoryId) params.set('category', curatedFilters.categoryId);
       if (curatedFilters.platform !== 'all') params.set('platform', curatedFilters.platform);
       const query = params.toString();
-      targetPath = `popular${query ? `?${query}` : ''}`;
+      targetPath = `/popular/${query ? `?${query}` : ''}`;
     } else if (isNewOpen) {
       const params = new URLSearchParams();
       if (curatedFilters.categoryId) params.set('category', curatedFilters.categoryId);
       if (curatedFilters.platform !== 'all') params.set('platform', curatedFilters.platform);
       const query = params.toString();
-      targetPath = `new${query ? `?${query}` : ''}`;
+      targetPath = `/new/${query ? `?${query}` : ''}`;
     } else {
-      targetPath = activeTab === 'discover' ? 'discover' : activeTab;
+      targetPath = activeTab === 'discover' ? '/' : activeTab === 'browse' ? '/browse/' : `/${activeTab}`;
     }
 
-    const targetHash = `#/${targetPath}`;
     const currentHash = window.location.hash;
 
-    // Supabase must consume recovery/OAuth callback parameters before app routing rewrites the hash.
-    if (isPasswordRecovery || /^#(?:access_token|refresh_token|error)=/.test(currentHash)) return;
+    // Supabase must consume recovery/OAuth callback parameters before app routing touches the URL.
+    if (isPasswordRecovery || isAuthCallbackHash(currentHash) || isAuthCallbackSearch(window.location.search)) return;
 
-    if (
-      currentHash === targetHash ||
-      (targetPath === 'discover' && (currentHash === '' || currentHash === '#' || currentHash === '#/' || currentHash === '#/discover'))
-    ) {
-      return;
-    }
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    if (currentPath === targetPath && currentHash === '') return;
 
     try {
-      window.history.pushState(null, '', targetHash);
+      window.history.pushState(null, '', targetPath);
     } catch {
-      window.location.hash = targetHash;
+      window.location.assign(targetPath);
     }
   }, [activeTab, isBlogOpen, blogPostSlug, isAboutOpen, isFaqOpen, isHowItWorksOpen, isPrivacyOpen, activeCategoryScreenId, isShowcaseOpen, showcaseFilters, isPopularOpen, isNewOpen, curatedFilters, isPasswordRecovery]);
 
@@ -1294,7 +1208,7 @@ function AppContent() {
             categoryId={showcaseFilters.categoryId}
             platform={showcaseFilters.platform}
             onBack={() => {
-              if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hash.startsWith('#/showcase')) {
+              if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.pathname.startsWith('/showcase')) {
                 window.history.back();
               } else {
                 setIsShowcaseOpen(false);
@@ -1308,7 +1222,7 @@ function AppContent() {
             initialCategoryId={curatedFilters.categoryId}
             initialPlatform={curatedFilters.platform}
             onBack={() => {
-              if (Platform.OS === 'web' && typeof window !== 'undefined' && (window.location.hash.startsWith('#/popular') || window.location.hash.startsWith('#/populer'))) {
+              if (Platform.OS === 'web' && typeof window !== 'undefined' && (window.location.pathname.startsWith('/popular') || window.location.pathname.startsWith('/populer'))) {
                 window.history.back();
               } else {
                 setIsPopularOpen(false);
@@ -1327,7 +1241,7 @@ function AppContent() {
             initialCategoryId={curatedFilters.categoryId}
             initialPlatform={curatedFilters.platform}
             onBack={() => {
-              if (Platform.OS === 'web' && typeof window !== 'undefined' && (window.location.hash.startsWith('#/new') || window.location.hash.startsWith('#/yeni'))) {
+              if (Platform.OS === 'web' && typeof window !== 'undefined' && (window.location.pathname.startsWith('/new') || window.location.pathname.startsWith('/yeni'))) {
                 window.history.back();
               } else {
                 setIsNewOpen(false);

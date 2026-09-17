@@ -1,4 +1,4 @@
-import { toSafeHttpsUrl } from '../../src/core/security/ExternalUrl.ts';
+import { toSafeHttpsUrl } from '../../src/core/security/SafeUrl.ts';
 
 const cases = [
   { value: 'https://example.com/path?q=1', accepted: true },

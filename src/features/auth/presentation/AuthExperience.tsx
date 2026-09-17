@@ -8,6 +8,7 @@ import { AuthService } from '../application/AuthService';
 import { UserProfile } from '../domain/User';
 import { installAuthAutofillStyles } from './authAutofillStyles';
 import { GoogleIdentityButton } from './GoogleIdentityButton';
+import { ParsDevstateLogo } from './ParsDevstateLogo';
 
 const LOGIN_TYPEWRITER_WORDS = [
   'Geleceğin projelerini keşfedin.',
@@ -267,6 +268,7 @@ export function AuthExperience({ mode, onAuthSuccess, onSwitch, onBack, onGoogle
             )}
             {step > 0 && <View style={s.actions}><Pressable accessibilityRole="button" onPress={() => go(step - 1)} disabled={busy} style={s.link}><Ionicons name="arrow-back" size={15} color="#65758C" /><Text style={s.linkText}>Geri</Text></Pressable>{!registering && <Pressable accessibilityRole="button" disabled={busy} onPress={forgot} style={s.link}><Text style={s.linkText}>Şifremi unuttum</Text></Pressable>}</View>}
             <View style={s.switchRow}><Text style={s.linkText}>{registering ? 'Zaten hesabınız var mı?' : 'Henüz hesabınız yok mu?'}</Text><Pressable accessibilityRole="button" disabled={busy} onPress={onSwitch} style={s.link}><Text style={s.switchText}>{registering ? 'Giriş yap' : 'Kayıt Ol'}</Text></Pressable></View>
+            <View style={s.parsLogo}><ParsDevstateLogo /></View>
           </Animated.View>
         </View>
       </ScrollView>
@@ -309,6 +311,7 @@ const s = StyleSheet.create({
   link: { minHeight: 44, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   linkText: { fontSize: 12, color: '#677A93' },
   switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 24, flexWrap: 'wrap' },
+  parsLogo: { alignItems: 'center', marginTop: 28, opacity: 0.72 },
   switchText: { color: '#3269C7', fontWeight: '600', fontSize: 12 },
   notice: { backgroundColor: '#FFF3F4', padding: 12, borderRadius: 8, marginBottom: 16 },
   noticeText: { color: '#A33146', fontSize: 13, lineHeight: 20 },

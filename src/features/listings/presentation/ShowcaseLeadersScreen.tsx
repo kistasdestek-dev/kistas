@@ -59,7 +59,7 @@ export const ShowcaseLeadersScreen: React.FC<ShowcaseLeadersScreenProps> = ({
     setError(null);
     try {
       const [leaders, categoryItems] = await Promise.all([
-        ListingService.getWeeklyShowcaseListings(null, true),
+        ListingService.getDailyShowcaseListings(null, true),
         CategoryService.getProjectCategories(),
       ]);
       setProjects(leaders);
@@ -72,6 +72,25 @@ export const ShowcaseLeadersScreen: React.FC<ShowcaseLeadersScreenProps> = ({
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  useEffect(() => {
+    let isMounted = true;
+    let refreshTimer: ReturnType<typeof setTimeout> | undefined;
+    const scheduleNextRotation = () => {
+      const delay = 60 * 60 * 1000 - (Date.now() % (60 * 60 * 1000)) + 1000;
+      refreshTimer = setTimeout(async () => {
+        const leaders = await ListingService.getDailyShowcaseListings(null);
+        if (!isMounted) return;
+        setProjects(leaders);
+        scheduleNextRotation();
+      }, delay);
+    };
+    scheduleNextRotation();
+    return () => {
+      isMounted = false;
+      if (refreshTimer) clearTimeout(refreshTimer);
+    };
+  }, []);
 
   const categoryName = useMemo(
     () => categories.find((category) => category.id === categoryId)?.name || 'Tüm kategoriler',
@@ -106,7 +125,7 @@ export const ShowcaseLeadersScreen: React.FC<ShowcaseLeadersScreenProps> = ({
         <GlassIconButton icon="arrow-back" onPress={onBack} accessibilityLabel="Keşfet'e dön" />
         <View style={styles.heroCopy}>
           <Text style={styles.title}>Günün Vitrini</Text>
-          <Text style={styles.subtitle}>Her kategorinin topluluk tarafından seçilen liderleri.</Text>
+          <Text style={styles.subtitle}>Dünün kategori liderleri · Her saat adil rotasyon.</Text>
         </View>
       </View>
 
@@ -188,7 +207,7 @@ export const ShowcaseLeadersScreen: React.FC<ShowcaseLeadersScreenProps> = ({
                     <View style={styles.projectCopy}>
                       <Text style={styles.projectTitle} numberOfLines={1}>{project.title}</Text>
                       <Text style={styles.maker} numberOfLines={1}>{project.seller?.fullName || 'Bağımsız geliştirici'}</Text>
-                      <Text style={styles.support}>{project.weeklySupportCount || 0} haftalık destek</Text>
+                      <Text style={styles.support}>{project.showcaseSupportCount || 0} günlük destek</Text>
                     </View>
                     <GlassIconButton icon="arrow-forward" size={38} iconSize={17} accessibilityLabel={`${project.title} detayına git`} />
                   </BlurView>

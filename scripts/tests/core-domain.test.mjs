@@ -513,78 +513,75 @@ runTest('Proje Düzeltmesi: yeniden gönderim sahiplik ve durum doğrulamasıyla
 });
 
 // -------------------------------------------------------------
-// 14. HAFTALIK VİTRİN LİDERLERİ
+// 14. GÜNLÜK VİTRİN LİDERLERİ
 // -------------------------------------------------------------
-runTest('Günün Vitrini: lider seçimi doğrulanmış destek ve en az yetki kurallarını korumalı', () => {
+runTest('Günün Vitrini: günlük seçim Türkiye günü ve güvenli destek kurallarını korumalı', () => {
   const migrationPath = path.join(
     ROOT,
     'supabase',
     'migrations',
-    '20260914000001_showcase_leaders_expansion.sql'
+    '20260917000001_daily_showcase_leaders.sql'
   );
-  assert.strictEqual(fs.existsSync(migrationPath), true, 'Günün Vitrini migration dosyası eksik!');
+  assert.strictEqual(fs.existsSync(migrationPath), true, 'Günlük Günün Vitrini migration dosyası eksik!');
   const sql = fs.readFileSync(migrationPath, 'utf8');
 
   assert.match(sql, /SECURITY DEFINER[\s\S]*SET search_path = ''/i, 'Lider seçim RPC güvenli search_path kullanmıyor!');
+  assert.match(sql, /DATE_TRUNC\('day', p_reference_time AT TIME ZONE 'Europe\/Istanbul'\)/i, 'Türkiye yerel gün sınırı kullanılmıyor!');
+  assert.match(sql, /v_local_day_start - INTERVAL '1 day'/i, 'Önceki tam gün yarışma başlangıcı eksik!');
+  assert.match(sql, /support\.created_at >= v_competition_start[\s\S]*support\.created_at < v_competition_end/i, 'Destekler önceki tam günle sınırlandırılmıyor!');
   assert.match(sql, /verified_user\.email_confirmed_at IS NOT NULL/i, 'Doğrulanmamış kullanıcı destekleri dışlanmıyor!');
   assert.match(sql, /support\.user_id <> listing\.seller_id/i, 'Proje sahibinin kendi desteği dışlanmıyor!');
   assert.match(sql, /listing\.status = 'active'/i, 'Aktif olmayan projeler dışlanmıyor!');
-  assert.match(sql, /listing\.boosted_until IS NULL[\s\S]*listing\.boosted_until <= v_showcase_starts_at/i, 'Sponsorlu projeler organik liderlikten dışlanmıyor!');
+  assert.match(sql, /listing\.boosted_until IS NULL[\s\S]*listing\.category_boosted_until IS NULL/i, 'Sponsorlu projeler organik liderlikten dışlanmıyor!');
   assert.match(sql, /HAVING COUNT\(verified_user\.id\) >= 1/i, 'En az bir doğrulanmış destek barajı eksik!');
   assert.match(sql, /PARTITION BY candidate\.category_id/i, 'Her kategori için bağımsız lider seçimi eksik!');
-  assert.match(sql, /ON CONFLICT \(category_id, week_start\) DO NOTHING/i, 'Haftalık seçim idempotent değil!');
-  assert.match(sql, /REVOKE ALL[\s\S]*PUBLIC, anon, authenticated/i, 'Lider seçici istemci rollerine kapatılmamış!');
-  assert.doesNotMatch(sql, /previous_winner/i, 'Tekrar kazananları engelleyen eski kural devam ediyor!');
+  assert.match(sql, /candidate\.support_score DESC[\s\S]*candidate\.lifetime_support_count DESC[\s\S]*candidate\.created_at DESC[\s\S]*candidate\.project_id ASC/i, 'Deterministik eşitlik sırası eksik!');
+  assert.match(sql, /ON CONFLICT \(category_id, showcase_date\) DO UPDATE/i, 'Günlük seçim idempotent değil!');
+  assert.match(sql, /REVOKE ALL ON FUNCTION public\.select_daily_showcase_winners[\s\S]*PUBLIC, anon, authenticated/i, 'Lider seçici istemci rollerine kapatılmamış!');
 });
 
-runTest('Günün Vitrini: önizleme cihaz kotasıyla sınırlı ve oturum boyunca sabit olmalı', () => {
+runTest('Günün Vitrini: son geçerli lider ve saatlik adil rotasyon backend tarafından korunmalı', () => {
+  const sql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260917000001_daily_showcase_leaders.sql'),
+    'utf8'
+  );
+  assert.match(sql, /DISTINCT ON \(history\.category_id\)[\s\S]*history\.showcase_date DESC/i, 'Desteksiz günde son geçerli lider korunmuyor!');
+  assert.match(sql, /EXTRACT\(HOUR FROM p_reference_time AT TIME ZONE 'Europe\/Istanbul'\)/i, 'Saatlik Türkiye rotasyonu eksik!');
+  assert.match(sql, /computed_rotation_rank/i, 'Deterministik rotasyon sırası üretilmiyor!');
+  assert.match(sql, /'0 21 \* \* \*'/i, 'Türkiye 00:00 günlük seçim görevi eksik!');
+  assert.match(sql, /kistas-daily-showcase-reconciliation[\s\S]*'17 \* \* \* \*'/i, 'Saatlik uygunluk uzlaştırması eksik!');
+  assert.match(sql, /REVOKE ALL ON TABLE public\.daily_showcase_winners FROM PUBLIC, anon, authenticated/i, 'Ham günlük lider tablosu istemci rollerine açık!');
+  assert.match(sql, /GRANT EXECUTE ON FUNCTION public\.get_daily_showcase_winners[\s\S]*anon, authenticated/i, 'Güvenli public getter yetkisi eksik!');
+
+  const rotationRank = (basePosition, winnerCount, istanbulHour) =>
+    (((basePosition - 1 - istanbulHour) % winnerCount) + winnerCount) % winnerCount + 1;
+  const hour10 = [1, 2, 3, 4].map((position) => rotationRank(position, 4, 10));
+  const sameHour = [1, 2, 3, 4].map((position) => rotationRank(position, 4, 10));
+  const hour11 = [1, 2, 3, 4].map((position) => rotationRank(position, 4, 11));
+  assert.deepStrictEqual(sameHour, hour10, 'Rotasyon aynı saat içinde sabit değil!');
+  assert.deepStrictEqual([...hour10].sort(), [1, 2, 3, 4], 'Rotasyon liderleri eksiltiyor veya çoğaltıyor!');
+  assert.deepStrictEqual(
+    hour11,
+    hour10.map((rank) => (rank === 1 ? 4 : rank - 1)),
+    'Rotasyon sonraki saatte tam bir kademe ilerlemiyor!'
+  );
+});
+
+runTest('Günün Vitrini: Keşfet kotası korunmalı ve kategori ekranından kaldırılmalı', () => {
   const discoverSource = fs.readFileSync(
     path.join(ROOT, 'src', 'features', 'listings', 'presentation', 'DiscoverScreen.tsx'),
     'utf8'
   );
-  const previewSource = fs.readFileSync(
-    path.join(ROOT, 'src', 'features', 'listings', 'application', 'showcasePreview.ts'),
+  const categorySource = fs.readFileSync(
+    path.join(ROOT, 'src', 'features', 'listings', 'presentation', 'CategoryScreen.tsx'),
     'utf8'
   );
 
-  assert.match(discoverSource, /showcasePreviewSeed[\s\S]*useState\(\(\) => Math\.floor\(Math\.random/i, 'Önizleme oturum tohumu sabit değil!');
   assert.match(discoverSource, /phoneMax[\s\S]*\? 3[\s\S]*tabletMax \? 4 : 6/i, '3\/4\/6 cihaz kotası eksik!');
-  assert.match(previewSource, /hashProjectForSeed/i, 'Kararlı rastgele sıralama algoritması eksik!');
-  assert.match(previewSource, /slice\(0, Math\.max\(0, limit\)\)/i, 'Önizleme kotası uygulanmıyor!');
-});
-
-runTest('Günün Vitrini: sponsor bitişi organik liderlerle saatlik uzlaştırılmalı', () => {
-  const migrationPath = path.join(
-    ROOT,
-    'supabase',
-    'migrations',
-    '20260914000002_showcase_sponsor_reconciliation.sql'
-  );
-  assert.strictEqual(fs.existsSync(migrationPath), true, 'Sponsor uzlaştırma migration dosyası eksik!');
-  const sql = fs.readFileSync(migrationPath, 'utf8');
-
-  assert.match(sql, /listing\.boosted_until IS NULL[\s\S]*listing\.boosted_until <= p_reference_time/i, 'Genel sponsor bitişi güncel zamanda kontrol edilmiyor!');
-  assert.match(sql, /listing\.category_boosted_until IS NULL[\s\S]*listing\.category_boosted_until <= p_reference_time/i, 'Kategori sponsor bitişi güncel zamanda kontrol edilmiyor!');
-  assert.match(sql, /ON CONFLICT \(category_id, week_start\) DO UPDATE/i, 'Sponsor bitince haftalık lider uzlaştırılmıyor!');
-  assert.match(sql, /kistas-showcase-sponsor-reconciliation[\s\S]*'17 \* \* \* \*'/i, 'Saatlik sponsor uzlaştırma görevi eksik!');
-  assert.match(sql, /REVOKE ALL ON FUNCTION public\.select_weekly_showcase_winners[\s\S]*PUBLIC, anon, authenticated/i, 'Uzlaştırma RPC istemci rollerine kapalı değil!');
-});
-
-runTest('Günün Vitrini: yeni doğrulanmış destek kart sayacına canlı eklenmeli', () => {
-  const migrationPath = path.join(
-    ROOT,
-    'supabase',
-    'migrations',
-    '20260914000003_showcase_live_support_count.sql'
-  );
-  assert.strictEqual(fs.existsSync(migrationPath), true, 'Canlı vitrin sayacı migration dosyası eksik!');
-  const sql = fs.readFileSync(migrationPath, 'utf8');
-
-  assert.match(sql, /winner\.support_score \+ live_support\.support_count/i, 'Canlı destekler seçim puanına eklenmiyor!');
-  assert.match(sql, /verified_user\.email_confirmed_at IS NOT NULL/i, 'Canlı sayaç doğrulanmamış kullanıcıları dışlamıyor!');
-  assert.match(sql, /support\.user_id <> listing\.seller_id/i, 'Canlı sayaç proje sahibinin desteğini dışlamıyor!');
-  assert.match(sql, /support\.created_at >= winner\.starts_at/i, 'Canlı sayaç vitrin öncesi destekleri tekrar sayabilir!');
-  assert.match(sql, /SECURITY DEFINER[\s\S]*SET search_path = ''/i, 'Canlı vitrin getter güvenli search_path kullanmıyor!');
+  assert.match(discoverSource, /getDailyShowcaseListings/i, 'Keşfet günlük lider RPC akışını kullanmıyor!');
+  assert.match(discoverSource, /filtered\.slice\(0, previewLimit\)/i, 'Backend rotasyon sırası cihaz kotasıyla kesilmiyor!');
+  assert.doesNotMatch(discoverSource, /showcasePreviewSeed|selectStableRandomPreview/i, 'Eski rastgele önizleme devam ediyor!');
+  assert.doesNotMatch(categorySource, /TodayShowcaseRow|getDailyShowcaseListings|getWeeklyShowcaseListings/i, 'Günün Vitrini kategori ekranından kaldırılmamış!');
 });
 
 runTest('Keşfet: ilk ekran veri ve logo işleme bütçesi proje sayısından bağımsız kalmalı', () => {
@@ -707,6 +704,34 @@ runTest('Kredi cüzdanı: hareketler yalnız sahibine açık ve harcama hedefiyl
   assert.match(ledgerSql, /'listing_id', p_listing_id[\s\S]*'listing_title', v_listing_title[\s\S]*'scope', v_clean_scope/i, 'Kredinin harcandığı proje ve vitrin kaydedilmiyor!');
   assert.match(serviceSource, /getMyCreditTransactions[\s\S]*\.eq\('user_id', authData\.user\.id\)/i, 'İstemci sorgusunda oturum sahibi filtresi eksik!');
 });
+
+// -------------------------------------------------------------
+// FAZ 14: PROMOSYON KODU, FİYATLANDIRMA VE SİPARİŞ BÜTÜNLÜĞÜ
+// -------------------------------------------------------------
+runTest('FAZ 14: Promosyon kodu ve fiyat aralıkları veritabanı kısıtları doğrulanmalı', () => {
+  const faz14Sql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260917000017_faz14_promo_pricing_and_delivery_hardening.sql'),
+    'utf8'
+  );
+
+  assert.match(faz14Sql, /chk_listings_promo_code_format/i, 'Promosyon kodu format kısıtı eksik!');
+  assert.match(faz14Sql, /\^\[A-Za-z0-9_\\-\]\+\$/i, 'Promosyon kodu alfanümerik regex kuralı eksik!');
+  assert.match(faz14Sql, /chk_listings_price_range/i, 'İlan fiyat aralık tavan kısıtı eksik!');
+  assert.match(faz14Sql, /chk_orders_seller_earnings_bounded[\s\S]*seller_earnings <= product_amount/i, 'Satıcı kazancının ürün tutarını aşamayacağı kuralı eksik!');
+});
+
+runTest('FAZ 14: Sipariş numarası ve kargo formatı güvenliği doğrulanmalı', () => {
+  const faz14Sql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260917000017_faz14_promo_pricing_and_delivery_hardening.sql'),
+    'utf8'
+  );
+
+  assert.match(faz14Sql, /chk_orders_order_number_format/i, 'Sipariş referans format kısıtı eksik!');
+  assert.match(faz14Sql, /chk_orders_tracking_number_format/i, 'Kargo takip numarası format kısıtı eksik!');
+  assert.match(faz14Sql, /gen_random_bytes\(4\)/i, 'Kriptografik güvenli rastgele sipariş üretimi (CSPRNG) eksik!');
+  assert.match(faz14Sql, /SET search_path = public, pg_temp/i, 'create_escrow_order_atomic search_path izolasyonu eksik!');
+});
+
 
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);
 

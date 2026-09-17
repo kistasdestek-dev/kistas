@@ -33,13 +33,15 @@ export interface Listing {
   pricingModel?: PricingModel;
   upvotesCount: number;
   weeklySupportCount?: number;
+  showcaseSupportCount?: number;
   organicRank?: number;
-  isWeeklyWinner?: boolean;
+  isDailyShowcaseWinner?: boolean;
   showcaseCategoryId?: string;
   showcaseCategoryName?: string;
   showcaseStartsAt?: string;
   showcaseEndsAt?: string;
   showcaseGlobalRank?: number;
+  rotationRank?: number;
   hasUpvoted?: boolean;
   price?: number; // Opsiyonel (Örn: Uygulama İçi Satın Alma / Başlangıç Fiyatı)
   status: ProjectStatus;

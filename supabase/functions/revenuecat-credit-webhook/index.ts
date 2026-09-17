@@ -34,14 +34,24 @@ const jsonResponse = (status: number, body: Record<string, unknown>): Response =
 const isUuid = (value: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
+function constantTimeEqual(left: string, right: string): boolean {
+  if (left.length !== right.length) return false;
+  let difference = 0;
+  for (let index = 0; index < left.length; index += 1) {
+    difference |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  }
+  return difference === 0;
+}
+
 Deno.serve(async (request: Request): Promise<Response> => {
   if (request.method !== 'POST') {
     return jsonResponse(405, { error: 'METHOD_NOT_ALLOWED' });
   }
 
   const webhookSecret = Deno.env.get('REVENUECAT_WEBHOOK_SECRET');
-  const authorization = request.headers.get('authorization');
-  if (!webhookSecret || authorization !== `Bearer ${webhookSecret}`) {
+  const authorization = request.headers.get('authorization') || '';
+  const expectedAuth = `Bearer ${webhookSecret || ''}`;
+  if (!webhookSecret || !constantTimeEqual(authorization, expectedAuth)) {
     return jsonResponse(401, { error: 'UNAUTHORIZED' });
   }
 

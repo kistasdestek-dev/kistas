@@ -11,8 +11,6 @@ export interface UserProfile {
   fullName: string;
   avatarUrl?: string | null;
   bio?: string | null;
-  iban?: string | null;
-  identityNumber?: string | null;
   availableBalance: number;
   pendingBalance: number;
   boostCredits?: number;

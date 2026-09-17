@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { Platform } from 'react-native';
 import { UserProfile } from '../../../features/auth/domain/User';
 import { AuthService } from '../../../features/auth/application/AuthService';
 import { supabase } from '../../supabase/supabaseClient';
@@ -80,7 +81,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else if (_event === 'SIGNED_OUT') {
         setIsPasswordRecovery(false);
       }
+
       if (session?.user) {
+        // SEC-035: Token'ların adres çubuğunda ve tarayıcı geçmişinde açıkta kalmasını önle
+        if (Platform.OS === 'web' && typeof window !== 'undefined') {
+          const hash = window.location.hash || '';
+          const search = window.location.search || '';
+          const hasAuthHash = hash.includes('access_token=') || hash.includes('refresh_token=');
+          const hasAuthCode = search.includes('code=');
+
+          if (hasAuthHash || hasAuthCode) {
+            const cleanSearch = hasAuthCode
+              ? search
+                  .replace(/[?&]code=[^&]+/, '')
+                  .replace(/^[?&]/, '?')
+                  .replace(/^\?$/, '')
+              : search;
+            const cleanPath = `${window.location.pathname}${cleanSearch}`;
+            window.history.replaceState(null, '', cleanPath);
+          }
+        }
         void refreshProfile();
       } else {
         setProfileState(null);

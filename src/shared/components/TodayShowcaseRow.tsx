@@ -80,7 +80,7 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = React.memo(({
   const platform = project.platforms?.[0];
   const makerName = project.developerName || project.seller?.fullName || 'Bağımsız geliştirici';
   const initials = project.title.slice(0, 2).toUpperCase();
-  const isPremium = !!project.isWeeklyWinner;
+  const isPremium = !!project.isDailyShowcaseWinner;
   const carouselInputRange = [
     (rank - 2) * snapInterval,
     (rank - 1) * snapInterval,
@@ -224,7 +224,7 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = React.memo(({
             <View style={styles.projectMetaRow}>
               <Ionicons name="chevron-up" size={11} color="#3269C7" />
               <Text style={styles.projectMetaText}>
-                {formatSupportCount(project.weeklySupportCount)} haftalık destek
+                {formatSupportCount(project.showcaseSupportCount)} günlük destek
               </Text>
             </View>
           </View>
@@ -256,7 +256,7 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
   const [reduceMotion, setReduceMotion] = useState(false);
   // Kural: Henüz hiç destek almamış (0 oy) projeler vitrin lideri olarak sergilenemez
   const featuredProjects = useMemo(
-    () => (projects || []).filter((p) => (p.weeklySupportCount ?? 0) > 0 || (p.upvotesCount ?? 0) > 0),
+    () => (projects || []).filter((p) => (p.showcaseSupportCount ?? 0) > 0),
     [projects]
   );
   const cardWidth = Math.min(Math.max(viewportWidth - 70, 252), 292);

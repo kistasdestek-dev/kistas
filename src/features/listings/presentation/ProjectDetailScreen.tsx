@@ -9,7 +9,6 @@ import {
   Image,
   Pressable,
   TouchableOpacity,
-  Linking,
   Alert,
   Platform,
   PanResponder,
@@ -35,7 +34,7 @@ import {
   ProjectComment,
   ProjectCommentService,
 } from '../../reviews/application/ProjectCommentService';
-import { toSafeHttpsUrl } from '../../../core/security/ExternalUrl';
+import { openSafeExternalUrl } from '../../../core/security/ExternalUrl';
 import { DescriptionRichText } from './DescriptionRichText';
 import { theme } from '../../../core/theme';
 import { trackEvent } from '../../../core/analytics/analytics';
@@ -373,21 +372,17 @@ export const ProjectDetailScreen: React.FC<ProjectDetailScreenProps> = ({
     },
   }), [showAdjacentScreenshot, windowWidth]);
 
-  // Harici Bağlantı Açma
+  // Harici Bağlantı Açma (SEC-036 Güvenli Yönlendirme)
   const handleOpenUrl = useCallback((url?: string) => {
     if (!url) {
       Alert.alert('Bilgi', 'Bu bağlantı henüz tanımlanmamış.');
       return;
     }
 
-    const safeUrl = toSafeHttpsUrl(url);
-    if (!safeUrl) {
-      Alert.alert('Güvenli Olmayan Bağlantı', 'Yalnızca geçerli HTTPS bağlantıları açılabilir.');
-      return;
-    }
-
-    Linking.openURL(safeUrl).catch(() => {
-      Alert.alert('Bağlantı Açılamadı', 'Lütfen daha sonra tekrar deneyin.');
+    void openSafeExternalUrl(url).then((opened) => {
+      if (!opened) {
+        Alert.alert('Güvenli Olmayan veya Açılamayan Bağlantı', 'Yalnızca geçerli HTTPS bağlantıları güvenli sekmede açılabilir.');
+      }
     });
   }, []);
 

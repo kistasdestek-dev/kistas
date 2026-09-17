@@ -21,7 +21,6 @@ import { FooterSloganBanner } from '../../../shared/components/FooterSloganBanne
 import { KistasTopBrandBar } from '../../../shared/components/KistasTopBrandBar';
 import { Listing, PlatformType } from '../domain/Listing';
 import { ListingService } from '../application/ListingService';
-import { selectStableRandomPreview } from '../application/showcasePreview';
 import { CategoryService } from '../../categories/application/CategoryService';
 import { Category } from '../../categories/domain/Category';
 import { DynamicDiscoverFilters } from './DynamicDiscoverFilters';
@@ -93,8 +92,7 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
   const [sponsoredProjects, setSponsoredProjects] = useState<Listing[]>([]);
   const [popularProjects, setPopularProjects] = useState<Listing[]>([]);
   const [newProjects, setNewProjects] = useState<Listing[]>([]);
-  const [weeklyShowcaseProjects, setWeeklyShowcaseProjects] = useState<Listing[]>([]);
-  const [showcasePreviewSeed] = useState(() => Math.floor(Math.random() * 0x7fffffff));
+  const [dailyShowcaseProjects, setDailyShowcaseProjects] = useState<Listing[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -149,9 +147,9 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
       setSponsoredProjects(items);
     });
 
-    void ListingService.getWeeklyShowcaseListings(categoryId).then((items) => {
+    void ListingService.getDailyShowcaseListings(categoryId).then((items) => {
       if (!isMounted) return;
-      setWeeklyShowcaseProjects(items);
+      setDailyShowcaseProjects(items);
     });
 
     void Promise.all([
@@ -175,9 +173,13 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
     const scheduleNextRotation = () => {
       const nextHourDelay = 60 * 60 * 1000 - (Date.now() % (60 * 60 * 1000)) + 1000;
       refreshTimer = setTimeout(async () => {
-        const nextSponsors = await ListingService.getSponsoredListings(selectedCategory, HOME_SPONSOR_LIMIT);
+        const [nextSponsors, nextShowcase] = await Promise.all([
+          ListingService.getSponsoredListings(selectedCategory, HOME_SPONSOR_LIMIT),
+          ListingService.getDailyShowcaseListings(selectedCategory),
+        ]);
         if (!isMounted) return;
         setSponsoredProjects(nextSponsors);
+        setDailyShowcaseProjects(nextShowcase);
         scheduleNextRotation();
       }, nextHourDelay);
     };
@@ -233,8 +235,8 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
     () => filterForPresentation(newProjects),
     [filterForPresentation, newProjects]
   );
-  const filteredWeeklyShowcaseProjects = useMemo(() => {
-    const filtered = filterForPresentation(weeklyShowcaseProjects.map((project) => ({
+  const filteredDailyShowcaseProjects = useMemo(() => {
+    const filtered = filterForPresentation(dailyShowcaseProjects.map((project) => ({
       ...project,
       showcaseCategoryName: categories.find(
         (category) => category.id === project.showcaseCategoryId
@@ -243,8 +245,8 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
     const previewLimit = viewportWidth <= breakpoints.phoneMax
       ? 3
       : viewportWidth <= breakpoints.tabletMax ? 4 : 6;
-    return selectStableRandomPreview(filtered, previewLimit, showcasePreviewSeed);
-  }, [categories, filterForPresentation, showcasePreviewSeed, viewportWidth, weeklyShowcaseProjects]);
+    return filtered.slice(0, previewLimit);
+  }, [categories, dailyShowcaseProjects, filterForPresentation, viewportWidth]);
 
   const selectedCategoryObj = useMemo(() => {
     return categories.find((c) => c.id === selectedCategory);
@@ -257,7 +259,7 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
   const allDiscoverProjects = useMemo(() => {
     const map = new Map<string, Listing>();
     sponsoredProjects.forEach((p) => map.set(p.id, p));
-    weeklyShowcaseProjects.forEach((p) => map.set(p.id, p));
+    dailyShowcaseProjects.forEach((p) => map.set(p.id, p));
     popularProjects.forEach((p) => map.set(p.id, p));
     newProjects.forEach((p) => map.set(p.id, p));
     return Array.from(map.values()).map((project) => ({
@@ -266,7 +268,7 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
         (category) => category.id === project.showcaseCategoryId
       )?.name || project.showcaseCategoryName,
     }));
-  }, [categories, sponsoredProjects, weeklyShowcaseProjects, popularProjects, newProjects]);
+  }, [categories, sponsoredProjects, dailyShowcaseProjects, popularProjects, newProjects]);
 
   const renderListHeader = useCallback(() => (
     <View style={[styles.headerContainer, isWideWeb && styles.headerContainerWeb]}>
@@ -321,11 +323,11 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
 
       {/* 7. KISTAS SEÇKİSİ: GÜNÜN VİTRİNİ (4'LÜ YAN YANA IMAGES BADGE KARTLARI) */}
       <TodayShowcaseRow
-        projects={filteredWeeklyShowcaseProjects}
+        projects={filteredDailyShowcaseProjects}
         onSelectProject={onSelectListing}
         onOpenCreditStore={onOpenCreditStore}
         title="Günün Vitrini"
-        subtitle="Topluluk desteğiyle öne çıkan seçkin projeler"
+        subtitle="Dünün kategori liderleri · Her saat adil rotasyon"
         onOpenAll={() => onOpenShowcase?.({
           categoryId: selectedCategory,
           platform: selectedPlatform,
@@ -373,7 +375,7 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
     selectedPlatform,
     filteredPopularProjects,
     filteredNewProjects,
-    filteredWeeklyShowcaseProjects,
+    filteredDailyShowcaseProjects,
     onOpenBrowse,
     categoryBoostedProjects,
     selectedCategoryObj,

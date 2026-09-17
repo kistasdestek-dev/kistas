@@ -1,33 +1,30 @@
-const BLOCKED_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0', '::1']);
+import { Linking, Platform } from 'react-native';
+import { SafeUrlOptions, toSafeHttpsUrl } from './SafeUrl';
 
-interface SafeUrlOptions {
-  allowedHosts?: readonly string[];
-  allowLocalhost?: boolean;
-}
+export { isPrivateOrReservedHost, toSafeHttpsUrl } from './SafeUrl';
 
-export const toSafeHttpsUrl = (
-  value: string,
+/**
+ * SEC-036: Reverse Tabnabbing & Referrer Leakage Shield
+ * Harici bağlantıları 'noopener,noreferrer' ile ve opener referansı sıfırlanarak açar.
+ */
+export const openSafeExternalUrl = async (
+  url?: string | null,
   options: SafeUrlOptions = {}
-): string | null => {
+): Promise<boolean> => {
+  if (!url) return false;
+  const safeUrl = toSafeHttpsUrl(url, options);
+  if (!safeUrl) return false;
+
   try {
-    const trimmedValue = value.trim();
-    if (!trimmedValue || /[\\\u0000-\u001f\u007f]/.test(trimmedValue)) return null;
-    if (trimmedValue.startsWith('//')) return null;
-
-    const candidate = /^[a-z][a-z0-9+.-]*:/i.test(trimmedValue)
-      ? trimmedValue
-      : `https://${trimmedValue}`;
-    const parsed = new URL(candidate);
-    const hostname = parsed.hostname.toLowerCase();
-
-    if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return null;
-    if (!options.allowLocalhost && BLOCKED_HOSTS.has(hostname)) return null;
-    if (options.allowedHosts && !options.allowedHosts.some((host) => host.toLowerCase() === hostname)) {
-      return null;
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const targetWindow = window.open(safeUrl, '_blank', 'noopener,noreferrer');
+      if (targetWindow) {
+        targetWindow.opener = null;
+      }
+      return true;
     }
-
-    return parsed.toString();
+    return await Linking.openURL(safeUrl).then(() => true).catch(() => false);
   } catch {
-    return null;
+    return false;
   }
 };

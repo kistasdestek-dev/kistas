@@ -6,6 +6,9 @@ import { KvkkConsentService } from '../../legal/application/KvkkConsentService';
 import { KISTAS_DEFAULT_AVATAR_URL, resolveProfileAvatarUrl } from '../../../core/brandAssets';
 
 export class AuthService {
+  private static failedLoginAttempts = 0;
+  private static lockoutUntil = 0;
+
   /**
    * Supabase Auth ve ağ hatalarını kullanıcı dostu Türkçe mesajlara dönüştürür.
    */
@@ -158,7 +161,9 @@ export class AuthService {
             full_name: fullName.trim() || 'Kıstas Üyesi',
             avatar_url: KISTAS_DEFAULT_AVATAR_URL,
           })
-          .select('*')
+          .select(
+            'id, full_name, avatar_url, bio, city, district, rating_average, rating_count, is_verified, phone, boost_credits, created_at, updated_at'
+          )
           .single();
 
         if (insertedProfile) {
@@ -169,10 +174,8 @@ export class AuthService {
             fullName: insertedProfile.full_name || fullName.trim(),
             avatarUrl: resolveProfileAvatarUrl(insertedProfile.avatar_url),
             bio: insertedProfile.bio || null,
-            iban: insertedProfile.iban || null,
-            identityNumber: insertedProfile.identity_number || null,
-            availableBalance: Number(insertedProfile.available_balance || 0),
-            pendingBalance: Number(insertedProfile.pending_balance || 0),
+            availableBalance: 0,
+            pendingBalance: 0,
             boostCredits: Number(insertedProfile.boost_credits || 0),
             ratingAverage: Number(insertedProfile.rating_average || 5),
             ratingCount: Number(insertedProfile.rating_count || 0),
@@ -206,6 +209,25 @@ export class AuthService {
     identifier: string,
     password: string
   ): Promise<{ success: boolean; profile?: UserProfile | null; error?: string }> {
+    const now = Date.now();
+    if (this.lockoutUntil > now) {
+      const waitSeconds = Math.ceil((this.lockoutUntil - now) / 1000);
+      return {
+        success: false,
+        error: `Çok fazla hatalı giriş denemesi yapıldı. Lütfen ${waitSeconds} saniye bekleyip tekrar deneyin.`,
+      };
+    }
+
+    const recordFailedAttempt = (error: any, defaultMsg: string) => {
+      this.failedLoginAttempts += 1;
+      if (this.failedLoginAttempts >= 5) {
+        this.lockoutUntil = Date.now() + 30000;
+        this.failedLoginAttempts = 0;
+        return 'Çok fazla ardışık hatalı giriş denemesi yapıldı. Güvenliğiniz için 30 saniye süreyle geçici olarak durduruldu.';
+      }
+      return this.localizeAuthError(error, defaultMsg);
+    };
+
     try {
       const normalizedIdentifier = identifier.trim();
       const isEmail = normalizedIdentifier.includes('@');
@@ -218,7 +240,10 @@ export class AuthService {
         });
 
         if (error || !data?.user) {
-          return { success: false, error: this.localizeAuthError(error, 'E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.') };
+          return {
+            success: false,
+            error: recordFailedAttempt(error, 'E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.'),
+          };
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -227,7 +252,10 @@ export class AuthService {
         });
 
         if (error || !data?.user) {
-          return { success: false, error: this.localizeAuthError(error, 'Telefon numarası veya şifre hatalı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.') };
+          return {
+            success: false,
+            error: recordFailedAttempt(error, 'Telefon numarası veya şifre hatalı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.'),
+          };
         }
       }
 
@@ -237,6 +265,8 @@ export class AuthService {
         return { success: false, error: 'Kullanıcı profili veritabanında bulunamadı.' };
       }
 
+      this.failedLoginAttempts = 0;
+      this.lockoutUntil = 0;
       return { success: true, profile };
     } catch (err: any) {
       return { success: false, error: this.localizeAuthError(err, 'Giriş yapılamadı.') };
@@ -385,8 +415,10 @@ export class AuthService {
       if (!authData?.user) return null;
 
       const userEmail = authData.user.email?.toLowerCase();
+      const profileColumns =
+        'id, full_name, avatar_url, bio, city, district, rating_average, rating_count, is_verified, phone, boost_credits, created_at, updated_at';
       let [{ data, error }, { data: adminAccess }] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', authData.user.id).single(),
+        supabase.from('profiles').select(profileColumns).eq('id', authData.user.id).single(),
         supabase.rpc('get_current_admin_access'),
       ]);
 
@@ -404,7 +436,7 @@ export class AuthService {
             full_name: fallbackName,
             avatar_url: KISTAS_DEFAULT_AVATAR_URL,
           })
-          .select('*')
+          .select(profileColumns)
           .single();
 
         if (createdProfile) {
@@ -439,10 +471,8 @@ export class AuthService {
         fullName: data.full_name || 'Kıstas Kullanıcısı',
         avatarUrl: resolveProfileAvatarUrl(data.avatar_url),
         bio: data.bio || null,
-        iban: data.iban,
-        identityNumber: data.identity_number,
-        availableBalance: Number(data.available_balance || 0),
-        pendingBalance: Number(data.pending_balance || 0),
+        availableBalance: 0,
+        pendingBalance: 0,
         boostCredits: Number(data.boost_credits || 0),
         ratingAverage: Number(data.rating_average || 5),
         ratingCount: Number(data.rating_count || 0),

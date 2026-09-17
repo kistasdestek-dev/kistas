@@ -15,7 +15,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ActionSearchBar, calculateSearchRelevance } from '../../../shared/components/ActionSearchBar';
 import { LogoLoop } from '../../../shared/components/LogoLoop';
 import { FeaturedBoostShowcase } from '../../../shared/components/FeaturedBoostShowcase';
-import { TodayShowcaseRow } from '../../../shared/components/TodayShowcaseRow';
 import { PopularProjectPager } from '../../../shared/components/PopularProjectPager';
 import { CinematicFooter } from '../../../shared/components/CinematicFooter';
 import { KistasTopBrandBar } from '../../../shared/components/KistasTopBrandBar';
@@ -87,7 +86,6 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
   const [sponsoredProjects, setSponsoredProjects] = useState<Listing[]>([]);
   const [popularProjects, setPopularProjects] = useState<Listing[]>([]);
   const [newProjects, setNewProjects] = useState<Listing[]>([]);
-  const [showcaseProjects, setShowcaseProjects] = useState<Listing[]>([]);
   const [upvotedMap, setUpvotedMap] = useState<Record<string, boolean>>({});
 
   const icon3d = getCategory3DIcon(categoryId) || (categoryMeta?.slug ? getCategory3DIcon(categoryMeta.slug) : null);
@@ -103,11 +101,10 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
         if (!found) throw new Error('Kategori bulunamadı.');
 
         const resolvedCategoryId = found.id;
-        const [sponsored, popular, newest, weeklyShowcase, userUpvotedIds] = await Promise.all([
+        const [sponsored, popular, newest, userUpvotedIds] = await Promise.all([
           ListingService.getCategorySponsoredListings(resolvedCategoryId),
           ListingService.getCategoryListings(resolvedCategoryId, 'popular', 'all', 50),
           ListingService.getCategoryListings(resolvedCategoryId, 'newest', 'all', 50),
-          ListingService.getWeeklyShowcaseListings(resolvedCategoryId),
           ListingService.getUserUpvotedProjectIds(),
         ]);
 
@@ -117,11 +114,6 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
         setSponsoredProjects(sponsored);
         setPopularProjects(popular);
         setNewProjects(newest);
-        // Sadece doğrulanmış topluluk desteği (>0) olan projeler kategori vitrininde lider gösterilebilir
-        const qualifiedShowcase = (weeklyShowcase || []).filter(
-          (p) => (p.weeklySupportCount ?? 0) > 0 || (p.upvotesCount ?? 0) > 0
-        );
-        setShowcaseProjects(qualifiedShowcase);
 
         const initUpvoted: Record<string, boolean> = {};
         userUpvotedIds.forEach((id) => {
@@ -175,12 +167,6 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
 
     setPopularProjects((prev) => updateSupport(prev));
     setNewProjects((prev) => updateSupport(prev));
-    setShowcaseProjects((prev) => prev.map((item) => item.id === projectId ? {
-      ...item,
-      upvotesCount: item.upvotesCount + 1,
-      weeklySupportCount: (item.weeklySupportCount || 0) + 1,
-    } : item));
-
     const res = await ListingService.toggleUpvote(projectId);
     if (!res.success) {
       if (res.code === 'SUPPORT_ALREADY_GIVEN') {
@@ -190,11 +176,6 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
         setUpvotedMap((prev) => ({ ...prev, [projectId]: isCurrentlyUpvoted }));
         setPopularProjects((prev) => updateSupport(prev, true));
         setNewProjects((prev) => updateSupport(prev, true));
-        setShowcaseProjects((prev) => prev.map((item) => item.id === projectId ? {
-          ...item,
-          upvotesCount: Math.max(0, item.upvotesCount - 1),
-          weeklySupportCount: Math.max(0, (item.weeklySupportCount || 0) - 1),
-        } : item));
         Alert.alert('Destek Güncellenemedi', res.error || 'İşlem tamamlanamadı.');
       }
     } else if (res.success && res.upvotes_count !== undefined) {
@@ -209,10 +190,8 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
           ? { ...item, upvotesCount: exactSupportCount, likesCount: exactSupportCount }
           : item
       ));
-      const nextShowcase = await ListingService.getWeeklyShowcaseListings(categoryInfo?.id || categoryId);
-      setShowcaseProjects(nextShowcase);
     }
-  }, [categoryId, categoryInfo?.id, newProjects, popularProjects, upvotedMap]);
+  }, [categoryId, newProjects, popularProjects, upvotedMap]);
 
   const filterForPresentation = useCallback((items: Listing[]) => {
     const q = searchQuery.trim();
@@ -240,19 +219,13 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
     () => filterForPresentation(newProjects),
     [filterForPresentation, newProjects]
   );
-  const filteredShowcaseProjects = useMemo(
-    () => filterForPresentation(showcaseProjects),
-    [filterForPresentation, showcaseProjects]
-  );
-
   const allCategoryProjects = useMemo(() => {
     const map = new Map<string, Listing>();
     sponsoredProjects.forEach((p) => map.set(p.id, p));
-    showcaseProjects.forEach((p) => map.set(p.id, p));
     popularProjects.forEach((p) => map.set(p.id, p));
     newProjects.forEach((p) => map.set(p.id, p));
     return Array.from(map.values());
-  }, [sponsoredProjects, showcaseProjects, popularProjects, newProjects]);
+  }, [sponsoredProjects, popularProjects, newProjects]);
 
   const handleOpenSponsor = () => {
     if (onOpenSponsorManagement) {
@@ -382,15 +355,6 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
         />
       ) : null}
 
-      {/* 7. KATEGORİ VİTRİNİ LİDERLERİ (TODAYSHOWCASEROW - KEŞFET İLE BİREBİR AYNI KART DÜZENİ) */}
-      <TodayShowcaseRow
-        projects={filteredShowcaseProjects}
-        onSelectProject={onSelectProject}
-        onOpenCreditStore={handleOpenSponsor}
-        title={`${categoryTitle} Vitrini`}
-        subtitle="Bu kategorinin öne çıkan liderleri"
-      />
-
       {/* 8. POPÜLER SEKMESİ PAGER (KEŞFET İLE BİREBİR AYNI 3'LÜ YATAY SAYFALAMA) */}
       {feedSort !== 'newest' ? (
         <PopularProjectPager
@@ -432,7 +396,6 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
     searchQuery,
     feedSort,
     selectedPlatform,
-    filteredShowcaseProjects,
     filteredPopularProjects,
     filteredNewProjects,
     upvotedMap,

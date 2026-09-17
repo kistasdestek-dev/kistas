@@ -423,7 +423,10 @@ export const CreditCheckoutModal: React.FC<CreditCheckoutModalProps> = ({
     } else {
       const url = CreditPurchaseService.getCheckoutUrl(selectedPlan.storeProductId);
       if (url && typeof window !== 'undefined') {
-        window.open(url, '_blank');
+        const openedWin = window.open(url, '_blank', 'noopener,noreferrer');
+        if (openedWin) {
+          openedWin.opener = null;
+        }
         setHasOpenedWindow(true);
       }
     }

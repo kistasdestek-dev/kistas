@@ -185,42 +185,42 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 | SEC-010 | Supabase Auth e-posta teslimati ve sifre kurtarma | 6/7 | P2 | KISMI | Codex / kullanici | SMTP teslimati, Gmail SPF/DKIM/DMARC PASS ve kurtarma ekranina yonlendirme dogrulandi. Turkce Kistas sablonuyla yeni kurtarma postasi Gmail Gelen Kutusu'na ulasti; yeni sifre kaydi ve yeni kayit dogrulamasi bekliyor (hedef 2026-09-15). |
 | SEC-011 | GA4 URL token sizintisi ve izinsiz analitik | 6/7 | P1 | DOGRULANDI | Codex | 2026-09-14: Google kodu yalniz istege bagli onaydan sonra yuklenir; URL query/hash analitige gonderilmez. `node scripts/tests/analytics-consent.test.mjs` onay yok, onay, tokenli URL ve ret senaryolarindan gecti. |
 | SEC-012 | Google OAuth teknik alan adi ve marka guveni | 1/6 | P2 | DUZELTILDI | Codex | Dogrudan Google Identity ID token, kriptografik nonce, FedCM ve CSP regresyon testi; canli hesap secici testi bekliyor |
-| SEC-013 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-014 | Bekleniyor | - | - | BEKLIYOR | - | - |
+| SEC-013 | Anonim Profil PII Sızıntısı ve Hassas Kolon İfşası (CLS & RLS Kalkanı) | 2 | P1 | DOGRULANDI | Antigravity | `20260917000002_harden_profiles_pii_and_storage.sql`, `AuthService.ts`, `ProfileService.ts`, `User.ts`, tsc (0 hata) + core-domain (37/37) |
+| SEC-014 | Depolama Kovanı Anonim Dosya Yükleme Kısıtlaması (Storage RLS Hardening) | 4 | P1 | DOGRULANDI | Antigravity | `20260917000002_harden_profiles_pii_and_storage.sql`, `storage.objects` authenticated INSERT ve DELETE kuralı, pentest artık temizliği |
 | SEC-015 | Shopier Webhook ve Otomatik Kredi Guvenligi | 5 | P1 | DOGRULANDI | Codex | Canli imzali 10 TRY kontrollu siparis, atomik +100 kredi, tek olay/tek hareket, ayni bildirimin replay testi ve production allowlist regresyonu |
 | SEC-016 | Shopier OSB'den guncel Webhook altyapisina gecis | 5/6 | P2 | PLANLI | Codex | Mevcut OSB fail-closed ve idempotent; Shopier'in resmi legacy bildirimi nedeniyle Webhook gecisi ayri sertlestirme isi olarak izlenecek |
-| SEC-017 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-018 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-019 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-020 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-021 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-022 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-023 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-024 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-025 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-026 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-027 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-028 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-029 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-030 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-031 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-032 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-033 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-034 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-035 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-036 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-037 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-038 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-039 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-040 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-041 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-042 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-043 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-044 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-045 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-046 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-047 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-048 | Bekleniyor | - | - | BEKLIYOR | - | - |
+| SEC-017 | Onboarding Onarımı, 10 Hassas Tablonun Anonim Rolünden İzolasyonu ve Storage Uzantı Kalkanı | 2/4/6 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000003_repair_onboarding_and_tighten_defense.sql`, `public/_headers` CORS/HSTS/CSP kalkanı, `AuthService.ts` brute-force kilidi, tsc (0 hata) + system-check (100/100) |
+| SEC-018 | Faz 2: Finansal, Sipariş ve İş Mantığı Güvenliği (Legacy Boost Bypass, Orders İzolasyonu, Teklif & Yorum Kalkanı) | 2/3/5 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000004_faz2_financial_and_order_hardening.sql`, boost_listing_with_credits DROP, orders/credit_transactions REVOKE, offers/reviews trigger & CHECK |
+| SEC-019 | Faz 3: IDOR, Sahiplik Denetimi & Yetki Aşımı (Moderasyon Atlama Engeli, Bildirim Enjeksiyonu Kalkanı) | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000005_faz3_idor_and_ownership_hardening.sql`, `trg_protect_listing_status`, `notifications` INSERT REVOKE & CLS, delete policy pekiştirme |
+| SEC-020 | Faz 4: Rate Limiting, Anti-Spam & DoS / Resource Exhaustion Kalkanı | 4/5/6 | P2 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000006_faz4_rate_limiting_and_dos_defense.sql`, send_chat_message rate limit, create_project_comment rate limit, record_listing_view deduping, storage 10MB limit |
+| SEC-021 | Keşfet Ziyaretçi Erişimi Onarımı, Kiril IDN Homoglyph ve Destek Sohbeti Kalkanı | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000007_fix_guest_explore_and_harden_brand_chat.sql`, is_user_blocked SECURITY DEFINER, check_profile_brand_name Kiril homoglyph, filter_chat_message_content admin muafiyeti |
+| SEC-022 | Ziyaretçi Keşfet & Anon RLS / Fonksiyon İzin Onarımı (is_platform_admin Grant & Listings RLS Ayrımı) | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000008_repair_anon_explore_access.sql`, anon listings ve profiles RLS erişimi, telemetri HTTP 200 (81 ms) doğrulandı |
+| SEC-023 | Faz 5: Sohbet Doğrudan REST Enjeksiyonu, Medya MIME & Timing Attack Kalkanı | 1/2/4/5 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000009_faz5_chat_isolation_and_media_hardening.sql`, messages INSERT/UPDATE/DELETE REVOKE, storage MIME image-only, constantTimeEqual, telemetri HTTP 200 |
+| SEC-024 | Faz 6: Veri Bütünlüğü, Rapor Kalkanı & Sybil Savunması | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000010_faz6_data_integrity_and_sybil_defense.sql`, reports flood cooldown, column length CHECKs, project email verification, telemetri HTTP 200 |
+| SEC-025 | Faz 7: user_addresses IDOR & Adres Sahiplik Kalkanı | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000011_faz7_address_images_and_consent_hardening.sql`, WITH CHECK enforcement, user_id freeze trigger, telemetri HTTP 200 |
+| SEC-026 | Faz 7: listing_images Ayrıştırılmış RLS, URL & Sahiplik Bütünlüğü | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000011_faz7_address_images_and_consent_hardening.sql`, seller_id ownership checks on CUD, listing_id freeze, telemetri HTTP 200 |
+| SEC-027 | Faz 7: user_consents Değiştirilemezlik & Yasal İzin Güvenliği | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000011_faz7_address_images_and_consent_hardening.sql`, DELETE REVOKE, immutable user_id/consent_type/version, telemetri HTTP 200 |
+| SEC-028 | Faz 8: admin_action_audit Değiştirilemezlik (Append-Only) Kalkanı | 1/2/5 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000012_faz8_audit_immutability_and_admin_isolation.sql`, prevent_audit_tampering trigger, admin read policy |
+| SEC-029 | Faz 8: Destek ve Topluluk Moderatörleri Özel Mesaj İzolasyonu | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000012_faz8_audit_immutability_and_admin_isolation.sql`, community permission strictly restricted to listing_id IS NULL |
+| SEC-030 | Faz 8: Süper Yönetici Koruması & Yetki Yükseltme (Privilege Escalation) Kalkanı | 1/2/5 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000012_faz8_audit_immutability_and_admin_isolation.sql`, private.admin_team_members isolation, audit indexing |
+| SEC-031 | Faz 9: Supabase Realtime CDC İzolasyonu & PII Sızıntı Kalkanı | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000013_faz9_realtime_cdc_and_socket_hardening.sql`, orders/offers/addresses/audit DROP from supabase_realtime |
+| SEC-032 | Faz 9: WebSocket Realtime Channel Dinleme & REPLICA IDENTITY FULL | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000013_faz9_realtime_cdc_and_socket_hardening.sql`, REPLICA IDENTITY FULL on messages/conversations/comments |
+| SEC-033 | Faz 9: Realtime Broadcast / Presence Flooding & İstemci Hız Limiti | 4/5/6 | P2 | DOGRULANDI | Sayra (SAYRA-CODE) | `supabaseClient.ts` eventsPerSecond: 10, Chat/Comment broadcast disable, payload validation |
+| SEC-034 | Faz 10: Derin Bağlantı (Deep Link) & Özel URL Şeması Hijacking Kalkanı | 1/2/4 | P2 | DOGRULANDI | Sayra (SAYRA-CODE) | `app.json` scheme "kistas" mühürlendi, URL sanitizasyonu, rastgele intent engeli |
+| SEC-035 | Faz 10: Token Yaşam Döngüsü & Browser Hash / Code Temizliği (replaceState) | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `AuthContext.tsx` onAuthStateChange replaceState ile access/refresh token & code temizliği |
+| SEC-036 | Faz 10: Harici Web Bağlantıları Güvenli Tarayıcı (Reverse Tabnabbing & Referrer) | 4/5/6 | P2 | DOGRULANDI | Sayra (SAYRA-CODE) | `ExternalUrl.ts` openSafeExternalUrl, `opener = null`, `noopener,noreferrer` kesin koruması |
+| SEC-037 | Faz 11: Harici Medya, SSRF & Cloud Metadata (169.254.x.x) Kalkanı | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000014_faz11_ssrf_and_media_shield.sql`, `ExternalUrl.ts` isPrivateOrReservedHost, listings/images/profiles CHECK |
+| SEC-038 | Faz 11: Webhook Replay & Idempotency Bütünlüğü (Shopier/RevenueCat) | 5/6 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `apply_shopier_credit_event_by_email` & `apply_revenuecat_credit_event` atomik deduplication & constant-time check |
+| SEC-039 | Faz 11: Güvenli HTTP Başlıkları (COOP Popups, Cross-Domain & Referrer Kalkanı) | 6 | P2 | DOGRULANDI | Sayra (SAYRA-CODE) | `public/_headers` COOP same-origin-allow-popups, X-Permitted-Cross-Domain-Policies none, Strict HSTS |
+| SEC-040 | Faz 12: Bal Küpü Tablosu (Honey-Table & Canary Credentials) | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000015_faz12_active_cyber_deception_honeypot.sql`, `system_debug_credentials` canary tablosu |
+| SEC-041 | Faz 12: Truva Arka Kapısı (Trojan Debug RPC - Sahte Süper Admin) | 1/2/5 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `debug_elevate_admin_role` sahte yetki döner, `security_honeypot_detections` sessizce kaydeder |
+| SEC-042 | Faz 12: Finansal Sessiz Yutma (Silent Null-Route & Sahte 200 OK) | 2/3/5 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `debug_add_test_credits` sahte bakiye yanıtı döner, gerçek cüzdana dokunulmaz |
+| SEC-043 | Faz 13: Sipariş Durum Makinesi Bütünlüğü (Order State Machine Immutability) | 2/3/5 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000016_faz13_wallet_integrity_and_state_machine.sql`, terminal states & order transition trigger |
+| SEC-044 | Faz 13: Teklif & Pazarlık Durum Makinesi Bütünlüğü (Offer State Machine) | 2/3/5 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `trg_enforce_offer_state_transition` ile sonuçlanmış tekliflerin geri alınması engellendi |
+| SEC-046 | Faz 14: Promosyon Kodu İstismarı & Kupon Yığma (Coupon Stacking / Replay) Kalkanı | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000017_faz14_promo_pricing_and_delivery_hardening.sql`, `chk_listings_promo_code_format`, core-domain (39/39) |
+| SEC-047 | Faz 14: Fiyatlandırma Bütünlüğü & İndirim Oranı Manipülasyonu (Price Tampering) | 2/3/5 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `chk_listings_price_range`, `chk_offers_offered_price_range`, `chk_orders_seller_earnings_bounded`, core-domain (39/39) |
+| SEC-048 | Faz 14: Kargo & Teslimat Kodu IDOR / Brute-force Kalkanı | 1/2/5 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `chk_orders_order_number_format`, `chk_orders_tracking_number_format`, `create_escrow_order_atomic` CSPRNG, core-domain (39/39) |
+
 | SEC-049 | Bekleniyor | - | - | BEKLIYOR | - | - |
 | SEC-050 | Bekleniyor | - | - | BEKLIYOR | - | - |
 
@@ -357,16 +357,10 @@ Production veya magazaya cikis icin:
 - [ ] Yedek ve geri donus testi guncel.
 - [ ] Son guvenlik incelemesi tarih ve kanitla kayitli.
 
-### 2026-09-14 - Haftalik Gunün Vitrini
+### 2026-09-14 - Eski haftalik Gunün Vitrini (devre disi)
 
 - Faz: 3 - RPC ve is kurallari.
-- Degisen kod/migration: `20260914000001_showcase_leaders_expansion.sql`, haftalik lider servisi ve vitrin arayuzu.
-- Pozitif test: Her kategoriden en az 1 dogrulanmis destek alan lider; haftalik destek ve sabit esitlik sirasi; tekrar kazananlara izin.
-- Negatif test: Proje sahibinin destegi, dogrulanmamis kullanici, sponsorlu ve aktif olmayan proje dislanir; secici RPC anon/authenticated rollerine kapali kalir.
-- Dogrulama: TypeScript 0 hata, core-domain 29/29, SQL injection ve XSS korumalari basarili; migration yerel/uzak eslesti.
-- Kalan risk: `KST-KNOWN-001` kullanici aksiyonu nedeniyle production yayin ve public test tuneli kapali tutulur.
-- Sponsor uzlastirma: Global veya kategori sponsorluğu biten proje saatlik görevle sabit haftalik doğrulanmis destek puanina göre yeniden değerlendirilir; aktif sponsorlar public getter tarafinda da organik vitrinden dislanir.
-- Canli vitrin sayaci: Liderlik sonucu sabit kalirken vitrin baslangicindan sonra gelen, e-postasi dogrulanmis ve proje sahibine ait olmayan destekler aggregate RPC sonucuna eklenir; kullanici kimligi veya oy detayi public cevaba acilmaz.
+- Tarihsel not: `20260914000001_showcase_leaders_expansion.sql` ile kurulan haftalik akisin tablosu veri kaybi olusturmamak icin korunur. Anonim/oturumlu istemci RPC yetkisi ve eski cron gorevleri 2026-09-17 gunluk modele geciste kapatilmistir; yeni istemci akisi bu tabloyu kullanmaz.
 
 ### 2026-09-14 - Web production hazirligi
 
@@ -412,6 +406,7 @@ Production veya magazaya cikis icin:
 - Nasil Calisir anlatimi ve tasarimi (2026-09-16): Web ve mobil ekranlardaki teknik terimler, karsilastirma tablosu ve uzun SSS bloklari kaldirildi; kesfeden ve proje ureten kullanicilar icin uc adimli, dogrulanabilir akisa gecildi. Kalici destek, sponsorlu saatlik rotasyon ve dogrudan iletisim mevcut urun davranisiyla uyumlu kisa metinlerle anlatildi. SEO baslik/aciklama, statik WebPage verisi ve sitemap tarihi ayni anlatimla guncellendi. Yeni veri, RPC, dis URL, secret, yetki, kimlik veya analitik davranisi eklenmedi. Geri donus: ekran ve SEO kaynaklari onceki commit'e alinabilir.
 - SSS sayfasi ve footer baglantisi (2026-09-16): Footer'daki genel `Destek` baglantisi, herkese acik ve giris gerektirmeyen `SSS` sayfasina tasindi. Web ve mobil SSS ekranlari arama, kategori filtresi ve acilir yanitlarla yalniz sabit urun bilgisini gosterir; kullanici girdisi sunucuya veya analitik servise gonderilmez. Cevap bulunamazsa mevcut kimlik dogrulamali destek gorusmesi akisi ayri bir eylemle korunur. Statik SEO, FAQPage semasi ve sitemap rotasi eklendi. Yeni veri, RPC, secret, yetki veya kimlik davranisi eklenmedi. Geri donus: SSS rotasi ve footer prop degisiklikleri onceki commit'e alinabilir.
 - Hakkimizda hedef kitle anlatimi (2026-09-16): Aciklamasiz puanlar ve kurgu proje adlari iceren vitrin maketi kaldirildi. Yerine `Yeni bir urun ariyorsan` ve `Bir projen varsa` ayrimini yapan, her iki kitle icin sonucu ve uc adimli akisi dogrudan anlatan sabit bilgi kartlari eklendi. Mobil anlatim ayni hedef kitle ayrimiyla esitlendi. Yeni veri toplama, RPC, dis URL, secret, yetki, kimlik veya analitik davranisi eklenmedi. Geri donus: Hakkimizda ekranlari onceki commit'e alinabilir.
+- Gunluk kategori liderleri ve saatlik adil rotasyon (2026-09-17): `daily_showcase_winners` yalniz onceki tam Turkiye gunundeki e-postasi dogrulanmis, proje sahibine ait olmayan kalici desteklerden her aktif kategori icin en fazla bir organik lider saklar. Aktif olmayan ve global/kategori sponsorlu projeler hem secicide hem public getter'da dislanir; en az bir gecerli destek zorunludur. Desteksiz kategoride son uygun lider korunur; liderler her Istanbul saatinde deterministik olarak bir kademe doner. Ham tablo RLS ile kapali ve PUBLIC/anon/authenticated yetkileri kaldirilmis; aggregate `get_daily_showcase_winners` RPC'si sabit bos `search_path` ile yalniz proje/kategori, puan, pencere ve rotasyon sirasi dondurur. Secici RPC yalniz `service_role` yetkilidir. Eski haftalik cronlar durdurulmus, secim `21:00 UTC` ve sponsor/durum uzlastirmasi saatlik planlanmistir. Kategori ekranindaki vitrin sorgusu/state/bileseni ve istemci rastgele siralamasi silinmistir; Kesfet 3/4/6 kota ve Tumunu Gor akisi backend siralamasini kullanir. Kanit: `npm run release:web` basarili; TypeScript 0 hata, 37/37 cekirdek regresyonu, repo/dist secret, XSS, dis URL, SQL injection, kimlik, analitik, gorsel, SEO ve web bundle kontrolleri temiz; 12 SEO sayfasi ve 11 sitemap URL'si dogrulandi. Canli migration/yayin bu kaydin kapsaminda uygulanmamistir. Geri donus: istemci degisiklikleri geri alinabilir, cronlar yeniden planlanabilir; yeni ve eski snapshot tablolari veri kaybi onayi olmadan silinmez.
 
 ### SEC-015 - Shopier Webhook ve Otomatik Kredi Guvenligi
 
@@ -433,3 +428,283 @@ Production veya magazaya cikis icin:
 - Hesap eşleme bildirimi ve uygulama içi sonuç (2026-09-16): Kredi satın alma penceresi yalnız doğrulanmış Kıstas hesap e-postasını gösterir; ad-soyad yedeği kaldırıldı ve e-posta yoksa Shopier geçişi kapatıldı. Kullanıcıya sipariş notunun öncelikli, Shopier alıcı e-postasının ise not boşken yedek eşleme kaynağı olduğu açıkça anlatılır. Başarılı kredi artışı, kredi hareketi ve `credit_purchase` uygulama içi bildirimi aynı atomik RPC içinde üretilir. Mükerrer OSB bildirimi kredi hareketinden ve bildirim eklenmesinden önce döndüğü için ikinci bakiye veya bildirim oluşturamaz. Bildirim verisi e-posta ya da sipariş notu taşımaz; yalnız kaynak, kredi miktarı ve yeni bakiye bulunur. Geri dönüş: `20260916000005_shopier_credit_notification.sql` öncesindeki fonksiyon gövdesi yeniden uygulanabilir ve modal değişikliği geri alınabilir.
 - Kredi cüzdanı hareket dökümü (2026-09-16): Kullanıcı profilindeki cüzdana yalnız oturum sahibinin RLS korumalı `credit_transactions` kayıtlarını okuyan hareket ekranı eklendi. Shopier yüklemeleri kredi, tarih, ödenen tutar ve işlem sonrası bakiyeyi; yeni vitrin harcamaları proje adı, kapsam, süre, harcanan kredi ve işlem sonrası bakiyeyi gösterir. Yapılandırılmış `metadata` alanı yalnız ödeme sağlayıcı adı, ürün/tutar/para birimi ve proje/vitrin kimliği taşır; e-posta, sipariş notu veya ödeme kartı verisi içermez. `boost_listing_scoped` içindeki eksik `balance_after` yazımı düzeltildi ve RPC güvenli boş `search_path` ile yeniden tanımlandı. Mevcut Shopier kayıtları doğrulanmış olay tablosundan geriye dönük zenginleştirilir. Geri dönüş: arayüz ve servis kaldırılıp RPC gövdeleri önceki sürüme alınabilir; `metadata` sütunu veri kaybı riski nedeniyle yerinde bırakılmalıdır.
 - Kapatma karari (2026-09-16): Kontrollu 10 TRY gercek tahsilat, Shopier'in imzali bildiriminin canli Edge Function ve atomik RPC zincirinden gecerek +100 kredi uretmesini kanitladi. Ayni imzali bildirimin tekrari tek olay, tek hareket ve degismeyen bakiye ile idempotency kanitini verdi. Gecici 10 TRY kabul yolu `20260916000004` migration'i ile kaldirildi; `20260916000001`-`00006` migration'larinin tamami canli veritabani ile eslesti. Normal 299/699/1699 TRY paketleri Edge Function, RPC ve regresyon testinde ayni urun/tutar/kredi allowlistini kullanir. Canli endpoint `GET 200 success`, gecersiz imza `POST 401 INVALID_SIGNATURE` dondurdu; ek 299 TRY harcama guvenlik acisindan yeni bir siniri test etmeyecegi icin gerekli gorulmedi. SEC-015 `DOGRULANDI` kapatildi. Shopier'in OSB servisini legacy ilan etmesi SEC-016 P2 gecis maddesinde ayrica izlenir.
+
+### SEC-013 - Anonim Profil PII Sızıntısı ve Hassas Kolon İfşası (CLS & RLS Kalkanı)
+
+- Tarih: 2026-09-17
+- Kapsam: `public.profiles` tablosu, `GET /rest/v1/profiles?select=*`, PostgREST izinleri, `AuthService.ts`, `ProfileService.ts`, `User.ts`.
+- Tehdit Modeli / Pentest Bulgusu: Anonim bir saldırganın `GET /rest/v1/profiles?select=*` çağrısı yaparak sisteme kayıtlı tüm kullanıcıların satırlarını ve kişisel verilerini (telefon, bakiye, push tokenı ve eski pazaryeri döneminden kalan boş IBAN/TCKN kolonlarını) ifşa edebilmesi.
+- İnceleme ve Bulgular:
+  1. Pentestte doğrulandığı üzere RLS yazma/güncelleme/silme kuralları tam korumalıdır (`başkasının satırını güncelle/sil = 0 satır`).
+  2. Yönetici kontrolleri `is_platform_admin()` RPC ile sıkı kapalıdır; bundle içinde `service_role` anahtarı bulunmamaktadır.
+  3. Ancak `profiles` tablosunun SELECT politikasının `anon` rolü için kısıtlanmamış olması ve PostgREST'in varsayılan olarak tüm kolonları dönmesi bilgi ifşası riski doğurmuştur.
+- Düzeltmeler ve Sertleştirme (`20260917000002_harden_profiles_pii_and_storage.sql`):
+  1. **Artık Kolonların İmhası:** Kıstas dijital proje vitrini modelinde IBAN ve TCKN toplanmaz veya tutulmaz. Eski C2C döneminden kalan `iban` ve `identity_number` kolonları tablodan tamamen düşürüldü (`DROP COLUMN IF EXISTS`).
+  2. **RLS Satır Kalkanı:** `profiles` tablosunda `anon` ve diğer kullanıcıların tüm kullanıcı listesini rastgele çekmesi engellendi. Anonim rol yalnızca aktif bir projesi (`listings.status = 'active'`) veya `is_verified = TRUE` olan yaratıcıları ve vitrin sahiplerini görebilir; henüz proje yayınlamamış normal kullanıcılar anonim listelemede `0 satır` döner.
+  3. **Kolon Düzeyinde Güvenlik (CLS - Column-Level Security):** Tablo düzeyindeki `SELECT` yetkisi `public`, `anon` ve `authenticated` rollerinden tamamen geri çekildi (`REVOKE SELECT ON public.profiles`). `anon` rolüne yalnızca kamuya açık vitrin kolonları (`id, full_name, avatar_url, bio, city, district, rating_average, rating_count, is_verified, role, created_at, updated_at`) verildi. `phone`, `boost_credits` vb. alanlar yalnızca `authenticated` rolüne verildi; `fcm_token` ve `available_balance` gibi hassas alanlar istemci erişiminden tamamen koparıldı.
+  4. **İstemci Kod Hijyeni:** `AuthService.ts`, `ProfileService.ts` ve `User.ts` dosyalarındaki kullanılmayan `iban` ve `identityNumber` alanları temizlendi.
+- Kanıt: TypeScript tip kontrolü 0 hata (`npx tsc --noEmit`), 37/37 çekirdek regresyon testi başarılı, SQL enjeksiyon ve XSS testleri temiz.
+
+### SEC-014 - Depolama Kovanı Anonim Dosya Yükleme Kısıtlaması (Storage RLS Hardening)
+
+- Tarih: 2026-09-17
+- Kapsam: `storage.objects`, `kistas` depolama kovanı, dosya yükleme ve silme politikaları.
+- Tehdit Modeli / Pentest Bulgusu: Anonim bir istemcinin oturum açmadan `storage.objects` üzerine dosya yükleyebilmesi (`pars_test.png`), silme yetkisi olmadığından kovanda spam/çöp dosya biriktirebilmesi.
+- Düzeltmeler ve Sertleştirme (`20260917000002_harden_profiles_pii_and_storage.sql`):
+  1. **Anonim Yükleme Engeli:** `storage.objects` üzerindeki tüm olası anonim insert politikaları kaldırıldı. `kistas` kovanına dosya yükleme yetkisi `TO authenticated WITH CHECK (bucket_id = 'kistas' AND auth.role() = 'authenticated')` kuralı ile sınırlandırıldı.
+  2. **Sahiplik Tabanlı Silme Kuralı:** Kullanıcıların yalnızca kendi yükledikleri dosyaları (`owner = auth.uid()`) veya yöneticilerin silebilmesi sağlandı.
+  3. **Pentest Test Artıklarının Temizlenmesi:** Pentest sırasında yüklenen `pars_test%` dosyaları ve açılan `parsrecon2026x@gmail.com` test hesabı SQL üzerinden otomatik temizlendi.
+- Ek Dashboard Tavsiyeleri (Saldırı Yüzeyi Minimizasyonu):
+  - **Auth Rate Limit & Brute-Force Koruması:** Supabase Dashboard > Authentication > Rate Limits sekmesinde oturum açma hız limiti sıkılaştırılmalı; Cloudflare Turnstile / hCaptcha aktif edilmeli.
+  - **Email Enumeration Koruması:** Supabase Dashboard > Authentication > Settings > Security altında "Protect against email enumeration" seçeneği etkinleştirilmeli.
+
+### SEC-018 - Faz 2: Finansal, Sipariş ve İş Mantığı Güvenliği (Legacy Boost Bypass, Orders İzolasyonu, Teklif & Yorum Kalkanı)
+
+- Tarih: 2026-09-17
+- Kapsam: `boost_listing_with_credits`, `orders` tablosu, `credit_transactions` tablosu, `offers` tablosu, `reviews` tablosu, `20260917000004_faz2_financial_and_order_hardening.sql`.
+- Tehdit Modeli / Pentest Bulguları:
+  1. **Legacy Boost Bypass (P1):** `boost_listing_scoped` fonksiyonu Keşfet vitrinini 200 kredi ile korurken, silinmemiş olan eski `boost_listing_with_credits` fonksiyonunun `authenticated` rolü tarafından çağrılarak aynı vitrinin 50 krediye gasp edilebilmesi (Logic Discount Flaw).
+  2. **Doğrudan Sipariş Enjeksiyonu (P1):** `orders` tablosunda bulunan `Buyers can initiate orders` politikası ve doğrudan INSERT hakkı nedeniyle bir kullanıcının `create_escrow_order_atomic` RPC'sini atlayıp `status = 'completed'` sahte sipariş oluşturabilmesi.
+  3. **Teklif & Fiyat Manipülasyonu (P1):** `offers` tablosunda alıcının kendi teklifini `UPDATE` ile `accepted` yaparak ardından sipariş RPC'sinde bu kabul edilmiş 1 TL'lik teklifi kullanarak ürünü bedavaya rezerve edebilmesi.
+  4. **İtibar / Yorum Şişirme (P2):** Sahte tamamlanmış siparişler üzerinden satıcının kendi kendine 5 yıldızlı yorum basabilmesi.
+- Düzeltmeler ve Sertleştirme (`20260917000004_faz2_financial_and_order_hardening.sql`):
+  1. **Zero Dead-Code İle Eski Fonksiyon İmhası:** `boost_listing_with_credits` veritabanından tamamen silindi (`DROP FUNCTION`).
+  2. **Orders İstemci İzolasyonu:** `orders` tablosundan doğrudan `INSERT, UPDATE, DELETE` yetkileri tamamen alındı (`REVOKE`). `Buyers can initiate orders` politikası silindi. Sipariş oluşturma yetkisi yalnızca atomik RPC ve `service_role` ile sınırlandırıldı.
+  3. **Teklif Bütünlüğü Kalkanı:** `handle_offer_update_protection` tetikleyicisi yazıldı; alıcının teklif kabul etmesi, fiyat değiştirmesi veya satıcı rolüne bürünmesi veritabanı seviyesinde bloke edildi.
+  4. **Yorum Bütünlüğü:** `reviews` tablosuna `CHECK (reviewer_id <> reviewed_user_id)` eklenerek kendi kendine puan basma engellendi; doğrudan UPDATE/DELETE yetkileri sıfırlandı.
+  5. **Defter Koruması:** `credit_transactions` tablosu yalnızca `SELECT` hakkına sınırlandı; istemcinin deftere yazması engellendi.
+- Kanıt: TypeScript tip kontrolü 0 hata (`npx tsc --noEmit`), `node scripts/system-check.mjs` %100/100, SQL enjeksiyon ve XSS testleri temiz.
+
+### SEC-019 - Faz 3: IDOR, Sahiplik Denetimi ve Yetki Aşımı (Moderasyon Atlama Engeli, Bildirim Enjeksiyonu Kalkanı)
+
+- Tarih: 2026-09-17
+- Kapsam: `listings` tablosu, `status` yönetimi, `notifications` tablosu, `project_comments`, `messages`.
+- Tehdit Modeli / Pentest Bulguları:
+  1. **Moderasyon Atlama ve Kendi Kendini Onaylama (P1):** `listings` tablosunda `status` alanının istemci UPDATE izninde bulunması ve RLS kuralının yalnızca `seller_id = auth.uid()` kontrolü yapması nedeniyle bir satıcının doğrudan `UPDATE listings SET status = 'active'` yaparak yönetici incelemesini tamamen atlayabilmesi (Privilege Escalation).
+  2. **Sahte Sistem Bildirimi ve Phishing Enjeksiyonu (P1):** `notifications` tablosunda bulunan `WITH CHECK (TRUE)` INSERT politikası nedeniyle kötü niyetli bir kullanıcının diğer kullanıcılara sistem adına sahte bildirim ("Hesabınız kapatıldı, şifrenizi şu linkten güncelleyin" vb.) gönderebilmesi.
+  3. **Sayaç ve Sponsorluk Manipülasyonu (P2):** İstemcinin doğrudan `listings` update ile `view_count`, `upvotes_count` veya `boosted_until` değerlerini manipüle etme riski.
+- Düzeltmeler ve Sertleştirme (`20260917000005_faz3_idor_and_ownership_hardening.sql`):
+  1. **İlan Durum & Bütünlük Tetikleyicisi (`trg_protect_listing_status`):** `BEFORE INSERT OR UPDATE` tetikleyicisi ile admin dışındaki herkes için INSERT'te `status := 'draft'` zorunlu kılındı. UPDATE anında normal kullanıcının projeyi `'active'`, `'reserved'` veya `'sold'` yapması veritabanı motorunda `FORBIDDEN` exception ile engellendi. `boosted_until`, `upvotes_count`, `view_count` ve `seller_id` istemci manipülasyonuna karşı kilitlendi (`NEW.field := OLD.field`).
+  2. **Bildirim Enjeksiyonu İptali:** `notifications` tablosundan doğrudan istemci `INSERT` hakkı ve `WITH CHECK (TRUE)` politikası tamamen kaldırıldı (`REVOKE INSERT`). Bildirimler yalnızca güvenilir sunucu tetikleyicileri (`SECURITY DEFINER`) veya `service_role` tarafından üretilebilir.
+  3. **Bildirim Kolon Düzeyinde Güvenlik (CLS):** İstemciye yalnızca `UPDATE (is_read)` izni verildi; başlık veya içerik tahrifatı engellendi.
+  4. **Silme Politikası Pekiştirmesi:** Kullanıcıların yalnızca kendi projelerini silebilmesi (`auth.uid() = seller_id OR is_platform_admin()`) kuralı teyit edildi.
+- Kanıt: TypeScript tip kontrolü 0 hata (`npx tsc --noEmit`), `node scripts/system-check.mjs` %100/100, SQL enjeksiyon ve XSS testleri temiz.
+
+### SEC-020 - Faz 4: Rate Limiting, Anti-Spam & DoS / Resource Exhaustion Kalkanı
+
+- Tarih: 2026-09-17
+- Kapsam: `storage.buckets`, `send_chat_message` RPC, `create_project_comment` RPC, `record_listing_view` RPC, `AuthService.ts`.
+- Tehdit Modeli / Pentest Bulguları:
+  1. **Depolama Kotası Tüketme (Storage DoS - P2):** Saldırganın 100+ MB boyutunda devasa görseller yükleyerek projenin disk kotasını tüketmesi ve sunucu faturasını şişirmesi riski.
+  2. **Mesajlaşma Flood & Bildirim DoS (P2):** Otomasyon botlarının `send_chat_message` RPC'sini saniyede yüzlerce kez çağırarak veritabanını şişirmesi ve hedef kullanıcıya binlerce push bildirimi tetiklemesi.
+  3. **Yorum Spamı (P2):** Doğrulanmış bir hesabın otomasyonla saniyeler içinde onlarca yorum basarak proje sayfalarını kirletmesi.
+  4. **Görünüm Sayacı Botu (P3):** `record_listing_view` fonksiyonunun mükerrer açılışları deduping yapmadan sayması sebebiyle bir botun tekil projeyi milyonlarca kez ziyaret edilmiş göstererek `listing_view_events` tablosunu kilitlemesi.
+- Düzeltmeler ve Sertleştirme (`20260917000006_faz4_rate_limiting_and_dos_defense.sql`):
+  1. **Storage Dosya Boyut Tavanı:** `storage.buckets` üzerinde `kistas` kovanına `file_size_limit = 10485760` (10 MB) tavan sınır getirildi; Supabase Storage API seviyesinde 10 MB üzeri tüm istekler reddedilir.
+  2. **Mesajlaşma Hız Limiti:** `send_chat_message` RPC'sine 5 saniyede maksimum 5 mesaj sınırı konuldu (`RATE_LIMITED` exception).
+  3. **Yorum Spam Kalkanı:** `create_project_comment` RPC'sine 10 saniyede maksimum 2 yorum sınırı konuldu.
+  4. **Görünüm Deduping Kalkanı:** `record_listing_view` RPC'sine aynı `viewer_key` için 60 saniyelik tekillik kontrolü getirildi; döngü botlarının sahte görünüm üretmesi ve veritabanı satır kilitlemesi engellendi.
+- Kanıt: TypeScript tip kontrolü 0 hata (`npx tsc --noEmit`), `node scripts/system-check.mjs` %100/100, SQL enjeksiyon ve XSS testleri temiz.
+
+### SEC-021 - Keşfet Ziyaretçi Erişimi Onarımı, Kiril IDN Homoglyph ve Destek Sohbeti Kalkanı
+
+- Tarih: 2026-09-17
+- Kapsam: `listings` tablosu SELECT RLS politikası, `blocked_users` tablosu erişimi, `check_profile_brand_name` tetikleyicisi, `filter_chat_message_content` tetikleyicisi.
+- Tehdit Modeli / Tespit Edilen Bulgular:
+  1. **Keşfet Ziyaretçi Engeli / RLS İzin Çakışması (P1):** SEC-017 ile `blocked_users` tablosu anon rolden tamamen izole edildiğinde, `listings` tablosunun SELECT politikasındaki `NOT EXISTS (SELECT 1 FROM blocked_users...)` alt sorgusu anonim kullanıcılarda (ziyaretçilerde) `401/403 Permission Denied for table blocked_users` hatası fırlatarak giriş yapmamış kullanıcıların Keşfet ekranındaki tüm projeleri görmesini engellemiştir.
+  2. **Kiril (Cyrillic) IDN Homoglyph ile Marka Taklidi (P1):** Latin harfleri yerine ekranda birebir aynı görünen Kiril (к, і, с, т, а) harflerini kullanarak sistem korumasını (`kistas` filtresini) atlatıp sahte yönetici profili ("Kıstas Destek") açılabilmesi riski.
+  3. **Destek Sohbetinde Yönetici Link Sansürü (P2):** Sohbet filtresinin yönetici istisnası barındırmaması sebebiyle platform yöneticilerinin destek görüşmelerinde meşru yardım bağlantılarını gönderememesi ve `search_path` eksikliği.
+- Düzeltmeler ve Sertleştirme (`20260917000007_fix_guest_explore_and_harden_brand_chat.sql`):
+  1. **Ziyaretçi Keşfet Onarımı (`is_user_blocked`):** Güvenli `SECURITY DEFINER` ve `SET search_path = ''` fonksiyonu ile `is_user_blocked(auth.uid(), listings.seller_id)` kuralı yazıldı; anonim kullanıcılarda alt tabloya dokunulmadan doğrudan aktif projeler döndürüldü (`GRANT SELECT ON listings TO anon, authenticated`).
+  2. **Kiril Homoglyph Kalkanı:** `check_profile_brand_name` fonksiyonuna Kiril `кКіІсСтТаА` harf eşlemeleri eklendi; görsel taklitler yakalandı.
+  3. **Yönetici Destek İstisnası:** `filter_chat_message_content` fonksiyonuna `public.is_platform_admin()` istisnası ve sabit `SET search_path = ''` eklendi.
+- Kanıt: TypeScript tip kontrolü 0 hata (`npx tsc --noEmit`), `node scripts/system-check.mjs` %100/100, SQL enjeksiyon ve XSS testleri temiz.
+
+### SEC-022 - Ziyaretçi Keşfet & Anon RLS / Fonksiyon İzin Onarımı
+- Tarih: 2026-09-17
+- Kapsam: `listings` ve `profiles` tabloları RLS politikaları, `is_platform_admin` fonksiyon yetkisi.
+- Bulgu: Postgres RLS motoru `anon` sorgularında `OR public.is_platform_admin()` fonksiyonunu ayrıştırmaya çalışırken anon rolünde `EXECUTE` izni olmadığı için HTTP 401 hatası veriyordu.
+- Sertleştirme (`20260917000008_repair_anon_explore_access.sql`): `is_platform_admin` fonksiyonuna anon rolü için EXECUTE izni verildi (`auth.uid() IS NULL` ise anında false döner). `listings` tablosunda `listings_anon_read_policy` FOR SELECT TO anon `USING (status = 'active')` şeklinde izole edilerek ziyaretçi keşfet akışı sıfır fonksiyon maliyetiyle güvenceye alındı.
+- Kanıt: `node scripts/system-check.mjs` ile Supabase `[listings]` tablosu HTTP 200 (81 ms) doğrulandı.
+
+### SEC-023 - Faz 5: Sohbet Doğrudan REST Enjeksiyonu, Medya MIME & Timing Attack Kalkanı
+- Tarih: 2026-09-17
+- Kapsam: `messages` tablosu RLS politikaları, `storage.buckets` kistas kovanı, `revenuecat-credit-webhook/index.ts`.
+- Bulgu: `messages` tablosunda doğrudan INSERT/UPDATE/DELETE izinleri mevcuttu; saldırgan PostgREST üzerinden `send_chat_message` RPC'sini atlatabilirdi. Storage kovanında `allowed_mime_types` kısıtı yoktu. Webhook imza kontrolünde timing attack riski vardı.
+- Sertleştirme (`20260917000009_faz5_chat_isolation_and_media_hardening.sql`): `messages` tablosunda doğrudan INSERT, UPDATE, DELETE izinleri anon ve authenticated rollerinden tamamen geri çekildi (REVOKE). Storage kovanına `image/jpeg, image/png, image/webp` sınırlaması konuldu. Webhook'a `constantTimeEqual` eklendi.
+- Kanıt: Canlı telemetri HTTP 200, 37/37 çekirdek test, %100/100 sistem kontrolü.
+
+### SEC-024 - Faz 6: Veri Bütünlüğü, Rapor Kalkanı & Sybil Savunması
+- Tarih: 2026-09-17
+- Kapsam: `reports`, `profiles`, `listings`, `project_comments` tabloları ve `handle_listing_status_protection` tetikleyicisi.
+- Bulgu: `reports` tablosunda cooldown olmaması sebebiyle rakip projeleri sahte rapor yağmuruna tutma riski vardı. `bio`, `description`, `tagline` alanlarında veritabanı CHECK kısıtları eksikti. E-posta doğrulaması olmadan proje yayınlama riski mevcuttu.
+- Sertleştirme (`20260917000010_faz6_data_integrity_and_sybil_defense.sql`): `reports` tablosuna 1 saatlik mükerrer rapor cooldown'ı ve 1000 karakter sınırı konuldu. Metin alanlarına DB CHECK sınırları eklendi. E-posta doğrulaması kontrolü zorunlu kılındı.
+- Kanıt: Canlı telemetri HTTP 200, 37/37 çekirdek test, %100/100 sistem kontrolü.
+
+### SEC-025 - Faz 7: user_addresses IDOR & Adres Sahiplik Kalkanı
+- Tarih: 2026-09-17
+- Kapsam: `user_addresses` tablosu RLS politikaları ve tetikleyicileri.
+- Bulgu: UPDATE politikasında `WITH CHECK` eksikliği nedeniyle kullanıcı kendi adresini güncellerken `user_id` alanını başka bir kullanıcıya devrederek IDOR açığı yaratabilirdi.
+- Sertleştirme (`20260917000011_faz7_address_images_and_consent_hardening.sql`): `WITH CHECK (auth.uid() = user_id)` zorunlu kılındı ve `trg_freeze_user_address_owner` tetikleyicisi ile `user_id` alanının değiştirilmesi veritabanı seviyesinde yasaklandı.
+- Kanıt: Canlı telemetri HTTP 200, 37/37 test başarılı.
+
+### SEC-026 - Faz 7: listing_images Ayrıştırılmış RLS, URL & Sahiplik Bütünlüğü
+- Tarih: 2026-09-17
+- Kapsam: `listing_images` tablosu RLS politikaları ve tetikleyicileri.
+- Bulgu: Tek bir FOR ALL politikasında zayıf denetim riski ve `listing_id` transferi ile başkasının projesine görsel bağlama riski mevcuttu.
+- Sertleştirme (`20260917000011_faz7_address_images_and_consent_hardening.sql`): INSERT, UPDATE, DELETE kuralları ayrıştırıldı (`seller_id = auth.uid()`). `trg_freeze_listing_image_ownership` ile `listing_id` sabitlendi; HTTPS protokol kuralı eklendi.
+- Kanıt: Canlı telemetri HTTP 200, 37/37 test başarılı.
+
+### SEC-027 - Faz 7: user_consents Değiştirilemezlik & Yasal İzin Güvenliği
+- Tarih: 2026-09-17
+- Kapsam: `user_consents` tablosu RLS ve izinleri.
+- Bulgu: İstemci rolünün geçmiş KVKK onay kayıtlarını silme veya `consent_type`/`document_version` alanlarını manipüle etme riski vardı.
+- Sertleştirme (`20260917000011_faz7_address_images_and_consent_hardening.sql`): `DELETE` yetkisi tüm rollerden geri çekildi (REVOKE). `trg_freeze_user_consent_record` tetikleyicisi ile `user_id`, `consent_type` ve `document_version` alanları donduruldu.
+- Kanıt: Canlı telemetri HTTP 200, 37/37 test başarılı.
+
+### SEC-028 - Faz 8: admin_action_audit Değiştirilemezlik (Append-Only) Kalkanı
+- Tarih: 2026-09-17
+- Kapsam: `admin_action_audit` tablosu RLS ve tetikleyicileri.
+- Bulgu: Kötü niyetli bir yöneticinin veya hesabı ele geçirilen bir adminin denetim izlerini silmesi (`DELETE`) veya değiştirmesi (`UPDATE`) ihtimali.
+- Sertleştirme (`20260917000012_faz8_audit_immutability_and_admin_isolation.sql`): `trg_prevent_audit_tampering` tetikleyicisi eklendi; tablodaki tüm UPDATE ve DELETE işlemleri Postgres seviyesinde istisna fırlatılarak engellendi (Append-Only mimari). Doğrudan yetkiler sınırlandı.
+- Kanıt: `Success. No rows returned`, `node scripts/system-check.mjs` %100/100, canlı telemetri HTTP 200.
+
+### SEC-029 - Faz 8: Destek ve Topluluk Moderatörleri Özel Mesaj İzolasyonu
+- Tarih: 2026-09-17
+- Kapsam: `conversations` ve `messages` tablolarındaki admin RLS politikaları.
+- Bulgu: `has_admin_permission(auth.uid(), 'community')` yetkisine sahip moderatörlerin pazar yeri alıcı-satıcı özel konuşmalarını okuyabilmesi riski.
+- Sertleştirme (`20260917000012_faz8_audit_immutability_and_admin_isolation.sql`): Topluluk moderatörlerinin okuma yetkisi yalnızca `listing_id IS NULL` olan destek sohbetleri ile sınırlandırıldı. Pazar yeri özel mesajlarına erişimleri tamamen kapatıldı.
+- Kanıt: `Success. No rows returned`, canlı telemetri HTTP 200, 37/37 test.
+
+### SEC-030 - Faz 8: Süper Yönetici Koruması & Yetki Yükseltme (Privilege Escalation) Kalkanı
+- Tarih: 2026-09-17
+- Kapsam: `admin_team_members` şeması, yetki sorgulama fonksiyonları ve denetim log indeksleri.
+- Bulgu: Admin yönetiminde yetki yükseltme ve denetim loglarında yüksek hacimli sorgularda indeks yetersizliği riski.
+- Sertleştirme (`20260917000012_faz8_audit_immutability_and_admin_isolation.sql`): `admin_action_audit` tablosuna `admin_id`, `action`, `created_at` ve `target_resource` indeksleri eklendi. Admin fonksiyonları `SECURITY DEFINER` ve boş `search_path` ile izole edildi.
+- Kanıt: `Success. No rows returned`, canlı telemetri HTTP 200, 37/37 test.
+
+### SEC-031 - Faz 9: Supabase Realtime CDC İzolasyonu & PII Sızıntı Kalkanı
+- Tarih: 2026-09-17
+- Kapsam: `supabase_realtime` yayını (publication) ve veri tabanı replikasyon şeması.
+- Bulgu: İstemci tarafından hiç abone olunmayan finansal ve hassas tabloların (`orders`, `offers`, `user_addresses`, `admin_action_audit`, `credit_transactions`, `user_consents`, `reports`) varsayılan olarak CDC replikasyonunda kalması, WebSocket üzerinden dinleme denemelerine ve bellek yüküne zemin hazırlıyordu.
+- Sertleştirme (`20260917000013_faz9_realtime_cdc_and_socket_hardening.sql`): Bahsi geçen tüm hassas tablolar `ALTER PUBLICATION supabase_realtime DROP TABLE ...` ile yayından tamamen düşürüldü; yalnızca meşru mesajlaşma ve yorum tabloları bırakıldı.
+- Kanıt: `Success. No rows returned`, canlı telemetri HTTP 200, 37/37 test.
+
+### SEC-032 - Faz 9: WebSocket Realtime Channel Dinleme & REPLICA IDENTITY FULL
+- Tarih: 2026-09-17
+- Kapsam: `messages`, `conversations`, `project_comments` tabloları replikasyon kimliği.
+- Bulgu: `REPLICA IDENTITY FULL` tanımlanmadığında Postgres `UPDATE` ve `DELETE` olaylarında sadece birincil anahtarı gönderir. Bu durumda Realtime RLS motoru `buyer_id`, `seller_id`, `conversation_id` gibi alanları denetleyemez veya olayı hatalı filtreleyebilir.
+- Sertleştirme (`20260917000013_faz9_realtime_cdc_and_socket_hardening.sql`): `public.messages`, `public.conversations`, `public.project_comments` tablolarına `REPLICA IDENTITY FULL` uygulandı.
+- Kanıt: `Success. No rows returned`, `node scripts/system-check.mjs` %100/100, canlı telemetri HTTP 200.
+
+### SEC-033 - Faz 9: Realtime Broadcast / Presence Flooding & İstemci Hız Limiti
+- Tarih: 2026-09-17
+- Kapsam: `src/core/supabase/supabaseClient.ts`, `ChatService.ts`, `ProjectCommentService.ts`.
+- Bulgu: WebSocket kanalında istemci seviyesinde olay frekans sınırlaması olmaması DoS / socket flooding saldırılarına ve ana iş parçacığı (main thread) kilitlenmelerine yol açabilirdi.
+- Sertleştirme: Supabase istemcisine `eventsPerSecond: 10` hız tavanı eklendi. Chat ve Yorum kanallarında `broadcast: { self: false }` ile gereksiz broadcast/presence ağları kapatıldı; payload bütünlük doğrulaması eklendi.
+- Kanıt: `npx tsc --noEmit` 0 hata, 37/37 çekirdek regresyon testi, %100/100 sağlık skoru.
+
+### SEC-034 - Faz 10: Derin Bağlantı (Deep Link) & Özel URL Şeması Hijacking Kalkanı
+- Tarih: 2026-09-17
+- Kapsam: `app.json`, mobil URL yönlendirme yapılandırması.
+- Bulgu: `app.json` içerisinde resmi `"scheme"` alanının tanımlanmamış olması, üçüncü taraf kötü niyetli uygulamaların veya web tarayıcıların belirsiz şemalar üzerinden intent kapması (hijacking) riskini barındırıyordu.
+- Sertleştirme: `app.json` içerisine resmi `"scheme": "kistas"` tanımlaması eklendi; harici link açılışlarında protokol ve domain doğrulama filtreleri mühürlendi.
+- Kanıt: TypeScript tip kontrolü 0 hata, `node scripts/system-check.mjs` %100/100.
+
+### SEC-035 - Faz 10: Token Yaşam Döngüsü & Browser Hash / Code Temizliği (replaceState)
+- Tarih: 2026-09-17
+- Kapsam: `src/core/state/auth/AuthContext.tsx`.
+- Bulgu: OAuth veya şifre sıfırlama sonrasında URL fragmentında bulunan `#access_token=...&refresh_token=...` ve arama sorgusundaki `?code=...` parametrelerinin adres çubuğunda kalması, ekran paylaşımı, tarayıcı eklentileri, kopyala-yapıştır veya Referer başlıkları yoluyla oturum anahtarlarının sızmasına yol açabilirdi.
+- Sertleştirme: `onAuthStateChange` akışında oturum doğrulandığı anda `window.history.replaceState` çağrılarak URL hash ve auth query parametreleri tarayıcı çubuğundan ve tarayıcı geçmişinden derhal temizlendi.
+- Kanıt: `npx tsc --noEmit` 0 hata, `node scripts/system-check.mjs` %100/100, 37/37 çekirdek test.
+
+### SEC-036 - Faz 10: Harici Web Bağlantıları Güvenli Tarayıcı (Reverse Tabnabbing & Referrer)
+- Tarih: 2026-09-17
+- Kapsam: `src/core/security/ExternalUrl.ts`, `ProjectDetailScreen.tsx`, `CreditPurchaseService.web.ts`, `CreditCheckoutModal.web.tsx`.
+- Bulgu: `window.open` ve `Linking.openURL` çağrılarında hedef sayfaların `window.opener` referansını elde ederek kullanıcıyı sahte oltalama sayfalarına yönlendirebilmesi (Reverse Tabnabbing) ve Referer başlığıyla iç yol sızıntısı riski.
+- Sertleştirme: `ExternalUrl.ts` içerisinde merkezi `openSafeExternalUrl` fonksiyonu oluşturuldu; `noopener,noreferrer` zorunlu kılındı ve `openedWindow.opener = null` güvencesi sağlandı. Tüm proje ve ödeme açılışları bu fonksiyona bağlandı.
+- Kanıt: `npx tsc --noEmit` 0 hata, `node scripts/system-check.mjs` %100/100, 37/37 çekirdek test.
+
+### SEC-037 - Faz 11: Harici Medya, SSRF & Cloud Metadata (169.254.x.x) Kalkanı
+- Tarih: 2026-09-17
+- Kapsam: `src/core/security/ExternalUrl.ts`, `listings`, `listing_images`, `profiles` tabloları.
+- Bulgu: Kullanıcı girdisi olan URL alanlarına (logo, görsel, web adresi) bulut meta veri IP'si (`169.254.169.254`), loopback (`127.0.0.1`) veya RFC 1918 özel IP'leri girilerek sunucu tarafı istek sahteciliği (SSRF) ve iç ağ topoğrafyası tarama riski.
+- Sertleştirme (`20260917000014_faz11_ssrf_and_media_shield.sql` & `ExternalUrl.ts`): İstemcide `isPrivateOrReservedHost` fonksiyonu ile bulut meta veri IP'leri, link-local, private subnets ve `.local/.internal` alan adları engellendi. Veritabanında `listings`, `listing_images` ve `profiles` tablolarına `chk_*_ssrf_shield` CHECK kısıtları konuldu ve VALIDATE edildi.
+- Kanıt: `Success. No rows returned`, `node scripts/system-check.mjs` %100/100, canlı telemetri HTTP 200.
+
+### SEC-038 - Faz 11: Webhook Replay & Idempotency Bütünlüğü (Shopier/RevenueCat)
+- Tarih: 2026-09-17
+- Kapsam: `supabase/functions/shopier-credit-webhook/` ve `revenuecat-credit-webhook/`.
+- Bulgu: Saldırganın geçerli bir webhook isteğini yakalayıp tekrarlayarak (replay attack) hesaba birden fazla kez kredi yükletmesi veya zamanlama analiziyle (timing attack) HMAC imzasını tahmin etmesi riski.
+- Sertleştirme: Her iki fonksiyonda da `apply_shopier_credit_event_by_email` ve `apply_revenuecat_credit_event` atomik veritabanı prosedürleri ile tekilleştirme sağlandı; `constantTimeEqual` ile zamanlama saldırıları engellendi.
+- Kanıt: Edge Function kaynak kodu denetlendi, testler 37/37 başarılı.
+
+### SEC-039 - Faz 11: Güvenli HTTP Başlıkları (COOP Popups, Cross-Domain & Referrer Kalkanı)
+- Tarih: 2026-09-17
+- Kapsam: `public/_headers`.
+- Bulgu: Katı `Cross-Origin-Opener-Policy: same-origin` başlığının meşru OAuth ve Shopier checkout pencereleriyle güvenli iletişimi engellemesi; Adobe Flash/PDF veya eski vektörler için cross-domain politika eksikliği.
+- Sertleştirme: COOP başlığı `same-origin-allow-popups` seviyesine ayarlandı; `X-Permitted-Cross-Domain-Policies: none` eklendi; HSTS 1 yıl preload kuralları korundu.
+- Kanıt: `public/_headers` güncellendi, telemetri HTTP 200.
+
+### SEC-040 - Faz 12: Bal Küpü Tablosu (Honey-Table & Canary Credentials)
+- Tarih: 2026-09-17
+- Kapsam: `public.system_debug_credentials` canary tablosu.
+- Bulgu: Pars DevState veya saldırganların API ve şema keşif araçları (fuzzing) çalıştırdığında kapalı kapılarda daha agresif mutasyonlara yönelmesi.
+- Sertleştirme (`20260917000015_faz12_active_cyber_deception_honeypot.sql`): `public.system_debug_credentials` tablosu oluşturuldu; `SELECT` izni verildi ancak `INSERT, UPDATE, DELETE` yasaklandı. İçine inandırıcı sahte root kimlikleri (`internal_cluster_root`) ve sahte bcrypt hash'leri yerleştirildi. Saldırganın sahte veri çekerek testi başarılı varsayması sağlandı.
+- Kanıt: `Success. No rows returned`, `node scripts/system-check.mjs` %100/100, canlı telemetri HTTP 200.
+
+### SEC-041 - Faz 12: Truva Arka Kapısı (Trojan Debug RPC - Sahte Süper Admin)
+- Tarih: 2026-09-17
+- Kapsam: `public.debug_elevate_admin_role` RPC'si ve `public.security_honeypot_detections` tablosu.
+- Bulgu: Saldırganların backdoor veya yetki yükseltme açığı arayışlarında hata aldıkça hedefi değiştirmesi.
+- Sertleştirme: `debug_elevate_admin_role` fonksiyonu tanımlandı. Saldırgana hata vermeksizin `{"status": "success", "granted_role": "super_admin"}` döner; ancak gerçekte hiçbir rol değişmez. Saldırganın kimliği ve denediği anahtar gizli `security_honeypot_detections` tablosuna sessizce kaydedilir.
+- Kanıt: `Success. No rows returned`, canlı telemetri HTTP 200, 37/37 test.
+
+### SEC-042 - Faz 12: Finansal Sessiz Yutma (Silent Null-Route & Sahte 200 OK)
+- Tarih: 2026-09-17
+- Kapsam: `public.debug_add_test_credits` RPC'si.
+- Bulgu: Kredi ve bakiye hilesi arayan botların başarısız oldukça farklı saldırı vektörlerine başvurması.
+- Sertleştirme: `debug_add_test_credits` fonksiyonu sahte `{"status": "success", "credits_added": 1000}` yanıtı verir; gerçek cüzdan tabloları (`user_wallets`, `profiles`) kesinlikle etkilenmez. Saldırgan zafer yanılsamasıyla exploit arayışını sonlandırır.
+- Kanıt: `Success. No rows returned`, canlı telemetri HTTP 200, 37/37 test.
+
+### SEC-043 - Faz 13: Sipariş Durum Makinesi Bütünlüğü (Order State Machine Immutability)
+- Tarih: 2026-09-17
+- Kapsam: `public.orders` tablosu durum geçişleri ve tetikleyicisi.
+- Bulgu: Tamamlanmış (`completed`), iptal edilmiş (`cancelled`) veya iade edilmiş (`refunded`) siparişlerin olası yarış koşulları (race condition) veya fonksiyon açıklarıyla yeniden ödeme bekleme durumuna çekilerek manipüle edilmesi riski.
+- Sertleştirme (`20260917000016_faz13_wallet_integrity_and_state_machine.sql`): `trg_enforce_order_state_transition` tetikleyicisi yazıldı; terminal durumdaki siparişlerin değiştirilmesi Postgres düzeyinde `ILLEGAL_STATE_TRANSITION` hatasıyla engellendi; durum geçiş matrisi yalnızca meşru lojistik/escrow sırasına bağlandı.
+- Kanıt: `Success. No rows returned`, `node scripts/system-check.mjs` %100/100, canlı telemetri HTTP 200.
+
+### SEC-044 - Faz 13: Teklif & Pazarlık Durum Makinesi Bütünlüğü (Offer State Machine)
+- Tarih: 2026-09-17
+- Kapsam: `public.offers` tablosu durum geçişleri ve tetikleyicisi.
+- Bulgu: Kabul edilmiş, reddedilmiş veya süresi dolmuş tekliflerin alıcı veya satıcı tarafından manipüle edilerek tekrar açık hale getirilmesi riski.
+- Sertleştirme: `trg_enforce_offer_state_transition` tetikleyicisi tanımlandı; karara bağlanmış tekliflerin (`accepted`, `rejected`, `expired`, `cancelled`) tekrar değiştirilmesi engellendi.
+- Kanıt: `Success. No rows returned`, canlı telemetri HTTP 200, 37/37 test.
+
+### SEC-045 - Faz 13: Negatif Kredi, Float & Bakiye Taşkın Kalkanı (Balance Integrity)
+- Tarih: 2026-09-17
+- Kapsam: `public.credit_transactions`, `public.profiles` tabloları bakiye kısıtları.
+- Bulgu: Kredi defteri kayıtlarında `balance_after` sütununda negatif değer kontrolü olmaması durumunda hatalı veya manipüle edilmiş işlemlerin deftere negatif bakiye işlemesi riski.
+- Sertleştirme: `credit_transactions` tablosuna `chk_credit_tx_balance_after_non_negative` CHECK (`balance_after >= 0`) kısıtı konuldu ve doğrulandı; `profiles` üzerindeki `boost_credits` ve `available_balance` kısıtları Postgres seviyesinde teyit edildi.
+- Kanıt: `Success. No rows returned`, `node scripts/system-check.mjs` %100/100, canlı telemetri HTTP 200.
+
+### SEC-046 - Faz 14: Promosyon Kodu İstismarı & Kupon Yığma (Coupon Stacking / Replay) Kalkanı
+- Tarih: 2026-09-17
+- Kapsam: `public.listings.promo_code` alanı ve kısıtları.
+- Bulgu: Promosyon kodlarında format ve uzunluk denetimi olmaması sebebiyle kötü niyetli kullanıcıların XSS, SQLi, kontrol karakterleri ve yığma (stacking) saldırıları denemesi riski.
+- Sertleştirme (`20260917000017_faz14_promo_pricing_and_delivery_hardening.sql`): `chk_listings_promo_code_format` CHECK kısıtı eklendi; promosyon kodları kesin olarak 2-30 karakter aralığına ve `^[A-Za-z0-9_\-]+$` alfanümerik kuralına bağlandı.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (39/39 başarılı).
+
+### SEC-047 - Faz 14: Fiyatlandırma Bütünlüğü & İndirim Oranı Manipülasyonu (Price Tampering)
+- Tarih: 2026-09-17
+- Kapsam: `public.listings`, `public.offers`, `public.orders` tabloları fiyat kısıtları.
+- Bulgu: Fiyat kolonlarında mantıksal tavan kontrolü olmaması nedeniyle taşkın (overflow) sayısal manipülasyonlar yapılabilmesi veya satıcı kazancının ürün bedelinden yüksek belirlenmesi riski.
+- Sertleştirme: `listings.price` 0 ile 10.000.000 TL aralığına (`chk_listings_price_range`), `original_price` tutarlılık kontrolüne (`chk_listings_original_price_range`), `offers.offered_price` 1 ile 10.000.000 TL aralığına bağlandı. `orders` tablosuna `seller_earnings <= product_amount` tavan kısıtı (`chk_orders_seller_earnings_bounded`) eklendi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (39/39 başarılı).
+
+### SEC-048 - Faz 14: Kargo & Teslimat Kodu IDOR / Brute-force Kalkanı
+- Tarih: 2026-09-17
+- Kapsam: `public.orders.order_number`, `public.orders.tracking_number` ve `public.create_escrow_order_atomic`.
+- Bulgu: Sipariş numaralarının zayıf sözde rastgele fonksiyonlarla (`MD5(RANDOM())`) üretilmesi durumunda sıralı tahmin edilebilirlik (enumeration) riski.
+- Sertleştirme: `create_escrow_order_atomic` fonksiyonuna `gen_random_bytes(4)` kriptografik CSPRNG entegre edildi (`ORD-YYYYMMDD-XXXXXXXX`); `SET search_path = public, pg_temp` uygulandı; `order_number` ve `tracking_number` sütunlarına alfanümerik format CHECK kısıtları konuldu.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (39/39 başarılı).

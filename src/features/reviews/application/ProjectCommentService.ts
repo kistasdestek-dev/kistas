@@ -93,7 +93,11 @@ export class ProjectCommentService {
   public static subscribe(listingId: string, onChange: () => void) {
     const safeListingId = toPostgrestUuid(listingId, 'listing id');
     return supabase
-      .channel(`project_comments_${safeListingId}`)
+      .channel(`project_comments_${safeListingId}`, {
+        config: {
+          broadcast: { self: false },
+        },
+      })
       .on(
         'postgres_changes',
         {

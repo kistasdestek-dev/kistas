@@ -64,11 +64,15 @@ export class CreditPurchaseService {
     const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - width) / 2));
     const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - height) / 2));
 
-    return window.open(
+    const popup = window.open(
       url,
       'KistasShopierCheckout',
-      `width=${width},height=${height},left=${left},top=${top},menubar=no,status=no,toolbar=no,scrollbars=yes,resizable=yes`
+      `width=${width},height=${height},left=${left},top=${top},menubar=no,status=no,toolbar=no,scrollbars=yes,resizable=yes,noopener,noreferrer`
     );
+    if (popup) {
+      popup.opener = null;
+    }
+    return popup;
   }
 
   static async purchase(
