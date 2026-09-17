@@ -15,7 +15,6 @@ import { breakpoints, kistasStyle, theme } from '../../core/theme';
 import { Listing, PlatformType } from '../../features/listings/domain/Listing';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 import { GlassIconButton } from './GlassIconButton';
-import { CategoryStarsBanner } from './CategoryStarsBanner';
 import { getOptimizedImageUrl } from '../../core/media/imageDelivery';
 
 export interface TodayShowcaseRowProps {
@@ -81,14 +80,40 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
           {subtitle ? <Text style={styles.sectionSubtitle} numberOfLines={2}>{subtitle}</Text> : null}
         </TouchableOpacity>
 
-        <View style={styles.headerActions}>
-          {onOpenCreditStore ? (
-            <CategoryStarsBanner
-              words={['Kategorinin Yıldızları', 'Vitrinde Yerinizi Alın', 'Projenizi Parlatın', 'Kıstas Vitrini']}
-              onPress={onOpenCreditStore}
-            />
-          ) : null}
-        </View>
+        {onOpenAll ? (
+          <Pressable
+            onPress={onOpenAll}
+            style={({ hovered, pressed }: any) => [
+              styles.seeAllGlassButton,
+              hovered && styles.seeAllGlassButtonHover,
+              pressed && styles.seeAllGlassButtonPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Tüm vitrin liderlerini aç"
+          >
+            {({ hovered }: any) => (
+              <>
+                <Text style={[styles.seeAllGlassButtonText, hovered && styles.seeAllGlassButtonTextHover]}>
+                  Tümünü Gör
+                </Text>
+                <View style={[styles.seeAllIconBadge, hovered && styles.seeAllIconBadgeHover]}>
+                  <Ionicons name="arrow-forward" size={12} color={hovered ? '#1D4ED8' : '#2563EB'} />
+                </View>
+              </>
+            )}
+          </Pressable>
+        ) : onOpenCreditStore ? (
+          <TouchableOpacity
+            activeOpacity={0.78}
+            onPress={onOpenCreditStore}
+            style={styles.showcaseCta}
+            accessibilityRole="button"
+            accessibilityLabel="Projeyi premium vitrine çıkar"
+          >
+            <Ionicons name="sparkles" size={14} color="#3269C7" />
+            <Text style={styles.showcaseCtaText}>Vitrine Çık</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <ScrollView
@@ -204,13 +229,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerCopy: { flex: 1, paddingRight: 12 },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flexWrap: 'wrap',
-    justifyContent: 'flex-end',
-  },
   sectionTitle: {
     ...theme.typography.kistas,
     color: NEO.ink,
@@ -228,6 +246,70 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     fontWeight: '500',
   },
+  seeAllGlassButton: {
+    minHeight: 34,
+    paddingLeft: 14,
+    paddingRight: 7,
+    paddingVertical: 4,
+    borderRadius: 999,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
+    backdropFilter: 'blur(12px)',
+    borderWidth: 1,
+    borderColor: 'rgba(37, 99, 235, 0.18)',
+    boxShadow: '0 3px 12px rgba(37, 99, 235, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+    cursor: 'pointer',
+    transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+  } as any,
+  seeAllGlassButtonHover: {
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    borderColor: 'rgba(37, 99, 235, 0.35)',
+    boxShadow: '0 6px 18px rgba(37, 99, 235, 0.16), inset 0 1px 0 rgba(255, 255, 255, 1)',
+    transform: [{ translateY: -1 }],
+  } as any,
+  seeAllGlassButtonPressed: {
+    transform: [{ translateY: 0 }, { scale: 0.98 }],
+    opacity: 0.88,
+  },
+  seeAllGlassButtonText: {
+    ...theme.typography.kistas,
+    color: '#1E3A8A',
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: -0.1,
+  },
+  seeAllGlassButtonTextHover: {
+    color: '#2563EB',
+  },
+  seeAllIconBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(37, 99, 235, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(37, 99, 235, 0.12)',
+    transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+  } as any,
+  seeAllIconBadgeHover: {
+    backgroundColor: 'rgba(37, 99, 235, 0.15)',
+    transform: [{ translateX: 1.5 }],
+  } as any,
+  showcaseCta: {
+    minHeight: 38,
+    paddingHorizontal: 13,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F7FAFF',
+    borderWidth: 1,
+    borderColor: NEO.border,
+    boxShadow: '-4px -4px 10px rgba(255,255,255,0.92), 5px 6px 12px rgba(130,146,168,0.2)' as any,
+  },
+  showcaseCtaText: { ...theme.typography.kistas, marginLeft: 6, color: NEO.ink, fontSize: 10.5, fontWeight: '700' },
   scrollContent: { paddingHorizontal: 16, paddingTop: 2, paddingBottom: 18, gap: 18 },
   cardStage: {
     borderRadius: 26,

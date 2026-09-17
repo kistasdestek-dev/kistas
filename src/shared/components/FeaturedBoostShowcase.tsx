@@ -18,6 +18,7 @@ import {
 } from './featured-showcase/featuredShowcaseStyles';
 import { Web3DCard } from './featured-showcase/Web3DCard';
 import { Native3DCard } from './featured-showcase/Native3DCard';
+import { CategoryStarsBanner } from './CategoryStarsBanner';
 
 export interface FeaturedBoostShowcaseProps {
   projects: Listing[];
@@ -67,9 +68,12 @@ export const FeaturedBoostShowcase: React.FC<FeaturedBoostShowcaseProps> = ({
               <Text style={sectionStyles.eyebrowText}>SPONSORLU VİTRİN</Text>
             </View>
 
-            <Text style={sectionStyles.sectionHeading}>
-              {selectedCategoryName ? `${selectedCategoryName}: ` : ''}Kategorinin yıldızları burada.
-            </Text>
+            <View style={sectionStyles.bannerContainer}>
+              <CategoryStarsBanner
+                words={['Kategorinin Yıldızları', 'Vitrinde Yerinizi Alın', 'Projenizi Parlatın', 'Kıstas Vitrini']}
+                onPress={onOpenCreditStore}
+              />
+            </View>
 
             {onOpenCreditStore ? (
               <TouchableOpacity

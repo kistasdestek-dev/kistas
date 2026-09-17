@@ -648,6 +648,11 @@ export const sectionStyles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1.05,
   },
+  bannerContainer: {
+    marginTop: 10,
+    marginBottom: 4,
+    alignItems: 'flex-start',
+  },
   sectionHeading: {
     marginTop: 12,
     fontSize: 22,
