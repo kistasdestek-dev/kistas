@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   useWindowDimensions,
   View,
@@ -29,6 +30,13 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSeverity, setSelectedSeverity] = useState<string | null>(null);
   const [actionInProgressId, setActionInProgressId] = useState<string | null>(null);
+
+  // Manuel WAF ve Temizleme Durumları
+  const [showManualBlock, setShowManualBlock] = useState(false);
+  const [manualIp, setManualIp] = useState('');
+  const [manualReason, setManualReason] = useState('');
+  const [isBlockingManual, setIsBlockingManual] = useState(false);
+  const [isClearingMock, setIsClearingMock] = useState(false);
 
   const loadThreatData = useCallback(async () => {
     setIsLoading(true);
@@ -56,7 +64,7 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
       if (event.isQuarantined) {
         const res = await AdminService.releaseThreatActor(event.id);
         if (res.success) {
-          Alert.alert('Karantina Kaldırıldı', 'Saldırgan serbest bırakıldı.');
+          Alert.alert('Karantina Kaldırıldı', 'Saldırgan serbest bırakıldı ve WAF engeli kaldırıldı.');
           loadThreatData();
         } else {
           Alert.alert('Hata', res.error || 'İşlem başarısız.');
@@ -67,7 +75,7 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
           `${event.attackVector} saldırı denemesi nedeniyle karantinaya alındı.`
         );
         if (res.success) {
-          Alert.alert('Karantinaya Alındı', 'Saldırgan tüm erişim noktalarında karantinaya alındı.');
+          Alert.alert('Karantinaya Alındı', 'Saldırgan IP ve hesabı aktif güvenlik duvarında engellendi.');
           loadThreatData();
         } else {
           Alert.alert('Hata', res.error || 'İşlem başarısız.');
@@ -76,6 +84,57 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
     } finally {
       setActionInProgressId(null);
     }
+  };
+
+  const handleManualBlock = async () => {
+    const trimmedIp = manualIp.trim();
+    if (!trimmedIp || trimmedIp.length < 7) {
+      Alert.alert('Eksik Bilgi', 'Lütfen geçerli bir IPv4 veya IPv6 adresi girin.');
+      return;
+    }
+    setIsBlockingManual(true);
+    try {
+      const res = await AdminService.manualQuarantineIp(trimmedIp, manualReason);
+      if (res.success) {
+        Alert.alert('Karantina Devrede', `${trimmedIp} adresi aktif güvenlik duvarı kuralına eklendi ve engellendi.`);
+        setManualIp('');
+        setManualReason('');
+        setShowManualBlock(false);
+        loadThreatData();
+      } else {
+        Alert.alert('Hata', res.error || 'Engelleme başarısız.');
+      }
+    } finally {
+      setIsBlockingManual(false);
+    }
+  };
+
+  const handleClearMockEvents = async () => {
+    Alert.alert(
+      'Simülasyon Verilerini Temizle',
+      'Veritabanındaki başlangıç tatbikat/test kayıtları silinecek ve bundan sonra yalnızca sisteme vuran gerçek saldırılar gösterilecektir. Onaylıyor musunuz?',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Temizle',
+          style: 'destructive',
+          onPress: async () => {
+            setIsClearingMock(true);
+            try {
+              const res = await AdminService.clearMockThreatEvents();
+              if (res.success) {
+                Alert.alert('Başarılı', `${res.deletedCount ?? 0} adet test kaydı silindi. Artık yalnız gerçek veriler gösterilecek.`);
+                loadThreatData();
+              } else {
+                Alert.alert('Hata', res.error || 'Temizleme başarısız.');
+              }
+            } finally {
+              setIsClearingMock(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const getSeverityBadge = (sev: ThreatSeverity) => {
@@ -104,15 +163,6 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
     }
   };
 
-  const isCanarySimulation = (fingerprint: string) => {
-    return [
-      'sqlmap / Automated Injector',
-      'Burp Suite / Repeater Intruder',
-      'Nuclei Scanner Engine',
-      'Python Async Fuzzer',
-    ].includes(fingerprint);
-  };
-
   return (
     <ScrollView
       style={styles.container}
@@ -136,14 +186,16 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
               <Text style={styles.pulseText}>SAYRA SAVUNMA RADARI AKTİF</Text>
             </View>
 
-            <GlassIconButton
-              icon="refresh-outline"
-              size={36}
-              iconSize={18}
-              iconColor="#3269C7"
-              onPress={loadThreatData}
-              accessibilityLabel="Verileri Yenile"
-            />
+            <View style={styles.heroActionsRow}>
+              <GlassIconButton
+                icon="refresh-outline"
+                size={36}
+                iconSize={18}
+                iconColor="#3269C7"
+                onPress={loadThreatData}
+                accessibilityLabel="Verileri Yenile"
+              />
+            </View>
           </View>
 
           <Text style={[styles.heroTitle, isMobile && styles.heroTitleMobile]}>
@@ -152,8 +204,103 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
           <Text style={[styles.heroSubtitle, isMobile && styles.heroSubtitleMobile]}>
             Pars DevState güvenlik motoruyla senkronize; sisteme vuran pentest tarayıcılarını ve anormal istekleri tespit eder, tuzaklarla aldatır ve verilerini toplar.
           </Text>
+
+          {/* Hızlı WAF Aksiyonları */}
+          <View style={styles.heroQuickBar}>
+            <TouchableOpacity
+              style={styles.heroWafBtn}
+              onPress={() => setShowManualBlock(!showManualBlock)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name={showManualBlock ? 'close-circle-outline' : 'shield-outline'} size={15} color="#FFFFFF" style={{ marginRight: 6 }} />
+              <Text style={styles.heroWafBtnText}>{showManualBlock ? 'WAF Panelini Kapat' : 'Manuel IP Engelle (WAF)'}</Text>
+            </TouchableOpacity>
+
+            {events.length > 0 ? (
+              <TouchableOpacity
+                style={styles.heroClearBtn}
+                onPress={handleClearMockEvents}
+                disabled={isClearingMock}
+                activeOpacity={0.8}
+              >
+                {isClearingMock ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Ionicons name="trash-outline" size={14} color="#FFFFFF" style={{ marginRight: 5 }} />
+                    <Text style={styles.heroClearBtnText}>Test Loglarını Temizle</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            ) : null}
+          </View>
         </LinearGradient>
       </View>
+
+      {/* MANUEL IP ENGELLEME (WAF KURALI) FORMU */}
+      {showManualBlock ? (
+        <View style={styles.manualBlockCard}>
+          <View style={styles.manualHeader}>
+            <View style={styles.manualIconWrap}>
+              <Ionicons name="shield-half-outline" size={18} color="#BD354C" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.manualTitle}>Manuel Güvenlik Duvarı Engeli</Text>
+              <Text style={styles.manualSubtitle}>Belirttiğiniz IP adresi anında tüm platform genelinde karantinaya alınır.</Text>
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Engellenecek IP Adresi</Text>
+            <TextInput
+              style={styles.textInput}
+              value={manualIp}
+              onChangeText={setManualIp}
+              placeholder="Örn: 185.190.141.22"
+              placeholderTextColor="#94A3B8"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Engelleme Gerekçesi</Text>
+            <TextInput
+              style={styles.textInput}
+              value={manualReason}
+              onChangeText={setManualReason}
+              placeholder="Örn: Şüpheli tünel / API brute-force denemesi"
+              placeholderTextColor="#94A3B8"
+            />
+          </View>
+
+          <View style={styles.manualActions}>
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => setShowManualBlock(false)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.cancelBtnText}>Vazgeç</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.submitBlockBtn}
+              onPress={handleManualBlock}
+              disabled={isBlockingManual}
+              activeOpacity={0.8}
+            >
+              {isBlockingManual ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <Ionicons name="lock-closed" size={14} color="#FFFFFF" style={{ marginRight: 6 }} />
+                  <Text style={styles.submitBlockBtnText}>WAF Karantinasına Al</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : null}
 
       {/* 2. KISTAS BEYAZ METRİK KARTLARI (2x2 Grid) */}
       <View style={styles.metricsGrid}>
@@ -309,9 +456,11 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
         </View>
       ) : events.length === 0 ? (
         <View style={styles.emptyCard}>
-          <GlassIconButton icon="shield-checkmark" size={48} iconSize={24} iconColor="#187657" />
-          <Text style={styles.emptyTitle}>Aktif Tehdit Bulunmuyor</Text>
-          <Text style={styles.emptySubtitle}>Sistem sınırları tam koruma altında ve siber anomali tespit edilmedi.</Text>
+          <GlassIconButton icon="shield-checkmark" size={54} iconSize={28} iconColor="#187657" />
+          <Text style={styles.emptyTitle}>Aktif Siber Tehdit Bulunmuyor</Text>
+          <Text style={styles.emptySubtitle}>
+            Sistem Sayra WAF ve Bal Küpü Radarı ile gerçek zamanlı korunuyor. Hiçbir simülasyon veya sahte kayıt gösterilmez. Sisteme dışarıdan vuran anormal istekler ve pentest tarayıcıları anlık olarak buraya düşecektir.
+          </Text>
         </View>
       ) : (
         <View style={styles.eventsList}>
@@ -319,20 +468,19 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
             const sevBadge = getSeverityBadge(event.severity);
             const actBadge = getActionBadge(event.actionTaken);
             const inAction = actionInProgressId === event.id;
-            const isCanary = isCanarySimulation(event.toolFingerprint);
 
             return (
               <View key={event.id} style={[styles.eventCard, isMobile && styles.eventCardMobile]}>
-                {/* 1. ÜST SATIR: KRİTİK / TATBİKAT ROZETİ VE SAAT */}
+                {/* 1. ÜST SATIR: SEVİYE ROZETİ VE SAAT */}
                 <View style={styles.eventHeaderRow}>
                   <View style={styles.headerLeftBadges}>
                     <View style={[styles.badge, { backgroundColor: sevBadge.bg, borderColor: sevBadge.border }]}>
                       <Text style={[styles.badgeText, { color: sevBadge.text }]}>{sevBadge.label}</Text>
                     </View>
-                    {isCanary ? (
-                      <View style={styles.canaryBadge}>
-                        <Ionicons name="flask-outline" size={10} color="#7E22CE" style={{ marginRight: 3 }} />
-                        <Text style={styles.canaryBadgeText}>Tatbikat Kaydı</Text>
+                    {event.isQuarantined ? (
+                      <View style={styles.quarantineTag}>
+                        <Ionicons name="lock-closed" size={10} color="#BD354C" style={{ marginRight: 3 }} />
+                        <Text style={styles.quarantineTagText}>Aktif Bloklu</Text>
                       </View>
                     ) : null}
                   </View>
@@ -514,6 +662,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
+  heroActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   heroTitle: {
     color: '#FFFFFF',
     fontSize: 24,
@@ -530,10 +683,134 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     lineHeight: 18,
     maxWidth: 620,
+    marginBottom: 14,
   },
   heroSubtitleMobile: {
     fontSize: 11.5,
     lineHeight: 16,
+    marginBottom: 12,
+  },
+  heroQuickBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  heroWafBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 9,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  heroWafBtnText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  heroClearBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(189, 53, 76, 0.35)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    borderRadius: 9,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+  },
+  heroClearBtnText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  manualBlockCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#DFE6F0',
+    shadowColor: '#1D3557',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  manualHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 14,
+  },
+  manualIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: 'rgba(189,53,76,0.10)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  manualTitle: {
+    color: '#25364E',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  manualSubtitle: {
+    color: '#748096',
+    fontSize: 11,
+    marginTop: 1,
+  },
+  inputGroup: {
+    marginBottom: 10,
+  },
+  inputLabel: {
+    color: '#68758A',
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  textInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#DFE6F0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    color: '#25364E',
+    fontSize: 13,
+  },
+  manualActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+    marginTop: 6,
+  },
+  cancelBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#F1F5FA',
+  },
+  cancelBtnText: {
+    color: '#68758A',
+    fontSize: 11.5,
+    fontWeight: '600',
+  },
+  submitBlockBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#BD354C',
+  },
+  submitBlockBtnText: {
+    color: '#FFFFFF',
+    fontSize: 11.5,
+    fontWeight: '700',
   },
   metricsGrid: {
     flexDirection: 'row',
@@ -762,13 +1039,15 @@ const styles = StyleSheet.create({
     color: '#25364E',
     fontSize: 15.5,
     fontWeight: '700',
-    marginTop: 10,
+    marginTop: 12,
   },
   emptySubtitle: {
     color: '#748096',
     fontSize: 12,
+    lineHeight: 18,
     textAlign: 'center',
-    marginTop: 4,
+    maxWidth: 480,
+    marginTop: 6,
   },
   eventsList: {
     gap: 12,
@@ -811,20 +1090,20 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.4,
   },
-  canaryBadge: {
+  quarantineTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3E8FF',
+    backgroundColor: 'rgba(189,53,76,0.10)',
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#D8B4FE',
+    borderColor: 'rgba(189,53,76,0.28)',
   },
-  canaryBadgeText: {
-    color: '#7E22CE',
+  quarantineTagText: {
+    color: '#BD354C',
     fontSize: 9.5,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   dateWrap: {
     flexDirection: 'row',

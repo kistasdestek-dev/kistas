@@ -782,6 +782,25 @@ runTest('FAZ 15: ThreatIntelligenceView bileşeni ve AdminService entegrasyonu d
   assert.match(adminScreen, /threat_intel/i, 'AdminDashboardScreen threat_intel tabı eksik!');
   assert.match(adminScreen, /<ThreatIntelligenceView/i, 'ThreatIntelligenceView render entegrasyonu eksik!');
   assert.match(threatView, /SAYRA SAVUNMA RADARI AKTİF/i, 'ThreatIntelligenceView başlık ve durumu eksik!');
+  assert.doesNotMatch(adminService, /'mock-1'|'mock-2'|'mock-3'/i, 'AdminService içinde mock/sahte veri kalıntısı tespit edildi!');
+});
+
+runTest('FAZ 15.2: Aktif WAF karantina tablosu, manuel engelleme ve sıfır sahte veri kuralı doğrulanmalı', () => {
+  const faz152Sql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260917000019_faz15_active_waf_quarantine_enforcement.sql'),
+    'utf8'
+  );
+  const adminService = fs.readFileSync(
+    path.join(ROOT, 'src', 'features', 'admin', 'application', 'AdminService.ts'),
+    'utf8'
+  );
+
+  assert.match(faz152Sql, /CREATE TABLE IF NOT EXISTS public\.security_quarantine_blocklist/i, 'security_quarantine_blocklist tablosu eksik!');
+  assert.match(faz152Sql, /check_is_quarantined/i, 'check_is_quarantined fonksiyonu eksik!');
+  assert.match(faz152Sql, /admin_manual_quarantine_ip/i, 'admin_manual_quarantine_ip RPC eksik!');
+  assert.match(faz152Sql, /admin_clear_mock_threat_events/i, 'admin_clear_mock_threat_events RPC eksik!');
+  assert.match(adminService, /manualQuarantineIp/i, 'AdminService.manualQuarantineIp eksik!');
+  assert.match(adminService, /clearMockThreatEvents/i, 'AdminService.clearMockThreatEvents eksik!');
 });
 
 
