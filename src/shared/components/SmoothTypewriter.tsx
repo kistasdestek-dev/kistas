@@ -120,6 +120,6 @@ const styles = StyleSheet.create({
   cursor: {
     fontSize: 15,
     marginLeft: 2,
-    fontWeight: '900',
+    fontWeight: '700',
   },
 });

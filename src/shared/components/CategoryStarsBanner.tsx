@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, Platform } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface CategoryStarsPillProps {
@@ -143,7 +143,7 @@ export const CategoryStarsBanner: React.FC<CategoryStarsPillProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", sans-serif',
+                  fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
                 }}
               >
                 {currentWord.split('').map((letter, index) => (
