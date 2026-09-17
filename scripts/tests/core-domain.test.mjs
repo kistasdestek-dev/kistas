@@ -732,6 +732,57 @@ runTest('FAZ 14: Sipariş numarası ve kargo formatı güvenliği doğrulanmalı
   assert.match(faz14Sql, /SET search_path = public, pg_temp/i, 'create_escrow_order_atomic search_path izolasyonu eksik!');
 });
 
+// -------------------------------------------------------------
+// FAZ 15: SİBER TEHDİT İSTİHBARATI & AKTİF KARŞI-ALDATMA RADARI
+// -------------------------------------------------------------
+runTest('FAZ 15: Tehdit istihbaratı ve saldırgan parmak izi veritabanı şeması doğrulanmalı', () => {
+  const faz15Sql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260917000018_faz15_threat_intelligence_radar.sql'),
+    'utf8'
+  );
+
+  assert.match(faz15Sql, /CREATE TABLE IF NOT EXISTS public\.security_threat_events/i, 'security_threat_events tablosu eksik!');
+  assert.match(faz15Sql, /tool_fingerprint TEXT/i, 'Saldırgan araç/scanner parmak izi kolonu eksik!');
+  assert.match(faz15Sql, /payload_snapshot TEXT/i, 'Zararlı payload kayıt kolonu eksik!');
+  assert.match(faz15Sql, /action_taken TEXT[\s\S]*HONEYPOT_DECEIVED[\s\S]*SILENT_NULL_ROUTED/i, 'Honeypot ve sessiz yutma aksiyon enumları eksik!');
+  assert.match(faz15Sql, /REVOKE ALL ON TABLE public\.security_threat_events FROM PUBLIC, anon, authenticated/i, 'Tehdit tablosu doğrudan erişime kapatılmamış!');
+});
+
+runTest('FAZ 15: Admin siber tehdit radarı ve karantina RPC\'leri doğrulanmalı', () => {
+  const faz15Sql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260917000018_faz15_threat_intelligence_radar.sql'),
+    'utf8'
+  );
+
+  assert.match(faz15Sql, /admin_get_threat_intel_overview/i, 'Tehdit özeti admin RPC eksik!');
+  assert.match(faz15Sql, /admin_get_threat_events/i, 'Tehdit olay dökümü admin RPC eksik!');
+  assert.match(faz15Sql, /admin_quarantine_threat_actor/i, 'Karantinaya alma admin RPC eksik!');
+  assert.match(faz15Sql, /admin_release_threat_actor/i, 'Karantina kaldırma admin RPC eksik!');
+  assert.match(faz15Sql, /IF NOT public\.is_platform_admin\(\)/i, 'Yönetici yetki doğrulaması eksik!');
+});
+
+runTest('FAZ 15: ThreatIntelligenceView bileşeni ve AdminService entegrasyonu doğrulanmalı', () => {
+  const adminService = fs.readFileSync(
+    path.join(ROOT, 'src', 'features', 'admin', 'application', 'AdminService.ts'),
+    'utf8'
+  );
+  const adminScreen = fs.readFileSync(
+    path.join(ROOT, 'src', 'features', 'admin', 'presentation', 'AdminDashboardScreen.tsx'),
+    'utf8'
+  );
+  const threatView = fs.readFileSync(
+    path.join(ROOT, 'src', 'features', 'admin', 'presentation', 'ThreatIntelligenceView.tsx'),
+    'utf8'
+  );
+
+  assert.match(adminService, /getThreatIntelOverview/i, 'AdminService.getThreatIntelOverview eksik!');
+  assert.match(adminService, /getThreatEvents/i, 'AdminService.getThreatEvents eksik!');
+  assert.match(adminService, /quarantineThreatActor/i, 'AdminService.quarantineThreatActor eksik!');
+  assert.match(adminScreen, /threat_intel/i, 'AdminDashboardScreen threat_intel tabı eksik!');
+  assert.match(adminScreen, /<ThreatIntelligenceView/i, 'ThreatIntelligenceView render entegrasyonu eksik!');
+  assert.match(threatView, /SAYRA SAVUNMA RADARI AKTİF/i, 'ThreatIntelligenceView başlık ve durumu eksik!');
+});
+
 
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);
 

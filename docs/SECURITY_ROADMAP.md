@@ -221,8 +221,8 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 | SEC-047 | Faz 14: Fiyatlandırma Bütünlüğü & İndirim Oranı Manipülasyonu (Price Tampering) | 2/3/5 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `chk_listings_price_range`, `chk_offers_offered_price_range`, `chk_orders_seller_earnings_bounded`, core-domain (39/39) |
 | SEC-048 | Faz 14: Kargo & Teslimat Kodu IDOR / Brute-force Kalkanı | 1/2/5 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `chk_orders_order_number_format`, `chk_orders_tracking_number_format`, `create_escrow_order_atomic` CSPRNG, core-domain (39/39) |
 
-| SEC-049 | Bekleniyor | - | - | BEKLIYOR | - | - |
-| SEC-050 | Bekleniyor | - | - | BEKLIYOR | - | - |
+| SEC-049 | Faz 15: Siber Tehdit ve Pentest Aracı Parmak İzi Tespiti (Scanner Fingerprint & Payload Capture) | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000018_faz15_threat_intelligence_radar.sql`, `tool_fingerprint`, core-domain (42/42) |
+| SEC-050 | Faz 15: Sayra Siber Tehdit Radarı & Karşı-Aldatma Yönetim Motoru | 2/5/6 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `ThreatIntelligenceView.tsx`, `admin_get_threat_intel_overview`, core-domain (42/42) |
 
 ### SEC-001 - SQL Enjeksiyonu
 
@@ -708,3 +708,17 @@ Production veya magazaya cikis icin:
 - Bulgu: Sipariş numaralarının zayıf sözde rastgele fonksiyonlarla (`MD5(RANDOM())`) üretilmesi durumunda sıralı tahmin edilebilirlik (enumeration) riski.
 - Sertleştirme: `create_escrow_order_atomic` fonksiyonuna `gen_random_bytes(4)` kriptografik CSPRNG entegre edildi (`ORD-YYYYMMDD-XXXXXXXX`); `SET search_path = public, pg_temp` uygulandı; `order_number` ve `tracking_number` sütunlarına alfanümerik format CHECK kısıtları konuldu.
 - Regresyon: `node scripts/tests/core-domain.test.mjs` (39/39 başarılı).
+
+### SEC-049 - Faz 15: Siber Tehdit ve Pentest Aracı Parmak İzi Tespiti
+- Tarih: 2026-09-17
+- Kapsam: `public.security_threat_events` tablosu, `record_security_threat_event` ve Faz 12 honeypot tetikleyicileri.
+- Bulgu: Otomatik pentest ve zafiyet tarama araçlarının (sqlmap, Burp Suite, Nuclei, Nikto vb.) ve botların sisteme vurduğunda parmak izlerinin yakalanmaması ve atılan saldırı payload'larının ders çıkarılmak üzere arşivlenememesi riski.
+- Sertleştirme (`20260917000018_faz15_threat_intelligence_radar.sql`): `security_threat_events` tablosu oluşturuldu; `tool_fingerprint`, `attack_vector`, `severity`, `payload_snapshot` ve `action_taken` ('HONEYPOT_DECEIVED', 'SILENT_NULL_ROUTED', 'QUARANTINED') alanlarıyla zero-trust RLS ile kapatıldı. Faz 12 tuzakları (`debug_elevate_admin_role`) tehdit radarına bağlandı.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (42/42 başarılı).
+
+### SEC-050 - Faz 15: Sayra Siber Tehdit Radarı & Karşı-Aldatma Yönetim Motoru
+- Tarih: 2026-09-17
+- Kapsam: `ThreatIntelligenceView.tsx`, `AdminService.ts`, `AdminDashboardScreen.tsx` ve `admin_get_threat_intel_overview`.
+- Bulgu: Yönetim kadrosunun saldırganları gerçek zamanlı izleyememesi, saldırı araçlarının yoğunluğunu görememesi ve saldırgan aktörleri anında karantinaya alacak merkezi bir karşı-istihbarat silahının eksikliği.
+- Sertleştirme: Yönetim Merkezine (`AdminDashboardScreen`) bağımsız ve modüler `ThreatIntelligenceView` bileşeni eklendi; `admin_get_threat_intel_overview`, `admin_get_threat_events`, `admin_quarantine_threat_actor` ve `admin_release_threat_actor` güvenlik RPC'leri entegre edildi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (42/42 başarılı).

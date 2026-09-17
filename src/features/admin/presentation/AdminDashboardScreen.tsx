@@ -35,6 +35,7 @@ import { Conversation } from '../../chat/domain/Chat';
 import { BlogPost, BLOG_CATEGORIES, generateSlug } from '../../blog/domain/BlogPost';
 import { BlogService } from '../../blog/application/BlogService';
 import { CategoryService, Category } from '../../categories/application/CategoryService';
+import { ThreatIntelligenceView } from './ThreatIntelligenceView';
 import { kistasStyle, theme } from '../../../core/theme';
 
 interface AdminDashboardScreenProps {
@@ -44,7 +45,7 @@ interface AdminDashboardScreenProps {
   onOpenBlog?: (slug?: string) => void;
 }
 
-type AdminTab = 'moderation' | 'support' | 'sponsors' | 'listings' | 'users' | 'blog' | 'analytics';
+type AdminTab = 'moderation' | 'support' | 'sponsors' | 'listings' | 'users' | 'blog' | 'analytics' | 'threat_intel';
 type SponsorView = 'active' | 'all';
 type SupportView = 'open' | 'closed';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -80,6 +81,7 @@ const METRIC_SURFACES: Record<AdminTab, {
   users: { gradient: ['#EFFAF6', '#FFFFFF'] },
   blog: { gradient: ['#F6F1FF', '#FFFFFF'] },
   analytics: { gradient: ['#F4F5F8', '#FFFFFF'] },
+  threat_intel: { gradient: ['#10192A', '#1E293B'] },
 };
 
 const ADMIN_PERMISSION_OPTIONS: Array<{
@@ -98,6 +100,7 @@ const canAccessAdminTab = (access: AdminAccess, tab: AdminTab): boolean => {
   if (tab === 'support' || tab === 'users') return access.permissions.includes('community');
   if (tab === 'moderation') return access.permissions.includes('launches');
   if (tab === 'blog') return access.permissions.includes('blog');
+  if (tab === 'threat_intel') return access.isOwner;
   return false;
 };
 
@@ -968,7 +971,7 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
               </View>
             </View>
             <View style={styles.overviewMetaRow}>
-              <Text style={styles.overviewMetaText}>{adminAccess?.isOwner ? '7 yönetim alanı' : `${adminAccess?.permissions.length || 0} görev yetkisi`}</Text>
+              <Text style={styles.overviewMetaText}>{adminAccess?.isOwner ? '8 yönetim alanı' : `${adminAccess?.permissions.length || 0} görev yetkisi`}</Text>
             </View>
           </LinearGradient>
           <View style={styles.metricsGrid}>
@@ -980,6 +983,7 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
               ['people-outline', '#187657', stats?.totalUsers || 0, 'Topluluk', 'users'],
               ['newspaper-outline', '#3269C7', blogPosts.length, 'Blog yazıları', 'blog'],
               ['analytics-outline', '#5c576b', stats?.totalUpvotes || 0, 'Toplam etkileşim', 'analytics'],
+              ['shield-half-outline', '#EF4444', 4, 'Siber Tehdit Radarı', 'threat_intel'],
             ].filter((entry) => Boolean(adminAccess && canAccessAdminTab(adminAccess, entry[4] as AdminTab))).map(([icon, color, value, label, targetTab]) => {
               const metricTab = targetTab as AdminTab;
               const surface = METRIC_SURFACES[metricTab];
@@ -1013,7 +1017,7 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
           </View>
         </View>
 
-        {adminAccess && canAccessAdminTab(adminAccess, activeTab) && activeTab !== 'analytics' ? (
+        {adminAccess && canAccessAdminTab(adminAccess, activeTab) && activeTab !== 'analytics' && activeTab !== 'threat_intel' ? (
           <View style={styles.searchBox}>
             <Ionicons name="search-outline" size={19} color="#686474" />
             <TextInput value={searchQuery} onChangeText={setSearchQuery} placeholder={activeTab === 'users' ? 'İsim veya e-posta ara' : activeTab === 'support' ? 'Kullanıcı veya mesaj ara' : activeTab === 'blog' ? 'Blog yazısı veya kategori ara' : 'Proje veya geliştirici ara'} placeholderTextColor="#686474" style={styles.searchInput} autoCorrect={false} />
@@ -1501,6 +1505,10 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
               <AnalyticsCard icon="time-outline" color="#bd354c" value={formatNumber(stats.pendingProjects)} label="Bekleyen işlem" caption="Moderasyon kuyruğu" />
             </View>
           </View>
+        ) : null}
+
+        {adminAccess && canAccessAdminTab(adminAccess, 'threat_intel') && activeTab === 'threat_intel' ? (
+          <ThreatIntelligenceView onRefreshStats={loadData} />
         ) : null}
 
         {loadError ? <View style={styles.emptyState}><GlassIconButton icon="shield-outline" iconColor="#bd354c" size={44} iconSize={21} /><Text style={styles.emptyTitle}>Yönetim verileri açılamadı</Text><Text style={styles.emptyText}>{loadError}</Text></View> : null}
