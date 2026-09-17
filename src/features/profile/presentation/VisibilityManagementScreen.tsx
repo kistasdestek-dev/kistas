@@ -257,7 +257,6 @@ export const VisibilityManagementScreen: React.FC<VisibilityManagementScreenProp
                 onPress={() => openManager(listing, 'category')}
                 activeOpacity={0.76}
               >
-                <Ionicons name={anySponsored ? 'refresh-outline' : 'sparkles'} size={17} color={active ? '#FFFFFF' : '#7A8799'} />
                 <Text style={[styles.manageButtonText, !active && styles.manageButtonTextDisabled]}>{active ? (anySponsored ? 'Görünürlüğü Uzat' : 'Vitrinde Öne Çıkar') : 'Onay sonrası kullanılabilir'}</Text>
                 {active ? <Ionicons name="arrow-forward" size={16} color="#FFFFFF" /> : null}
               </TouchableOpacity>
