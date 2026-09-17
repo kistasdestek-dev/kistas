@@ -1,14 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 import {
   View,
-  Text,
-  TouchableOpacity,
   ScrollView,
   Platform,
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Listing } from '../../features/listings/domain/Listing';
 import { ErrorBoundary } from './ErrorBoundary';
 import {
@@ -55,42 +52,14 @@ export const FeaturedBoostShowcase: React.FC<FeaturedBoostShowcaseProps> = ({
   return (
     <ErrorBoundary fallbackTitle="Sponsorlu vitrin geçici olarak yüklenemedi">
       <View style={[sectionStyles.showcaseSection, containerStyle]}>
-        {/* Header Row */}
-        <LinearGradient
-          colors={['#F3F7FC', '#FFFFFF', '#F2F8F6']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={sectionStyles.headerRow}
-        >
-          <View style={sectionStyles.headerCopy}>
-            <View style={sectionStyles.eyebrowRow}>
-              <View style={sectionStyles.eyebrowMark} />
-              <Text style={sectionStyles.eyebrowText}>SPONSORLU VİTRİN</Text>
-            </View>
-
-            <View style={sectionStyles.bannerContainer}>
-              <CategoryStarsBanner
-                words={['Kategorinin Yıldızları', 'Vitrinde Yerinizi Alın', 'Projenizi Parlatın', 'Kıstas Vitrini']}
-                onPress={onOpenCreditStore}
-              />
-            </View>
-
-            {onOpenCreditStore ? (
-              <TouchableOpacity
-                style={sectionStyles.invitation}
-                onPress={onOpenCreditStore}
-                activeOpacity={0.65}
-                accessibilityRole="button"
-                accessibilityLabel="Senin projen neden olmasın? Kredi mağazasını aç"
-              >
-                <Text style={sectionStyles.inlineCtaText}>
-                  Senin projen neden olmasın?{' '}
-                  <Text style={sectionStyles.inlineCtaArrow}>↗</Text>
-                </Text>
-              </TouchableOpacity>
-            ) : null}
-          </View>
-        </LinearGradient>
+        {/* Standalone Button (Çerçevesiz, sade ve belirgin) */}
+        <View style={sectionStyles.standaloneBannerRow}>
+          <CategoryStarsBanner
+            size="lg"
+            words={['Kategorinin Yıldızları', 'Vitrinde Yerinizi Alın', 'Projenizi Parlatın', 'Kıstas Vitrini']}
+            onPress={onOpenCreditStore}
+          />
+        </View>
 
         {/* Cards Showcase Area */}
         {isWeb ? (

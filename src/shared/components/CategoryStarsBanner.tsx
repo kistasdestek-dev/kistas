@@ -6,6 +6,7 @@ export interface CategoryStarsPillProps {
   words?: string[];
   interval?: number;
   animationDuration?: number;
+  size?: 'sm' | 'md' | 'lg';
   onPress?: () => void;
 }
 
@@ -18,6 +19,7 @@ export const CategoryStarsBanner: React.FC<CategoryStarsPillProps> = ({
   words = ['Kategorinin Yıldızları', 'Vitrinde Yerinizi Alın', 'Projenizi Parlatın', 'Kıstas Vitrini'],
   interval = 3500,
   animationDuration = 700,
+  size = 'lg',
   onPress,
 }) => {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -36,6 +38,12 @@ export const CategoryStarsBanner: React.FC<CategoryStarsPillProps> = ({
   }, [words, interval, animationDuration]);
 
   const currentWord = words[currentWordIndex];
+
+  const dimensions = size === 'lg'
+    ? { height: 44, padding: '0 24px', fontSize: 14.5, letterSpacing: '-0.3px', shadow: '0 4px 18px rgba(236, 72, 153, 0.38), 0 0 0 1px rgba(255, 255, 255, 0.4) inset' }
+    : size === 'sm'
+    ? { height: 30, padding: '0 12px', fontSize: 11, letterSpacing: '-0.1px', shadow: '0 2px 8px rgba(236, 72, 153, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.3) inset' }
+    : { height: 36, padding: '0 16px', fontSize: 12.5, letterSpacing: '-0.2px', shadow: '0 3px 12px rgba(236, 72, 153, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.35) inset' };
 
   return (
     <TouchableOpacity
@@ -69,12 +77,12 @@ export const CategoryStarsBanner: React.FC<CategoryStarsPillProps> = ({
           }}
           style={{
             position: 'relative',
-            height: 34,
-            padding: '0 14px',
+            height: dimensions.height,
+            padding: dimensions.padding,
             boxSizing: 'border-box',
             borderRadius: 999,
             background: 'linear-gradient(90deg, #8b5cf6, #ec4899, #f97316)',
-            boxShadow: '0 3px 12px rgba(236, 72, 153, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.35) inset',
+            boxShadow: dimensions.shadow,
             overflow: 'hidden',
             cursor: 'pointer',
             display: 'inline-flex',
@@ -134,9 +142,9 @@ export const CategoryStarsBanner: React.FC<CategoryStarsPillProps> = ({
                 }}
                 style={{
                   color: '#FFFFFF',
-                  fontSize: 12,
+                  fontSize: dimensions.fontSize,
                   fontWeight: '700',
-                  letterSpacing: '-0.2px',
+                  letterSpacing: dimensions.letterSpacing,
                   textAlign: 'center',
                   whiteSpace: 'nowrap',
                   textShadow: '0 1px 4px rgba(0,0,0,0.2)',

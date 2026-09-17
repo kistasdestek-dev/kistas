@@ -614,6 +614,12 @@ export const sectionStyles = StyleSheet.create({
   showcaseSection: {
     marginVertical: 12,
   },
+  standaloneBannerRow: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    marginTop: 4,
+    alignItems: 'flex-start',
+  },
   headerRow: {
     marginHorizontal: 16,
     marginBottom: 8,
