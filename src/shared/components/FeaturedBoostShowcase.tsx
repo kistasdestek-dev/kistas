@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo } from 'react';
 import {
   View,
+  Text,
+  TouchableOpacity,
   ScrollView,
   Platform,
   StyleProp,
   ViewStyle,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Listing } from '../../features/listings/domain/Listing';
 import { ErrorBoundary } from './ErrorBoundary';
 import {
@@ -18,13 +21,17 @@ import { Native3DCard } from './featured-showcase/Native3DCard';
 
 export interface FeaturedBoostShowcaseProps {
   projects: Listing[];
+  selectedCategoryName?: string;
   onSelectProject?: (project: Listing) => void;
+  onOpenCreditStore?: () => void;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
 export const FeaturedBoostShowcase: React.FC<FeaturedBoostShowcaseProps> = ({
   projects,
+  selectedCategoryName,
   onSelectProject,
+  onOpenCreditStore,
   containerStyle,
 }) => {
   const isWeb = Platform.OS === 'web';
@@ -44,11 +51,43 @@ export const FeaturedBoostShowcase: React.FC<FeaturedBoostShowcaseProps> = ({
     return projects.filter((p) => !!p.isBoosted);
   }, [projects]);
 
-  if (boostedProjects.length === 0) return null;
-
   return (
     <ErrorBoundary fallbackTitle="Sponsorlu vitrin geçici olarak yüklenemedi">
       <View style={[sectionStyles.showcaseSection, containerStyle]}>
+        {/* Header Row */}
+        <LinearGradient
+          colors={['#F3F7FC', '#FFFFFF', '#F2F8F6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={sectionStyles.headerRow}
+        >
+          <View style={sectionStyles.headerCopy}>
+            <View style={sectionStyles.eyebrowRow}>
+              <View style={sectionStyles.eyebrowMark} />
+              <Text style={sectionStyles.eyebrowText}>SPONSORLU VİTRİN</Text>
+            </View>
+
+            <Text style={sectionStyles.sectionHeading}>
+              {selectedCategoryName ? `${selectedCategoryName}: ` : ''}Kategorinin yıldızları burada.
+            </Text>
+
+            {onOpenCreditStore ? (
+              <TouchableOpacity
+                style={sectionStyles.invitation}
+                onPress={onOpenCreditStore}
+                activeOpacity={0.65}
+                accessibilityRole="button"
+                accessibilityLabel="Senin projen neden olmasın? Kredi mağazasını aç"
+              >
+                <Text style={sectionStyles.inlineCtaText}>
+                  Senin projen neden olmasın?{' '}
+                  <Text style={sectionStyles.inlineCtaArrow}>↗</Text>
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </LinearGradient>
+
         {/* Cards Showcase Area */}
         {isWeb ? (
           <div className="crd-f3d-stage">
@@ -60,6 +99,13 @@ export const FeaturedBoostShowcase: React.FC<FeaturedBoostShowcaseProps> = ({
                 />
               </ErrorBoundary>
             ))}
+            {/* Boost promotion / call-to-action card */}
+            <ErrorBoundary key="boost-promo-card" silentFallback>
+              <Web3DCard
+                isPromo
+                onOpenCreditStore={onOpenCreditStore}
+              />
+            </ErrorBoundary>
           </div>
         ) : (
           <ScrollView
@@ -75,6 +121,12 @@ export const FeaturedBoostShowcase: React.FC<FeaturedBoostShowcaseProps> = ({
                 />
               </ErrorBoundary>
             ))}
+            <ErrorBoundary key="boost-promo-card" silentFallback>
+              <Native3DCard
+                isPromo
+                onOpenCreditStore={onOpenCreditStore}
+              />
+            </ErrorBoundary>
           </ScrollView>
         )}
       </View>

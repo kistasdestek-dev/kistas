@@ -1,17 +1,89 @@
 import React from 'react';
 import { Listing } from '../../../features/listings/domain/Listing';
 import { AutoTransparentLogo } from '../AutoTransparentLogo';
+import { BorderBeam } from '../BorderBeam';
+import { KistasLogo } from '../KistasLogo';
 import { getOptimizedImageUrl } from '../../../core/media/imageDelivery';
 
 export interface Single3DCardProps {
-  project: Listing;
+  project?: Listing;
+  isPromo?: boolean;
   onPress?: () => void;
+  onOpenCreditStore?: () => void;
 }
 
 export const Web3DCard: React.FC<Single3DCardProps> = ({
   project,
+  isPromo = false,
   onPress,
+  onOpenCreditStore,
 }) => {
+  if (isPromo || !project) {
+    return (
+      <div className="crd-f3d-float">
+        <div
+          className="crd-f3d-card is-light-promo"
+          onClick={onOpenCreditStore}
+          role="button"
+          tabIndex={0}
+        >
+          <div className="crd-f3d-promo-aurora" aria-hidden="true" />
+          <div className="crd-f3d-promo-orbit" aria-hidden="true" />
+          <div className="crd-f3d-glare" aria-hidden="true" />
+          <div className="crd-f3d-content crd-f3d-promo-content">
+            <div className="crd-f3d-promo-status-row">
+              <div className="crd-f3d-promo-status">
+                <span className="crd-f3d-promo-status-dot" />
+                VİTRİNDE YERİN HAZIR
+              </div>
+              <span className="crd-f3d-promo-rotation">↻ ADİL ROTASYON</span>
+            </div>
+
+            <div className="crd-f3d-promo-hero">
+              <div className="crd-f3d-promo-logo">
+                <KistasLogo
+                  size={54}
+                  showWordmark={false}
+                  glow
+                  style={{ transform: [{ translateX: -3 }, { translateY: 2 }] }}
+                />
+              </div>
+              <span className="crd-f3d-promo-eyebrow">KISTAS VİTRİNİ</span>
+              <h3 className="crd-f3d-promo-title">İyi fikirler görünür olmayı hak eder.</h3>
+              <p className="crd-f3d-promo-tagline">
+                Projeni doğru kitleyle buluştur, vitrindeki yerini ayır.
+              </p>
+            </div>
+
+            <BorderBeam
+              size={200}
+              duration={12}
+              colorVariant="kistas"
+              borderWidth={1.5}
+              borderRadius={16}
+            >
+              <button
+                type="button"
+                className="crd-f3d-promo-cta"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onOpenCreditStore?.();
+                }}
+              >
+                <span>
+                  <small>SPONSORLU VİTRİN</small>
+                  <strong>Vitrinde Yerini Al</strong>
+                </span>
+                <span className="crd-f3d-promo-cta-arrow">→</span>
+              </button>
+            </BorderBeam>
+          </div>
+          <div className="crd-f3d-edge" aria-hidden="true" />
+        </div>
+      </div>
+    );
+  }
+
   const initials = project.title
     ? project.title.slice(0, 2).toUpperCase()
     : 'KT';

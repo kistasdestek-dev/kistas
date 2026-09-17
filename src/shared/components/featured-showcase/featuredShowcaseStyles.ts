@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 export const F3D_STYLE_ID = 'kistas-crd-f3d-styles';
 
@@ -464,11 +464,241 @@ export const F3D_CSS = `
   border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.08);
 }
 @media (max-width: 360px) { .crd-f3d-card-today { width: 280px; } }
+.is-light-promo {
+  background: linear-gradient(155deg, #FFFFFF 0%, #F5F9FE 52%, #EDF5FC 100%);
+  border: 1px solid #D6E3F2;
+  box-shadow: 0 24px 54px -20px rgba(34,72,120,.24), 0 8px 18px -12px rgba(34,72,120,.16);
+}
+.is-light-promo::before {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 34px;
+  right: 34px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(66,126,211,.72), transparent);
+}
+.crd-f3d-promo-aurora {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(73,135,223,.18), transparent 34%),
+    radial-gradient(circle at 92% 78%, rgba(35,146,132,.12), transparent 38%);
+  pointer-events: none;
+}
+.crd-f3d-promo-orbit {
+  position: absolute;
+  width: 230px;
+  height: 230px;
+  top: 54px;
+  left: 50%;
+  border: 1px solid rgba(68,121,195,.12);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  box-shadow: inset 0 0 48px rgba(67,126,208,.05);
+  pointer-events: none;
+}
+.crd-f3d-promo-content { padding: 14px; }
+.crd-f3d-promo-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  position: relative;
+  z-index: 2;
+}
+.crd-f3d-promo-status, .crd-f3d-promo-rotation {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #47658E;
+  font-size: 8px;
+  font-weight:700;
+  letter-spacing: .55px;
+}
+.crd-f3d-promo-status {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.72);
+  border: 1px solid rgba(69,120,190,.16);
+  box-shadow: 0 5px 14px rgba(42,79,130,.08);
+  backdrop-filter: blur(12px);
+}
+.crd-f3d-promo-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2B9B83;
+  box-shadow: 0 0 0 3px rgba(43,155,131,.12);
+}
+.crd-f3d-promo-hero {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 10px 4px;
+  text-align: center;
+}
+.crd-f3d-promo-logo {
+  width: 92px;
+  height: 92px;
+  margin-bottom: 16px;
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.68);
+  border: 1px solid rgba(72,126,200,.2);
+  box-shadow: 0 18px 34px -17px rgba(44,91,156,.48), inset 0 1px 0 rgba(255,255,255,.94);
+  backdrop-filter: blur(14px);
+}
+.crd-f3d-promo-eyebrow {
+  color: #3970BA;
+  font-size: 8.5px;
+  font-weight:700;
+  letter-spacing: 1.1px;
+  margin-bottom: 7px;
+}
+.crd-f3d-promo-title {
+  max-width: 225px;
+  margin: 0;
+  color: #25364E;
+  font-size: 21px;
+  line-height: 1.13;
+  font-weight: 780;
+  letter-spacing: -.45px;
+}
+.crd-f3d-promo-tagline {
+  max-width: 220px;
+  margin: 8px 0 0;
+  color: #6A778C;
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+.crd-f3d-promo-cta {
+  width: 100%;
+  min-height: 58px;
+  border: 1px solid rgba(58,111,185,.18);
+  border-radius: 16px;
+  padding: 10px 11px 10px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  color: #25364E;
+  background: rgba(255,255,255,.8);
+  box-shadow: 0 12px 24px -16px rgba(37,78,134,.45), inset 0 1px 0 #FFFFFF;
+  cursor: pointer;
+}
+.crd-f3d-promo-cta small, .crd-f3d-promo-cta strong { display: block; }
+.crd-f3d-promo-cta small { color: #B98916; font-size: 7.5px; font-weight:700; letter-spacing: .8px; margin-bottom: 2px; }
+.crd-f3d-promo-cta strong { font-size: 12.5px; font-weight: 780; }
+.crd-f3d-promo-cta-arrow {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  background: linear-gradient(145deg, #3977CC, #285EA5);
+  box-shadow: 0 8px 16px -8px rgba(40,94,165,.72);
+  font-size: 18px;
+}
+.crd-f3d-promo-cta:focus-visible { outline: 2px solid rgba(50,105,199,.72); outline-offset: 3px; }
 `;
 
 export const sectionStyles = StyleSheet.create({
   showcaseSection: {
     marginVertical: 12,
+  },
+  headerRow: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#D9E4EF',
+    borderRadius: 18,
+    shadowColor: '#233B5D',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    elevation: 2,
+  },
+  headerCopy: {
+    minWidth: 0,
+  },
+  eyebrowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  eyebrowMark: {
+    width: 4,
+    height: 16,
+    borderRadius: 999,
+    backgroundColor: '#E8A52D',
+  },
+  eyebrowText: {
+    color: '#53647A',
+    fontSize: 9.5,
+    fontWeight: '700',
+    letterSpacing: 1.05,
+  },
+  sectionHeading: {
+    marginTop: 12,
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#25364E',
+    letterSpacing: -0.5,
+    lineHeight: 28,
+  },
+  sectionCategoryName: {
+    color: '#17766A',
+  },
+  sectionHeadingAccent: {
+    color: '#2F67B4',
+  },
+  inlineCtaText: {
+    color: '#17766A',
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: '600',
+    letterSpacing: -0.2,
+  },
+  invitation: {
+    alignSelf: 'flex-start',
+    justifyContent: 'center',
+    minHeight: 44,
+    marginTop: 2,
+  },
+  inlineCtaArrow: {
+    color: '#D58C1B',
+    fontSize: Platform.OS === 'web' ? 20 : 18,
+    fontWeight: '700',
+  },
+  headingRule: {
+    width: 72,
+    height: 2,
+    marginTop: 10,
+    overflow: 'hidden',
+    borderRadius: 999,
+    backgroundColor: '#E3EAF2',
+  },
+  headingRuleAccent: {
+    width: 26,
+    height: '100%',
+    borderRadius: 999,
+    backgroundColor: '#F0AE3C',
+  },
+  sectionSubtitle: {
+    fontSize: 11.5,
+    color: Platform.OS === 'web' ? '#5c576b' : '#686474',
+    marginTop: 2,
+    lineHeight: 16,
   },
   nativeScrollContent: {
     paddingHorizontal: 16,
@@ -504,6 +734,26 @@ export const nativeCardStyles = StyleSheet.create({
     position: 'relative',
     justifyContent: 'space-between',
   },
+  promoCard: { borderWidth: 1, borderColor: '#D6E3F2', shadowColor: '#294E7D', shadowOpacity: 0.14 },
+  promoGlowTop: { position: 'absolute', top: -50, left: -45, width: 190, height: 190, borderRadius: 95, backgroundColor: 'rgba(73,135,223,0.13)' },
+  promoGlowBottom: { position: 'absolute', right: -55, bottom: -55, width: 190, height: 190, borderRadius: 95, backgroundColor: 'rgba(35,146,132,0.09)' },
+  promoStatusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  promoStatusPill: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.72)', borderWidth: 1, borderColor: 'rgba(69,120,190,0.16)' },
+  promoStatusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#2B9B83' },
+  promoStatusText: { color: '#47658E', fontSize: 8, fontWeight: '700', letterSpacing: 0.55 },
+  promoRotation: { color: '#47658E', fontSize: 8, fontWeight: '700', letterSpacing: 0.45 },
+  promoHero: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, paddingTop: 4 },
+  promoOrbitOuter: { width: 108, height: 108, borderRadius: 54, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(68,121,195,0.13)', backgroundColor: 'rgba(255,255,255,0.2)', marginBottom: 13 },
+  promoOrbitInner: { width: 88, height: 88, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.72)', borderWidth: 1, borderColor: 'rgba(72,126,200,0.2)', shadowColor: '#2C5B9C', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.16, shadowRadius: 18, elevation: 4 },
+  promoLogoOpticalCenter: { transform: [{ translateX: -3 }, { translateY: 2 }] },
+  promoEyebrow: { color: '#3970BA', fontSize: 8.5, fontWeight: '700', letterSpacing: 1.1, marginBottom: 7 },
+  promoTitle: { maxWidth: 230, color: '#25364E', fontSize: 21, lineHeight: 24, fontWeight: '700', letterSpacing: -0.45, textAlign: 'center' },
+  promoTagline: { maxWidth: 225, color: '#6A778C', fontSize: 10.5, lineHeight: 15, textAlign: 'center', marginTop: 8 },
+  promoCtaDock: { minHeight: 58, paddingVertical: 9, paddingLeft: 15, paddingRight: 10, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.82)', borderWidth: 1, borderColor: 'rgba(58,111,185,0.18)', shadowColor: '#254E86', shadowOffset: { width: 0, height: 9 }, shadowOpacity: 0.12, shadowRadius: 15, elevation: 3 },
+  promoCtaLabel: { color: '#B98916', fontSize: 7.5, fontWeight: '700', letterSpacing: 0.8, marginBottom: 2 },
+  promoCtaTitle: { color: '#25364E', fontSize: 12.5, fontWeight: '700' },
+  promoCtaArrow: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#3269C7', shadowColor: '#285EA5', shadowOffset: { width: 0, height: 7 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 3 },
+  promoCtaArrowText: { color: '#FFFFFF', fontSize: 18, lineHeight: 20, fontWeight: '700' },
   heroArea: {
     width: '100%',
     height: 122,
