@@ -13,15 +13,11 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Listing } from '../../../features/listings/domain/Listing';
 import { AutoTransparentLogo } from '../AutoTransparentLogo';
-import { BorderBeam } from '../BorderBeam';
-import { KistasLogo } from '../KistasLogo';
 import { nativeCardStyles } from './featuredShowcaseStyles';
 
 export interface Single3DCardProps {
-  project?: Listing;
-  isPromo?: boolean;
+  project: Listing;
   onPress?: () => void;
-  onOpenCreditStore?: () => void;
 }
 
 interface ScalePressableProps {
@@ -61,73 +57,8 @@ const ScalePressable: React.FC<ScalePressableProps> = ({ children, onPress, styl
 
 export const Native3DCard: React.FC<Single3DCardProps> = ({
   project,
-  isPromo = false,
   onPress,
-  onOpenCreditStore,
 }) => {
-  if (isPromo || !project) {
-    return (
-      <ScalePressable
-        onPress={onOpenCreditStore}
-        style={[nativeCardStyles.cardContainer, nativeCardStyles.promoCard]}
-      >
-        <LinearGradient
-          colors={['#FFFFFF', '#F4F8FE', '#EEF5FC']}
-          style={nativeCardStyles.cardGradient}
-        >
-          <View style={nativeCardStyles.promoGlowTop} />
-          <View style={nativeCardStyles.promoGlowBottom} />
-
-          <View style={nativeCardStyles.promoStatusRow}>
-            <View style={nativeCardStyles.promoStatusPill}>
-              <View style={nativeCardStyles.promoStatusDot} />
-              <Text style={nativeCardStyles.promoStatusText}>VİTRİNDE YERİN HAZIR</Text>
-            </View>
-            <Text style={nativeCardStyles.promoRotation}>↻ ADİL ROTASYON</Text>
-          </View>
-
-          <View style={nativeCardStyles.promoHero}>
-            <View style={nativeCardStyles.promoOrbitOuter}>
-              <View style={nativeCardStyles.promoOrbitInner}>
-                <KistasLogo
-                  size={54}
-                  showWordmark={false}
-                  glow
-                  style={nativeCardStyles.promoLogoOpticalCenter}
-                />
-              </View>
-            </View>
-            <Text style={nativeCardStyles.promoEyebrow}>KISTAS VİTRİNİ</Text>
-            <Text style={nativeCardStyles.promoTitle} numberOfLines={2}>
-              İyi fikirler görünür olmayı hak eder.
-            </Text>
-            <Text style={nativeCardStyles.promoTagline} numberOfLines={2}>
-              Projeni doğru kitleyle buluştur, vitrindeki yerini ayır.
-            </Text>
-          </View>
-
-          <BorderBeam
-            size={200}
-            duration={12}
-            colorVariant="kistas"
-            borderWidth={1.5}
-            borderRadius={16}
-          >
-            <View style={nativeCardStyles.promoCtaDock}>
-              <View>
-                <Text style={nativeCardStyles.promoCtaLabel}>SPONSORLU VİTRİN</Text>
-                <Text style={nativeCardStyles.promoCtaTitle}>Vitrinde Yerini Al</Text>
-              </View>
-              <View style={nativeCardStyles.promoCtaArrow}>
-                <Text style={nativeCardStyles.promoCtaArrowText}>→</Text>
-              </View>
-            </View>
-          </BorderBeam>
-        </LinearGradient>
-      </ScalePressable>
-    );
-  }
-
   const initials = project.title ? project.title.slice(0, 2).toUpperCase() : 'KT';
   const primaryPlatform = project.platforms?.[0] || 'App';
   const previewImage = project.coverImageUrl || project.logoUrl;

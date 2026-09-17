@@ -31,6 +31,7 @@ import { NotificationItem } from '../../notifications/domain/Notification';
 import { NotificationService } from '../../notifications/application/NotificationService';
 import { CreditService, CreditTransaction } from '../../credits/application/CreditService';
 import { R2StorageService } from '../../../core/storage/R2StorageService';
+import { SmoothTypewriter } from '../../../shared/components/SmoothTypewriter';
 import { profileStyles as styles, PROFILE_NEO } from './ProfileAndWalletScreen.styles';
 
 interface ProfileAndWalletScreenProps {
@@ -196,6 +197,10 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
   const [isCreditHistoryOpen, setIsCreditHistoryOpen] = useState(false);
   const [isLoadingCreditHistory, setIsLoadingCreditHistory] = useState(false);
   const [creditHistoryError, setCreditHistoryError] = useState('');
+
+  // Oturum kapatma onay modalı
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const profile = propProfile !== undefined ? propProfile : authProfile;
   const isGuest = !profile;
@@ -436,11 +441,21 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
   const selectedBadgeCode = selectedBadgeType === 'markdown' ? badgeMarkdownCode : badgeHtmlCode;
 
   const handleSignOut = () => {
-    if (onSignOut) {
-      onSignOut();
-      return;
+    setIsSignOutModalOpen(true);
+  };
+
+  const confirmSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      if (onSignOut) {
+        onSignOut();
+        return;
+      }
+      await signOut();
+    } finally {
+      setIsSigningOut(false);
+      setIsSignOutModalOpen(false);
     }
-    signOut();
   };
 
   const loadCreditHistory = async () => {
@@ -1308,6 +1323,78 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
                   )}
                   <Text style={styles.notifConfirmDeleteText}>
                     {isDeletingAllNotifications ? 'Siliniyor' : 'Tümünü Sil'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+          </BlurView>
+        </View>
+      </Modal>
+
+      {/* Oturum Kapatma Onay Modalı (Smooth Typewriter Efektli) */}
+      <Modal
+        visible={isSignOutModalOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          if (!isSigningOut) setIsSignOutModalOpen(false);
+        }}
+      >
+        <View style={styles.notifConfirmOverlay}>
+          <BlurView intensity={88} tint="light" style={styles.notifConfirmCard}>
+            <LinearGradient
+              colors={['rgba(255,255,255,0.98)', 'rgba(245,249,255,0.98)']}
+              start={{ x: 0.08, y: 0 }}
+              end={{ x: 0.92, y: 1 }}
+              style={styles.notifConfirmSurface}
+            >
+              <GlassIconButton
+                icon="log-out-outline"
+                iconColor="#ba0816"
+                iconSize={24}
+                size={54}
+              />
+              <Text style={styles.notifConfirmTitle}>Oturumu Kapat</Text>
+
+              <View style={styles.signOutConfirmSubtitleBox}>
+                <SmoothTypewriter
+                  words={[
+                    { text: 'Kıstas hesabınızdan' },
+                    { text: 'ayrılmak', color: '#ba0816' },
+                    { text: 'istediğinize emin misiniz?' },
+                  ]}
+                  speed={40}
+                  cursorColor="#ba0816"
+                  style={styles.signOutConfirmSubtitle}
+                />
+              </View>
+
+              <View style={styles.notifConfirmActions}>
+                <TouchableOpacity
+                  style={styles.notifConfirmCancelButton}
+                  disabled={isSigningOut}
+                  onPress={() => setIsSignOutModalOpen(false)}
+                  activeOpacity={0.72}
+                  accessibilityRole="button"
+                  accessibilityLabel="Vazgeç"
+                >
+                  <Text style={styles.notifConfirmCancelText}>Vazgeç</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.signOutButton}
+                  disabled={isSigningOut}
+                  onPress={confirmSignOut}
+                  activeOpacity={0.78}
+                  accessibilityRole="button"
+                  accessibilityLabel="Oturumu Kapat"
+                >
+                  {isSigningOut ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Ionicons name="log-out-outline" size={16} color="#FFFFFF" />
+                  )}
+                  <Text style={styles.signOutButtonText}>
+                    {isSigningOut ? 'Çıkış Yapılıyor...' : 'Oturumu Kapat'}
                   </Text>
                 </TouchableOpacity>
               </View>

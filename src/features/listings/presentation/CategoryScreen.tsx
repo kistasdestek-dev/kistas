@@ -376,9 +376,7 @@ export const CategoryScreen: React.FC<CategoryScreenProps> = ({
       {sponsoredProjects.length > 0 ? (
         <FeaturedBoostShowcase
           projects={filterForPresentation(sponsoredProjects)}
-          selectedCategoryName={categoryTitle}
           onSelectProject={onSelectProject}
-          onOpenCreditStore={handleOpenSponsor}
         />
       ) : null}
 

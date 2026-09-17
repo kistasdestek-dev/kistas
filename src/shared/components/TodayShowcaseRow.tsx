@@ -17,6 +17,7 @@ import { kistasStyle, theme } from '../../core/theme';
 import { Listing, PlatformType } from '../../features/listings/domain/Listing';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 import { GlassIconButton } from './GlassIconButton';
+import { CategoryStarsBanner } from './CategoryStarsBanner';
 
 export interface TodayShowcaseRowProps {
   projects: Listing[];
@@ -293,31 +294,14 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
           {subtitle ? <Text style={styles.sectionSubtitle} numberOfLines={2}>{subtitle}</Text> : null}
         </TouchableOpacity>
 
-        {onOpenAll ? (
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={onOpenAll}
-            style={styles.seeAllGlassButton}
-            accessibilityRole="button"
-            accessibilityLabel="Tüm vitrin liderlerini aç"
-          >
-            <Text style={styles.seeAllGlassButtonText}>Tümünü Gör</Text>
-            <View style={styles.seeAllIconBadge}>
-              <Ionicons name="arrow-forward" size={12} color="#2563EB" />
-            </View>
-          </TouchableOpacity>
-        ) : onOpenCreditStore ? (
-          <TouchableOpacity
-            activeOpacity={0.78}
-            onPress={onOpenCreditStore}
-            style={styles.showcaseCta}
-            accessibilityRole="button"
-            accessibilityLabel="Projeyi premium vitrine çıkar"
-          >
-            <Ionicons name="sparkles" size={14} color="#3269C7" />
-            <Text style={styles.showcaseCtaText}>Vitrine Çık</Text>
-          </TouchableOpacity>
-        ) : null}
+        <View style={styles.headerActions}>
+          {onOpenCreditStore ? (
+            <CategoryStarsBanner
+              words={['Kategorinin Yıldızları', 'Vitrinde Yerinizi Alın', 'Projenizi Parlatın', 'Kıstas Vitrini']}
+              onPress={onOpenCreditStore}
+            />
+          ) : null}
+        </View>
       </View>
 
       <Animated.ScrollView
@@ -367,6 +351,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: 12,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+  },
   sectionTitle: {
     ...theme.typography.kistas,
     color: NEO.ink,
@@ -382,64 +373,6 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     lineHeight: 16,
     fontWeight: '500',
-  },
-  seeAllGlassButton: {
-    minHeight: 34,
-    paddingLeft: 14,
-    paddingRight: 7,
-    paddingVertical: 4,
-    borderRadius: 999,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: 'rgba(37, 99, 235, 0.18)',
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  seeAllGlassButtonText: {
-    ...theme.typography.kistas,
-    color: '#1E3A8A',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: -0.1,
-  },
-  seeAllIconBadge: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: 'rgba(37, 99, 235, 0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(37, 99, 235, 0.12)',
-  },
-  showcaseCta: {
-    minHeight: 38,
-    paddingHorizontal: 13,
-    borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F7FAFF',
-    borderWidth: 1,
-    borderColor: NEO.border,
-    shadowColor: NEO.shadow,
-    shadowOffset: { width: 4, height: 5 },
-    shadowOpacity: 0.16,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  showcaseCtaText: {
-    ...theme.typography.kistas,
-    marginLeft: 6,
-    color: NEO.ink,
-    fontSize: 10.5,
-    fontWeight: '700',
   },
   scrollContent: {
     paddingHorizontal: 16,

@@ -314,15 +314,14 @@ export const DiscoverScreen: React.FC<DiscoverScreenProps> = ({
       {/* 6.5 SPONSORLU VİTRİN: KATEGORİSİNDE ÖNE ÇIKANLAR (3D FLOATING CARDS) */}
       <FeaturedBoostShowcase
         projects={categoryBoostedProjects}
-        selectedCategoryName={selectedCategoryObj?.name}
         onSelectProject={onSelectListing}
-        onOpenCreditStore={onOpenCreditStore}
       />
 
       {/* 7. KISTAS SEÇKİSİ: GÜNÜN VİTRİNİ (4'LÜ YAN YANA IMAGES BADGE KARTLARI) */}
       <TodayShowcaseRow
         projects={filteredWeeklyShowcaseProjects}
         onSelectProject={onSelectListing}
+        onOpenCreditStore={onOpenCreditStore}
         title="Günün Vitrini"
         subtitle="Topluluk desteğiyle öne çıkan seçkin projeler"
         onOpenAll={() => onOpenShowcase?.({
