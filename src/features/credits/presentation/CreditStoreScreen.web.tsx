@@ -15,6 +15,7 @@ import {
   CreditCheckoutModal,
   CreditPlanItem,
 } from './CreditCheckoutModal.web';
+import { GlassIconButton } from '../../../shared/components/GlassIconButton';
 
 // --- STYLES ID & CSS ---
 const STORE_STYLE_ID = 'kistas-credit-store-web-styles';
@@ -356,6 +357,141 @@ const STORE_CSS = `
   letter-spacing: -0.1px;
 }
 
+/* Branded authentication notice */
+.k-auth-prompt-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  background: rgba(37, 54, 78, 0.54);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: kAuthPromptFadeIn 180ms ease-out both;
+}
+
+.k-auth-prompt-card {
+  position: relative;
+  width: min(100%, 430px);
+  padding: 30px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid rgba(50, 105, 199, 0.20);
+  border-radius: 26px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.99), rgba(240, 246, 255, 0.97));
+  box-shadow: 0 28px 70px rgba(37, 54, 78, 0.24), inset 0 1px 0 #FFFFFF;
+  text-align: center;
+  animation: kAuthPromptScaleIn 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.k-auth-prompt-card::before {
+  content: '';
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  top: -110px;
+  left: -80px;
+  border-radius: 50%;
+  background: rgba(50, 105, 199, 0.12);
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.k-auth-prompt-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1;
+}
+
+.k-auth-prompt-icon {
+  display: flex;
+  justify-content: center;
+  margin: 2px 0 18px;
+}
+
+.k-auth-prompt-kicker {
+  margin: 0 0 7px;
+  color: #3269C7;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+}
+
+.k-auth-prompt-title {
+  margin: 0;
+  color: #25364E;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+
+.k-auth-prompt-message {
+  margin: 11px auto 24px;
+  max-width: 330px;
+  color: #64748B;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.k-auth-prompt-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 10px;
+}
+
+.k-auth-prompt-button {
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.k-auth-prompt-button:focus-visible {
+  outline: 3px solid rgba(50, 105, 199, 0.28);
+  outline-offset: 2px;
+}
+
+.k-auth-prompt-button.secondary {
+  border: 1px solid rgba(50, 105, 199, 0.18);
+  background: rgba(255, 255, 255, 0.86);
+  color: #475569;
+}
+
+.k-auth-prompt-button.primary {
+  border: 1px solid #3269C7;
+  background: #3269C7;
+  color: #FFFFFF;
+  box-shadow: 0 7px 18px rgba(50, 105, 199, 0.28);
+}
+
+.k-auth-prompt-button:hover { transform: translateY(-1px); }
+.k-auth-prompt-button.secondary:hover { background: #F8FAFC; }
+.k-auth-prompt-button.primary:hover { background: #2554A5; box-shadow: 0 9px 22px rgba(50, 105, 199, 0.36); }
+
+@keyframes kAuthPromptFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes kAuthPromptScaleIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .k-auth-prompt-backdrop,
+  .k-auth-prompt-card { animation: none; }
+  .k-auth-prompt-button { transition: none; }
+}
+
 @media (max-width: 767px) {
   .k-pricing-root { padding: 22px 14px 110px; }
   .k-pricing-hero { grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; }
@@ -379,6 +515,7 @@ const STORE_CSS = `
 export interface CreditStoreScreenProps {
   currentUser?: UserProfile | null;
   onRefreshProfile?: () => void;
+  onOpenAuth?: () => void;
 }
 
 const PLANS: CreditPlanItem[] = [
@@ -428,6 +565,7 @@ const PLANS: CreditPlanItem[] = [
 export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
   currentUser: propUser,
   onRefreshProfile,
+  onOpenAuth,
 }) => {
   const { profile: authUser } = useAuth();
   const { credits } = useWallet();
@@ -439,8 +577,10 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
   const [storeProducts, setStoreProducts] = useState<Record<string, StoreCreditProduct>>({});
   const [selectedPlan, setSelectedPlan] = useState<CreditPlanItem | null>(null);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [isAuthPromptOpen, setIsAuthPromptOpen] = useState(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const authPromptPrimaryRef = useRef<HTMLButtonElement | null>(null);
 
   const [mousePos, setMousePos] = useState<{ x: number | null; y: number | null }>({
     x: null,
@@ -457,6 +597,17 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
       document.head.appendChild(styleEl);
     }
   }, []);
+
+  useEffect(() => {
+    if (!isAuthPromptOpen) return;
+
+    authPromptPrimaryRef.current?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsAuthPromptOpen(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isAuthPromptOpen]);
 
   // Load products directly
   useEffect(() => {
@@ -480,7 +631,7 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
   // Plan Seçildiğinde Checkout Modalını Aç
   const handleOpenCheckoutModal = (plan: CreditPlanItem) => {
     if (!user) {
-      alert('Kredi satın almak için lütfen sağ üstten hesabınıza giriş yapınız.');
+      setIsAuthPromptOpen(true);
       return;
     }
     setSelectedPlan(plan);
@@ -625,6 +776,62 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
         onRefreshCredits={refreshCredits}
         onRefreshProfile={onRefreshProfile}
       />
+
+      {isAuthPromptOpen && (
+        <div
+          className="k-auth-prompt-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setIsAuthPromptOpen(false);
+          }}
+        >
+          <section
+            className="k-auth-prompt-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="k-auth-prompt-title"
+            aria-describedby="k-auth-prompt-message"
+          >
+            <div className="k-auth-prompt-close">
+              <GlassIconButton
+                icon="close"
+                size={36}
+                iconSize={18}
+                onPress={() => setIsAuthPromptOpen(false)}
+                accessibilityLabel="Bildirimi kapat"
+              />
+            </div>
+            <div className="k-auth-prompt-icon" aria-hidden="true">
+              <GlassIconButton icon="person-outline" size={50} iconSize={23} />
+            </div>
+            <p className="k-auth-prompt-kicker">Kıstas hesap bildirimi</p>
+            <h2 id="k-auth-prompt-title" className="k-auth-prompt-title">Giriş yapmanız gerekiyor</h2>
+            <p id="k-auth-prompt-message" className="k-auth-prompt-message">
+              Kredi satın almak ve bakiyenizi güvenle hesabınıza tanımlamak için önce giriş yapın.
+            </p>
+            <div className="k-auth-prompt-actions">
+              <button
+                type="button"
+                className="k-auth-prompt-button secondary"
+                onClick={() => setIsAuthPromptOpen(false)}
+              >
+                Şimdi değil
+              </button>
+              <button
+                ref={authPromptPrimaryRef}
+                type="button"
+                className="k-auth-prompt-button primary"
+                onClick={() => {
+                  setIsAuthPromptOpen(false);
+                  onOpenAuth?.();
+                }}
+              >
+                Giriş yap&nbsp; →
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 };

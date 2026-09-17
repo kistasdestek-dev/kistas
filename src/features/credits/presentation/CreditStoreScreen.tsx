@@ -24,6 +24,7 @@ import {
 interface CreditStoreScreenProps {
   currentUser?: UserProfile | null;
   onRefreshProfile?: () => void;
+  onOpenAuth?: () => void;
 }
 
 interface CreditPackage {
@@ -270,6 +271,7 @@ const PurchaseBar: React.FC<PurchaseBarProps> = ({
 export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
   currentUser: propUser,
   onRefreshProfile,
+  onOpenAuth,
 }) => {
   const { profile: authUser } = useAuth();
   const { credits } = useWallet();
@@ -344,6 +346,10 @@ export const CreditStoreScreen: React.FC<CreditStoreScreenProps> = ({
 
   const handlePurchase = async (pkg: CreditPackage) => {
     if (!user) {
+      if (onOpenAuth) {
+        onOpenAuth();
+        return;
+      }
       Alert.alert('Giriş Gerekli', 'Kredi satın almak için lütfen giriş yapınız.');
       return;
     }

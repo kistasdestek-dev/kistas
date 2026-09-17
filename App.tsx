@@ -1430,6 +1430,10 @@ function AppContent() {
         ) : activeTab === 'credits' ? (
           <CreditStoreScreen
             currentUser={currentUser}
+            onOpenAuth={() => {
+              setAuthView('login');
+              setIsAuthModalOpen(true);
+            }}
           />
         ) : (
           currentUser ? (
