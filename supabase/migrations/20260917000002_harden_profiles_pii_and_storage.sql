@@ -111,19 +111,3 @@ EXCEPTION
         NULL;
 END $$;
 
--- 5. TEMİZLİK (Pentest Test Artıklarının Temizlenmesi)
-DO $$
-BEGIN
-    DELETE FROM storage.objects 
-    WHERE bucket_id = 'kistas' 
-      AND (name ILIKE '%pars_test%' OR name ILIKE '%parsrecon%');
-
-    DELETE FROM public.profiles 
-    WHERE id IN (SELECT id FROM auth.users WHERE email = 'parsrecon2026x@gmail.com');
-
-    DELETE FROM auth.users 
-    WHERE email = 'parsrecon2026x@gmail.com';
-EXCEPTION
-    WHEN undefined_table THEN
-        NULL;
-END $$;
