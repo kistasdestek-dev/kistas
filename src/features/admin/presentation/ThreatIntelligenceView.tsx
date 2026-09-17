@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   heroTitle: {
     color: '#FFFFFF',
     fontSize: 22,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.3,
     marginBottom: 6,
   },
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   metricVal: {
     color: '#FFFFFF',
     fontSize: 20,
-    fontWeight: '800',
+    fontWeight: '700',
     marginBottom: 2,
   },
   metricLbl: {
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 10,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: 0.5,
   },
   toolBadge: {
