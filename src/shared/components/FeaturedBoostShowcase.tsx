@@ -53,14 +53,16 @@ export const FeaturedBoostShowcase: React.FC<FeaturedBoostShowcaseProps> = ({
   return (
     <ErrorBoundary fallbackTitle="Sponsorlu vitrin geçici olarak yüklenemedi">
       <View style={[sectionStyles.showcaseSection, containerStyle]}>
-        {/* Seçenek 2: Temiz, Çerçevesiz Başlık + Sağda Flip Butonu */}
+        {/* Başlık: Sadece 'Kategorisinde Öne Çıkanlar' (Öne Çıkanlar altın geçişli) + Sağda Flip Butonu */}
         <View style={sectionStyles.cleanHeaderRow}>
           <View style={sectionStyles.cleanHeaderLeft}>
             <Text style={sectionStyles.cleanHeaderTitle}>
-              {selectedCategoryName ? `${selectedCategoryName} · Sponsorlu Vitrin` : 'Kategorisinde Öne Çıkanlar'}
-            </Text>
-            <Text style={sectionStyles.cleanHeaderSubtitle}>
-              Topluluk vitrininde saatlik rotasyonla öne çık
+              Kategorisinde{' '}
+              {isWeb ? (
+                <span className="crd-f3d-gold-text">Öne Çıkanlar</span>
+              ) : (
+                <Text style={sectionStyles.goldGradientText}>Öne Çıkanlar</Text>
+              )}
             </Text>
           </View>
 

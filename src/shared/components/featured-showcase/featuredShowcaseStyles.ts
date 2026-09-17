@@ -608,6 +608,16 @@ export const F3D_CSS = `
   font-size: 18px;
 }
 .crd-f3d-promo-cta:focus-visible { outline: 2px solid rgba(50,105,199,.72); outline-offset: 3px; }
+
+.crd-f3d-gold-text {
+  background: linear-gradient(135deg, #B45309 0%, #D97706 25%, #F59E0B 50%, #FBBF24 75%, #B45309 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #D97706;
+  font-weight: 700;
+  display: inline;
+}
 `;
 
 export const sectionStyles = StyleSheet.create({
@@ -616,31 +626,42 @@ export const sectionStyles = StyleSheet.create({
   },
   cleanHeaderRow: {
     marginHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 14,
     marginTop: 4,
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
     flexWrap: 'wrap',
   },
   cleanHeaderLeft: {
     flex: 1,
-    minWidth: 220,
+    minWidth: 200,
+    justifyContent: 'center',
   },
   cleanHeaderTitle: {
-    fontSize: Platform.OS === 'web' ? 20 : 18,
+    fontSize: Platform.OS === 'web' ? 21 : 19,
     fontWeight: '700',
     color: '#25364E',
     letterSpacing: -0.4,
-    lineHeight: Platform.OS === 'web' ? 26 : 24,
+    lineHeight: Platform.OS === 'web' ? 28 : 25,
   },
-  cleanHeaderSubtitle: {
-    fontSize: 11.5,
-    color: '#686474',
-    marginTop: 2,
-    lineHeight: 16,
-    fontWeight: '500',
+  goldGradientText: {
+    fontWeight: '700',
+    color: '#D97706',
+    ...Platform.select({
+      web: {
+        backgroundImage: 'linear-gradient(135deg, #B45309 0%, #D97706 25%, #F59E0B 50%, #FBBF24 75%, #B45309 100%)',
+        WebkitBackgroundImage: 'linear-gradient(135deg, #B45309 0%, #D97706 25%, #F59E0B 50%, #FBBF24 75%, #B45309 100%)',
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        display: 'inline',
+      } as any,
+      default: {
+        color: '#D97706',
+      },
+    }),
   },
   cleanHeaderRight: {
     alignItems: 'flex-end',
