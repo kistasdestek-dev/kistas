@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import {
   View,
+  Text,
   ScrollView,
   Platform,
   StyleProp,
@@ -52,13 +53,24 @@ export const FeaturedBoostShowcase: React.FC<FeaturedBoostShowcaseProps> = ({
   return (
     <ErrorBoundary fallbackTitle="Sponsorlu vitrin geçici olarak yüklenemedi">
       <View style={[sectionStyles.showcaseSection, containerStyle]}>
-        {/* Standalone Button (Çerçevesiz, sade ve belirgin) */}
-        <View style={sectionStyles.standaloneBannerRow}>
-          <CategoryStarsBanner
-            size="lg"
-            words={['Kategorinin Yıldızları', 'Vitrinde Yerinizi Alın', 'Projenizi Parlatın', 'Kıstas Vitrini']}
-            onPress={onOpenCreditStore}
-          />
+        {/* Seçenek 2: Temiz, Çerçevesiz Başlık + Sağda Flip Butonu */}
+        <View style={sectionStyles.cleanHeaderRow}>
+          <View style={sectionStyles.cleanHeaderLeft}>
+            <Text style={sectionStyles.cleanHeaderTitle}>
+              {selectedCategoryName ? `${selectedCategoryName} · Sponsorlu Vitrin` : 'Kategorisinde Öne Çıkanlar'}
+            </Text>
+            <Text style={sectionStyles.cleanHeaderSubtitle}>
+              Topluluk vitrininde saatlik rotasyonla öne çık
+            </Text>
+          </View>
+
+          <View style={sectionStyles.cleanHeaderRight}>
+            <CategoryStarsBanner
+              size="md"
+              words={['Kategorinin Yıldızları', 'Vitrinde Yerinizi Alın', 'Projenizi Parlatın', 'Kıstas Vitrini']}
+              onPress={onOpenCreditStore}
+            />
+          </View>
         </View>
 
         {/* Cards Showcase Area */}

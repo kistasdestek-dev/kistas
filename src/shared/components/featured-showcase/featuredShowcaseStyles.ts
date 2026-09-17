@@ -614,6 +614,38 @@ export const sectionStyles = StyleSheet.create({
   showcaseSection: {
     marginVertical: 12,
   },
+  cleanHeaderRow: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    marginTop: 4,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  cleanHeaderLeft: {
+    flex: 1,
+    minWidth: 220,
+  },
+  cleanHeaderTitle: {
+    fontSize: Platform.OS === 'web' ? 20 : 18,
+    fontWeight: '700',
+    color: '#25364E',
+    letterSpacing: -0.4,
+    lineHeight: Platform.OS === 'web' ? 26 : 24,
+  },
+  cleanHeaderSubtitle: {
+    fontSize: 11.5,
+    color: '#686474',
+    marginTop: 2,
+    lineHeight: 16,
+    fontWeight: '500',
+  },
+  cleanHeaderRight: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
   standaloneBannerRow: {
     marginHorizontal: 16,
     marginBottom: 16,

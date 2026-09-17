@@ -501,9 +501,26 @@ export class ListingService {
             categoryRank: Number(winner.category_rank),
           }];
         });
-        return winners;
+        if (winners.length > 0) {
+          return winners;
+        }
       }
-      return [];
+
+      // Fallback: Haftalık kazananlar RPC'si henüz kazanan belirlememişse veya
+      // kazanan projeler kategori sponsorluğuna sahip olduğu için SQL tarafından elenmişse,
+      // vitrinin boş kalmaması için topluluk oyu (upvotesCount > 0) olan popüler projeleri vitrine sun
+      const fallbackListings = await this.getPopularListings(12, categoryId);
+      return fallbackListings
+        .filter((item) => (item.upvotesCount || 0) > 0)
+        .slice(0, 6)
+        .map((listing, index) => ({
+          ...listing,
+          weeklySupportCount: listing.upvotesCount || 1,
+          isWeeklyWinner: true,
+          showcaseGlobalRank: index + 1,
+          organicRank: index + 1,
+          categoryRank: index + 1,
+        }));
     } catch (error) {
       if (throwOnError) throw error;
       return [];
