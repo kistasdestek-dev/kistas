@@ -609,12 +609,12 @@ export const F3D_CSS = `
 }
 .crd-f3d-promo-cta:focus-visible { outline: 2px solid rgba(50,105,199,.72); outline-offset: 3px; }
 
-.crd-f3d-gold-text {
-  background: linear-gradient(135deg, #B45309 0%, #D97706 25%, #F59E0B 50%, #FBBF24 75%, #B45309 100%);
+.crd-f3d-blue-text {
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 35%, #3B82F6 70%, #60A5FA 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  color: #D97706;
+  color: #2563EB;
   font-weight: 700;
   display: inline;
 }
@@ -654,20 +654,20 @@ export const sectionStyles = StyleSheet.create({
       },
     }),
   },
-  goldGradientText: {
+  blueGradientText: {
     fontWeight: '700',
-    color: '#D97706',
+    color: '#2563EB',
     ...Platform.select({
       web: {
-        backgroundImage: 'linear-gradient(135deg, #B45309 0%, #D97706 25%, #F59E0B 50%, #FBBF24 75%, #B45309 100%)',
-        WebkitBackgroundImage: 'linear-gradient(135deg, #B45309 0%, #D97706 25%, #F59E0B 50%, #FBBF24 75%, #B45309 100%)',
+        backgroundImage: 'linear-gradient(135deg, #1E40AF 0%, #2563EB 35%, #3B82F6 70%, #60A5FA 100%)',
+        WebkitBackgroundImage: 'linear-gradient(135deg, #1E40AF 0%, #2563EB 35%, #3B82F6 70%, #60A5FA 100%)',
         WebkitBackgroundClip: 'text',
         backgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         display: 'inline',
       } as any,
       default: {
-        color: '#D97706',
+        color: '#2563EB',
       },
     }),
   },
