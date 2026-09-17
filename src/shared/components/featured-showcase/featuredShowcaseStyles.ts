@@ -627,9 +627,9 @@ export const sectionStyles = StyleSheet.create({
   cleanHeaderRow: {
     marginHorizontal: 16,
     marginBottom: 14,
-    marginTop: 4,
+    marginTop: 6,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'space-between',
     gap: 12,
     flexWrap: 'wrap',
@@ -637,14 +637,22 @@ export const sectionStyles = StyleSheet.create({
   cleanHeaderLeft: {
     flex: 1,
     minWidth: 200,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
   },
   cleanHeaderTitle: {
-    fontSize: Platform.OS === 'web' ? 21 : 19,
     fontWeight: '700',
     color: '#25364E',
-    letterSpacing: -0.4,
-    lineHeight: Platform.OS === 'web' ? 28 : 25,
+    letterSpacing: -0.8,
+    ...Platform.select({
+      web: {
+        fontSize: 30,
+        lineHeight: 36,
+      },
+      default: {
+        fontSize: 27,
+        lineHeight: 33,
+      },
+    }),
   },
   goldGradientText: {
     fontWeight: '700',
