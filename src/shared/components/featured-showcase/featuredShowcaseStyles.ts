@@ -1,4 +1,5 @@
 import { StyleSheet, Dimensions, Platform } from 'react-native';
+import { theme } from '../../../core/theme';
 
 export const F3D_STYLE_ID = 'kistas-crd-f3d-styles';
 
@@ -629,10 +630,40 @@ export const sectionStyles = StyleSheet.create({
     marginBottom: 14,
     marginTop: 6,
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
     flexWrap: 'wrap',
+  },
+  sponsorBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(37, 99, 235, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(37, 99, 235, 0.18)',
+    alignSelf: 'flex-start',
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(10px)',
+        boxShadow: '0 2px 8px rgba(37, 99, 235, 0.06)',
+      } as any,
+      default: {},
+    }),
+  },
+  sponsorBadgeSparkle: {
+    fontSize: 11,
+    color: '#2563EB',
+  },
+  sponsorBadgeText: {
+    ...theme.typography.kistas,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    color: '#1E40AF',
   },
   cleanHeaderLeft: {
     flex: 1,
