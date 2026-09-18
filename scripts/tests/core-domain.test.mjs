@@ -1135,6 +1135,74 @@ runTest('FAZ 17 AŞAMA 5: PARS DevState Raporu ve Banka Düzeyi Dokümantasyon E
   assert.match(roadmapContent, /### SEC-063/i, 'SEC-063 GoTrue Auth Rate Limiting & CORS Mühürlemesi maddesi eksik!');
 });
 
+runTest('FAZ 19 AŞAMA 1: Savunma Mekanizmasının Silahlaştırılması Engeli (Defense Inversion & Anti-DoS) doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', '20260918000010_faz19_defense_inversion_and_anti_dos.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Faz 19 Aşama 1 migration dosyası eksik!');
+  const sql = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(sql, /is_safe_whitelisted_ip/i, 'is_safe_whitelisted_ip fonksiyonu eksik!');
+  assert.match(sql, /report_client_honeypot_trap/i, 'report_client_honeypot_trap fonksiyonu eksik!');
+  assert.match(sql, /enforce_adaptive_rate_limit/i, 'enforce_adaptive_rate_limit fonksiyonu eksik!');
+  assert.match(sql, /127\.0\.0\.1|localhost/i, 'Loopback ve güvenli IP koruması eksik!');
+});
+
+runTest('FAZ 19 AŞAMA 2: Eşzamanlı İstek Patlaması & Finansal Bütünlük (Race Condition & Concurrency) doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', '20260918000011_faz19_race_condition_and_concurrency_shield.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Faz 19 Aşama 2 migration dosyası eksik!');
+  const sql = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(sql, /chk_profiles_boost_credits_positive/i, 'boost_credits negatif bakiye CHECK kuralı eksik!');
+  assert.match(sql, /idx_orders_active_listing_unique/i, 'Aktif sipariş tekillik indeksi eksik!');
+  assert.match(sql, /idx_project_upvotes_unique_pair/i, 'Proje oy tekillik indeksi eksik!');
+});
+
+runTest('FAZ 19 AŞAMA 3: Webhook Uç Noktaları DoS & Kaynak Tüketimi Kalkanı (Edge Function Throttling) doğrulanmalı', () => {
+  const shopierPath = path.join(ROOT, 'supabase', 'functions', 'shopier-credit-webhook', 'index.ts');
+  const revenueCatPath = path.join(ROOT, 'supabase', 'functions', 'revenuecat-credit-webhook', 'index.ts');
+  assert.strictEqual(fs.existsSync(shopierPath), true, 'Shopier webhook eksik!');
+  assert.strictEqual(fs.existsSync(revenueCatPath), true, 'RevenueCat webhook eksik!');
+
+  const shopierCode = fs.readFileSync(shopierPath, 'utf8');
+  const rcCode = fs.readFileSync(revenueCatPath, 'utf8');
+
+  assert.match(shopierCode, /isThrottled/i, 'Shopier isThrottled koruması eksik!');
+  assert.match(shopierCode, /TOO_MANY_REQUESTS/i, 'Shopier 429 yanıtı eksik!');
+  assert.match(rcCode, /isThrottled/i, 'RevenueCat isThrottled koruması eksik!');
+  assert.match(rcCode, /MAX_BODY_BYTES/i, 'RevenueCat MAX_BODY_BYTES koruması eksik!');
+});
+
+runTest('FAZ 19 AŞAMA 4: PostgREST Doğrudan API Kazıma & IDOR İzolasyonu doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', '20260918000012_faz19_postgrest_api_scraping_and_idor_shield.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Faz 19 Aşama 4 migration dosyası eksik!');
+  const sql = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(sql, /REVOKE ALL ON TABLE public\.user_addresses FROM anon/i, 'user_addresses anon izolasyonu eksik!');
+  assert.match(sql, /REVOKE ALL ON TABLE public\.orders FROM anon/i, 'orders anon izolasyonu eksik!');
+  assert.match(sql, /REVOKE ALL ON TABLE public\.conversations FROM anon/i, 'conversations anon izolasyonu eksik!');
+  assert.match(sql, /REVOKE ALL ON TABLE public\.messages FROM anon/i, 'messages anon izolasyonu eksik!');
+  assert.match(sql, /REVOKE ALL ON TABLE public\.user_vault_records FROM anon/i, 'user_vault_records anon izolasyonu eksik!');
+});
+
+runTest('FAZ 19 AŞAMA 5: Depolama (Storage) Polyglot Dosya & Stored XSS Kalkanı doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', '20260918000013_faz19_storage_polyglot_and_stored_xss_shield.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Faz 19 Aşama 5 migration dosyası eksik!');
+  const sql = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(sql, /name !~ '\\\.\\\.'/i, 'Path traversal engeli eksik!');
+  assert.match(sql, /allowed_mime_types/i, 'MIME türü beyaz listesi eksik!');
+  assert.match(sql, /object_write_authenticated/i, 'object_write_authenticated politikası eksik!');
+});
+
+runTest('FAZ 19 AŞAMA 6: WebSocket Realtime CDC Sniffing & Dinleme Kaçağı İzolasyonu doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', '20260918000014_faz19_realtime_cdc_sniffing_shield.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Faz 19 Aşama 6 migration dosyası eksik!');
+  const sql = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(sql, /ALTER PUBLICATION supabase_realtime DROP TABLE/i, 'Realtime DROP TABLE komutu eksik!');
+  assert.match(sql, /user_vault_records/i, 'user_vault_records realtime izolasyonu eksik!');
+  assert.match(sql, /security_threat_events/i, 'security_threat_events realtime izolasyonu eksik!');
+});
+
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);
 
 if (failedTests > 0) {

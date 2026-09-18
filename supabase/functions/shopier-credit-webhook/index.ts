@@ -53,12 +53,33 @@ async function readOsbEnvelope(request: Request): Promise<{ res: string; hash: s
   return { res: rawPayload.res, hash: rawPayload.hash };
 }
 
+const ipThrottles = new Map<string, { count: number; start: number }>();
+
+function isThrottled(ip: string, maxHits = 30, windowMs = 10000): boolean {
+  const now = Date.now();
+  const bucket = ipThrottles.get(ip);
+  if (!bucket || now - bucket.start > windowMs) {
+    ipThrottles.set(ip, { count: 1, start: now });
+    return false;
+  }
+  bucket.count += 1;
+  return bucket.count > maxHits;
+}
+
 Deno.serve(async (request: Request): Promise<Response> => {
   if (request.method === 'GET' || request.method === 'HEAD') {
     return textResponse('success', 200);
   }
   if (request.method !== 'POST') {
     return textResponse('METHOD_NOT_ALLOWED', 405);
+  }
+
+  const clientIp = request.headers.get('cf-connecting-ip') || 
+                   request.headers.get('x-forwarded-for') || 
+                   'unknown';
+
+  if (isThrottled(clientIp)) {
+    return textResponse('TOO_MANY_REQUESTS', 429);
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL');

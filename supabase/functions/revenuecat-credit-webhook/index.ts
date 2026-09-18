@@ -43,9 +43,36 @@ function constantTimeEqual(left: string, right: string): boolean {
   return difference === 0;
 }
 
+const MAX_BODY_BYTES = 64 * 1024;
+const ipThrottles = new Map<string, { count: number; start: number }>();
+
+function isThrottled(ip: string, maxHits = 20, windowMs = 10000): boolean {
+  const now = Date.now();
+  const bucket = ipThrottles.get(ip);
+  if (!bucket || now - bucket.start > windowMs) {
+    ipThrottles.set(ip, { count: 1, start: now });
+    return false;
+  }
+  bucket.count += 1;
+  return bucket.count > maxHits;
+}
+
 Deno.serve(async (request: Request): Promise<Response> => {
   if (request.method !== 'POST') {
     return jsonResponse(405, { error: 'METHOD_NOT_ALLOWED' });
+  }
+
+  const clientIp = request.headers.get('cf-connecting-ip') || 
+                   request.headers.get('x-forwarded-for') || 
+                   'unknown';
+
+  if (isThrottled(clientIp)) {
+    return jsonResponse(429, { error: 'TOO_MANY_REQUESTS' });
+  }
+
+  const contentLength = Number(request.headers.get('content-length') || 0);
+  if (contentLength > MAX_BODY_BYTES) {
+    return jsonResponse(413, { error: 'PAYLOAD_TOO_LARGE' });
   }
 
   const webhookSecret = Deno.env.get('REVENUECAT_WEBHOOK_SECRET');

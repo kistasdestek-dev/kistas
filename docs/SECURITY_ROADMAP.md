@@ -858,6 +858,66 @@ Production veya magazaya cikis icin:
   3. Süper admin (`kistasdestek@gmail.com`) için Supabase Auth TOTP MFA zorunluluğu ve Cloudflare WAF `/auth/v1/*` hız aşım kuralı rehberliği mühürlendi.
 - Regresyon: `node scripts/tests/core-domain.test.mjs` (56/56 başarılı). Fortress Sistem Sağlık Radarı (%100 / 100 A+) onaylandı.
 
+### SEC-064 - Faz 19.1: Savunma Mekanizmasının Silahlaştırılması Engeli (Defense Inversion & Self-DoS Kalkanı)
+- Tarih: 2026-09-18
+- Kapsam: `report_client_honeypot_trap`, `enforce_adaptive_rate_limit`, `is_safe_whitelisted_ip`, `20260918000010_faz19_defense_inversion_and_anti_dos.sql`.
+- Bulgu: Ofansif fuzzer'ların veya anonim saldırganların keyfi IP parametreleri (`p_client_ip`) göndererek meşru kullanıcıları, yöneticileri veya Cloudflare/kurumsal ağları WAF karantinasına kilitletme (Self-DoS) riski.
+- Sertleştirme:
+  1. `is_safe_whitelisted_ip()` fonksiyonu ile loopback (`127.0.0.1`, `::1`, `localhost`) ve RFC 1918 özel ağları (`10.*`, `172.16-31.*`, `192.168.*`, `169.254.*`) otomatik karantina korumasına alındı.
+  2. Anonim çağrılarda IP asla doğrudan karantinaya alınmaz; yalnızca tehdit radarına işlenir. Karantina yalnızca doğrulanmış `auth.uid()` veya meşru yönetici kararıyla uygulanır.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (Aşama 1 testi başarılı).
+
+### SEC-065 - Faz 19.2: Eşzamanlı İstek Patlaması & Finansal Bütünlük Kalkanı (Race Condition & Concurrency Shield)
+- Tarih: 2026-09-18
+- Kapsam: `public.profiles`, `public.orders`, `public.project_upvotes`, `check_recent_boost_spam()`, `20260918000011_faz19_race_condition_and_concurrency_shield.sql`.
+- Bulgu: Yüksek eşzamanlı (50-100 paralel thread) isteklerde bakiye düşümü, kupon veya sipariş oluşturma süreçlerinde TOCTOU çift harcama (double spending) riski.
+- Sertleştirme:
+  1. `profiles` tablosuna veritabanı seviyesinde `chk_profiles_boost_credits_positive`, `chk_profiles_available_balance_positive` ve `chk_profiles_pending_balance_positive` pozitif bakiye kısıtları mühürlendi.
+  2. `orders` tablosunda aynı ilan için aynı anda birden fazla aktif sipariş oluşmasını engelleyen `idx_orders_active_listing_unique` tekillik indeksi eklendi.
+  3. `project_upvotes` üzerinde `idx_project_upvotes_unique_pair` ile eşzamanlı mükerrer oy enjeksiyonu engellendi.
+  4. `check_recent_boost_spam()` fonksiyonu ile 3 saniyelik harcama soğuma süresi sağlandı.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (Aşama 2 testi başarılı).
+
+### SEC-066 - Faz 19.3: Webhook Uç Noktaları DoS & Kaynak Tüketimi Kalkanı (Edge Function Throttling & Fail-Fast)
+- Tarih: 2026-09-18
+- Kapsam: `supabase/functions/shopier-credit-webhook/index.ts`, `supabase/functions/revenuecat-credit-webhook/index.ts`.
+- Bulgu: Webhook uç noktalarına yönelik kaba kuvvet (brute-force) veya kaynak tüketme (DDoS) saldırılarında Deno Edge Function kaynaklarının kilitlenmesi riski.
+- Sertleştirme:
+  1. Her iki webhook uç noktasına IP bazlı bellek içi (in-memory) istek sınırlayıcı (`isThrottled`) entegre edildi (10 saniyede azami 20-30 istek; aşımda HTTP 429).
+  2. `MAX_BODY_BYTES = 64 * 1024` kontrolü ile 64 KB üzerindeki istekler gövde okunmadan anında HTTP 413 Payload Too Large ile düşürüldü.
+  3. Yetkisiz veya geçersiz imzalarda fail-fast HTTP 401 yanıtı mühürlendi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (Aşama 3 testi başarılı).
+
+### SEC-067 - Faz 19.4: PostgREST Doğrudan API Kazıma & IDOR İzolasyonu (Direct Table Scraping & Zero-Trust Anon Strip)
+- Tarih: 2026-09-18
+- Kapsam: `user_addresses`, `orders`, `conversations`, `messages`, `notifications`, `user_vault_records`, `security_threat_events`, `20260918000012_faz19_postgrest_api_scraping_and_idor_shield.sql`.
+- Bulgu: Doğrudan PostgREST API üzerinden anonim anahtarla hassas işlem, mesaj ve adres tablolarına yönelik enum/fuzzing taramaları.
+- Sertleştirme:
+  1. `user_addresses`, `orders`, `conversations`, `messages`, `notifications`, `user_vault_records`, `security_threat_events`, `security_quarantine_blocklist`, `security_rate_limit_tracker` tablolarından `anon` ve `public` rolleri tamamen silindi (REVOKE ALL).
+  2. `conversations` ve `messages` RLS politikaları yalnızca doğrulanmış alıcı, satıcı veya yetkili destek yöneticisiyle sınırlandırıldı.
+  3. `notifications` ve `user_addresses` RLS politikaları kesin `auth.uid() = user_id` kuralıyla kilitlendi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (Aşama 4 testi başarılı).
+
+### SEC-068 - Faz 19.5: Depolama (Storage) Polyglot Dosya & Stored XSS Kalkanı (Storage Poisoning Prevention)
+- Tarih: 2026-09-18
+- Kapsam: `storage.buckets`, `storage.objects`, `20260918000013_faz19_storage_polyglot_and_stored_xss_shield.sql`.
+- Bulgu: Resim yükleme noktalarına SVG, XML, HTML veya path traversal (`..`) içeren zararlı polyglot dosyalar yüklenerek Stored XSS ve dosya ezme riski.
+- Sertleştirme:
+  1. `storage.buckets` tavan boyutu 10 MB ve izinli MIME tipleri kesin olarak `image/jpeg`, `image/png`, `image/webp` ile sınırlandırıldı.
+  2. `object_write_authenticated` RLS kuralına `name !~ '\.\.'` (Path Traversal Engeli), `name ~ '^[a-zA-Z0-9_\-\./]+$'` karakter kısıtı, `LOWER(storage.extension(name)) IN ('png', 'jpg', 'jpeg', 'webp')` ve `(owner IS NULL OR owner = auth.uid())` sahiplik kuralı eklendi. SVG ve HTML kesin olarak yasaklandı.
+  3. `object_update_owner` güncelleme kuralı aynı sertlikte mühürlendi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (Aşama 5 testi başarılı).
+
+### SEC-069 - Faz 19.6: WebSocket Realtime CDC Sniffing & Dinleme Kaçağı İzolasyonu (Realtime Publication Hardening)
+- Tarih: 2026-09-18
+- Kapsam: `supabase_realtime` yayını, `20260918000014_faz19_realtime_cdc_sniffing_shield.sql`.
+- Bulgu: Supabase Realtime yayınına eklenen tablolardan websocket istemcilerine hassas veri, bakiye veya güvenlik loglarının akması riski.
+- Sertleştirme:
+  1. `user_vault_records`, `security_threat_events`, `security_quarantine_blocklist`, `security_honeypot_detections`, `security_rate_limit_tracker`, `system_config_keys`, `admin_credentials`, `system_debug_credentials`, `shopier_credit_purchase_events`, `credit_purchase_events`, `orders`, `offers`, `user_addresses`, `admin_action_audit`, `credit_transactions`, `user_consents`, `reports` tabloları `supabase_realtime` yayınından koşulsuz olarak düşürüldü.
+  2. Yalnızca meşru gerçek zamanlı arayüz gereksinimi olan sohbet tabloları kontrollü RLS ile yayında bırakıldı.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (Aşama 6 testi başarılı).
+
+
 
 
 
