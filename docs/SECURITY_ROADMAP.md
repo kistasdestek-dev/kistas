@@ -721,4 +721,146 @@ Production veya magazaya cikis icin:
 - Kapsam: `ThreatIntelligenceView.tsx`, `AdminService.ts`, `AdminDashboardScreen.tsx` ve `admin_get_threat_intel_overview`.
 - Bulgu: Yönetim kadrosunun saldırganları gerçek zamanlı izleyememesi, saldırı araçlarının yoğunluğunu görememesi ve saldırgan aktörleri anında karantinaya alacak merkezi bir karşı-istihbarat silahının eksikliği.
 - Sertleştirme: Yönetim Merkezine (`AdminDashboardScreen`) bağımsız ve modüler `ThreatIntelligenceView` bileşeni eklendi; `admin_get_threat_intel_overview`, `admin_get_threat_events`, `admin_quarantine_threat_actor` ve `admin_release_threat_actor` güvenlik RPC'leri entegre edildi.
-- Regresyon: `node scripts/tests/core-domain.test.mjs` (42/42 başarılı).
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (44/44 başarılı).
+
+### SEC-051 - Faz 15.2 & Aşama 1: Aktif WAF Karantina Kapısı (Client-Side WAF Guard & Enforced Blocklist)
+- Tarih: 2026-09-17
+- Kapsam: `security_quarantine_blocklist`, `check_is_quarantined`, `SecurityEnforcementService.ts`, `QuarantineBlockScreen.tsx`, `App.tsx`.
+- Bulgu: Tehdit aktörü veya IP yönetici tarafından karantinaya alındığında istemci tarafında anlık tecrit mekanizmasının bulunmaması ve saldırganın uygulamayı kullanmaya devam edebilme riski.
+- Sertleştirme (`20260917000019_faz15_active_waf_quarantine_enforcement.sql`): `security_quarantine_blocklist` tablosu ve `check_is_quarantined` WAF kapısı kuruldu. İstemci katmanında 2 dakikalık akıllı önbellek ile `SecurityEnforcementService` oluşturuldu. `App.tsx` kök gezinmesinde karantina teyit edildiğinde saldırganın karşısına Kıstas Tasarım Sistemi standardında caydırıcı `QuarantineBlockScreen` (WAF-403) çıkartılarak sistemden tamamen izole edildi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (44/44 başarılı). Tipografi, 0 tip hatası ve Fortress Sağlık Radarı (%100 / 100 A+) ile doğrulandı.
+
+### SEC-052 - Faz 15.2 & Aşama 2: Yönetim Panelinde Aktif Bloklistesi Yöneticisi (WAF Blocklist Manager)
+- Tarih: 2026-09-17
+- Kapsam: `ThreatIntelligenceView.tsx`, `SecurityEnforcementService.clearCache()`, `AdminService.ts`.
+- Bulgu: Karantinaya alınan IP ve aktörlerin canlı tehdit akışı içinde kaybolması, aktif bloklanan aktörleri listeleyip filtreleme ve tek tıkla WAF engeli kaldırma/yönetme mekanizmasının olmaması.
+- Sertleştirme: `ThreatIntelligenceView.tsx` içerisine modüler segmented switch (`Canlı Tehdit Akışı` vs `WAF Bloklistesi`) eklendi. Aktif karantinalar için gerçek zamanlı arama çubuğu (`blocklistSearch`), tek tıkla IP kopyalama (`handleCopyIp`), karantina gerekçesi ve `Engeli Kaldır (WAF)` butonu entegre edildi. Karantina eklendiğinde veya kaldırıldığında istemci önbelleğini anında tazeleyen `SecurityEnforcementService.clearCache()` tetikleyicisi bağlandı.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (45/45 başarılı). Tipografi ve 0 tip hatası doğrulandı, Fortress Sistem Sağlık Radarı (%100 / 100 A+) onaylandı.
+
+### SEC-053 - Faz 15.3 & Aşama 3: İstemci & Edge Bal Küpü Tuzakları (Honeypot Traps & Canary Decoys)
+- Tarih: 2026-09-17
+- Kapsam: `20260917000020_faz15_client_honeypot_traps.sql`, `report_client_honeypot_trap`, `HoneypotTrapService.ts`, `HoneypotDecoyField.tsx`, `AuthExperience.tsx`, `App.tsx`.
+- Bulgu: Otomatik scanner (DirBuster, gobuster, crawler) ve form botlarının gizli admin yollarını (`/.env`, `/admin-debug`, SQLi query fuzzer) veya kimlik doğrulama formlarını tararken fark edilmeden işlem yapabilmesi riski.
+- Sertleştirme:
+  1. `report_client_honeypot_trap` RPC'si (`SECURITY DEFINER`, `anon/authenticated` açık) tanımlandı; bal küpüne takılan bot ve scanner'ları anında `security_threat_events` ve `security_quarantine_blocklist` tablolarına kaydedip otomatik karantinaya alır; saldırgana ise şüphe uyandırmayan sahte 200 OK döner.
+  2. `HoneypotTrapService.inspectUrlCanaryProbes()` mekanizması kuruldu; `App.tsx` başlatıldığında şüpheli directory brute-force ve SQLi/XSS parametre aramalarını anında yakalar.
+  3. `HoneypotDecoyField` ekran okuyucu ve insan gözünden gizlenmiş bot tuzağı bileşeni oluşturuldu ve `AuthExperience.tsx` giriş/kayıt formlarına entegre edildi; alanı dolduran botlar otomatik karantinaya sevk edilir.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (46/46 başarılı). `node scripts/security/check-xss.mjs` temiz, Fortress Sistem Sağlık Radarı (%100 / 100 A+) onaylandı.
+
+### SEC-054 - Faz 15.4 & Aşama 4: Adaptif Hız Sınırı ve Fuzzer Savunması (Adaptive Rate Limiting & Auto-Ban)
+- Tarih: 2026-09-17
+- Kapsam: `20260917000021_faz15_adaptive_rate_limiting_and_auto_ban.sql`, `enforce_adaptive_rate_limit`, `RateLimitGuardService.ts`.
+- Bulgu: Otomatik fuzzer scriptlerinin, credential stuffing veya API parametre tarayıcılarının sistemi yüksek frekansta döverek kaynakları tüketebilmesi veya kaba kuvvet denemeleri yapabilmesi riski.
+- Sertleştirme:
+  1. `public.security_rate_limit_tracker` tablosu dinamik kayan pencere (sliding window) mimarisiyle kuruldu; 1 saatten eski kayıtlar otonom silinerek sıfır-şişme (zero-bloat) sağlandı.
+  2. `enforce_adaptive_rate_limit` RPC'si (`SECURITY DEFINER`, `anon/authenticated` açık) ile ihlal eşiği (`p_auto_ban_threshold = 3`) aşıldığı an saldırganı doğrudan `security_threat_events` (`BURST_FUZZER_RATE_LIMIT`) ve `security_quarantine_blocklist` içine yazarak otonom tecrit (`ADAPTIVE_WAF_AUTO_BAN`) uygulandı.
+  3. `RateLimitGuardService.ts` istemci token bucket koruyucusu (`checkClientBurst`) ve sunucu adaptif doğrulayıcısı (`enforceServerRateLimit`) entegre edildi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (47/47 başarılı). Tipografi, 0 tip hatası ve Fortress Sağlık Radarı (%100 / 100 A+) ile doğrulandı.
+
+### SEC-055 - Faz 16.1 & Aşama 1: Web Çalışma Zamanı Kalkanı & İstemci Anti-Tamper Savunması (Web Runtime Shield)
+- Tarih: 2026-09-18
+- Kapsam: `WebSecurityShieldService.ts`, `ActionSearchBar.tsx`, `App.tsx`.
+- Bulgu: Web istemcisinin kötü niyetli üçüncü taraf sitelerde iFrame içine yerleştirilerek UI Redressing / Clickjacking saldırılarına maruz kalabilmesi, arama çubuklarına doğrudan DOM XSS veya SQLi payload'ları enjekte edilerek istemci açıklarının aranması ve konsol üzerinden yetkisiz bellek/oturum müdahaleleri denenmesi riski.
+- Sertleştirme:
+  1. `WebSecurityShieldService.ts` oluşturuldu; `window.self !== window.top` tespitinde iFrame'e hapsedilme durumunu anında `CLICKJACKING_IFRAME_EMBED` olarak Tehdit Radarına raporlar ve `window.top.location = window.self.location` ile sayfayı çerçeveden kurtarır (frame-busting).
+  2. `protectPrototypeIntegrity` ile üretim ortamında `Object.prototype` mühürlenerek Prototype Pollution manipülasyonları engellendi.
+  3. `inspectInputPayload` ile arama çubuklarına (`ActionSearchBar`) veya web formlarına enjekte edilmeye çalışılan XSS (`<script>`, `onerror=`, `javascript:`, `cookie`), SQLi (`union select`, `or 1=1`, `--`) ve path traversal (`../../etc/passwd`) saldırı vektörleri istemci seviyesinde anında yakalanarak `HoneypotTrapService` üzerinden WAF karantinasına sevk edildi ve girdinin işlenmesi engellendi.
+  4. `displayConsoleSecurityBanner` ile tarayıcı konsolunda Kıstas Siber Savunma Kalkanı uyarısı devreye alındı.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (48/48 başarılı). `npx tsc --noEmit` (0 hata), Fortress Sistem Sağlık Radarı (%100 / 100 A+) onaylandı.
+
+### SEC-056 - Faz 16.2 & Aşama 2: RFC 9116 Standart Güvenlik Beyanı (security.txt) ve Ağ Başlıkları Sertleştirmesi
+- Tarih: 2026-09-18
+- Kapsam: `public/.well-known/security.txt`, `public/security.txt`, `public/_headers`.
+- Bulgu: Uluslararası güvenlik araştırmacılarının ve otomatik tarayıcıların zafiyetleri kurumsal ve sorumlu bir kanaldan bildirebileceği RFC 9116 standardının bulunmaması; web ağ geçidinde mikrofon, kamera, ödeme ve donanım yetkilerini kısıtlayan Permissions-Policy eksikliği.
+- Sertleştirme:
+  1. `public/.well-known/security.txt` ve eski tarayıcılar için `public/security.txt` dosyaları oluşturuldu; `Contact: mailto:kistasdestek@gmail.com`, `Expires: 2027-12-31T23:59:59.000Z`, `Preferred-Languages: tr, en`, `Canonical` ve `Policy` alanlarıyla RFC 9116 standardına bağlandı.
+  2. `public/_headers` dosyası askeri düzeye çıkarıldı: `security.txt` için `text/plain; charset=utf-8` ve 7 günlük `Cache-Control` tanımlandı; `Permissions-Policy` donanım ve API kısıtlarıyla (`camera=(), microphone=(), geolocation=(), payment=(), usb=(), screen-wake-lock=()`) kilitlendi; HSTS `max-age=63072000; includeSubDomains; preload` ve `X-Frame-Options: DENY` pekiştirildi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (49/49 başarılı). `npx tsc --noEmit` (0 hata), Fortress Sistem Sağlık Radarı (%100 / 100 A+) onaylandı.
+
+### SEC-057 - Faz 16.3 & Aşama 3: Kıstas Güvenlik ve Şeffaflık Merkezi (Security & Trust Portal)
+- Tarih: 2026-09-18
+- Kapsam: `SecurityTrustScreen.web.tsx`, `SecurityTrustScreen.tsx`, `webRouting.ts`, `WebSeoHelper.web.ts`, `CinematicFooter.tsx`, `CinematicFooter.web.tsx`, `App.tsx`.
+- Bulgu: Kullanıcılar, kurumsal paydaşlar ve bağımsız güvenlik araştırmacıları için platformun sıfır-güven (Zero-Trust) mimarisini, Pars DevState savunma katmanlarını, RFC 9116 politikasını şeffafça anlatan ve araştırmacıların güvenli zafiyet bildiriminde bulunabileceği (VDP) kurumsal bir portal ve yönlendirme eksikliği.
+- Sertleştirme:
+  1. `SecurityTrustScreen.web.tsx` ve `SecurityTrustScreen.tsx` Kıstas Tasarım Sistemi standardında (`GlassIconButton`, cam/morfik yüzeyler, `theme.typography.kistas`, kraliyet mavisi vurgular) inşa edildi.
+  2. 4 Temel Savunma Sütunu (Sıfır-Güven & RLS, Otomatik WAF & Karşı-Aldatma, Tehdit Radarı & Kriptografik İmzalama, 7/24 Kesintisiz Telemetri) ve 49+ canlı savunma kalkanı rozetleri görselleştirildi.
+  3. Canlı Sorumlu Zafiyet Bildirim Formu (Vulnerability Disclosure Program - VDP) entegre edildi. Form girdileri `WebSecurityShieldService.inspectInputPayload` ile anlık XSS/SQLi payload taramasından geçirilir; meşru bildirimler `HoneypotTrapService.triggerHoneypotTrap` üzerinden `VULNERABILITY_DISCLOSURE_REPORT` olarak Tehdit Radarına iletilir (`autoQuarantine: false`).
+  4. Web URL yönlendirme (`webRouting.ts`) sistemine `/security/` ve `/guvenlik/` rotaları eklendi; SEO meta etiketleri (`WebSeoHelper.web.ts`) tanımlandı; tüm sayfalardaki alt bilgiye (`CinematicFooter`) "Güvenlik & Şeffaflık" bağlantısı yerleştirildi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (50/50 başarılı). `npx tsc --noEmit` (0 tip hatası), Fortress Sistem Sağlık Radarı (%100 / 100 A+) onaylandı.
+
+### SEC-058 - Faz 16.4 & Aşama 4: Yönetim Paneli Tehdit İstihbaratında VDP ve Web Kalkanı Telemetrisi Entegrasyonu
+- Tarih: 2026-09-18
+- Kapsam: `ThreatIntelligenceView.tsx`, `AdminService.ts`.
+- Bulgu: Web Güvenlik Kalkanı (`WebSecurityShieldService`), RFC 9116 ve `/security` portalı üzerinden gelen sorumlu zafiyet raporlarının (VDP) yönetim panelinde saldırı olaylarıyla karışması veya araştırmacı e-postaları ve teknik bulgularının yönetici tarafından özel olarak filtrelenememesi riski.
+- Sertleştirme:
+  1. `ThreatIntelligenceView.tsx` Segmented Navigasyon barına 3. mod olarak `VDP Bildirimleri (X)` eklendi (`viewMode: 'stream' | 'blocklist' | 'vdp'`).
+  2. `vdpEvents` filtresi (`VULNERABILITY_DISCLOSURE_REPORT`, `Responsible Security Researcher`, `researcher:`) ile meşru araştırmacı raporları izole edildi.
+  3. `parseVdpPayload` ile araştırmacı e-postası, rapor başlığı ve teknik detayları yapılandırılmış formatta kartlara döküldü; tek tıkla e-posta kopyalama (`handleCopyEmail`) ve doğrudan e-posta istemcisiyle yanıtlama (`handleMailResearcher`) aksiyonları sağlandı.
+  4. Canlı Tehdit Akışında Web Güvenlik Kalkanı olaylarına özel rozetler (`🌐 Web Anti-Clickjacking Kalkanı`, `🛡️ Canlı Girdi & Payload Kalkanı`, `🛡️ Sorumlu Zafiyet Raporu (VDP)`) atandı.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (51/51 başarılı). `npx tsc --noEmit` (0 tip hatası), Fortress Sistem Sağlık Radarı (%100 / 100 A+) onaylandı.
+
+### SEC-059 - Faz 17.1 & Aşama 1: Onboarding & Kayıt Kurtarma (PARSRAPOR V9 & Marka Koruması Onarımı)
+- Tarih: 2026-09-18
+- Kapsam: `handle_new_user()`, `check_profile_brand_name()`, `AuthService.ts`, `20260918000001_faz17_repair_onboarding_and_brand_guard.sql`.
+- Bulgu: PARS DevState ofansif pentestinde (V9), yeni kullanıcı kayıtlarının (`POST /auth/v1/signup`) HTTP 500 hatasıyla (`FORBIDDEN: 'Kıstas' adı ve görsel benzeri varyasyonları yalnızca platform yöneticileri tarafından kullanılabilir.`) patladığı ve tüm üyelik onboarding akışının kilitlendiği kanıtlandı.
+- Kök Neden: `handle_new_user()` fonksiyonunun isim verilmeyen kayıtlarda varsayılan `'Kıstas Üyesi'` ataması yapması ve `check_profile_brand_name()` tetikleyicisinin bu ismi marka taklidi olarak engelleyerek işlemi durdurması.
+- Sertleştirme:
+  1. `handle_new_user()` içindeki varsayılan isim `'Topluluk Üyesi'` olarak revize edildi; ON CONFLICT bloğu güvenli hale getirildi.
+  2. `check_profile_brand_name()` tetikleyicisine `auth.role() = 'service_role'` ve platform admin muafiyeti eklendi; hata kodu `P0001` olarak standardize edildi.
+  3. `AuthService.ts` satır 161 ve 430'daki `'Kıstas Üyesi'` fallback değerleri `'Topluluk Üyesi'`ne çevrildi.
+  4. `profiles` tablosunda authenticated kullanıcıların kendi satırlarını oluşturma (`profiles_insert_own`) ve güncelleme (`profiles_update_own`) RLS politikaları mühürlendi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (52/52 başarılı).
+
+### SEC-060 - Faz 17.2 & Aşama 2: Depolama (Storage) İzolasyonu & 7 Adet Foothold/Probe Dosyasının İmhası (PARSRAPOR V2)
+- Tarih: 2026-09-18
+- Kapsam: `storage.objects`, `20260918000002_faz17_storage_foothold_cleanup_and_hardening.sql`.
+- Bulgu: PARS DevState tarafından `kistas` public bucket'ına anonim dosya yüklenebildiği kanıtlandı ve kovaya silinemeyen 7 adet probe/foothold dosyası (`pars_foothold_beacon.png` vb.) yerleştirildi.
+- Sertleştirme:
+  1. `storage.objects` üzerindeki tüm gevşek ve anonim yazma politikaları (`Allow anon uploads`, `anon_insert` vb.) tamamen kaldırıldı.
+  2. `object_write_authenticated` politikası ile `kistas` kovasına yalnızca authenticated kullanıcıların ve yalnızca izinli görsel uzantılarıyla (`png, jpg, jpeg, webp`) dosya yüklemesi sağlandı.
+  3. `object_delete_owner` ve `object_update_owner` politikaları ile dosya silme ve güncelleme yetkisi yalnızca dosya sahibine (`owner = auth.uid()`) veya platform yöneticisine bağlandı.
+  4. Pentest esnasında kovaya yerleştirilen 7 adet beacon/probe dosyası (`pars_foothold_beacon.png`, `pars_test.png`, `pars_test_authed.png`, `pars_postpatch_test.png`, `pars_still_open.png`, `final_check.png`, `hardening_probe_1789681500.png`) veritabanından kalıcı olarak silindi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (53/53 başarılı).
+
+### SEC-061 - Faz 17.3 & Aşama 3: Profil PII İzolasyonu & profiles_public Güvenli Görünümü (PARSRAPOR V1 & V1r)
+- Tarih: 2026-09-18
+- Kapsam: `public.profiles`, `public.profiles_public`, `20260918000003_faz17_profiles_public_view_and_pii_isolation.sql`.
+- Bulgu: Hassas kolonlar kapatılmış olsa da anonim role `id` dahil 11 profil kolonunun açık bırakılması sebebiyle tüm kullanıcı UUID'lerinin numaralandırılabilmesi (user enumeration) riski.
+- Sertleştirme:
+  1. `REVOKE ALL ON TABLE public.profiles FROM anon, public;` ile anonim rolünün `profiles` tablosuna doğrudan erişimi tamamen kesildi.
+  2. `public.profiles_public` görünümü (VIEW) oluşturuldu; yalnızca `full_name, is_verified, city, district, bio, avatar_url, rating_average, rating_count, created_at` kolonları kamuya açıldı (`id`, `phone`, `available_balance` gizlendi).
+  3. `authenticated` rolü için `profiles_select_own` politikası (`auth.uid() = id OR public.is_platform_admin()`) ile kullanıcıların yalnızca kendi satırını okuyabilmesi garanti edildi (B11 regresyonu önlendi).
+  4. `ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon;` ile gelecekte eklenecek tüm tablolar için varsayılan ret (default-deny) uygulandı.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (54/54 başarılı).
+
+### SEC-062 - Faz 17.4 & Aşama 4: Banka Düzeyi Finansal Bütünlük, B5 Self-Destruct Onarımı & Kriptografik Denetim Zinciri (B3, B4, B5, B6)
+- Tarih: 2026-09-18
+- Kapsam: `public.financial_audit`, `public.anomaly_events`, `guard_financial_columns()`, `write_financial_audit()`, `check_velocity()`, `20260918000004_faz17_bank_grade_financial_integrity_and_audit.sql`.
+- Bulgu:
+  - B5: Profil satırını silen self-destruct bug'ı (kullanıcı bakiye veya onay kolonunu değiştirmeye çalıştığında profil satırı tamamen siliniyordu).
+  - B3: Finansal ve kredi hareketlerinde değiştirilemez, kriptografik hash-zincirli denetim izi eksikliği.
+  - B4: Kredi cüzdanında eksi bakiye kontrolü ve tekil işlem takip anahtarı (`request_id`) eksikliği.
+  - B6: Yüksek frekanslı anormal bakiye hareketlerinde hız (velocity) tespiti eksikliği.
+- Sertleştirme:
+  1. `guard_financial_columns()` tetikleyicisi yazıldı: Yetkisiz finansal kolon güncellemesinde veya silme girişiminde satır silinmez, doğrudan `FORBIDDEN: financial/verification fields are admin-only` (`P0001`) hatası fırlatılır (B5 çözüldü).
+  2. `public.financial_audit` tablosu oluşturuldu; `_audit_hash(prev_hash, payload)` SHA-256 zinciri ile her bakiye ve profil değişikliği append-only olarak mühürlendi (B3 çözüldü).
+  3. `profiles.available_balance >= 0 AND pending_balance >= 0 AND boost_credits >= 0` kısıtı (`chk_no_negative_balance`) ve `credit_transactions` üzerinde `request_id`, `direction` kolonları mühürlendi (B4 çözüldü).
+  4. `public.anomaly_events` tablosu ve 1 saatte 10'dan fazla hareket gerçekleştiren hesapları otonom yakalayan `check_velocity()` tetikleyicisi devreye alındı (B6 çözüldü).
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (55/55 başarılı).
+
+### SEC-063 - Faz 17.5 & Aşama 5: GoTrue Auth Rate Limiting & Supabase CORS Mühürlemesi (PARSRAPOR V4 & V5)
+- Tarih: 2026-09-18
+- Kapsam: Supabase Dashboard yapılandırması, GoTrue Rate Limiting, CORS Allowlist, Cloudflare WAF.
+- Bulgu: PARS DevState tarafından 12 ardışık başarısız girişte HTTP 429 alınamaması (V4) ve REST/Storage API'larında varsayılan CORS `*` kuralının bulunması (V5).
+- Sertleştirme:
+  1. Supabase Dashboard -> Authentication -> Rate Limit: `GOTRUE_RATE_LIMIT_TOKEN=5`, `GOTRUE_RATE_LIMIT_DURATION=60` (IP başına 60 saniyede azami 5 deneme).
+  2. Supabase Dashboard -> API Settings -> Allowed Origins: `https://www.kistas.com.tr`, `https://kistas.com.tr`, `http://localhost:8081` (CORS `*` tamamen kaldırıldı).
+  3. Süper admin (`kistasdestek@gmail.com`) için Supabase Auth TOTP MFA zorunluluğu ve Cloudflare WAF `/auth/v1/*` hız aşım kuralı rehberliği mühürlendi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (56/56 başarılı). Fortress Sistem Sağlık Radarı (%100 / 100 A+) onaylandı.
+
+
+
+
+
+
+

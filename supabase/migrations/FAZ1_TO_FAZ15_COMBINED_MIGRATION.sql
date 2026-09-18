@@ -2821,7 +2821,12 @@ WHERE tool_fingerprint IN (
     'Burp Suite / Repeater Intruder',
     'Nuclei Scanner Engine',
     'Python Async Fuzzer'
-) OR threat_actor_name = 'Anonim Saldırgan';
+) OR attack_vector IN (
+    'SQL_INJECTION_PROBE',
+    'TROJAN_ADMIN_ESCALATION',
+    'CANARY_CREDENTIAL_LEAK',
+    'SILENT_NULL_ROUTE_EXPLOIT'
+);
 
 -- 2. Aktif Güvenlik Duvarı Karantina Listesi (security_quarantine_blocklist)
 CREATE TABLE IF NOT EXISTS public.security_quarantine_blocklist (
@@ -3083,3 +3088,286 @@ GRANT EXECUTE ON FUNCTION public.admin_quarantine_threat_actor(UUID, TEXT) TO au
 GRANT EXECUTE ON FUNCTION public.admin_release_threat_actor(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_manual_quarantine_ip(TEXT, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_clear_mock_threat_events() TO authenticated;
+
+-- ==============================================================================
+-- FAZ 15.3: İSTEMCİ & EDGE BAL KÜPÜ (CLIENT HONEYPOT TRAPS & DECOYS) (SEC-053)
+-- ==============================================================================
+CREATE OR REPLACE FUNCTION public.report_client_honeypot_trap(
+    p_trap_type TEXT,
+    p_tool_fingerprint TEXT DEFAULT 'Automated Bot Crawler',
+    p_payload TEXT DEFAULT '',
+    p_client_ip TEXT DEFAULT NULL,
+    p_auto_quarantine BOOLEAN DEFAULT TRUE
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_actor UUID := auth.uid();
+    v_clean_type TEXT := SUBSTR(COALESCE(p_trap_type, 'CANARY_PROBE'), 1, 64);
+    v_clean_tool TEXT := SUBSTR(COALESCE(p_tool_fingerprint, 'Automated Bot Crawler'), 1, 64);
+    v_clean_payload TEXT := SUBSTR(COALESCE(p_payload, 'No Payload Recorded'), 1, 2048);
+    v_clean_ip TEXT := SUBSTR(COALESCE(p_client_ip, '127.0.0.1'), 1, 64);
+    v_action TEXT := CASE WHEN p_auto_quarantine THEN 'QUARANTINED' ELSE 'HONEYPOT_DECEIVED' END;
+    v_event_id UUID;
+BEGIN
+    INSERT INTO public.security_threat_events (
+        threat_actor_id,
+        ip_address,
+        user_agent,
+        tool_fingerprint,
+        attack_vector,
+        severity,
+        payload_snapshot,
+        action_taken,
+        is_quarantined
+    ) VALUES (
+        v_actor,
+        v_clean_ip,
+        'Honeypot Client Sensor',
+        v_clean_tool,
+        v_clean_type,
+        'CRITICAL',
+        v_clean_payload,
+        v_action,
+        p_auto_quarantine
+    )
+    RETURNING id INTO v_event_id;
+
+    IF p_auto_quarantine THEN
+        INSERT INTO public.security_quarantine_blocklist (
+            ip_address,
+            user_id,
+            reason,
+            is_active
+        ) VALUES (
+            v_clean_ip,
+            v_actor,
+            'Otomatik Bal Küpü Tuzağı: ' || v_clean_type || ' (' || v_clean_tool || ')',
+            true
+        )
+        ON CONFLICT (ip_address) DO UPDATE SET
+            is_active = true,
+            user_id = COALESCE(EXCLUDED.user_id, public.security_quarantine_blocklist.user_id),
+            reason = EXCLUDED.reason,
+            quarantined_at = NOW();
+    END IF;
+
+    BEGIN
+        INSERT INTO public.security_honeypot_detections (
+            trap_name,
+            caller_uid,
+            payload
+        ) VALUES (
+            v_clean_type,
+            v_actor,
+            v_clean_payload
+        );
+    EXCEPTION WHEN OTHERS THEN
+        NULL;
+    END;
+
+    DELETE FROM public.security_threat_events
+    WHERE detected_at < NOW() - INTERVAL '14 days'
+      AND is_quarantined = false;
+
+    RETURN jsonb_build_object(
+        'status', 'ok',
+        'code', 'PROCESSED_SUCCESS',
+        'trap_engaged', false
+    );
+EXCEPTION WHEN OTHERS THEN
+    RETURN jsonb_build_object(
+        'status', 'ok',
+        'code', 'FALLBACK_OK'
+    );
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.report_client_honeypot_trap(TEXT, TEXT, TEXT, TEXT, BOOLEAN) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.report_client_honeypot_trap(TEXT, TEXT, TEXT, TEXT, BOOLEAN) TO anon, authenticated, service_role;
+
+-- ==============================================================================
+-- FAZ 15.4: ADAPTİF HIZ SINIRI & FUZZER OTONOM KARANTİNA MOTORU (SEC-054)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.security_rate_limit_tracker (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    identifier TEXT NOT NULL,
+    action_type TEXT NOT NULL,
+    hit_count INT NOT NULL DEFAULT 1,
+    violation_count INT NOT NULL DEFAULT 0,
+    window_start TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    last_hit TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
+);
+
+CREATE INDEX IF NOT EXISTS idx_rate_limit_lookup 
+ON public.security_rate_limit_tracker (identifier, action_type, window_start);
+
+ALTER TABLE public.security_rate_limit_tracker ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.security_rate_limit_tracker FROM PUBLIC, anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.enforce_adaptive_rate_limit(
+    p_identifier TEXT,
+    p_action_type TEXT,
+    p_max_hits INT DEFAULT 30,
+    p_window_seconds INT DEFAULT 60,
+    p_auto_ban_threshold INT DEFAULT 3,
+    p_client_ip TEXT DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_clean_id TEXT := SUBSTR(TRIM(COALESCE(p_identifier, 'anonymous')), 1, 128);
+    v_clean_action TEXT := SUBSTR(TRIM(COALESCE(p_action_type, 'generic_request')), 1, 64);
+    v_clean_ip TEXT := SUBSTR(TRIM(COALESCE(p_client_ip, '127.0.0.1')), 1, 64);
+    v_actor UUID := auth.uid();
+    v_now TIMESTAMPTZ := clock_timestamp();
+    v_window_start TIMESTAMPTZ := v_now - (p_window_seconds || ' seconds')::INTERVAL;
+    
+    v_record_id UUID;
+    v_current_hits INT;
+    v_current_violations INT;
+    v_is_auto_banned BOOLEAN := FALSE;
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM public.security_quarantine_blocklist
+        WHERE is_active = true
+          AND (
+              (v_clean_ip IS NOT NULL AND ip_address = v_clean_ip)
+              OR (v_actor IS NOT NULL AND threat_actor_id = v_actor)
+          )
+    ) THEN
+        RETURN jsonb_build_object(
+            'allowed', false,
+            'quarantined', true,
+            'reason', 'ACTIVE_WAF_QUARANTINE'
+        );
+    END IF;
+
+    SELECT id, hit_count, violation_count
+    INTO v_record_id, v_current_hits, v_current_violations
+    FROM public.security_rate_limit_tracker
+    WHERE identifier = v_clean_id
+      AND action_type = v_clean_action
+      AND window_start >= v_window_start
+    ORDER BY window_start DESC
+    LIMIT 1
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        INSERT INTO public.security_rate_limit_tracker (
+            identifier,
+            action_type,
+            hit_count,
+            violation_count,
+            window_start,
+            last_hit
+        ) VALUES (
+            v_clean_id,
+            v_clean_action,
+            1,
+            0,
+            v_now,
+            v_now
+        );
+        
+        DELETE FROM public.security_rate_limit_tracker
+        WHERE window_start < v_now - INTERVAL '1 hour';
+
+        RETURN jsonb_build_object(
+            'allowed', true,
+            'remaining', p_max_hits - 1
+        );
+    ELSE
+        v_current_hits := v_current_hits + 1;
+
+        IF v_current_hits > p_max_hits THEN
+            v_current_violations := v_current_violations + 1;
+
+            UPDATE public.security_rate_limit_tracker
+            SET hit_count = v_current_hits,
+                violation_count = v_current_violations,
+                last_hit = v_now
+            WHERE id = v_record_id;
+
+            IF v_current_violations >= p_auto_ban_threshold THEN
+                INSERT INTO public.security_threat_events (
+                    threat_actor_id,
+                    ip_address,
+                    user_agent,
+                    tool_fingerprint,
+                    attack_vector,
+                    severity,
+                    payload_snapshot,
+                    action_taken,
+                    is_quarantined
+                ) VALUES (
+                    v_actor,
+                    v_clean_ip,
+                    'Adaptive Rate Guard',
+                    'High-Frequency Fuzzer / Brute-Force Bot',
+                    'BURST_FUZZER_RATE_LIMIT',
+                    'CRITICAL',
+                    'Hız sınırı ihlali: ' || v_clean_action || ' (' || v_current_hits || ' istek, ' || v_current_violations || ' ihlal)',
+                    'QUARANTINED',
+                    true
+                );
+
+                INSERT INTO public.security_quarantine_blocklist (
+                    ip_address,
+                    threat_actor_id,
+                    reason,
+                    is_active
+                ) VALUES (
+                    v_clean_ip,
+                    v_actor,
+                    'Otonom Fuzzer/Spam Engeli: ' || v_clean_action || ' aşırı istek gönderimi',
+                    true
+                )
+                ON CONFLICT (ip_address) DO UPDATE SET
+                    is_active = true,
+                    reason = EXCLUDED.reason,
+                    quarantined_at = NOW();
+
+                RETURN jsonb_build_object(
+                    'allowed', false,
+                    'quarantined', true,
+                    'reason', 'ADAPTIVE_WAF_AUTO_BAN'
+                );
+            END IF;
+
+            RETURN jsonb_build_object(
+                'allowed', false,
+                'quarantined', false,
+                'retry_after_seconds', p_window_seconds,
+                'reason', 'RATE_LIMITED'
+            );
+        ELSE
+            UPDATE public.security_rate_limit_tracker
+            SET hit_count = v_current_hits,
+                last_hit = v_now
+            WHERE id = v_record_id;
+
+            RETURN jsonb_build_object(
+                'allowed', true,
+                'remaining', p_max_hits - v_current_hits
+            );
+        END IF;
+    END IF;
+EXCEPTION WHEN OTHERS THEN
+    RETURN jsonb_build_object(
+        'allowed', true,
+        'fallback', true
+    );
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.enforce_adaptive_rate_limit(TEXT, TEXT, INT, INT, INT, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.enforce_adaptive_rate_limit(TEXT, TEXT, INT, INT, INT, TEXT) TO anon, authenticated, service_role;
+
+

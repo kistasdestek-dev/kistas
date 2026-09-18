@@ -38,6 +38,11 @@ const HowItWorksScreen = React.lazy(() => import('./src/features/how-it-works/pr
 const FaqScreen = React.lazy(() => import('./src/features/faq/presentation/FaqScreen').then((module) => ({ default: module.FaqScreen })));
 const PrivacyPolicyScreen = React.lazy(() => import('./src/features/legal/presentation/PrivacyPolicyScreen').then((module) => ({ default: module.PrivacyPolicyScreen })));
 const BlogScreen = React.lazy(() => import('./src/features/blog/presentation/BlogScreen').then((module) => ({ default: module.BlogScreen })));
+const QuarantineBlockScreen = React.lazy(() => import('./src/features/security/presentation/QuarantineBlockScreen').then((module) => ({ default: module.QuarantineBlockScreen })));
+const SecurityTrustScreen = React.lazy(() => import('./src/features/security/presentation/SecurityTrustScreen').then((module) => ({ default: module.SecurityTrustScreen })));
+import { SecurityEnforcementService } from './src/features/security/application/SecurityEnforcementService';
+import { HoneypotTrapService } from './src/features/security/application/HoneypotTrapService';
+import { WebSecurityShieldService } from './src/features/security/application/WebSecurityShieldService';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -101,8 +106,30 @@ function AppContent() {
   const initialWebRoute = useMemo(() => parseWebRoute(), []);
 
   const [isLaunchVisible, setIsLaunchVisible] = useState(Platform.OS !== 'web');
+  const [isQuarantined, setIsQuarantined] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>(initialWebRoute.tab);
   const [discoverPreset, setDiscoverPreset] = useState<DiscoverPreset>({});
+
+  const checkQuarantine = useCallback(async (force = false) => {
+    try {
+      // Aşama 3: URL veya parametrelerdeki bal küpü tuzaklarını ve zararlı aramaları denetle
+      const trippedCanary = HoneypotTrapService.inspectUrlCanaryProbes();
+      if (trippedCanary) {
+        setIsQuarantined(true);
+        return;
+      }
+
+      const quarantined = await SecurityEnforcementService.checkClientQuarantineStatus(force);
+      setIsQuarantined(quarantined);
+    } catch {
+      // Ağ hatasında meşru oturumu engelleme (fail-open)
+    }
+  }, []);
+
+  useEffect(() => {
+    WebSecurityShieldService.initialize();
+    checkQuarantine();
+  }, [checkQuarantine, currentUser?.id]);
 
   // Alt ekran durumları
   const [selectedProject, setSelectedProject] = useState<Listing | null>(null);
@@ -122,6 +149,7 @@ function AppContent() {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(initialWebRoute.screen === 'how-it-works');
   const [isFaqOpen, setIsFaqOpen] = useState(initialWebRoute.screen === 'faq');
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(initialWebRoute.screen === 'privacy');
+  const [isSecurityOpen, setIsSecurityOpen] = useState(initialWebRoute.screen === 'security');
   const [analyticsConsent, setAnalyticsConsent] = useState<boolean | null>(readAnalyticsConsent);
   const [isBlogOpen, setIsBlogOpen] = useState(initialWebRoute.screen === 'blog');
   const [blogPostSlug, setBlogPostSlug] = useState<string | null>(initialWebRoute.blogSlug || null);
@@ -215,6 +243,7 @@ function AppContent() {
     if (isHowItWorksOpen) return applyPublicPageSeo('how-it-works');
     if (isFaqOpen) return applyPublicPageSeo('faq');
     if (isPrivacyOpen) return applyPublicPageSeo('privacy');
+    if (isSecurityOpen) return applyPublicPageSeo('security');
     if (isShowcaseOpen) return applyPublicPageSeo('showcase');
     if (isPopularOpen) return applyPublicPageSeo('popular');
     if (isNewOpen) return applyPublicPageSeo('new');
@@ -222,7 +251,7 @@ function AppContent() {
       return applyPrivatePageSeo();
     }
     return applyPublicPageSeo(activeTab === 'browse' ? 'browse' : 'home');
-  }, [activeTab, activeCategoryScreenId, isAboutOpen, isBlogOpen, isFaqOpen, isHowItWorksOpen, isPrivacyOpen, isShowcaseOpen, isPopularOpen, isNewOpen]);
+  }, [activeTab, activeCategoryScreenId, isAboutOpen, isBlogOpen, isFaqOpen, isHowItWorksOpen, isPrivacyOpen, isSecurityOpen, isShowcaseOpen, isPopularOpen, isNewOpen]);
 
   // SPA sayfalarını yalnızca isteğe bağlı analitik izni verildikten sonra ölç.
   useEffect(() => {
@@ -249,6 +278,9 @@ function AppContent() {
     } else if (isPrivacyOpen) {
       path = '/gizlilik-politikasi';
       title = 'Gizlilik Politikası · Kıstas';
+    } else if (isSecurityOpen) {
+      path = '/security';
+      title = 'Siber Güvenlik ve Şeffaflık · Kıstas';
     } else if (activeCategoryScreenId) {
       path = `/category/${activeCategoryScreenId}`;
       title = 'Kategori · Kıstas';
@@ -300,6 +332,7 @@ function AppContent() {
     isFaqOpen,
     isAboutOpen,
     isPrivacyOpen,
+    isSecurityOpen,
     activeCategoryScreenId,
     isShowcaseOpen,
     isPopularOpen,
@@ -658,10 +691,22 @@ function AppContent() {
       } else if (route.screen === 'privacy') {
         setIsShowcaseOpen(false);
         setIsPrivacyOpen(true);
+        setIsSecurityOpen(false);
         setIsAboutOpen(false);
         setIsBlogOpen(false);
         setBlogPostSlug(null);
         setIsHowItWorksOpen(false);
+        setActiveCategoryScreenId(null);
+        setSelectedProject(null);
+      } else if (route.screen === 'security') {
+        setIsShowcaseOpen(false);
+        setIsSecurityOpen(true);
+        setIsPrivacyOpen(false);
+        setIsAboutOpen(false);
+        setIsBlogOpen(false);
+        setBlogPostSlug(null);
+        setIsHowItWorksOpen(false);
+        setIsFaqOpen(false);
         setActiveCategoryScreenId(null);
         setSelectedProject(null);
       } else if (route.screen === 'category' && route.categoryId) {
@@ -772,6 +817,8 @@ function AppContent() {
       targetPath = '/sss/';
     } else if (isPrivacyOpen) {
       targetPath = '/privacy/';
+    } else if (isSecurityOpen) {
+      targetPath = '/security/';
     } else if (activeCategoryScreenId) {
       targetPath = `/category/${encodeURIComponent(activeCategoryScreenId)}`;
     } else if (isShowcaseOpen) {
@@ -809,15 +856,16 @@ function AppContent() {
     } catch {
       window.location.assign(targetPath);
     }
-  }, [activeTab, isBlogOpen, blogPostSlug, isAboutOpen, isFaqOpen, isHowItWorksOpen, isPrivacyOpen, activeCategoryScreenId, isShowcaseOpen, showcaseFilters, isPopularOpen, isNewOpen, curatedFilters, isPasswordRecovery]);
+  }, [activeTab, isBlogOpen, blogPostSlug, isAboutOpen, isFaqOpen, isHowItWorksOpen, isPrivacyOpen, isSecurityOpen, activeCategoryScreenId, isShowcaseOpen, showcaseFilters, isPopularOpen, isNewOpen, curatedFilters, isPasswordRecovery]);
 
   const handleTabChange = useCallback((tab: TabKey) => {
-    const wasStandalonePageOpen = isAboutOpen || isFaqOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || isPopularOpen || isNewOpen || Boolean(activeCategoryScreenId);
+    const wasStandalonePageOpen = isAboutOpen || isFaqOpen || isPrivacyOpen || isSecurityOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || isPopularOpen || isNewOpen || Boolean(activeCategoryScreenId);
     if (isShowcaseOpen) setIsShowcaseOpen(false);
     if (isPopularOpen) setIsPopularOpen(false);
     if (isNewOpen) setIsNewOpen(false);
     if (isAboutOpen) setIsAboutOpen(false);
     if (isPrivacyOpen) setIsPrivacyOpen(false);
+    if (isSecurityOpen) setIsSecurityOpen(false);
     if (isHowItWorksOpen) setIsHowItWorksOpen(false);
     if (isFaqOpen) setIsFaqOpen(false);
     if (isBlogOpen) {
@@ -853,7 +901,7 @@ function AppContent() {
         platform: 'all',
       });
     }
-  }, [activeCategoryScreenId, activeTab, currentUser, isAboutOpen, isBlogOpen, isFaqOpen, isHowItWorksOpen, isPrivacyOpen, isShowcaseOpen, updateNavCompact]);
+  }, [activeCategoryScreenId, activeTab, currentUser, isAboutOpen, isBlogOpen, isFaqOpen, isHowItWorksOpen, isPrivacyOpen, isSecurityOpen, isShowcaseOpen, updateNavCompact]);
 
   const handleOpenAbout = useCallback(() => {
     lastScrollOffsetRef.current = 0;
@@ -864,6 +912,7 @@ function AppContent() {
     setIsFaqOpen(false);
     setIsHowItWorksOpen(false);
     setIsPrivacyOpen(false);
+    setIsSecurityOpen(false);
     setIsBlogOpen(false);
     setBlogPostSlug(null);
   }, [updateNavCompact]);
@@ -877,6 +926,7 @@ function AppContent() {
     setIsFaqOpen(false);
     setIsHowItWorksOpen(true);
     setIsPrivacyOpen(false);
+    setIsSecurityOpen(false);
     setIsBlogOpen(false);
     setBlogPostSlug(null);
   }, [updateNavCompact]);
@@ -890,6 +940,21 @@ function AppContent() {
     setIsFaqOpen(false);
     setIsHowItWorksOpen(false);
     setIsPrivacyOpen(true);
+    setIsSecurityOpen(false);
+    setIsBlogOpen(false);
+    setBlogPostSlug(null);
+  }, [updateNavCompact]);
+
+  const handleOpenSecurity = useCallback(() => {
+    lastScrollOffsetRef.current = 0;
+    scrollDirectionRef.current = null;
+    scrollDirectionDistanceRef.current = 0;
+    updateNavCompact(false);
+    setIsAboutOpen(false);
+    setIsFaqOpen(false);
+    setIsHowItWorksOpen(false);
+    setIsPrivacyOpen(false);
+    setIsSecurityOpen(true);
     setIsBlogOpen(false);
     setBlogPostSlug(null);
   }, [updateNavCompact]);
@@ -898,6 +963,8 @@ function AppContent() {
     setIsAboutOpen(false);
     setIsFaqOpen(false);
     setIsHowItWorksOpen(false);
+    setIsPrivacyOpen(false);
+    setIsSecurityOpen(false);
     setIsBlogOpen(false);
     setBlogPostSlug(null);
     setSelectedProject(null);
@@ -1015,6 +1082,18 @@ function AppContent() {
     isNewOpen,
   ].join(':');
 
+  if (isQuarantined) {
+    return (
+      <React.Suspense fallback={<View style={styles.flexOne} />}>
+        <QuarantineBlockScreen
+          onRetry={async () => {
+            await checkQuarantine(true);
+          }}
+        />
+      </React.Suspense>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar
@@ -1116,6 +1195,17 @@ function AppContent() {
               saveAnalyticsConsent(null);
               setAnalyticsConsent(null);
             }}
+          />
+        ) : isSecurityOpen ? (
+          <SecurityTrustScreen
+            onBack={() => setIsSecurityOpen(false)}
+            onExplore={handleAboutExplore}
+            onOpenAbout={handleOpenAbout}
+            onOpenPrivacy={handleOpenPrivacy}
+            onOpenFaq={handleOpenFaq}
+            onOpenHowItWorks={handleOpenHowItWorks}
+            onOpenBlog={handleOpenBlog}
+            onOpenSecurity={handleOpenSecurity}
           />
         ) : isFaqOpen ? (
           <FaqScreen

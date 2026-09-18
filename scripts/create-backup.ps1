@@ -27,6 +27,7 @@ $itemsToCopy = @(
     "supabase",
     "docs",
     "scripts",
+    "PARSRAPOR",
     "App.tsx",
     "index.ts",
     "package.json",

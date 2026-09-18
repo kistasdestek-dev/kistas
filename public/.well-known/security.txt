@@ -1,0 +1,16 @@
+# Kıstas Siber Güvenlik ve Sorumlu Açıklama Protokolü (RFC 9116)
+# Canonical URL: https://www.kistas.com.tr/.well-known/security.txt
+
+Contact: mailto:kistasdestek@gmail.com
+Expires: 2027-12-31T23:59:59.000Z
+Preferred-Languages: tr, en
+Canonical: https://www.kistas.com.tr/.well-known/security.txt
+Policy: https://www.kistas.com.tr/security
+Acknowledgments: https://www.kistas.com.tr/security
+Hiring: https://www.kistas.com.tr/about
+
+# Sorumlu Bildirim İlkeleri (Vulnerability Disclosure Policy):
+# - Hizmet sürekliliğini aksatacak DoS/DDoS saldırılarından kaçının.
+# - Kullanıcı gizliliğini ihlal eden veri sızdırma girişimlerinde bulunmayın.
+# - Pars DevState ve Sayra Siber Savunma Kalkanı teyakkuzundadır; tespit ettiğiniz
+#   zafiyetleri lütfen ivedilikle kistasdestek@gmail.com adresine raporlayın.

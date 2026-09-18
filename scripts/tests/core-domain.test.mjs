@@ -803,6 +803,337 @@ runTest('FAZ 15.2: Aktif WAF karantina tablosu, manuel engelleme ve sıfır saht
   assert.match(adminService, /clearMockThreatEvents/i, 'AdminService.clearMockThreatEvents eksik!');
 });
 
+runTest('AŞAMA 1: İstemci & Edge Karantina Kapısı (Active WAF Client Guard) doğrulanmalı', () => {
+  const securityServicePath = path.join(
+    ROOT,
+    'src',
+    'features',
+    'security',
+    'application',
+    'SecurityEnforcementService.ts'
+  );
+  assert.strictEqual(fs.existsSync(securityServicePath), true, 'SecurityEnforcementService.ts eksik!');
+  const serviceContent = fs.readFileSync(securityServicePath, 'utf8');
+  assert.match(serviceContent, /checkClientQuarantineStatus/i, 'checkClientQuarantineStatus metodu eksik!');
+  assert.match(serviceContent, /check_is_quarantined/i, 'check_is_quarantined RPC çağrısı eksik!');
+
+  const quarantineScreenPath = path.join(
+    ROOT,
+    'src',
+    'features',
+    'security',
+    'presentation',
+    'QuarantineBlockScreen.tsx'
+  );
+  assert.strictEqual(fs.existsSync(quarantineScreenPath), true, 'QuarantineBlockScreen.tsx eksik!');
+  const screenContent = fs.readFileSync(quarantineScreenPath, 'utf8');
+  assert.match(screenContent, /Kıstas WAF Güvenlik Duvarı/i, 'QuarantineBlockScreen başlığı eksik!');
+  assert.match(screenContent, /Karantina Durumu: AKTİF/i, 'Karantina durum rozeti eksik!');
+
+  const appSource = fs.readFileSync(path.join(ROOT, 'App.tsx'), 'utf8');
+  assert.match(appSource, /isQuarantined/i, 'App.tsx isQuarantined durumu eksik!');
+  assert.match(appSource, /QuarantineBlockScreen/i, 'App.tsx QuarantineBlockScreen entegrasyonu eksik!');
+  assert.match(appSource, /SecurityEnforcementService/i, 'App.tsx SecurityEnforcementService entegrasyonu eksik!');
+});
+
+runTest('AŞAMA 2: Yönetim Panelinde Aktif Bloklistesi Yöneticisi (WAF Blocklist Manager) doğrulanmalı', () => {
+  const threatViewPath = path.join(
+    ROOT,
+    'src',
+    'features',
+    'admin',
+    'presentation',
+    'ThreatIntelligenceView.tsx'
+  );
+  assert.strictEqual(fs.existsSync(threatViewPath), true, 'ThreatIntelligenceView.tsx eksik!');
+  const threatViewContent = fs.readFileSync(threatViewPath, 'utf8');
+
+  // Görünüm Modu Seçicisi (Canlı Akış vs WAF Bloklistesi)
+  assert.match(threatViewContent, /viewModeContainer/i, 'Görünüm modu seçici konteyneri eksik!');
+  assert.match(threatViewContent, /WAF Bloklistesi/i, 'WAF Bloklistesi sekmesi eksik!');
+  assert.match(threatViewContent, /Canlı Tehdit Akışı/i, 'Canlı Tehdit Akışı sekmesi eksik!');
+
+  // Arama ve Filtreleme
+  assert.match(threatViewContent, /blocklistSearch/i, 'Bloklistesi arama çubuğu ve filtresi eksik!');
+  assert.match(threatViewContent, /quarantinedEvents/i, 'Karantinaya alınmış olay filtreleme mekanizması eksik!');
+
+  // IP Kopyalama ve Aksiyonlar
+  assert.match(threatViewContent, /handleCopyIp/i, 'IP panoya kopyalama aksiyonu eksik!');
+  assert.match(threatViewContent, /Engeli Kaldır \(WAF\)/i, 'Tek tıkla WAF engeli kaldırma butonu eksik!');
+  assert.match(threatViewContent, /SecurityEnforcementService\.clearCache\(\)/i, 'Karantina durum değişiminde istemci önbellek sıfırlaması eksik!');
+});
+
+runTest('AŞAMA 3: İstemci & Edge Bal Küpü Tuzakları (Honeypot Traps & Canary Decoys) doğrulanmalı', () => {
+  const migrationPath = path.join(
+    ROOT,
+    'supabase',
+    'migrations',
+    '20260917000020_faz15_client_honeypot_traps.sql'
+  );
+  assert.strictEqual(fs.existsSync(migrationPath), true, 'Faz 15.3 honeypot migration dosyası eksik!');
+  const sql = fs.readFileSync(migrationPath, 'utf8');
+  assert.match(sql, /report_client_honeypot_trap/i, 'report_client_honeypot_trap RPC eksik!');
+  assert.match(sql, /SECURITY DEFINER[\s\S]*SET search_path = public, pg_temp/i, 'Honeypot RPC search_path güvenliği eksik!');
+  assert.match(sql, /GRANT EXECUTE ON FUNCTION public\.report_client_honeypot_trap[\s\S]*anon, authenticated/i, 'Honeypot RPC istemci rollerine açık değil!');
+
+  const honeypotServicePath = path.join(
+    ROOT,
+    'src',
+    'features',
+    'security',
+    'application',
+    'HoneypotTrapService.ts'
+  );
+  assert.strictEqual(fs.existsSync(honeypotServicePath), true, 'HoneypotTrapService.ts eksik!');
+  const serviceContent = fs.readFileSync(honeypotServicePath, 'utf8');
+  assert.match(serviceContent, /triggerHoneypotTrap/i, 'triggerHoneypotTrap metodu eksik!');
+  assert.match(serviceContent, /inspectUrlCanaryProbes/i, 'inspectUrlCanaryProbes metodu eksik!');
+  assert.match(serviceContent, /verifyHoneypotField/i, 'verifyHoneypotField metodu eksik!');
+
+  const decoyFieldPath = path.join(
+    ROOT,
+    'src',
+    'features',
+    'security',
+    'presentation',
+    'HoneypotDecoyField.tsx'
+  );
+  assert.strictEqual(fs.existsSync(decoyFieldPath), true, 'HoneypotDecoyField.tsx bileşeni eksik!');
+  const decoyContent = fs.readFileSync(decoyFieldPath, 'utf8');
+  assert.match(decoyContent, /decoyContainer/i, 'decoyContainer stili eksik!');
+  assert.match(decoyContent, /accessibilityElementsHidden/i, 'Ekran okuyucu gizleme özelliği eksik!');
+
+  const appContent = fs.readFileSync(path.join(ROOT, 'App.tsx'), 'utf8');
+  assert.match(appContent, /HoneypotTrapService\.inspectUrlCanaryProbes\(\)/i, 'App.tsx honeypot URL tarama kontrolü eksik!');
+
+  const authContent = fs.readFileSync(path.join(ROOT, 'src', 'features', 'auth', 'presentation', 'AuthExperience.tsx'), 'utf8');
+  assert.match(authContent, /HoneypotDecoyField/i, 'AuthExperience içinde HoneypotDecoyField eksik!');
+  assert.match(authContent, /HoneypotTrapService\.verifyHoneypotField/i, 'AuthExperience form gönderiminde honeypot doğrulaması eksik!');
+});
+
+runTest('AŞAMA 4: Adaptif Hız Sınırı ve Fuzzer Savunması (Adaptive Rate Limiting & Auto-Ban) doğrulanmalı', () => {
+  const migrationPath = path.join(
+    ROOT,
+    'supabase',
+    'migrations',
+    '20260917000021_faz15_adaptive_rate_limiting_and_auto_ban.sql'
+  );
+  assert.strictEqual(fs.existsSync(migrationPath), true, 'Faz 15.4 adaptive rate limit migration dosyası eksik!');
+  const sql = fs.readFileSync(migrationPath, 'utf8');
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.security_rate_limit_tracker/i, 'security_rate_limit_tracker tablosu eksik!');
+  assert.match(sql, /enforce_adaptive_rate_limit/i, 'enforce_adaptive_rate_limit RPC eksik!');
+  assert.match(sql, /BURST_FUZZER_RATE_LIMIT/i, 'BURST_FUZZER_RATE_LIMIT saldırı vektörü eksik!');
+  assert.match(sql, /p_auto_ban_threshold/i, 'Otomatik karantina eşiği parametresi eksik!');
+  assert.match(sql, /ADAPTIVE_WAF_AUTO_BAN/i, 'Otonom ban dönüş gerekçesi eksik!');
+  assert.match(sql, /GRANT EXECUTE ON FUNCTION public\.enforce_adaptive_rate_limit[\s\S]*anon, authenticated/i, 'enforce_adaptive_rate_limit istemci rollerine açık değil!');
+
+  const rateGuardPath = path.join(
+    ROOT,
+    'src',
+    'features',
+    'security',
+    'application',
+    'RateLimitGuardService.ts'
+  );
+  assert.strictEqual(fs.existsSync(rateGuardPath), true, 'RateLimitGuardService.ts eksik!');
+  const serviceContent = fs.readFileSync(rateGuardPath, 'utf8');
+  assert.match(serviceContent, /checkClientBurst/i, 'checkClientBurst metodu eksik!');
+  assert.match(serviceContent, /enforceServerRateLimit/i, 'enforceServerRateLimit metodu eksik!');
+  assert.match(serviceContent, /RAPID_BURST_FLOOD/i, 'RAPID_BURST_FLOOD tuzak tipi eksik!');
+});
+
+runTest('FAZ 16 AŞAMA 1: Web Çalışma Zamanı Kalkanı & İstemci Anti-Tamper Savunması (WebSecurityShieldService) doğrulanmalı', () => {
+  const shieldPath = path.join(
+    ROOT,
+    'src',
+    'features',
+    'security',
+    'application',
+    'WebSecurityShieldService.ts'
+  );
+  assert.strictEqual(fs.existsSync(shieldPath), true, 'WebSecurityShieldService.ts eksik!');
+  const serviceContent = fs.readFileSync(shieldPath, 'utf8');
+
+  assert.match(serviceContent, /enforceAntiClickjacking/i, 'enforceAntiClickjacking metodu eksik!');
+  assert.match(serviceContent, /CLICKJACKING_IFRAME_EMBED/i, 'CLICKJACKING_IFRAME_EMBED tuzak tipi eksik!');
+  assert.match(serviceContent, /displayConsoleSecurityBanner/i, 'displayConsoleSecurityBanner metodu eksik!');
+  assert.match(serviceContent, /protectPrototypeIntegrity/i, 'protectPrototypeIntegrity metodu eksik!');
+  assert.match(serviceContent, /inspectInputPayload/i, 'inspectInputPayload metodu eksik!');
+
+  const appContent = fs.readFileSync(path.join(ROOT, 'App.tsx'), 'utf8');
+  assert.match(appContent, /WebSecurityShieldService\.initialize\(\)/i, 'App.tsx WebSecurityShieldService başlatması eksik!');
+
+  const searchBarContent = fs.readFileSync(
+    path.join(ROOT, 'src', 'shared', 'components', 'ActionSearchBar.tsx'),
+    'utf8'
+  );
+  assert.match(searchBarContent, /WebSecurityShieldService\.inspectInputPayload/i, 'ActionSearchBar içinde WebSecurityShieldService entegrasyonu eksik!');
+
+  // Canlı regex kural mantığını test et
+  const xssRegex = /<script[\s>]|javascript:|onerror\s*=|onload\s*=|onclick\s*=|document\.cookie|window\.location|<iframe[\s>]|<img[^>]+src=[^>]+onerror/i;
+  const sqliRegex = /\bunion\s+(?:all\s+)?select\b|(?:\b\d*'?\s*or\s+['"]?\w+['"]?\s*=\s*['"]?\w+['"]?)|--\s*$|\bdrop\s+table\b|\bexec\s*\(|\bxp_/i;
+  const pathRegex = /\.\.\/\.\.\/|\/etc\/passwd|windows\/system32/i;
+
+  const isSafe = (input) => !xssRegex.test(input) && !sqliRegex.test(input) && !pathRegex.test(input);
+
+  assert.strictEqual(isSafe('Harika bir yapay zeka SaaS projesi'), true, 'Meşru metin yanlışlıkla engellendi!');
+  assert.strictEqual(isSafe('Kıstas 2026 versiyonu'), true, 'Meşru metin engellendi!');
+
+  assert.strictEqual(isSafe('<script>alert("XSS")</script>'), false, 'XSS script etiketi yakalanamadı!');
+  assert.strictEqual(isSafe('<img src="x" onerror="stealCookie()">'), false, 'XSS onerror vektörü yakalanamadı!');
+  assert.strictEqual(isSafe('javascript:alert(1)'), false, 'javascript URI şeması yakalanamadı!');
+  assert.strictEqual(isSafe("1' or '1'='1"), false, 'SQLi or 1=1 bypass yakalanamadı!');
+  assert.strictEqual(isSafe("' UNION SELECT * FROM users--"), false, 'SQLi UNION SELECT yakalanamadı!');
+  assert.strictEqual(isSafe('../../etc/passwd'), false, 'Path traversal yakalanamadı!');
+});
+
+
+
+
+runTest('FAZ 16 AŞAMA 2: RFC 9116 Standart Güvenlik Beyanı (security.txt) ve HTTP Ağ Başlıkları doğrulanmalı', () => {
+  const wellKnownPath = path.join(ROOT, 'public', '.well-known', 'security.txt');
+  const fallbackPath = path.join(ROOT, 'public', 'security.txt');
+  assert.strictEqual(fs.existsSync(wellKnownPath), true, 'public/.well-known/security.txt eksik!');
+  assert.strictEqual(fs.existsSync(fallbackPath), true, 'public/security.txt geri uyumluluk dosyası eksik!');
+
+  const securityTxtContent = fs.readFileSync(wellKnownPath, 'utf8');
+  assert.match(securityTxtContent, /^Contact:\s*mailto:/m, 'RFC 9116 Contact alanı eksik!');
+  assert.match(securityTxtContent, /^Expires:\s*\d{4}-\d{2}-\d{2}/m, 'RFC 9116 Expires son geçerlilik tarihi eksik!');
+  assert.match(securityTxtContent, /^Canonical:\s*https:\/\/www\.kistas\.com\.tr\/\.well-known\/security\.txt/m, 'RFC 9116 Canonical URL eksik!');
+  assert.match(securityTxtContent, /^Preferred-Languages:\s*tr,\s*en/m, 'RFC 9116 Preferred-Languages alanı eksik!');
+  assert.match(securityTxtContent, /^Policy:\s*https:\/\/www\.kistas\.com\.tr\/security/m, 'RFC 9116 Policy URL eksik!');
+
+  const headersPath = path.join(ROOT, 'public', '_headers');
+  assert.strictEqual(fs.existsSync(headersPath), true, 'public/_headers dosyası eksik!');
+  const headersContent = fs.readFileSync(headersPath, 'utf8');
+
+  assert.match(headersContent, /\/\.well-known\/security\.txt[\s\S]*Content-Type:\s*text\/plain;\s*charset=utf-8/i, 'security.txt için text/plain başlığı eksik!');
+  assert.match(headersContent, /X-Content-Type-Options:\s*nosniff/i, 'nosniff başlığı eksik!');
+  assert.match(headersContent, /X-Frame-Options:\s*DENY/i, 'X-Frame-Options DENY başlığı eksik!');
+  assert.match(headersContent, /Strict-Transport-Security:\s*max-age=\d+;\s*includeSubDomains;\s*preload/i, 'HSTS preload başlığı eksik!');
+  assert.match(headersContent, /Permissions-Policy:[\s\S]*camera=\(\)[\s\S]*microphone=\(\)[\s\S]*payment=\(\)[\s\S]*usb=\(\)/i, 'Sertleştirilmiş Permissions-Policy eksik!');
+});
+
+runTest('FAZ 16 AŞAMA 3: Kıstas Güvenlik & Şeffaflık Portalı (SecurityTrustScreen), Web Yönlendirme ve Sayfa İçi Siber Kalkan Entegrasyonu doğrulanmalı', () => {
+  const webScreenPath = path.join(ROOT, 'src', 'features', 'security', 'presentation', 'SecurityTrustScreen.web.tsx');
+  const nativeScreenPath = path.join(ROOT, 'src', 'features', 'security', 'presentation', 'SecurityTrustScreen.tsx');
+  assert.strictEqual(fs.existsSync(webScreenPath), true, 'SecurityTrustScreen.web.tsx eksik!');
+  assert.strictEqual(fs.existsSync(nativeScreenPath), true, 'SecurityTrustScreen.tsx eksik!');
+
+  const webScreenContent = fs.readFileSync(webScreenPath, 'utf8');
+  assert.match(webScreenContent, /WebSecurityShieldService\.inspectInputPayload/i, 'VDP formunda canlı zararlı girdi denetimi eksik!');
+  assert.match(webScreenContent, /HoneypotTrapService\.triggerHoneypotTrap/i, 'VDP bildirim istihbarat kaydı eksik!');
+  assert.match(webScreenContent, /VULNERABILITY_DISCLOSURE_REPORT/i, 'VDP raporu tuzak/istihbarat tipi eksik!');
+  assert.match(webScreenContent, /autoQuarantine:\s*false/i, 'Meşru güvenlik araştırmacısı için autoQuarantine false kuralı eksik!');
+  assert.match(webScreenContent, /\/\.well-known\/security\.txt/i, 'RFC 9116 güvenlik bildirimi bağlantısı eksik!');
+
+  const nativeScreenContent = fs.readFileSync(nativeScreenPath, 'utf8');
+  assert.match(nativeScreenContent, /GlassIconButton/i, 'Mobil ekranda Kıstas GlassIconButton bileşeni eksik!');
+  assert.match(nativeScreenContent, /theme\.typography\.kistas/i, 'Mobil ekranda Kıstas tipografisi eksik!');
+
+  const webRoutingContent = fs.readFileSync(
+    path.join(ROOT, 'src', 'core', 'navigation', 'webRouting.ts'),
+    'utf8'
+  );
+  assert.match(webRoutingContent, /screen === 'security'/i, 'webRouting içinde security ekran kontrolü eksik!');
+  assert.match(webRoutingContent, /route\.screen === 'security'[\s\S]*\/security\//i, 'webRouting /security path üretimi eksik!');
+  assert.match(webRoutingContent, /primary === 'security' \|\| primary === 'guvenlik'/i, 'webRouting /security ve /guvenlik parse eşleşmesi eksik!');
+
+  const seoHelperContent = fs.readFileSync(
+    path.join(ROOT, 'src', 'core', 'seo', 'WebSeoHelper.web.ts'),
+    'utf8'
+  );
+  assert.match(seoHelperContent, /security:[\s\S]*Güvenlik/i, 'Web SEO başlıklarında security sayfası tanımı eksik!');
+
+  const footerContent = fs.readFileSync(
+    path.join(ROOT, 'src', 'shared', 'components', 'CinematicFooter.web.tsx'),
+    'utf8'
+  );
+  assert.match(footerContent, /onOpenSecurity\s*\?\s*\[\{\s*title:\s*'Güvenlik & Şeffaflık'/i, 'CinematicFooter içinde Güvenlik & Şeffaflık bağlantısı eksik!');
+});
+
+runTest('FAZ 16 AŞAMA 4: Yönetim Paneli Tehdit İstihbaratında VDP (Zafiyet Bildirimleri) ve Web Siber Kalkanı Telemetrisi doğrulanmalı', () => {
+  const threatViewPath = path.join(ROOT, 'src', 'features', 'admin', 'presentation', 'ThreatIntelligenceView.tsx');
+  assert.strictEqual(fs.existsSync(threatViewPath), true, 'ThreatIntelligenceView.tsx eksik!');
+
+  const threatViewContent = fs.readFileSync(threatViewPath, 'utf8');
+  assert.match(threatViewContent, /viewMode === 'vdp'/i, 'ThreatIntelligenceView içinde vdp görünüm modu eksik!');
+  assert.match(threatViewContent, /VDP Bildirimleri/i, 'Segmented bar üzerinde VDP sekmesi eksik!');
+  assert.match(threatViewContent, /vdpEvents/i, 'VDP bildirim filtre hesaplaması eksik!');
+  assert.match(threatViewContent, /parseVdpPayload/i, 'Araştırmacı rapor ayrıştırıcı fonksiyonu eksik!');
+  assert.match(threatViewContent, /handleCopyEmail/i, 'Araştırmacı e-postası kopyalama aksiyonu eksik!');
+  assert.match(threatViewContent, /handleMailResearcher/i, 'Araştırmacıya doğrudan e-posta yanıtlama fonksiyonu eksik!');
+  assert.match(threatViewContent, /CLICKJACKING_IFRAME_EMBED/i, 'Web anti-clickjacking telemetri rozeti eksik!');
+  assert.match(threatViewContent, /DOM_XSS_SQLI_INJECTION/i, 'Web canlı girdi ve payload telemetri rozeti eksik!');
+  assert.match(threatViewContent, /VULNERABILITY_DISCLOSURE_REPORT/i, 'Sorumlu zafiyet bildirimi telemetri rozeti eksik!');
+  assert.match(threatViewContent, /vdpCard/i, 'VDP kart stili eksik!');
+});
+
+runTest('FAZ 17 AŞAMA 1: Onboarding & Kayıt Kurtarma (PARSRAPOR V9 & SEC-003) doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', '20260918000001_faz17_repair_onboarding_and_brand_guard.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Faz 17 Aşama 1 migration dosyası eksik!');
+  const migContent = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(migContent, /auth\.role\(\)\s*=\s*'service_role'/i, 'check_profile_brand_name içinde service_role muafiyeti eksik!');
+  assert.match(migContent, /Topluluk Üyesi/i, 'handle_new_user içinde Topluluk Üyesi varsayılan ismi eksik!');
+  assert.match(migContent, /profiles_insert_own/i, 'profiles_insert_own politikası eksik!');
+  assert.match(migContent, /profiles_update_own/i, 'profiles_update_own politikası eksik!');
+
+  const authServicePath = path.join(ROOT, 'src', 'features', 'auth', 'application', 'AuthService.ts');
+  const authServiceContent = fs.readFileSync(authServicePath, 'utf8');
+  assert.match(authServiceContent, /full_name:\s*fullName\.trim\(\)\s*\|\|\s*'Topluluk Üyesi'/i, 'AuthService upsert içinde Topluluk Üyesi fallback eksik!');
+  assert.match(authServiceContent, /fallbackName\s*=[\s\S]*'Topluluk Üyesi'/i, 'AuthService getCurrentProfile içinde Topluluk Üyesi fallback eksik!');
+  assert.doesNotMatch(authServiceContent, /full_name:\s*fullName\.trim\(\)\s*\|\|\s*'Kıstas Üyesi'/i, 'AuthService içinde yasaklı Kıstas Üyesi fallback kaldı!');
+});
+
+runTest('FAZ 17 AŞAMA 2: Depolama (Storage) İzolasyonu & 7 Adet Foothold/Probe Dosyasının İmhası (PARSRAPOR V2) doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', '20260918000002_faz17_storage_foothold_cleanup_and_hardening.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Faz 17 Aşama 2 migration dosyası eksik!');
+  const migContent = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(migContent, /object_write_authenticated/i, 'storage.objects authenticated write politikası eksik!');
+  assert.match(migContent, /object_delete_owner/i, 'storage.objects owner delete politikası eksik!');
+  assert.match(migContent, /DELETE FROM storage\.objects/i, 'Foothold dosyalarını silen SQL bloğu eksik!');
+  assert.match(migContent, /pars_foothold_beacon\.png/i, 'pars_foothold_beacon.png imha listesinde eksik!');
+  assert.match(migContent, /hardening_probe_1789681500\.png/i, 'hardening_probe_1789681500.png imha listesinde eksik!');
+});
+
+runTest('FAZ 17 AŞAMA 3: Profil PII İzolasyonu & profiles_public Güvenli Görünümü (PARSRAPOR V1 & V1r) doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', '20260918000003_faz17_profiles_public_view_and_pii_isolation.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Faz 17 Aşama 3 migration dosyası eksik!');
+  const migContent = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(migContent, /REVOKE ALL ON TABLE public\.profiles FROM anon,\s*public/i, 'profiles tablosunun anon rolden arındırılması eksik!');
+  assert.match(migContent, /CREATE OR REPLACE VIEW public\.profiles_public/i, 'profiles_public VIEW tanımı eksik!');
+  assert.match(migContent, /GRANT SELECT ON public\.profiles_public TO anon,\s*authenticated/i, 'profiles_public okuma izinleri eksik!');
+  assert.match(migContent, /ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon/i, 'Default-deny kuralı eksik!');
+  assert.match(migContent, /profiles_select_own/i, 'profiles_select_own RLS politikası eksik!');
+});
+
+runTest('FAZ 17 AŞAMA 4: Banka Düzeyi Finansal Bütünlük, B5 Self-Destruct Onarımı & Kriptografik Denetim Zinciri (B3, B4, B5, B6) doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', '20260918000004_faz17_bank_grade_financial_integrity_and_audit.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Faz 17 Aşama 4 migration dosyası eksik!');
+  const migContent = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(migContent, /guard_financial_columns/i, 'guard_financial_columns fonksiyonu eksik!');
+  assert.match(migContent, /FORBIDDEN: financial\/verification fields are admin-only/i, 'Finansal alan koruma hatası (B5 self-destruct çözümü) eksik!');
+  assert.match(migContent, /financial_audit/i, 'financial_audit denetim tablosu eksik!');
+  assert.match(migContent, /_audit_hash/i, '_audit_hash SHA-256 hash-chaining fonksiyonu eksik!');
+  assert.match(migContent, /chk_no_negative_balance/i, 'chk_no_negative_balance eksi bakiye kontrolü eksik!');
+  assert.match(migContent, /anomaly_events/i, 'anomaly_events anomali tablosu eksik!');
+  assert.match(migContent, /check_velocity/i, 'check_velocity hız takip tetikleyicisi eksik!');
+});
+
+runTest('FAZ 17 AŞAMA 5: PARS DevState Raporu ve Banka Düzeyi Dokümantasyon Entegrasyonu doğrulanmalı', () => {
+  const roadmapPath = path.join(ROOT, 'docs', 'SECURITY_ROADMAP.md');
+  const roadmapContent = fs.readFileSync(roadmapPath, 'utf8');
+
+  assert.match(roadmapContent, /### SEC-059/i, 'SEC-059 Onboarding & Kayıt Kurtarma maddesi eksik!');
+  assert.match(roadmapContent, /### SEC-060/i, 'SEC-060 Depolama İzolasyonu & Foothold İmhası maddesi eksik!');
+  assert.match(roadmapContent, /### SEC-061/i, 'SEC-061 Profil PII İzolasyonu & profiles_public maddesi eksik!');
+  assert.match(roadmapContent, /### SEC-062/i, 'SEC-062 Banka Düzeyi Finansal Bütünlük maddesi eksik!');
+  assert.match(roadmapContent, /### SEC-063/i, 'SEC-063 GoTrue Auth Rate Limiting & CORS Mühürlemesi maddesi eksik!');
+});
 
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);
 
@@ -811,3 +1142,4 @@ if (failedTests > 0) {
 } else {
   process.exit(0);
 }
+

@@ -9,6 +9,9 @@ import { UserProfile } from '../domain/User';
 import { installAuthAutofillStyles } from './authAutofillStyles';
 import { GoogleIdentityButton } from './GoogleIdentityButton';
 import { ParsDevstateLogo } from './ParsDevstateLogo';
+import { HoneypotDecoyField } from '../../security/presentation/HoneypotDecoyField';
+import { HoneypotTrapService } from '../../security/application/HoneypotTrapService';
+import { RateLimitGuardService } from '../../security/application/RateLimitGuardService';
 
 const LOGIN_TYPEWRITER_WORDS = [
   'Geleceğin projelerini keşfedin.',
@@ -87,6 +90,7 @@ export function AuthExperience({ mode, onAuthSuccess, onSwitch, onBack, onGoogle
   const [name, setName] = useState('');
   const [consents, setConsents] = useState([false, false, false]);
   const [legalIndex, setLegalIndex] = useState<number | null>(null);
+  const [honeypotValue, setHoneypotValue] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [info, setInfo] = useState(false);
@@ -129,12 +133,33 @@ export function AuthExperience({ mode, onAuthSuccess, onSwitch, onBack, onGoogle
     finally { locked.current = false; if (mounted.current) setBusy(false); }
   };
   const submit = () => {
+    if (!HoneypotTrapService.verifyHoneypotField(honeypotValue, registering ? 'register_form' : 'login_form')) {
+      error('Güvenlik doğrulaması tamamlanamadı.');
+      return;
+    }
+    if (!RateLimitGuardService.checkClientBurst('auth_submit', 5, 3000)) {
+      error('Çok hızlı deneme yapıyorsunuz. Lütfen biraz bekleyin.');
+      return;
+    }
     if (!validEmail()) { error('Geçerli bir e-posta adresi girin.'); return; }
     if (password.length < 6) { error('Şifreniz en az 6 karakter olmalı.'); return; }
     if (registering && (!name.trim() || password !== confirm || !consents[0])) {
       error(!name.trim() ? 'Ad ve soyadınızı girin.' : password !== confirm ? 'Şifreler birbiriyle uyuşmuyor.' : 'KVKK Aydınlatma Metni’ni onaylayın.'); return;
     }
     void run(async () => {
+      const rateCheck = await RateLimitGuardService.enforceServerRateLimit({
+        identifier: email.trim().toLowerCase(),
+        actionType: registering ? 'auth_register' : 'auth_login',
+        maxHits: 12,
+        windowSeconds: 60,
+        autoBanThreshold: 3,
+      });
+      if (!rateCheck.allowed) {
+        if (!mounted.current) return;
+        error(rateCheck.quarantined ? 'Güvenlik duvarı karantinası devrede.' : 'Çok fazla deneme yapıldı. Lütfen bekleyin.');
+        return;
+      }
+
       const result = registering
         ? await AuthService.signUpWithEmail(email.trim().toLowerCase(), password, name.trim(), { kvkkAydinlatma: consents[0], acikRiza: consents[1], ticariIleti: consents[2] })
         : await AuthService.signInWithPassword(email.trim(), password);
@@ -246,6 +271,7 @@ export function AuthExperience({ mode, onAuthSuccess, onSwitch, onBack, onGoogle
                 <Pressable accessibilityRole="button" onPress={() => setLegalIndex(index)} style={s.consentLink}><Text style={s.consentText}>{item.title}{index === 0 ? ' *' : ' (isteğe bağlı)'}</Text></Pressable>
               </View>)}</View>
             </>}
+            <HoneypotDecoyField value={honeypotValue} onChangeText={setHoneypotValue} />
             {!!message && <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={[s.notice, info && s.info]}><Text style={[s.noticeText, info && { color: '#187657' }]}>{message}</Text></View>}
             {busy ? (
               <View accessibilityLiveRegion="polite" style={s.busy}>

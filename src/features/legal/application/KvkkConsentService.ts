@@ -65,4 +65,21 @@ export class KvkkConsentService {
       return false;
     }
   }
+
+  /**
+   * B8 & KVKK Madde 11: Hesabı silme, PII verilerini anonimleştirme ve kasayı yok etme
+   */
+  public static async deleteMyAccountAndAnonymize(): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { data, error } = await supabase.rpc('delete_my_account_and_anonymize');
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      await supabase.auth.signOut({ scope: 'global' });
+      return { success: Boolean(data?.success) };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Hesap silinemedi.' };
+    }
+  }
 }
+

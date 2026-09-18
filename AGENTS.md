@@ -8,7 +8,7 @@
 - **Hedef Odaklı:** Yalnızca iletilen dosya yollarına ve ilgili kod bloklarına odaklan; tüm projeyi gereksiz yere tarama.
 - **Belirsizlik Yönetimi:** Varsayım yapmak yerine sonucu maddi olarak etkileyecek eksik veya belirsiz yerleri doğrudan ve odaklı biçimde kullanıcıya sor.
 - **Doğrudan Çıktı:** Uzun açıklamalar yerine doğrudan optimize edilmiş, temiz ve çalışır kod blokları üret.
-- **Bağlam Yönetimi:** Bir iş tamamlandığında yeni ve ilgisiz görevler için oturumun sıfırlanmasını (clear context) öner.
+- **Bağlam Yönetimi & Devir Teslim:** Bir iş, faz veya aşama tamamlandığında kullanıcıyı proaktif olarak oturumun sıfırlanması (clear context) ve yedek alınması konusunda uyar; bir sonraki temiz oturumda kesintisiz devam edilebilmesi için kopyalanabilir, eksiksiz bir **Handoff State (Devir Teslim Bloğu)** sun.
 
 ## Temel Kural: Kod Temizliği ve Artık Kod Bırakmama (Zero Dead-Code Policy)
 - Kesinlikle eski kodlar biriktirilmez; her geçişte arkamız tamamen temizlenir!

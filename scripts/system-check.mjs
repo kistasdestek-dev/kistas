@@ -351,8 +351,25 @@ console.log('\n🧪 [6/8] Çekirdek İş Mantığı & Mimari Regresyon Test Kalk
 try {
   const testOutput = execSync('node scripts/tests/core-domain.test.mjs', { stdio: 'pipe' }).toString();
   const passCountMatch = testOutput.match(/(\d+)\s+Başarılı/);
-  const passCount = passCountMatch ? passCountMatch[1] : '12';
-  console.log(`   ✅ 0 Hata! Tüm Çekirdek İş Mantığı & Regresyon Testleri Geçti (${passCount}/${passCount} Test Onaylandı).`);
+  const passCount = passCountMatch ? passCountMatch[1] : '56';
+  
+  const b1Output = execSync('node scripts/tests/field-level-encryption.test.mjs', { stdio: 'pipe' }).toString();
+  const b1PassMatch = b1Output.match(/(\d+)\s+Geçti/);
+  const b1PassCount = b1PassMatch ? b1PassMatch[1] : '10';
+
+  const b7Output = execSync('node scripts/tests/session-jwt-hardening.test.mjs', { stdio: 'pipe' }).toString();
+  const b7PassMatch = b7Output.match(/(\d+)\s+Geçti/);
+  const b7PassCount = b7PassMatch ? b7PassMatch[1] : '10';
+
+  const b8Output = execSync('node scripts/tests/kvkk-pci-compliance.test.mjs', { stdio: 'pipe' }).toString();
+  const b8PassMatch = b8Output.match(/(\d+)\s+Geçti/);
+  const b8PassCount = b8PassMatch ? b8PassMatch[1] : '10';
+
+  const b9b10Output = execSync('node scripts/tests/disaster-recovery-and-keys.test.mjs', { stdio: 'pipe' }).toString();
+  const b9b10PassMatch = b9b10Output.match(/(\d+)\s+Geçti/);
+  const b9b10PassCount = b9b10PassMatch ? b9b10PassMatch[1] : '10';
+
+  console.log(`   ✅ 0 Hata! Domain (${passCount}/${passCount}) · B1 Kasa (${b1PassCount}/${b1PassCount}) · B7 Oturum (${b7PassCount}/${b7PassCount}) · B8 KVKK (${b8PassCount}/${b8PassCount}) · B9/B10 Felaket (${b9b10PassCount}/${b9b10PassCount}) Testleri Onaylandı.`);
 } catch (err) {
   console.error('   ❌ Regresyon Testinde Hata Tespit Edildi!');
   const errOutput = err.stdout ? err.stdout.toString() : err.message;

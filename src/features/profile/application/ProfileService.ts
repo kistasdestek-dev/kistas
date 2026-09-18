@@ -1,4 +1,6 @@
 import { supabase } from '../../../core/supabase/supabaseClient';
+export { VaultService } from '../../../core/security/VaultService';
+export type { VaultRecordType, UserVaultRecord, VaultRecordMetadata } from '../../../core/security/VaultService';
 
 export interface UpdateProfileDTO {
   fullName?: string;

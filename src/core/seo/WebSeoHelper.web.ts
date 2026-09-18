@@ -1,6 +1,6 @@
 import { SITE_ORIGIN } from '../config/siteUrls';
 
-type PublicPage = 'home' | 'browse' | 'showcase' | 'popular' | 'new' | 'about' | 'how-it-works' | 'faq' | 'privacy';
+type PublicPage = 'home' | 'browse' | 'showcase' | 'popular' | 'new' | 'about' | 'how-it-works' | 'faq' | 'privacy' | 'security';
 
 interface PageDefinition {
   path: string;
@@ -63,6 +63,12 @@ const PUBLIC_PAGES: Record<PublicPage, PageDefinition> = {
     path: '/privacy/',
     title: 'KVKK ve Gizlilik Politikası | Kıstas',
     description: "Kıstas'ın kişisel verileri nasıl işlediğini, koruduğunu ve kullanıcı tercihlerini nasıl yönettiğini inceleyin.",
+    schemaType: 'WebPage',
+  },
+  security: {
+    path: '/security/',
+    title: 'Siber Güvenlik ve Şeffaflık Merkezi | Kıstas',
+    description: 'Kıstas Kale Mimarisi, Zero-Trust savunma katmanları, RFC 9116 security.txt ve Sorumlu Zafiyet Bildirim Programı.',
     schemaType: 'WebPage',
   },
 };

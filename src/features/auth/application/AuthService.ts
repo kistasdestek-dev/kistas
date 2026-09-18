@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import { SUPABASE_URL, supabase } from '../../../core/supabase/supabaseClient';
 import { toSafeHttpsUrl } from '../../../core/security/ExternalUrl';
+import { SecureStorageAdapter } from '../../../core/security/SecureStorage';
 import { UserProfile, PendingRegistrationConsents } from '../domain/User';
 import { KvkkConsentService } from '../../legal/application/KvkkConsentService';
 import { KISTAS_DEFAULT_AVATAR_URL, resolveProfileAvatarUrl } from '../../../core/brandAssets';
@@ -158,7 +159,7 @@ export class AuthService {
           .from('profiles')
           .upsert({
             id: data.user.id,
-            full_name: fullName.trim() || 'Kıstas Üyesi',
+            full_name: fullName.trim() || 'Topluluk Üyesi',
             avatar_url: KISTAS_DEFAULT_AVATAR_URL,
           })
           .select(
@@ -427,7 +428,7 @@ export class AuthService {
         const fallbackName =
           authData.user.user_metadata?.full_name ||
           authData.user.user_metadata?.name ||
-          (userEmail ? userEmail.split('@')[0] : 'Kıstas Üyesi');
+          (userEmail ? userEmail.split('@')[0] : 'Topluluk Üyesi');
 
         const { data: createdProfile } = await supabase
           .from('profiles')
@@ -459,9 +460,8 @@ export class AuthService {
         // Fallback
       }
 
-      if (hasApprovedProject && !data.is_verified) {
-        void supabase.from('profiles').update({ is_verified: true }).eq('id', data.id);
-      }
+      // Not: is_verified kolonu sunucu/admin tarafında (admin_update_listing_status) yönetilir.
+      // İstemciden veritabanı alanını güncellemek bank-grade koruma kuralları gereği kısıtlıdır.
 
       return {
         id: data.id,
@@ -489,10 +489,42 @@ export class AuthService {
   }
 
   /**
-   * 6. Güvenli Çıkış Yapma
+   * 6. Güvenli Çıkış Yapma (B7 Bank-Grade Session Hardening)
+   * @param scope 'local' (sadece bu cihaz) veya 'global' (tüm bağlı cihazlar)
    */
-  public static async signOut(): Promise<void> {
-    await supabase.auth.signOut();
+  public static async signOut(scope: 'local' | 'global' = 'local'): Promise<void> {
+    try {
+      if (scope === 'global') {
+        await supabase.auth.signOut({ scope: 'global' });
+        try {
+          await supabase.rpc('revoke_user_sessions');
+        } catch {
+          // RPC erişilemezse auth client çıkışı yeterlidir
+        }
+      } else {
+        await supabase.auth.signOut({ scope: 'local' });
+      }
+    } finally {
+      // Yerel depolama kalıntılarını ve tokenları tamamen temizle (Full Purge)
+      await SecureStorageAdapter.purgeAllAuthData();
+    }
+  }
+
+  /**
+   * B7 Kill Switch: Çalınma veya şüpheli oturum durumunda tüm aktif oturumları anında fesheder.
+   */
+  public static async revokeAllSessions(): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { data, error } = await supabase.rpc('revoke_user_sessions');
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      await supabase.auth.signOut({ scope: 'global' });
+      await SecureStorageAdapter.purgeAllAuthData();
+      return { success: Boolean(data?.success) };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Oturumlar feshedilemedi.' };
+    }
   }
 
   /**

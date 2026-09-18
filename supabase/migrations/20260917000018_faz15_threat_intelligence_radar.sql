@@ -233,7 +233,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, pg_temp
+SET search_path = public, auth, pg_temp
 AS $$
 BEGIN
     IF NOT public.is_platform_admin() THEN
@@ -245,7 +245,7 @@ BEGIN
         e.id,
         e.threat_actor_id,
         COALESCE(p.full_name, 'Anonim Saldırgan') as threat_actor_name,
-        COALESCE(p.email, 'Belirtilmemiş') as threat_actor_email,
+        COALESCE(u.email::text, 'Belirtilmemiş') as threat_actor_email,
         e.ip_address,
         e.user_agent,
         e.tool_fingerprint,
@@ -257,6 +257,7 @@ BEGIN
         e.detected_at
     FROM public.security_threat_events e
     LEFT JOIN public.profiles p ON p.id = e.threat_actor_id
+    LEFT JOIN auth.users u ON u.id = e.threat_actor_id
     WHERE (p_severity IS NULL OR e.severity = p_severity)
     ORDER BY e.detected_at DESC
     LIMIT LEAST(p_limit, 100)

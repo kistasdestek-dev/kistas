@@ -48,4 +48,33 @@ export const SecureStorageAdapter = {
       console.error(`[SecureStore Error] Key deletion failed: ${key}`, error);
     }
   },
+
+  /**
+   * SecOps Standard: B7 Full Session Purge
+   * Oturum kapatıldığında veya ele geçirilme şüphesinde yerel tüm auth izlerini siler.
+   */
+  purgeAllAuthData: async (): Promise<void> => {
+    try {
+      if (Platform.OS === 'web') {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          const keysToRemove: string[] = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && (k.startsWith('sb-') || k.includes('supabase') || k.includes('auth'))) {
+              keysToRemove.push(k);
+            }
+          }
+          keysToRemove.forEach((k) => localStorage.removeItem(k));
+        }
+        return;
+      }
+
+      // Mobil: Standart supabase auth anahtarlarını sil
+      await SecureStore.deleteItemAsync('sb-iojgqicgeztqwkbetboa-auth-token').catch(() => {});
+      await SecureStore.deleteItemAsync('supabase.auth.token').catch(() => {});
+    } catch (error) {
+      console.error('[SecureStore Error] Auth purge failed', error);
+    }
+  },
 };
+

@@ -174,6 +174,24 @@ export const PrivacyPolicyScreen: React.FC<PrivacyPolicyScreenProps> = ({ onBack
                 Talebinizi, kimliğinizi doğrulamaya yeterli bilgiler ve talebinizin açıklamasıyla kistasdestek@gmail.com adresine gönderebilirsiniz. Başvurular mevzuatta öngörülen süre içinde değerlendirilir. Politika güncellendiğinde yeni sürüm ve tarih bu sayfada yayımlanır.
               </Text>
             </PolicySection>
+
+            <PolicySection number="09" title="Ödeme güvenliği ve PCI-DSS kapsam dışı beyanı">
+              <Text style={styles.paragraph}>
+                Kıstas platformu, hiçbir aşamada kullanıcıların kredi kartı, banka kartı, CVV güvenlik kodu veya son kullanma tarihi gibi hassas kart verilerini sunucularında tutmaz, işlemez ve depolamaz.
+              </Text>
+              <Text style={styles.paragraph}>
+                Tüm kredi ve görünürlük alımları, PCI-DSS Level 1 sertifikalı lisanslı ödeme kuruluşları (Shopier / Apple In-App Purchase / Google Play Billing) aracılığıyla doğrudan tokenized ve güvenli ödeme altyapısıyla gerçekleşir. Platformumuz PCI-DSS SAQ A kapsamında tam muafiyet ve en üst düzey kart güvenliği standartlarını uygular.
+              </Text>
+            </PolicySection>
+
+            <PolicySection number="10" title="Hesap silme, unutulma hakkı ve veri imhası">
+              <Text style={styles.paragraph}>
+                KVKK Madde 11 ve uluslararası mağaza güvenlik ilkeleri uyarınca, kullanıcılar diledikleri zaman hesaplarının silinmesini ve verilerinin anonimleştirilmesini talep edebilir veya doğrudan arayüzden başlatabilir.
+              </Text>
+              <Text style={styles.paragraph}>
+                Hesap silme işlemi onaylandığında; ad, soyad, telefon, avatar, biyografi gibi tüm doğrudan kimlik verileri (PII) ve varsa kasadaki şifreli kayıtlar kalıcı olarak silinir veya geri döndürülemez biçimde anonimleştirilir. Yasal mevzuat (TTK ve VUK) gereği saklanması zorunlu olan mali işlem ve denetim kayıtları, yalnızca kimlikten arındırılmış işlem kodlarıyla yasal süre boyunca muhafaza edilir.
+              </Text>
+            </PolicySection>
           </View>
         </View>
 

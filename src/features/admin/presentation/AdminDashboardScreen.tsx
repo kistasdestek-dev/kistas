@@ -81,7 +81,7 @@ const METRIC_SURFACES: Record<AdminTab, {
   users: { gradient: ['#EFFAF6', '#FFFFFF'] },
   blog: { gradient: ['#F6F1FF', '#FFFFFF'] },
   analytics: { gradient: ['#F4F5F8', '#FFFFFF'] },
-  threat_intel: { gradient: ['#10192A', '#1E293B'] },
+  threat_intel: { gradient: ['#FFF2F4', '#FFFFFF'] },
 };
 
 const ADMIN_PERMISSION_OPTIONS: Array<{
@@ -184,6 +184,7 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
   const [listings, setListings] = useState<AdminListingItem[]>([]);
   const [users, setUsers] = useState<AdminUserSummary[]>([]);
   const [stats, setStats] = useState<PlatformStats | null>(null);
+  const [threatCount, setThreatCount] = useState<number>(0);
   const [supportConversations, setSupportConversations] = useState<Conversation[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
@@ -281,17 +282,19 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
       const canManageCommunity = access.isOwner || access.permissions.includes('community');
       const canReviewLaunches = access.isOwner || access.permissions.includes('launches');
       const canManageBlog = access.isOwner || access.permissions.includes('blog');
-      const [nextListings, nextUsers, nextStats, nextConversations, nextBlogPosts, nextCategories] = await Promise.all([
+      const [nextListings, nextUsers, nextStats, nextConversations, nextBlogPosts, nextCategories, nextThreatOverview] = await Promise.all([
         canReviewLaunches ? AdminService.getAllListings() : Promise.resolve([]),
         canManageCommunity ? AdminService.getAllUsers() : Promise.resolve([]),
         access.isOwner ? AdminService.getPlatformStats() : Promise.resolve(null),
         canManageCommunity ? ChatService.getAdminSupportConversations() : Promise.resolve([]),
         canManageBlog ? BlogService.getAllPostsAdmin() : Promise.resolve([]),
         canReviewLaunches ? CategoryService.getProjectCategories() : Promise.resolve([]),
+        access.isOwner ? AdminService.getThreatIntelOverview() : Promise.resolve(null),
       ]);
       setListings(nextListings);
       setUsers(nextUsers);
       setStats(nextStats);
+      setThreatCount(nextThreatOverview?.totalThreats ?? 0);
       setSupportConversations(nextConversations);
       setBlogPosts(nextBlogPosts);
       setCategories(nextCategories);
@@ -303,6 +306,7 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
       setListings([]);
       setUsers([]);
       setStats(null);
+      setThreatCount(0);
       setSupportConversations([]);
       setBlogPosts([]);
       setCategories([]);
@@ -983,7 +987,7 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
               ['people-outline', '#187657', stats?.totalUsers || 0, 'Topluluk', 'users'],
               ['newspaper-outline', '#3269C7', blogPosts.length, 'Blog yazıları', 'blog'],
               ['analytics-outline', '#5c576b', stats?.totalUpvotes || 0, 'Toplam etkileşim', 'analytics'],
-              ['shield-half-outline', '#EF4444', 4, 'Siber Tehdit Radarı', 'threat_intel'],
+              ['shield-half-outline', '#BD354C', threatCount, 'Siber Tehdit Radarı', 'threat_intel'],
             ].filter((entry) => Boolean(adminAccess && canAccessAdminTab(adminAccess, entry[4] as AdminTab))).map(([icon, color, value, label, targetTab]) => {
               const metricTab = targetTab as AdminTab;
               const surface = METRIC_SURFACES[metricTab];

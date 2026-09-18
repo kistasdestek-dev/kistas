@@ -9,6 +9,7 @@ export interface CinematicFooterProps {
   onOpenFaq?: () => void;
   onOpenHowItWorks?: () => void;
   onOpenBlog?: () => void;
+  onOpenSecurity?: () => void;
 }
 
 const STYLE_ID = 'kistas-cinematic-footer-styles';
@@ -33,7 +34,7 @@ const smoothScrollToTop = (element: HTMLElement | Window) => {
   }
 };
 
-export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = false, onOpenAbout, onOpenPrivacy, onOpenFaq, onOpenHowItWorks, onOpenBlog }) => {
+export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = false, onOpenAbout, onOpenPrivacy, onOpenFaq, onOpenHowItWorks, onOpenBlog, onOpenSecurity }) => {
   const rootRef = useRef<HTMLElement>(null);
   const [isRevealed, setIsRevealed] = useState(false);
 
@@ -83,6 +84,7 @@ export const CinematicFooter: React.FC<CinematicFooterProps> = ({ compact = fals
       ...(onOpenBlog ? [{ title: 'Blog', action: onOpenBlog }] : []),
       ...(onOpenFaq ? [{ title: 'SSS', action: onOpenFaq }] : []),
       ...(onOpenPrivacy ? [{ title: 'KVKK ve Gizlilik', action: onOpenPrivacy }] : []),
+      ...(onOpenSecurity ? [{ title: 'Güvenlik & Şeffaflık', action: onOpenSecurity }] : []),
     ] },
   ].filter((section) => section.links.length > 0);
 

@@ -12,6 +12,7 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { isListingSponsored, Listing } from '../../features/listings/domain/Listing';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
+import { WebSecurityShieldService } from '../../features/security/application/WebSecurityShieldService';
 
 export interface ActionSearchBarProps {
   query: string;
@@ -514,7 +515,12 @@ export const ActionSearchBar: React.FC<ActionSearchBarProps> = ({
             placeholder={placeholder}
             placeholderTextColor="#8C9BAB"
             value={query}
-            onChangeText={onQueryChange}
+            onChangeText={(text) => {
+              const isClean = WebSecurityShieldService.inspectInputPayload(text, 'action_search_bar_native');
+              if (isClean) {
+                onQueryChange(text);
+              }
+            }}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setTimeout(() => setIsFocused(false), 220)}
           />
@@ -560,7 +566,13 @@ export const ActionSearchBar: React.FC<ActionSearchBarProps> = ({
           className="asb-input"
           placeholder={placeholder}
           value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            const isClean = WebSecurityShieldService.inspectInputPayload(val, 'action_search_bar_web');
+            if (isClean) {
+              onQueryChange(val);
+            }
+          }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => {
             // Click to register on item before blur closes

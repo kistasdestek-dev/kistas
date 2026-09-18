@@ -3,7 +3,7 @@ export type WebPlatform = 'iOS' | 'Android' | 'Web' | 'macOS' | 'SaaS' | 'all';
 
 export interface WebRouteState {
   tab: WebTabKey;
-  screen: 'none' | 'about' | 'how-it-works' | 'faq' | 'privacy' | 'blog' | 'category' | 'showcase' | 'popular' | 'new';
+  screen: 'none' | 'about' | 'how-it-works' | 'faq' | 'privacy' | 'blog' | 'category' | 'showcase' | 'popular' | 'new' | 'security';
   blogSlug?: string | null;
   categoryId?: string | null;
   platform?: WebPlatform;
@@ -59,6 +59,9 @@ export const parseWebRouteLocation = (
   if (primary === 'privacy' || primary === 'gizlilik' || primary === 'gizlilik-politikasi') {
     return { tab: 'discover', screen: 'privacy' };
   }
+  if (primary === 'security' || primary === 'guvenlik') {
+    return { tab: 'discover', screen: 'security' };
+  }
   if (primary === 'category' && secondary) {
     return { tab: 'browse', screen: 'category', categoryId: secondary };
   }
@@ -85,6 +88,7 @@ const publicPathForRoute = (route: WebRouteState): string | null => {
   if (route.screen === 'how-it-works') return '/how-it-works/';
   if (route.screen === 'faq') return '/sss/';
   if (route.screen === 'privacy') return '/privacy/';
+  if (route.screen === 'security') return '/security/';
   if (route.screen === 'category' && route.categoryId) return `/category/${encodeURIComponent(route.categoryId)}`;
   if (route.screen === 'showcase') return '/showcase/';
   if (route.screen === 'popular') return '/popular/';

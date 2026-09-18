@@ -14,7 +14,12 @@ WHERE tool_fingerprint IN (
     'Burp Suite / Repeater Intruder',
     'Nuclei Scanner Engine',
     'Python Async Fuzzer'
-) OR threat_actor_name = 'Anonim Saldırgan';
+) OR attack_vector IN (
+    'SQL_INJECTION_PROBE',
+    'TROJAN_ADMIN_ESCALATION',
+    'CANARY_CREDENTIAL_LEAK',
+    'SILENT_NULL_ROUTE_EXPLOIT'
+);
 
 -- 2. Aktif Güvenlik Duvarı Karantina Listesi (security_quarantine_blocklist)
 CREATE TABLE IF NOT EXISTS public.security_quarantine_blocklist (
