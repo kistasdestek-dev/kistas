@@ -1203,6 +1203,73 @@ runTest('FAZ 19 AŞAMA 6: WebSocket Realtime CDC Sniffing & Dinleme Kaçağı İ
   assert.match(sql, /security_threat_events/i, 'security_threat_events realtime izolasyonu eksik!');
 });
 
+runTest('FAZ 20 AŞAMA 1: KVKK & GDPR Unutulma Hakkı ve Kriptografik Anonimleştirme Motoru doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', '20260918000015_faz20_kvkk_account_deletion_and_anonymization.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Faz 20 Aşama 1 migration dosyası eksik!');
+  const sql = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(sql, /delete_user_account_atomic/i, 'delete_user_account_atomic RPC fonksiyonu eksik!');
+  assert.match(sql, /Silinmiş Kullanıcı/i, 'Silinmiş Kullanıcı PII maskelemesi eksik!');
+  assert.match(sql, /DELETE FROM public\.user_addresses/i, 'Adres temizliği eksik!');
+  assert.match(sql, /DELETE FROM public\.user_vault_records/i, 'Kasa temizliği eksik!');
+  assert.match(sql, /KVKK_ACCOUNT_ANONYMIZED/i, 'Denetim izi kaydı eksik!');
+
+  const profileServicePath = path.join(ROOT, 'src', 'features', 'profile', 'application', 'ProfileService.ts');
+  const profileServiceCode = fs.readFileSync(profileServicePath, 'utf8');
+  assert.match(profileServiceCode, /deleteAccount/i, 'ProfileService.deleteAccount metodu eksik!');
+});
+
+runTest('FAZ 20 AŞAMA 2 & 3: OAuth State Replay, CSRF Kalkanı ve Global Oturum Feshi doğrulanmalı', () => {
+  const authServicePath = path.join(ROOT, 'src', 'features', 'auth', 'application', 'AuthService.ts');
+  const authServiceCode = fs.readFileSync(authServicePath, 'utf8');
+
+  assert.match(authServiceCode, /generateOAuthStateNonce/i, 'generateOAuthStateNonce fonksiyonu eksik!');
+  assert.match(authServiceCode, /verifyAndConsumeOAuthState/i, 'verifyAndConsumeOAuthState fonksiyonu eksik!');
+  assert.match(authServiceCode, /ALLOWED_OAUTH_ORIGINS/i, 'ALLOWED_OAUTH_ORIGINS allowlist eksik!');
+  assert.match(authServiceCode, /signOut\(scope:\s*'local'\s*\|\s*'global'/i, 'signOut scope parametresi desteklemeli!');
+
+  const authContextPath = path.join(ROOT, 'src', 'core', 'state', 'auth', 'AuthContext.tsx');
+  const authContextCode = fs.readFileSync(authContextPath, 'utf8');
+  assert.match(authContextCode, /verifyAndConsumeOAuthState/i, 'AuthContext OAuth state denetimi eksik!');
+  assert.match(authContextCode, /OAUTH_STATE_MISMATCH_CSRF/i, 'OAuth CSRF tuzak bildirimi eksik!');
+  assert.match(authContextCode, /signOut\('global'\)/i, 'AuthContext çıkışta global oturum feshini tetiklemeli!');
+});
+
+runTest('FAZ 20 AŞAMA 4: İlan, Görsel ve Yorum BOLA/IDOR Savunması & Tehdit Tuzağı doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', '20260918000016_faz20_bola_idor_and_threat_trapping.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Faz 20 Aşama 4 migration dosyası eksik!');
+  const sql = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(sql, /guard_listing_ownership_and_trap_idor/i, 'İlan sahiplik koruma tetikleyicisi eksik!');
+  assert.match(sql, /guard_listing_image_ownership_and_trap_idor/i, 'Görsel sahiplik koruma tetikleyicisi eksik!');
+  assert.match(sql, /guard_project_comment_ownership_and_trap_idor/i, 'Yorum sahiplik koruma tetikleyicisi eksik!');
+  assert.match(sql, /BOLA_IDOR_LISTING_TAMPER/i, 'İlan IDOR tehdit bildirimi eksik!');
+  assert.match(sql, /BOLA_IDOR_IMAGE_TAMPER/i, 'Görsel IDOR tehdit bildirimi eksik!');
+  assert.match(sql, /BOLA_IDOR_COMMENT_TAMPER/i, 'Yorum IDOR tehdit bildirimi eksik!');
+});
+
+runTest('FAZ 20 AŞAMA 5: P2P Sohbet ve Yorum Phishing / URL Filtreleme Kalkanı doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', '20260918000017_faz20_chat_phishing_and_url_filter.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Faz 20 Aşama 5 migration dosyası eksik!');
+  const sql = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(sql, /filter_chat_message_content/i, 'filter_chat_message_content fonksiyonu eksik!');
+  assert.match(sql, /filter_project_comment_content/i, 'filter_project_comment_content fonksiyonu eksik!');
+  assert.match(sql, /bit\.ly|tinyurl\.com/i, 'Kısaltılmış URL filtresi eksik!');
+  assert.match(sql, /hxxp|\[dot\]/i, 'Obfuscated domain filtresi eksik!');
+});
+
+runTest('FAZ 20 KONSOLİDASYON: FAZ20_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql doğrulanmalı', () => {
+  const migPath = path.join(ROOT, 'supabase', 'migrations', 'FAZ20_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql');
+  assert.strictEqual(fs.existsSync(migPath), true, 'Konsolide migration dosyası eksik!');
+  const sql = fs.readFileSync(migPath, 'utf8');
+
+  assert.match(sql, /delete_user_account_atomic/i, 'Konsolide SQL delete_user_account_atomic içermeli!');
+  assert.match(sql, /guard_listing_ownership_and_trap_idor/i, 'Konsolide SQL guard_listing_ownership_and_trap_idor içermeli!');
+  assert.match(sql, /filter_chat_message_content/i, 'Konsolide SQL filter_chat_message_content içermeli!');
+  assert.match(sql, /filter_project_comment_content/i, 'Konsolide SQL filter_project_comment_content içermeli!');
+});
+
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);
 
 if (failedTests > 0) {
@@ -1210,4 +1277,5 @@ if (failedTests > 0) {
 } else {
   process.exit(0);
 }
+
 

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { Platform } from 'react-native';
 import { UserProfile } from '../../../features/auth/domain/User';
 import { AuthService } from '../../../features/auth/application/AuthService';
+import { HoneypotTrapService } from '../../../features/security/application/HoneypotTrapService';
 import { supabase } from '../../supabase/supabaseClient';
 
 export interface AuthState {
@@ -61,7 +62,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = useCallback(async (): Promise<void> => {
     try {
-      await AuthService.signOut();
+      await AuthService.signOut('global');
     } finally {
       setProfileState(null);
     }
@@ -83,17 +84,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       if (session?.user) {
-        // SEC-035: Token'ların adres çubuğunda ve tarayıcı geçmişinde açıkta kalmasını önle
+        // SEC-035 & SEC-071: Token'ların ve OAuth state parametrelerinin adres çubuğunda açıkta kalmasını önle
         if (Platform.OS === 'web' && typeof window !== 'undefined') {
           const hash = window.location.hash || '';
           const search = window.location.search || '';
           const hasAuthHash = hash.includes('access_token=') || hash.includes('refresh_token=');
           const hasAuthCode = search.includes('code=');
+          const hasAuthState = search.includes('state=');
 
-          if (hasAuthHash || hasAuthCode) {
-            const cleanSearch = hasAuthCode
+          if (hasAuthState) {
+            try {
+              const urlParams = new URLSearchParams(search);
+              const incomingState = urlParams.get('state');
+              const isValid = AuthService.verifyAndConsumeOAuthState(incomingState);
+              if (!isValid && incomingState) {
+                console.warn('[OAUTH_SECURITY] Geçersiz veya süresi dolmuş OAuth state tespit edildi!');
+                void HoneypotTrapService.triggerHoneypotTrap({
+                  trapType: 'OAUTH_STATE_MISMATCH_CSRF',
+                  payload: incomingState,
+                  toolFingerprint: 'OAuth Replay / Tampering',
+                  autoQuarantine: false,
+                });
+              }
+            } catch {
+              // ignore
+            }
+          }
+
+          if (hasAuthHash || hasAuthCode || hasAuthState) {
+            const cleanSearch = (hasAuthCode || hasAuthState)
               ? search
-                  .replace(/[?&]code=[^&]+/, '')
+                  .replace(/[?&](code|state)=[^&]+/g, '')
                   .replace(/^[?&]/, '?')
                   .replace(/^\?$/, '')
               : search;

@@ -917,6 +917,61 @@ Production veya magazaya cikis icin:
   2. Yalnızca meşru gerçek zamanlı arayüz gereksinimi olan sohbet tabloları kontrollü RLS ile yayında bırakıldı.
 - Regresyon: `node scripts/tests/core-domain.test.mjs` (Aşama 6 testi başarılı).
 
+### SEC-071 - Faz 20.1: KVKK & GDPR Unutulma Hakkı ve Kriptografik Anonimleştirme Motoru (Right-to-be-Forgotten)
+- Tarih: 2026-09-18
+- Kapsam: `delete_user_account_atomic()`, `ProfileService.deleteAccount()`, `20260918000015_faz20_kvkk_account_deletion_and_anonymization.sql`.
+- Bulgu: Kullanıcının hesabını ve kişisel verilerini (PII) KVKK Madde 7/11 ve GDPR Madde 17 uyarınca tek tıkla kalıcı olarak silebilmesi; aynı zamanda yasal muhasebe ve sipariş denetim geçmişinin (financial_audit) veri bütünlüğü bozulmadan kimliksizleştirilmesi (anonymization) gereksinimi.
+- Sertleştirme:
+  1. `delete_user_account_atomic()` RPC'si (`SECURITY DEFINER`, sabit `search_path = public, pg_temp`) inşa edildi.
+  2. Aktif emanet (escrow) ve uyuşmazlık siparişleri kontrolü eklendi (`ACTIVE_ORDERS_EXIST` koruması).
+  3. Adresler (`user_addresses`), bildirimler (`notifications`) ve kasa kayıtları (`user_vault_records`) fiziksel olarak imha edildi (hard delete).
+  4. Profil PII verileri `Silinmiş Kullanıcı` ve NULL alanlarla anonimleştirildi; `is_banned = TRUE` ile mühürlendi.
+  5. KVKK izinleri `consented = FALSE` olarak iptal edildi; `storage.objects` kovasındaki kullanıcı dosyaları tasfiye edildi.
+  6. Silme işlemi `admin_action_audit` tablosuna `KVKK_ACCOUNT_ANONYMIZED` olarak kaydedildi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (Faz 20 Aşama 1 testi başarılı).
+
+### SEC-072 - Faz 20.2: OAuth State Replay, CSRF & Open-Redirect Hijacking Kalkanı
+- Tarih: 2026-09-18
+- Kapsam: `AuthService.signInWithOAuth()`, `AuthService.verifyAndConsumeOAuthState()`, `AuthContext.tsx`.
+- Bulgu: Yönlendirmeli OAuth akışlarında `state` parametresinin manipüle edilmesi, araya girilerek çalınmış yetkilendirme kodlarının (Authorization Code) yeniden kullanılması (replay) ve açık yönlendirme (Open-Redirect) riskleri.
+- Sertleştirme:
+  1. OAuth oturumu başlatılırken CSPRNG (`crypto.getRandomValues`) ile kriptografik olarak güçlü 24 baytlık tek kullanımlık `stateNonce` üretildi ve `sessionStorage` içine 10 dakikalık TTL ile kaydedildi.
+  2. `ALLOWED_OAUTH_ORIGINS` katı allowlist kontrolü getirilerek yetkisiz kaynaklardan OAuth başlatılması engellendi.
+  3. OAuth dönüşünde URL'deki `state` değeri `verifyAndConsumeOAuthState` ile doğrulanarak anında tüketildi (single-use consumption). Uyuşmazlık veya eksiklik durumunda işlem `OAUTH_STATE_MISMATCH_CSRF` olarak Tehdit Radarına raporlandı.
+  4. Adres çubuğundaki `state` ve `code` parametreleri `window.history.replaceState` ile anında temizlenerek tarayıcı geçmişinden arındırıldı.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (Faz 20 Aşama 2 testi başarılı).
+
+### SEC-073 - Faz 20.3: Global Oturum Feshi & Session Invalidation Kalkanı (Zombie Session Purge)
+- Tarih: 2026-09-18
+- Kapsam: `AuthService.signOut()`, `SecureStorageAdapter.purgeAllAuthData()`.
+- Bulgu: Kullanıcı çıkış yaptığında veya şifre değiştirdiğinde diğer cihazlarda veya yerel önbelleklerde eski oturum token'larının geçerli kalabilmesi riski.
+- Sertleştirme:
+  1. `AuthService.signOut` varsayılan kapsamı `scope: 'global'` olarak mühürlendi; çıkış anında `supabase.auth.signOut({ scope: 'global' })` ve `revoke_user_sessions` RPC'si tetiklenerek tüm bağlı cihazlardaki oturumlar iptal edildi.
+  2. `SecureStorageAdapter.purgeAllAuthData()` ve tarayıcı `sessionStorage` üzerindeki profil snapshotları ve OAuth kalıntıları sıfır artık (zero-leak) ilkesiyle temizlendi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (Faz 20 Aşama 3 testi başarılı).
+
+### SEC-074 - Faz 20.4: İlan, Görsel ve Yorum BOLA/IDOR Savunması & Tehdit Tuzağı
+- Tarih: 2026-09-18
+- Kapsam: `listings`, `listing_images`, `project_comments`, `20260918000016_faz20_bola_idor_and_threat_trapping.sql`.
+- Bulgu: Başkasına ait ilan, görsel veya yorum ID'lerini doğrudan REST veya RPC üzerinden göndererek içerik pasife alma, silme veya değiştirme (Broken Object Level Authorization - BOLA/IDOR) denemeleri.
+- Sertleştirme:
+  1. `guard_listing_ownership_and_trap_idor` tetikleyicisi ile `listings` üzerindeki UPDATE/DELETE işlemlerinde `OLD.seller_id = auth.uid()` veya yönetici yetkisi kesin olarak doğrulandı.
+  2. `guard_listing_image_ownership_and_trap_idor` tetikleyicisi ile `listing_images` CUD işlemlerinde ilanın gerçek sahibinin `auth.uid()` olduğu teyit edildi.
+  3. `guard_project_comment_ownership_and_trap_idor` tetikleyicisi ile `project_comments` üzerinde `OLD.user_id = auth.uid()` doğrulaması sağlandı.
+  4. Yetkisiz herhangi bir BOLA/IDOR teşebbüsünde işlem sessizce engellenmekle kalmayıp doğrudan `security_threat_events` tablosuna `BOLA_IDOR_LISTING_TAMPER`, `BOLA_IDOR_IMAGE_TAMPER` ve `BOLA_IDOR_COMMENT_TAMPER` olarak kaydedilerek saldırgan Tehdit Radarına tuzaklandı.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (Faz 20 Aşama 4 testi başarılı).
+
+### SEC-075 - Faz 20.5: P2P Sohbet ve Yorum Phishing / URL Filtreleme Kalkanı
+- Tarih: 2026-09-18
+- Kapsam: `messages`, `project_comments`, `20260918000017_faz20_chat_phishing_and_url_filter.sql`.
+- Bulgu: Sohbet mesajları ve proje yorumları üzerinden kimlik avı (phishing), sahte ödeme linkleri, kısaltılmış URL yönlendirmeleri (bit.ly, t.me vb.) ve maskelenmiş IP/obfuscated web adresleri paylaşılması riski.
+- Sertleştirme:
+  1. `filter_chat_message_content()` geliştirildi: Türkiye/uluslararası telefon ve IBAN filtrelerinin yanı sıra kısaltma servisleri (`bit.ly`, `tinyurl.com`, `is.gd`, `t.me`, `wa.me`, `cutt.ly`, `discord.gg`), doğrudan IP adresli linkler (`192.168.x.x`, `45.x.x.x`) ve gizlenmiş adresler (`hxxp`, `[dot]`, `(dot)`) tespiti eklendi.
+  2. `filter_project_comment_content()` fonksiyonu ve `trg_filter_project_comment_content` tetikleyicisi oluşturularak proje yorumları tablosuna da aynı askeri düzeyde filtreleme entegre edildi.
+  3. Yetkili yöneticiler meşru destek bağlantıları için muaf tutuldu; filtrelenen içerikler güvenlik uyarı mesajıyla maskelendi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (Faz 20 Aşama 5 testi başarılı).
+
+
 
 
 

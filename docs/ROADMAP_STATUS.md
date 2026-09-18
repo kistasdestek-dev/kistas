@@ -118,3 +118,16 @@ Detaylı sıra: `docs/WEB_ADAPTATION_PLAN.md`.
 - [x] **Regresyon Testleri & Fortress Check**: 102/102 test tam başarılı, 0 TypeScript hatası, %100 / 100 [A+] kale skoru.
 - Detaylı iş akışı ve kapanış kaydı: `docs/FAZ19_DEFENSE_WORKFLOW.md` ve `docs/SECURITY_ROADMAP.md` (SEC-064 - SEC-069).
 
+---
+
+## 🛡️ Güvenlik Yol Haritası — Faz 20 (Pars DevState 5 İleri Savunma Kalkanı) TAMAMLANDI
+- [x] **Aşama 1: KVKK & GDPR Unutulma Hakkı ve Kriptografik Anonimleştirme Motoru (Right-to-be-Forgotten)**: `delete_user_account_atomic()` RPC'si, aktif sipariş denetimi, adres/kasa/bildirim hard delete, profil PII anonimleştirme (`Silinmiş Kullanıcı`).
+- [x] **Aşama 2: OAuth State Replay, CSRF & Open-Redirect Hijacking Kalkanı**: CSPRNG 24-bayt `stateNonce`, `ALLOWED_OAUTH_ORIGINS` kontrolü, tek kullanımlık doğrulama (`verifyAndConsumeOAuthState`), `OAUTH_STATE_MISMATCH_CSRF` tuzaklama, `replaceState` geçmiş temizliği.
+- [x] **Aşama 3: Global Oturum Feshi & Session Invalidation Kalkanı (Zombie Session Purge)**: `signOut` varsayılan kapsamı `scope: 'global'`, `revoke_user_sessions` ve tam yerel depolama temizliği (`purgeAllAuthData`).
+- [x] **Aşama 4: İlan, Görsel ve Yorum BOLA/IDOR Savunması & Tehdit Radarı Tuzağı**: `guard_listing_ownership_and_trap_idor`, `guard_listing_image_ownership_and_trap_idor`, `guard_project_comment_ownership_and_trap_idor` DB tetikleyicileri ve `BOLA_IDOR_*_TAMPER` Tehdit Radarı tuzaklaması.
+- [x] **Aşama 5: P2P Sohbet ve Yorum Phishing / URL Filtreleme Kalkanı**: `filter_chat_message_content()` ve `filter_project_comment_content()` tetikleyicileri ile phishing kısaltıcıları (`bit.ly`, `t.me`), IP adresleri ve gizlenmiş adreslerin tespiti ve maskelenmesi.
+- [x] **Konsolide Canlı Göç**: `supabase/migrations/FAZ20_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql` tek tıkla canlıya uygulanabilir hale getirildi.
+- [x] **Regresyon Testleri & Fortress Check**: 67/67 test tam başarılı, 0 TypeScript hatası, %100 / 100 [A+] kale skoru.
+- Detaylı iş akışı ve kapanış kaydı: `docs/FAZ20_DEFENSE_WORKFLOW.md` ve `docs/SECURITY_ROADMAP.md` (SEC-071 - SEC-075).
+
+

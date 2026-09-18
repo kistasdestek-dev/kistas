@@ -77,4 +77,23 @@ export class ProfileService {
       return { success: false, error: err?.message || 'Profil güncellenemedi.' };
     }
   }
+
+  /**
+   * KVKK ve GDPR Madde 17 uyarınca kullanıcının hesabını ve kişisel verilerini (PII)
+   * atomik RPC üzerinden kalıcı olarak anonimleştirir ve siler.
+   */
+  public static async deleteAccount(): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+      const { data, error } = await supabase.rpc('delete_user_account_atomic');
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      return {
+        success: data?.success ?? true,
+        message: data?.message,
+      };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Hesap silinirken bir hata oluştu.' };
+    }
+  }
 }

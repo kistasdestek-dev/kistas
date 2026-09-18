@@ -301,8 +301,48 @@ export class AuthService {
     }
   }
 
+  private static readonly ALLOWED_OAUTH_ORIGINS = [
+    'https://www.kistas.com.tr',
+    'https://kistas.com.tr',
+    'http://localhost:8081',
+    'http://127.0.0.1:8081',
+  ];
+
   /**
-   * 3. GitHub veya Apple ile yönlendirmeli OAuth oturumu
+   * Kriptografik olarak güçlü tek kullanımlık OAuth State Nonce üretir.
+   */
+  public static generateOAuthStateNonce(): string {
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const bytes = new Uint8Array(24);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+    }
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+
+  /**
+   * OAuth dönüşünde gelen state değerini tek kullanımlık olarak doğrular ve tüketir (Replay koruması).
+   */
+  public static verifyAndConsumeOAuthState(incomingState: string | null): boolean {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return true;
+    try {
+      const raw = window.sessionStorage.getItem('kistas_oauth_state');
+      window.sessionStorage.removeItem('kistas_oauth_state');
+      if (!raw) {
+        return !incomingState;
+      }
+      const parsed = JSON.parse(raw);
+      if (!parsed?.nonce || !incomingState) return false;
+      // 10 dakika geçerlilik süresi
+      if (Date.now() - parsed.timestamp > 10 * 60 * 1000) return false;
+      return parsed.nonce === incomingState;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * 3. GitHub veya Apple ile yönlendirmeli OAuth oturumu (SEC-071 State & CSRF Korumalı)
    */
   public static async signInWithOAuth(
     provider: 'apple' | 'github'
@@ -311,11 +351,41 @@ export class AuthService {
       const providerName = provider === 'github' ? 'GitHub' : 'Apple';
 
       if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        const origin = window.location.origin;
+        const isAllowedOrigin =
+          this.ALLOWED_OAUTH_ORIGINS.some((allowed) => origin === allowed) ||
+          origin.startsWith('http://localhost:') ||
+          origin.startsWith('http://127.0.0.1:');
+
+        if (!isAllowedOrigin) {
+          return {
+            success: false,
+            error: 'Güvensiz veya izin verilmeyen kaynak adresinden OAuth oturumu başlatılamaz.',
+          };
+        }
+
+        const stateNonce = this.generateOAuthStateNonce();
+        try {
+          window.sessionStorage.setItem(
+            'kistas_oauth_state',
+            JSON.stringify({
+              nonce: stateNonce,
+              provider,
+              timestamp: Date.now(),
+            })
+          );
+        } catch {
+          // ignore session storage error
+        }
+
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider,
           options: {
-            redirectTo: window.location.origin,
+            redirectTo: origin,
             skipBrowserRedirect: true,
+            queryParams: {
+              state: stateNonce,
+            },
           },
         });
 
@@ -489,7 +559,7 @@ export class AuthService {
   }
 
   /**
-   * 6. Güvenli Çıkış Yapma (B7 Bank-Grade Session Hardening)
+   * 6. Güvenli Çıkış Yapma (B7 Bank-Grade Session Hardening & SEC-072 Global Sign-Out)
    * @param scope 'local' (sadece bu cihaz) veya 'global' (tüm bağlı cihazlar)
    */
   public static async signOut(scope: 'local' | 'global' = 'local'): Promise<void> {
@@ -507,6 +577,14 @@ export class AuthService {
     } finally {
       // Yerel depolama kalıntılarını ve tokenları tamamen temizle (Full Purge)
       await SecureStorageAdapter.purgeAllAuthData();
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        try {
+          window.sessionStorage.removeItem('kistas_oauth_state');
+          window.sessionStorage.removeItem('kistas_auth_profile_snapshot_v1');
+        } catch {
+          // ignore
+        }
+      }
     }
   }
 
