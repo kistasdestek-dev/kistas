@@ -104,3 +104,17 @@ Detaylı sıra: `docs/WEB_ADAPTATION_PLAN.md`.
 - [ ] **Adım 6: Geliştirici Profili & Cüzdan Yönetimi Mükemmelleştirmesi**
   - Maker profilinde yayınlanan projeler, kazanılan toplam upvote'lar ve kalan lansman kredisi bakiyesi.
 - [ ] **Adım 7: Canlıya Hazırlık & Mağaza Çıktıları (EAS Build / TestFlight / Play Store)**
+
+---
+
+## 🛡️ Güvenlik Yol Haritası — Faz 19 (Pars DevState 6 Aşamalı Kalkan) TAMAMLANDI
+- [x] **Aşama 1: Savunma Mekanizmasının Silahlaştırılması Engeli (Self-DoS Prevention)**: `is_safe_whitelisted_ip()` ile loopback/RFC 1918 koruması, anon karantina manipülasyonu engeli.
+- [x] **Aşama 2: Race Condition & Finansal Bütünlük Kalkanı**: `profiles` pozitif bakiye kısıtları, `orders` tekil aktif sipariş indeksi, `project_upvotes` çift oy engeli, 3 sn spam cooldown.
+- [x] **Aşama 3: Webhook Uç Noktaları DoS & Kaynak Tüketimi**: Deno Edge Functions bellek içi IP throttling (`isThrottled`), 64 KB tavan boyutu, constant-time imza doğrulaması.
+- [x] **Aşama 4: PostgREST Doğrudan API Kazıma & IDOR İzolasyonu**: 9 hassas tablodan `anon` ve `public` erişimi tamamen kaldırıldı (REVOKE ALL). Katı `auth.uid()` ve taraf RLS mühürlendi.
+- [x] **Aşama 5: Depolama (Storage) Polyglot Dosya & Stored XSS Kalkanı**: SVG/HTML/XML kesin engeli, `name !~ '\.\.'` path traversal koruması, dosya sahibi izolasyonu (`owner = auth.uid()`).
+- [x] **Aşama 6: WebSocket Realtime CDC Sniffing & Dinleme Kaçağı İzolasyonu**: 17 hassas tablonun `supabase_realtime` yayınından koşulsuz düşürülmesi.
+- [x] **Konsolide Canlı Göç**: `supabase/migrations/FAZ19_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql` tek tıkla canlıya uygulanabilir hale getirildi.
+- [x] **Regresyon Testleri & Fortress Check**: 102/102 test tam başarılı, 0 TypeScript hatası, %100 / 100 [A+] kale skoru.
+- Detaylı iş akışı ve kapanış kaydı: `docs/FAZ19_DEFENSE_WORKFLOW.md` ve `docs/SECURITY_ROADMAP.md` (SEC-064 - SEC-069).
+
