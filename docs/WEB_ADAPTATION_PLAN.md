@@ -43,8 +43,8 @@ Kıstas tek bir marka ve ortak iş mantığı kullanır; telefon, tablet ve masa
 ### Faz 4 — Proje Detayı ve Lansman Akışı
 
 - [ ] Proje detayı masaüstünde App Store benzeri geniş vitrine dönüşecek.
-- [ ] Lansman formu telefonda adımlı, geniş ekranda bölümlü düzene alınacak.
-- [ ] Dosya yükleme, önizleme ve doğrulama web davranışları tamamlanacak.
+- [x] Lansman formu telefonda adımlı/tek kolonlu, geniş ekranda iki kolonlu responsive ızgaraya ve canlı önizlemeye alındı.
+- [x] Dosya yükleme (R2), anlık önizleme, canlı vitrin kartı, lansman hazırlık skoru ve markdown doğrulaması tamamlandı.
 
 ### Faz 5 — Auth, Profil, Sohbet ve Yönetim
 
