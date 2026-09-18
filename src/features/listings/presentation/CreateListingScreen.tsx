@@ -26,6 +26,8 @@ import { CategoryPicker } from './CategoryPicker';
 import { R2StorageService } from '../../../core/storage/R2StorageService';
 import { DescriptionRichText } from './DescriptionRichText';
 import { CreateListingLivePreview } from './CreateListingLivePreview';
+import { HoneypotDecoyField } from '../../security/presentation/HoneypotDecoyField';
+import { HoneypotTrapService } from '../../security/application/HoneypotTrapService';
 import { styles } from './CreateListingScreen.styles';
 
 interface CreateListingScreenProps {
@@ -124,6 +126,9 @@ export const CreateListingScreen: React.FC<CreateListingScreenProps> = ({ onSucc
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const isSubmittingRef = useRef(false);
+  const [honeypotValue, setHoneypotValue] = useState('');
+  const [secondaryHoneypotValue, setSecondaryHoneypotValue] = useState('');
+  const formArmedAtRef = useRef(Date.now());
 
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [showcaseCover, setShowcaseCover] = useState('');
@@ -384,6 +389,19 @@ export const CreateListingScreen: React.FC<CreateListingScreenProps> = ({ onSucc
 
   const handleSubmit = async () => {
     if (loading || isSubmitted || isSubmittingRef.current) return;
+
+    if (
+      !HoneypotTrapService.verifyFormSubmission({
+        formId: 'create_listing_form',
+        primaryDecoy: honeypotValue,
+        secondaryDecoy: secondaryHoneypotValue,
+        armedAt: formArmedAtRef.current,
+        minFillTimeMs: 750,
+      })
+    ) {
+      Alert.alert('Güvenlik Uyarısı', 'Güvenlik doğrulaması tamamlanamadı.');
+      return;
+    }
 
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
@@ -1069,6 +1087,15 @@ export const CreateListingScreen: React.FC<CreateListingScreenProps> = ({ onSucc
               </View>
             ) : null}
           </FormSection>
+
+          {/* Akıllı Bal Küpü Form Tuzağı */}
+          <HoneypotDecoyField
+            value={honeypotValue}
+            onChangeText={setHoneypotValue}
+            secondaryValue={secondaryHoneypotValue}
+            onChangeSecondaryText={setSecondaryHoneypotValue}
+            onArmed={(ts) => { formArmedAtRef.current = ts; }}
+          />
 
           {/* Yayınlama ve Gönderim Bloğu */}
           <View style={styles.publishBlock}>

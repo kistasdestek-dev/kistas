@@ -23,6 +23,7 @@ New-Item -ItemType Directory -Path $stagingDir | Out-Null
 $itemsToCopy = @(
     "src",
     "assets",
+    "public",
     "videos",
     "supabase",
     "docs",

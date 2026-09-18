@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AuthService } from '../application/AuthService';
+import { HoneypotDecoyField } from '../../security/presentation/HoneypotDecoyField';
+import { HoneypotTrapService } from '../../security/application/HoneypotTrapService';
 
 interface PasswordRecoveryScreenProps {
   onComplete: () => Promise<void>;
@@ -9,12 +11,27 @@ interface PasswordRecoveryScreenProps {
 export function PasswordRecoveryScreen({ onComplete }: PasswordRecoveryScreenProps) {
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
+  const [honeypotValue, setHoneypotValue] = useState('');
+  const [secondaryHoneypotValue, setSecondaryHoneypotValue] = useState('');
+  const formArmedAtRef = useRef(Date.now());
   const [busy, setBusy] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [message, setMessage] = useState('');
 
   const submit = async () => {
     if (busy) return;
+    if (
+      !HoneypotTrapService.verifyFormSubmission({
+        formId: 'password_recovery_form',
+        primaryDecoy: honeypotValue,
+        secondaryDecoy: secondaryHoneypotValue,
+        armedAt: formArmedAtRef.current,
+        minFillTimeMs: 750,
+      })
+    ) {
+      setMessage('Güvenlik doğrulaması tamamlanamadı.');
+      return;
+    }
     if (password !== confirmation) {
       setMessage('Şifreler birbiriyle uyuşmuyor.');
       return;
@@ -64,6 +81,13 @@ export function PasswordRecoveryScreen({ onComplete }: PasswordRecoveryScreenPro
               onChangeText={setConfirmation}
               placeholder="Yeni şifreyi doğrula"
               style={styles.input}
+            />
+            <HoneypotDecoyField
+              value={honeypotValue}
+              onChangeText={setHoneypotValue}
+              secondaryValue={secondaryHoneypotValue}
+              onChangeSecondaryText={setSecondaryHoneypotValue}
+              onArmed={(ts) => { formArmedAtRef.current = ts; }}
             />
           </>
         )}

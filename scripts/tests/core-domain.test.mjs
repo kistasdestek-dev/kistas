@@ -908,7 +908,7 @@ runTest('AŞAMA 3: İstemci & Edge Bal Küpü Tuzakları (Honeypot Traps & Canar
 
   const authContent = fs.readFileSync(path.join(ROOT, 'src', 'features', 'auth', 'presentation', 'AuthExperience.tsx'), 'utf8');
   assert.match(authContent, /HoneypotDecoyField/i, 'AuthExperience içinde HoneypotDecoyField eksik!');
-  assert.match(authContent, /HoneypotTrapService\.verifyHoneypotField/i, 'AuthExperience form gönderiminde honeypot doğrulaması eksik!');
+  assert.match(authContent, /HoneypotTrapService\.(verifyHoneypotField|verifyFormSubmission)/i, 'AuthExperience form gönderiminde honeypot doğrulaması eksik!');
 });
 
 runTest('AŞAMA 4: Adaptif Hız Sınırı ve Fuzzer Savunması (Adaptive Rate Limiting & Auto-Ban) doğrulanmalı', () => {
@@ -1268,6 +1268,132 @@ runTest('FAZ 20 KONSOLİDASYON: FAZ20_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql 
   assert.match(sql, /guard_listing_ownership_and_trap_idor/i, 'Konsolide SQL guard_listing_ownership_and_trap_idor içermeli!');
   assert.match(sql, /filter_chat_message_content/i, 'Konsolide SQL filter_chat_message_content içermeli!');
   assert.match(sql, /filter_project_comment_content/i, 'Konsolide SQL filter_project_comment_content içermeli!');
+});
+
+runTest('BAL KÜPÜ AŞAMA 1: Web & DOM Düzeyi İleri Bal Küpü Tuzakları doğrulanmalı', () => {
+  const shieldPath = path.join(ROOT, 'src', 'features', 'security', 'application', 'WebSecurityShieldService.ts');
+  assert.strictEqual(fs.existsSync(shieldPath), true, 'WebSecurityShieldService.ts eksik!');
+  const shieldContent = fs.readFileSync(shieldPath, 'utf8');
+
+  assert.match(shieldContent, /armWindowCanaryTraps/i, 'armWindowCanaryTraps fonksiyonu eksik!');
+  assert.match(shieldContent, /injectDomCanaryComments/i, 'injectDomCanaryComments fonksiyonu eksik!');
+  assert.match(shieldContent, /plantCanaryStorageTokens/i, 'plantCanaryStorageTokens fonksiyonu eksik!');
+  assert.match(shieldContent, /__KISTAS_DEV_SECRET__/i, '__KISTAS_DEV_SECRET__ canary değişkeni eksik!');
+  assert.match(shieldContent, /__ADMIN_BYPASS_TOKEN__/i, '__ADMIN_BYPASS_TOKEN__ canary değişkeni eksik!');
+  assert.match(shieldContent, /ktst_canary_override_key/i, 'Storage canary token eksik!');
+
+  const honeypotPath = path.join(ROOT, 'src', 'features', 'security', 'application', 'HoneypotTrapService.ts');
+  assert.strictEqual(fs.existsSync(honeypotPath), true, 'HoneypotTrapService.ts eksik!');
+  const honeypotContent = fs.readFileSync(honeypotPath, 'utf8');
+
+  assert.match(honeypotContent, /inspectCanaryTokenUsage/i, 'inspectCanaryTokenUsage fonksiyonu eksik!');
+  assert.match(honeypotContent, /CANARY_SOURCE_LEAK_TRIPPED/i, 'CANARY_SOURCE_LEAK_TRIPPED tuzak tipi eksik!');
+  assert.match(honeypotContent, /CANARY_TOKEN_TAMPER/i, 'CANARY_TOKEN_TAMPER tuzak tipi eksik!');
+  assert.match(honeypotContent, /internal-debug-probe/i, 'internal-debug-probe canary yolu eksik!');
+});
+
+runTest('BAL KÜPÜ AŞAMA 2: robots.txt Arama Motoru & Dizin Tarayıcı Tuzağı (Nuclei / FFUF / Bot Trap) doğrulanmalı', () => {
+  const robotsPath = path.join(ROOT, 'public', 'robots.txt');
+  assert.strictEqual(fs.existsSync(robotsPath), true, 'public/robots.txt eksik!');
+  const robotsContent = fs.readFileSync(robotsPath, 'utf8');
+
+  assert.match(robotsContent, /Disallow:\s*\/admin-internal-audit-portal\//i, 'robots.txt admin-internal-audit-portal tuzağı eksik!');
+  assert.match(robotsContent, /Disallow:\s*\/kistas-secret-vault-backup\//i, 'robots.txt kistas-secret-vault-backup tuzağı eksik!');
+  assert.match(robotsContent, /Disallow:\s*\/api\/v1\/system-internal-probe\//i, 'robots.txt system-internal-probe tuzağı eksik!');
+  assert.match(robotsContent, /Disallow:\s*\/server-backup-archive\//i, 'robots.txt server-backup-archive tuzağı eksik!');
+  assert.match(robotsContent, /Disallow:\s*\/private-core-telemetry\//i, 'robots.txt private-core-telemetry tuzağı eksik!');
+
+  const honeypotPath = path.join(ROOT, 'src', 'features', 'security', 'application', 'HoneypotTrapService.ts');
+  const honeypotContent = fs.readFileSync(honeypotPath, 'utf8');
+  assert.match(honeypotContent, /ROBOTS_CANARY_TRAP_PATHS/i, 'ROBOTS_CANARY_TRAP_PATHS sabiti eksik!');
+  assert.match(honeypotContent, /ROBOTS_TXT_CANARY_TRAP/i, 'ROBOTS_TXT_CANARY_TRAP tuzak tipi eksik!');
+  assert.match(honeypotContent, /isRobotsCanaryPath/i, 'isRobotsCanaryPath fonksiyonu eksik!');
+  assert.match(honeypotContent, /Offensive Scanner \/ Fuzzer/i, 'Tarayıcı parmak izi tespiti eksik!');
+
+  const routingPath = path.join(ROOT, 'src', 'core', 'navigation', 'webRouting.ts');
+  const routingContent = fs.readFileSync(routingPath, 'utf8');
+  assert.match(routingContent, /export const isRobotsCanaryPath/i, 'webRouting isRobotsCanaryPath fonksiyonu eksik!');
+
+  const appPath = path.join(ROOT, 'App.tsx');
+  const appContent = fs.readFileSync(appPath, 'utf8');
+  assert.match(appContent, /handleWebRouteChange[\s\S]*inspectUrlCanaryProbes/, 'Popstate navigasyonunda canary kontrolü eksik!');
+});
+
+runTest('BAL KÜPÜ AŞAMA 3: URL Parametreleri & Sahte API Endpointleri (Canary Route Traps) doğrulanmalı', () => {
+  const honeypotPath = path.join(ROOT, 'src', 'features', 'security', 'application', 'HoneypotTrapService.ts');
+  const honeypotContent = fs.readFileSync(honeypotPath, 'utf8');
+
+  assert.match(honeypotContent, /DECOY_API_ROUTES/i, 'DECOY_API_ROUTES sabiti eksik!');
+  assert.match(honeypotContent, /CANARY_QUERY_PARAMS/i, 'CANARY_QUERY_PARAMS sabiti eksik!');
+  assert.match(honeypotContent, /DECOY_API_ENDPOINT_TRIPPED/i, 'DECOY_API_ENDPOINT_TRIPPED tuzak tipi eksik!');
+  assert.match(honeypotContent, /CANARY_QUERY_PARAM_TAMPER/i, 'CANARY_QUERY_PARAM_TAMPER tuzak tipi eksik!');
+  assert.match(honeypotContent, /isDecoyApiRoute/i, 'isDecoyApiRoute fonksiyonu eksik!');
+  assert.match(honeypotContent, /isCanaryQueryParam/i, 'isCanaryQueryParam fonksiyonu eksik!');
+  assert.match(honeypotContent, /getDecoyApiResponse/i, 'getDecoyApiResponse mock fonksiyonu eksik!');
+  assert.match(honeypotContent, /ktst_decoy_secret_v1/i, 'Siber aldatma canary token zinciri eksik!');
+
+  const routingPath = path.join(ROOT, 'src', 'core', 'navigation', 'webRouting.ts');
+  const routingContent = fs.readFileSync(routingPath, 'utf8');
+  assert.match(routingContent, /export const isDecoyApiRoute/i, 'webRouting isDecoyApiRoute eksik!');
+  assert.match(routingContent, /export const isCanaryQueryParam/i, 'webRouting isCanaryQueryParam eksik!');
+});
+
+runTest('BAL KÜPÜ AŞAMA 4: Akıllı ve Çok Katmanlı Form Bal Küpleri (Multi-Layer Invisible Honeypot Fields) doğrulanmalı', () => {
+  const decoyFieldPath = path.join(ROOT, 'src', 'features', 'security', 'presentation', 'HoneypotDecoyField.tsx');
+  assert.strictEqual(fs.existsSync(decoyFieldPath), true, 'HoneypotDecoyField.tsx eksik!');
+  const decoyContent = fs.readFileSync(decoyFieldPath, 'utf8');
+
+  assert.match(decoyContent, /primaryFieldName/i, 'HoneypotDecoyField primaryFieldName desteği eksik!');
+  assert.match(decoyContent, /secondaryFieldName/i, 'HoneypotDecoyField secondaryFieldName desteği eksik!');
+  assert.match(decoyContent, /onArmed/i, 'HoneypotDecoyField onArmed zaman damgası eksik!');
+  assert.match(decoyContent, /accessibilityElementsHidden/i, 'Ekran okuyucu gizleme özelliği eksik!');
+
+  const honeypotPath = path.join(ROOT, 'src', 'features', 'security', 'application', 'HoneypotTrapService.ts');
+  const honeypotContent = fs.readFileSync(honeypotPath, 'utf8');
+  assert.match(honeypotContent, /verifyFormSubmission/i, 'verifyFormSubmission fonksiyonu eksik!');
+  assert.match(honeypotContent, /BOT_RAPID_SUBMISSION_TRIPPED/i, 'BOT_RAPID_SUBMISSION_TRIPPED tuzak tipi eksik!');
+  assert.match(honeypotContent, /HONEYPOT_FIELD_TRIPPED/i, 'HONEYPOT_FIELD_TRIPPED tuzak tipi eksik!');
+
+  // Form kapsaması denetimi
+  const authContent = fs.readFileSync(path.join(ROOT, 'src', 'features', 'auth', 'presentation', 'AuthExperience.tsx'), 'utf8');
+  assert.match(authContent, /verifyFormSubmission/i, 'AuthExperience verifyFormSubmission kullanmalı!');
+
+  const recoveryContent = fs.readFileSync(path.join(ROOT, 'src', 'features', 'auth', 'presentation', 'PasswordRecoveryScreen.tsx'), 'utf8');
+  assert.match(recoveryContent, /HoneypotDecoyField/i, 'PasswordRecoveryScreen HoneypotDecoyField içermeli!');
+  assert.match(recoveryContent, /verifyFormSubmission/i, 'PasswordRecoveryScreen verifyFormSubmission kullanmalı!');
+
+  const createContent = fs.readFileSync(path.join(ROOT, 'src', 'features', 'listings', 'presentation', 'CreateListingScreen.tsx'), 'utf8');
+  assert.match(createContent, /HoneypotDecoyField/i, 'CreateListingScreen HoneypotDecoyField içermeli!');
+  assert.match(createContent, /verifyFormSubmission/i, 'CreateListingScreen verifyFormSubmission kullanmalı!');
+});
+
+runTest('BAL KÜPÜ AŞAMA 5: Pars DevState Siber Tehdit Radarı ile Tam Entegrasyon & Otomatik IP Karantinası doğrulanmalı', () => {
+  const migrationPath = path.join(ROOT, 'supabase', 'migrations', '20260918000018_faz21_honeypot_threat_radar_and_ip_quarantine.sql');
+  assert.strictEqual(fs.existsSync(migrationPath), true, 'Aşama 5 migration dosyası eksik!');
+  const migrationSql = fs.readFileSync(migrationPath, 'utf8');
+
+  // Sunucu başlıkları ve IP güvenliği denetimleri
+  assert.match(migrationSql, /cf-connecting-ip/i, 'cf-connecting-ip başlık kontrolü eksik!');
+  assert.match(migrationSql, /x-forwarded-for/i, 'x-forwarded-for başlık kontrolü eksik!');
+  assert.match(migrationSql, /is_safe_whitelisted_ip/i, 'Whitelist Self-DoS koruması eksik!');
+  assert.match(migrationSql, /security_quarantine_blocklist/i, 'WAF bloklistesi entegrasyonu eksik!');
+  assert.match(migrationSql, /ON CONFLICT \(ip_address\) DO UPDATE/i, 'IP karantina idempotency eksik!');
+  assert.match(migrationSql, /CREATE OR REPLACE FUNCTION public\.check_is_quarantined/i, 'Başlık destekli check_is_quarantined eksik!');
+  assert.match(migrationSql, /CREATE OR REPLACE FUNCTION public\.admin_get_threat_events/i, 'admin_get_threat_events eksik!');
+  assert.match(migrationSql, /p_severity = 'HONEYPOT'/i, 'Radar HONEYPOT filtre desteği eksik!');
+
+  // HoneypotTrapService denetimi
+  const honeypotPath = path.join(ROOT, 'src', 'features', 'security', 'application', 'HoneypotTrapService.ts');
+  const honeypotContent = fs.readFileSync(honeypotPath, 'utf8');
+  assert.match(honeypotContent, /isHoneypotVector/i, 'isHoneypotVector helper fonksiyonu eksik!');
+
+  // ThreatIntelligenceView radar arayüzü denetimi
+  const radarPath = path.join(ROOT, 'src', 'features', 'admin', 'presentation', 'ThreatIntelligenceView.tsx');
+  const radarContent = fs.readFileSync(radarPath, 'utf8');
+  assert.match(radarContent, /HoneypotTrapService/i, 'ThreatIntelligenceView HoneypotTrapService import etmeli!');
+  assert.match(radarContent, /Pars Bal Küpü Tuzağına Düştü/i, 'Bal Küpü Tuzağı özel rozeti eksik!');
+  assert.match(radarContent, /id:\s*'HONEYPOT'/i, 'Radar filtre rayında HONEYPOT filtresi eksik!');
+  assert.match(radarContent, /filteredEvents/i, 'Olay listelemesinde filteredEvents kullanılmalı!');
 });
 
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);

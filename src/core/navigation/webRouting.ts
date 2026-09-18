@@ -39,6 +39,62 @@ export const isAuthCallbackHash = (hash: string): boolean =>
 export const isAuthCallbackSearch = (search: string): boolean =>
   containsAuthCallbackKey(search.replace(/^\?/, ''));
 
+/**
+ * robots.txt içinde yer alan bal küpü tuzak yollarını (Canary Honeypot Routes) tespit eder.
+ */
+export const isRobotsCanaryPath = (path: string): boolean => {
+  if (!path || typeof path !== 'string') return false;
+  const lower = path.toLowerCase();
+  return (
+    lower.includes('admin-internal-audit-portal') ||
+    lower.includes('kistas-secret-vault-backup') ||
+    lower.includes('system-internal-probe') ||
+    lower.includes('server-backup-archive') ||
+    lower.includes('private-core-telemetry')
+  );
+};
+
+/**
+ * Sahte API endpoint tuzaklarını (Decoy API Routes) tespit eder.
+ */
+export const isDecoyApiRoute = (path: string): boolean => {
+  if (!path || typeof path !== 'string') return false;
+  const lower = path.toLowerCase();
+  return (
+    lower.includes('/api/v1/admin/users/export') ||
+    lower.includes('/api/v1/system/config-dump') ||
+    lower.includes('/api/v1/debug/sql-console') ||
+    lower.includes('/api/v1/auth/impersonate') ||
+    lower.includes('/api/v1/telemetry/raw-keys') ||
+    lower.includes('/api/internal/secrets') ||
+    lower.includes('/api/v1/backup/download')
+  );
+};
+
+/**
+ * Hassas yetki yükseltme ve zafiyet arama sorgu parametrelerini tespit eder.
+ */
+export const isCanaryQueryParam = (search: string): boolean => {
+  if (!search || typeof search !== 'string') return false;
+  const lower = search.toLowerCase();
+  return (
+    lower.includes('admin_mode=true') ||
+    lower.includes('admin_mode=1') ||
+    lower.includes('bypass_auth=1') ||
+    lower.includes('bypass_auth=true') ||
+    lower.includes('impersonate_user=') ||
+    lower.includes('show_hidden=true') ||
+    lower.includes('sql_debug=') ||
+    lower.includes('sudo=1') ||
+    lower.includes('test_env=stage') ||
+    lower.includes('internal_token=') ||
+    lower.includes('ktst_dev_override=') ||
+    lower.includes('canary_probe=') ||
+    lower.includes('_kistas_secret=') ||
+    lower.includes('dump_config=true')
+  );
+};
+
 export const parseWebRouteLocation = (
   pathname: string,
   search = '',

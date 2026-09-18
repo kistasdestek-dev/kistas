@@ -24,6 +24,10 @@ export const WebSecurityShieldService = {
       this.enforceAntiClickjacking();
       this.displayConsoleSecurityBanner();
       this.protectPrototypeIntegrity();
+      this.armWindowCanaryTraps();
+      this.injectDomCanaryComments();
+      this.plantCanaryStorageTokens();
+      HoneypotTrapService.inspectUrlCanaryProbes();
     } catch {
       // Güvenlik kalkanı hataları ana uygulamayı çökertmemelidir
     }
@@ -117,6 +121,100 @@ export const WebSecurityShieldService = {
   },
 
   /**
+   * Tarayıcı Global 'window' Nesnesi Getter Tuzakları:
+   * F12 konsolunda değişken veya gizli token arayan meraklı/saldırgan aktörleri
+   * getter erişimi anında yakalar ve karantinaya alır.
+   */
+  armWindowCanaryTraps(): void {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+
+    try {
+      const canaryTraps: Record<string, string> = {
+        __KISTAS_DEV_SECRET__: 'ktst_trap_dev_0x9924a',
+        __ADMIN_BYPASS_TOKEN__: 'ktst_trap_admin_override_88f',
+        __INTERNAL_AUDIT_KEYS__: 'ktst_trap_audit_vault_77e',
+        __BACKEND_CONFIG_DEBUG__: 'ktst_trap_debug_endpoint_66d',
+      };
+
+      for (const [propName, decoyValue] of Object.entries(canaryTraps)) {
+        if (!(propName in window)) {
+          Object.defineProperty(window, propName, {
+            configurable: true,
+            enumerable: false,
+            get: () => {
+              void HoneypotTrapService.triggerHoneypotTrap({
+                trapType: 'CONSOLE_WINDOW_CANARY_PROBE',
+                payload: `Window Decoy Property Inspected: ${propName}`,
+                toolFingerprint: 'Browser Console / Memory Inspector',
+                autoQuarantine: true,
+              });
+              return decoyValue;
+            },
+            set: (_val) => {
+              void HoneypotTrapService.triggerHoneypotTrap({
+                trapType: 'CONSOLE_WINDOW_CANARY_PROBE',
+                payload: `Window Decoy Property Mutated: ${propName}`,
+                toolFingerprint: 'Browser Console / Memory Mutator',
+                autoQuarantine: true,
+              });
+            },
+          });
+        }
+      }
+    } catch {
+      // Sessizce yut
+    }
+  },
+
+  /**
+   * Kaynak Kod (DOM) Yem Yorumu Tuzağı:
+   * HTML sayfasını inceleyen pentester'lar için sahte bir dahili denetim endpoint'i yorumu bırakır.
+   */
+  injectDomCanaryComments(): void {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+
+    try {
+      const commentId = 'kistas-internal-audit-marker';
+      if (!document.getElementById(commentId)) {
+        const commentText =
+          ' [KISTAS-INTERNAL-AUDIT]: Temporary debug endpoint active at /api/v1/internal-debug-probe with header X-Canary-Bypass. Strictly prohibited for external production use! ';
+        const commentNode = document.createComment(commentText);
+        if (document.body) {
+          document.body.appendChild(commentNode);
+        } else if (document.head) {
+          document.head.appendChild(commentNode);
+        }
+      }
+    } catch {
+      // Sessizce yut
+    }
+  },
+
+  /**
+   * Tarayıcı Hafıza (Storage) Bal Küpü:
+   * localStorage ve sessionStorage içerisine cazip sahte anahtarlar bırakır.
+   * Bu anahtarları çekip isteklere veya formlara enjekte eden saldırganları fişler.
+   */
+  plantCanaryStorageTokens(): void {
+    if (Platform.OS !== 'web') return;
+
+    try {
+      if (typeof localStorage !== 'undefined') {
+        if (!localStorage.getItem('ktst_canary_override_key')) {
+          localStorage.setItem('ktst_canary_override_key', 'ktst_decoy_secret_v1');
+        }
+      }
+      if (typeof sessionStorage !== 'undefined') {
+        if (!sessionStorage.getItem('ktst_internal_debug_auth')) {
+          sessionStorage.setItem('ktst_internal_debug_auth', 'canary_trap_sec');
+        }
+      }
+    } catch {
+      // Sessizce yut
+    }
+  },
+
+  /**
    * Canlı Girdi & XSS/SQLi Payload Dedektörü:
    * Arama çubuklarına, formlara veya parametrelere girilen metni gerçek zamanlı inceler.
    * Zararlı bir enjeksiyon vektörü tespit ederse WAF karantinasını tetikler ve false döner.
@@ -133,6 +231,11 @@ export const WebSecurityShieldService = {
     const trimmed = input.trim();
     if (trimmed.length < 3) {
       return true;
+    }
+
+    // Zehirli Canary Token denetimi
+    if (!HoneypotTrapService.inspectCanaryTokenUsage(trimmed, context)) {
+      return false;
     }
 
     const isXss = SUSPICIOUS_XSS_REGEX.test(trimmed);

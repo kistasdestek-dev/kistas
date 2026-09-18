@@ -646,6 +646,11 @@ function AppContent() {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
 
     const handleWebRouteChange = () => {
+      // Aşama 2: URL veya popstate bal küpü tuzaklarını denetle
+      if (HoneypotTrapService.inspectUrlCanaryProbes()) {
+        setIsQuarantined(true);
+        return;
+      }
       const route = parseWebRoute();
       isHandlingPopstateRef.current = true;
       setIsFaqOpen(route.screen === 'faq');

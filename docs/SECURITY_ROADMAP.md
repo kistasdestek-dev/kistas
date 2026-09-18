@@ -223,6 +223,10 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 
 | SEC-049 | Faz 15: Siber Tehdit ve Pentest Aracı Parmak İzi Tespiti (Scanner Fingerprint & Payload Capture) | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `20260917000018_faz15_threat_intelligence_radar.sql`, `tool_fingerprint`, core-domain (42/42) |
 | SEC-050 | Faz 15: Sayra Siber Tehdit Radarı & Karşı-Aldatma Yönetim Motoru | 2/5/6 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `ThreatIntelligenceView.tsx`, `admin_get_threat_intel_overview`, core-domain (42/42) |
+| SEC-051 | Bal Küpü Aşama 1: Web & DOM Düzeyi İleri Tuzaklar (Window Canary, DOM Decoy, Storage Poisoning) | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `WebSecurityShieldService.ts`, `HoneypotTrapService.ts`, core-domain (68/68) |
+| SEC-052 | Bal Küpü Aşama 2: robots.txt Arama Motoru & Dizin Tarayıcı Tuzağı (Nuclei / FFUF / Bot Trap) | 1/2/6 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `public/robots.txt`, `HoneypotTrapService.ts`, `webRouting.ts`, core-domain (69/69) |
+| SEC-053 | Bal Küpü Aşama 3: URL Parametreleri & Sahte API Endpoint'leri (Canary Route Traps) | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `HoneypotTrapService.ts`, `webRouting.ts`, core-domain (70/70) |
+| SEC-054 | Bal Küpü Aşama 4: Akıllı ve Çok Katmanlı Form Bal Küpleri (Multi-Layer Invisible Honeypot Fields) | 1/2/4 | P1 | DOGRULANDI | Sayra (SAYRA-CODE) | `HoneypotDecoyField.tsx`, `HoneypotTrapService.ts`, core-domain (71/71) |
 
 ### SEC-001 - SQL Enjeksiyonu
 
@@ -969,7 +973,18 @@ Production veya magazaya cikis icin:
   1. `filter_chat_message_content()` geliştirildi: Türkiye/uluslararası telefon ve IBAN filtrelerinin yanı sıra kısaltma servisleri (`bit.ly`, `tinyurl.com`, `is.gd`, `t.me`, `wa.me`, `cutt.ly`, `discord.gg`), doğrudan IP adresli linkler (`192.168.x.x`, `45.x.x.x`) ve gizlenmiş adresler (`hxxp`, `[dot]`, `(dot)`) tespiti eklendi.
   2. `filter_project_comment_content()` fonksiyonu ve `trg_filter_project_comment_content` tetikleyicisi oluşturularak proje yorumları tablosuna da aynı askeri düzeyde filtreleme entegre edildi.
   3. Yetkili yöneticiler meşru destek bağlantıları için muaf tutuldu; filtrelenen içerikler güvenlik uyarı mesajıyla maskelendi.
-- Regresyon: `node scripts/tests/core-domain.test.mjs` (Faz 20 Aşama 5 testi başarılı).
+### SEC-076 - Faz 21: İleri Bal Küpü (Honeypot) & Pars DevState Siber Karşı-Aldatma Savunması (5 Aşama)
+- Tarih: 2026-09-18
+- Kapsam: `App.tsx`, `public/robots.txt`, `webRouting.ts`, `HoneypotTrapService.ts`, `HoneypotDecoyField.tsx`, `ThreatIntelligenceView.tsx`, `20260918000018_faz21_honeypot_threat_radar_and_ip_quarantine.sql`.
+- Bulgu: Otomatik web crawler'ları, fuzzer araçları (Nuclei, FFUF, Gobuster, Kiterunner), gizli kaynak arayan botlar ve insan saldırganların sahte rotaları, gizlenmiş form alanlarını ve DOM tuzaklarını fark etmeksizin sistemi tarama riski.
+- Sertleştirme:
+  1. **Aşama 1 (Web & DOM Düzeyi Tuzaklar):** `window.__KISTAS_DEV_SECRET__` ve `window.__KISTAS_INTERNAL_AUTH_STATE__` getter tuzakları, DOM gizli HTML yorum yemleri (`<!-- DEBUG: /kistas-secret-vault-backup -->`) ve `ktst_canary_override_key` zehirli storage token kalkanları kuruldu.
+  2. **Aşama 2 (robots.txt Arama Motoru & Dizin Tarayıcı Tuzağı):** `public/robots.txt` içine 5 cezbedici `Disallow:` canary yolu (`/admin-internal-audit-portal`, `/kistas-secret-vault-backup` vb.) yerleştirildi; meşru arama motorları bu yollara gitmezken fuzzer ve botlar rotayı taradığı anda `ROBOTS_TXT_CANARY_TRAP` olarak tecrit listesine alındı.
+  3. **Aşama 3 (URL Parametreleri & Sahte API Decoy Endpoint'leri):** 7 adet sahte API rotası (`/api/v1/admin/users/export`, `/api/v1/system/config-dump` vb.) ve hassas sorgu parametreleri (`admin_mode=true`, `impersonate_user=` vb.) oluşturuldu; fuzzer'lar tetiklendiğinde saldırgana inandırıcı 403 Forbidden sahte JSON yanıtı dönülerek anında aldatıldı (`DECOY_API_ENDPOINT_TRIPPED`).
+  4. **Aşama 4 (Akıllı & Çok Katmanlı Form Bal Küpleri):** `HoneypotDecoyField` bileşeni `website` ve `contact_fax` çift katmanlı yem alanları, `onArmed` zaman damgası ve insanüstü doldurma hızı (<750ms `BOT_RAPID_SUBMISSION_TRIPPED`) denetimiyle `AuthExperience`, `PasswordRecoveryScreen` ve `CreateListingScreen` formlarına entegre edildi.
+  5. **Aşama 5 (Pars DevState Siber Tehdit Radarı & Otomatik IP Karantinası):** `report_client_honeypot_trap` RPC'si PostgREST `request.headers` (`cf-connecting-ip`, `x-forwarded-for`, `x-real-ip`) ile sunucu seviyesinde teyitli IP'leri otonom yakalayacak ve Self-DoS korumalı (`is_safe_whitelisted_ip`) otomatik WAF karantinasına alacak şekilde sertleştirildi; `ThreatIntelligenceView` radarına özel `🍯 Pars Bal Küpü Tuzağına Düştü` rozeti ve `🍯 Bal Küpü Tuzakları` filtre segmenti eklendi.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (72/72 başarılı), `npx tsc --noEmit` (0 tip hatası), Fortress Sağlık Skoru %100 / 100 [A+].
+
 
 
 

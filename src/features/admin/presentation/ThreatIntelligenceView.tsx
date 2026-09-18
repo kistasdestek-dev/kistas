@@ -14,6 +14,7 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GlassIconButton } from '../../../shared/components/GlassIconButton';
+import { HoneypotTrapService } from '../../security/application/HoneypotTrapService';
 import { SecurityEnforcementService } from '../../security/application/SecurityEnforcementService';
 import { AdminService } from '../application/AdminService';
 import { ThreatEvent, ThreatIntelOverview, ThreatSeverity } from '../domain/ThreatIntelModels';
@@ -82,6 +83,18 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
       );
     });
   }, [events, blocklistSearch]);
+
+  const filteredEvents = useMemo(() => {
+    if (!selectedSeverity) return events;
+    if (selectedSeverity === 'HONEYPOT') {
+      return events.filter(
+        (e) =>
+          HoneypotTrapService.isHoneypotVector(e.attackVector) ||
+          e.actionTaken === 'HONEYPOT_DECEIVED'
+      );
+    }
+    return events.filter((e) => e.severity === selectedSeverity);
+  }, [events, selectedSeverity]);
 
   const totalQuarantinedCount = useMemo(() => {
     return events.filter((e) => e.isQuarantined).length;
@@ -247,6 +260,9 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
     }
     if (vector === 'DOM_XSS_SQLI_INJECTION') {
       return { label: '🛡️ Canlı Girdi & Payload Kalkanı', color: '#936413', bg: 'rgba(147,100,19,0.08)', border: 'rgba(147,100,19,0.25)' };
+    }
+    if (vector && HoneypotTrapService.isHoneypotVector(vector)) {
+      return { label: '🍯 Pars Bal Küpü Tuzağına Düştü', color: '#B45309', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.30)' };
     }
     switch (action) {
       case 'HONEYPOT_DECEIVED':
@@ -860,17 +876,23 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.filterRail}
             >
-              {([null, 'CRITICAL', 'HIGH', 'MEDIUM'] as const).map((sev, idx) => {
-                const active = selectedSeverity === sev;
+              {([
+                { id: null, label: 'Tüm Tehditler' },
+                { id: 'HONEYPOT', label: '🍯 Bal Küpü Tuzakları' },
+                { id: 'CRITICAL', label: 'Kritik' },
+                { id: 'HIGH', label: 'Yüksek' },
+                { id: 'MEDIUM', label: 'Orta' },
+              ] as const).map((filterItem, idx) => {
+                const active = selectedSeverity === filterItem.id;
                 return (
                   <TouchableOpacity
                     key={idx}
                     style={[styles.filterButton, active && styles.filterButtonActive]}
-                    onPress={() => setSelectedSeverity(sev)}
+                    onPress={() => setSelectedSeverity(filterItem.id)}
                     activeOpacity={0.75}
                   >
                     <Text style={[styles.filterText, active && styles.filterTextActive]}>
-                      {sev === null ? 'Tüm Tehditler' : sev === 'CRITICAL' ? 'Kritik' : sev === 'HIGH' ? 'Yüksek' : 'Orta'}
+                      {filterItem.label}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -884,17 +906,21 @@ export const ThreatIntelligenceView: React.FC<ThreatIntelligenceViewProps> = () 
               <ActivityIndicator size="large" color="#3269C7" />
               <Text style={styles.loaderText}>Tehdit telemetrisi taranıyor...</Text>
             </View>
-          ) : events.length === 0 ? (
+          ) : filteredEvents.length === 0 ? (
             <View style={styles.emptyCard}>
               <GlassIconButton icon="shield-checkmark" size={54} iconSize={28} iconColor="#187657" />
-              <Text style={styles.emptyTitle}>Aktif Siber Tehdit Bulunmuyor</Text>
+              <Text style={styles.emptyTitle}>
+                {selectedSeverity === 'HONEYPOT' ? 'Bal Küpü Tuzağı Kaydı Bulunmuyor' : 'Aktif Siber Tehdit Bulunmuyor'}
+              </Text>
               <Text style={styles.emptySubtitle}>
-                Sistem Sayra WAF ve Bal Küpü Radarı ile gerçek zamanlı korunuyor. Hiçbir simülasyon veya sahte kayıt gösterilmez. Sisteme dışarıdan vuran anormal istekler ve pentest tarayıcıları anlık olarak buraya düşecektir.
+                {selectedSeverity === 'HONEYPOT'
+                  ? 'Henüz hiçbir otomatik bot, crawler veya saldırgan yem alanlara veya gizli kanaryalara dokunmadı. Pars savunma radarı aktif bekleyişte.'
+                  : 'Sistem Sayra WAF ve Bal Küpü Radarı ile gerçek zamanlı korunuyor. Hiçbir simülasyon veya sahte kayıt gösterilmez. Sisteme dışarıdan vuran anormal istekler ve pentest tarayıcıları anlık olarak buraya düşecektir.'}
               </Text>
             </View>
           ) : (
             <View style={styles.eventsList}>
-              {events.map((event) => {
+              {filteredEvents.map((event) => {
                 const sevBadge = getSeverityBadge(event.severity);
                 const actBadge = getActionBadge(event.actionTaken, event.attackVector);
                 const inAction = actionInProgressId === event.id;

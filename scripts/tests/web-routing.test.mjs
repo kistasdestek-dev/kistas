@@ -5,6 +5,9 @@ import {
   getLegacyHashReplacement,
   isAuthCallbackHash,
   isAuthCallbackSearch,
+  isCanaryQueryParam,
+  isDecoyApiRoute,
+  isRobotsCanaryPath,
   parseWebRouteLocation,
 } from '../../src/core/navigation/webRouting.ts';
 
@@ -34,6 +37,30 @@ assert.equal(isAuthCallbackHash('#/profile'), false);
 assert.equal(isAuthCallbackSearch('?code=pkce-code'), true);
 assert.equal(isAuthCallbackSearch('?token_hash=recovery-token&type=recovery'), true);
 assert.equal(isAuthCallbackSearch('?category=tools'), false);
+
+// Aşama 2: robots.txt Canary Honeypot Route Tespiti
+assert.equal(isRobotsCanaryPath('/admin-internal-audit-portal/'), true);
+assert.equal(isRobotsCanaryPath('/kistas-secret-vault-backup'), true);
+assert.equal(isRobotsCanaryPath('/api/v1/system-internal-probe/'), true);
+assert.equal(isRobotsCanaryPath('/server-backup-archive'), true);
+assert.equal(isRobotsCanaryPath('/private-core-telemetry/'), true);
+assert.equal(isRobotsCanaryPath('/how-it-works/'), false);
+assert.equal(isRobotsCanaryPath('/blog/ornek-yazi/'), false);
+assert.equal(isRobotsCanaryPath('/'), false);
+
+// Aşama 3: Sahte API Endpoint ve Canary Query Parametre Tespiti
+assert.equal(isDecoyApiRoute('/api/v1/admin/users/export'), true);
+assert.equal(isDecoyApiRoute('/api/v1/system/config-dump'), true);
+assert.equal(isDecoyApiRoute('/api/v1/debug/sql-console'), true);
+assert.equal(isDecoyApiRoute('/api/internal/secrets'), true);
+assert.equal(isDecoyApiRoute('/blog/ornek-yazi/'), false);
+
+assert.equal(isCanaryQueryParam('?admin_mode=true'), true);
+assert.equal(isCanaryQueryParam('?bypass_auth=1&user=admin'), true);
+assert.equal(isCanaryQueryParam('?sudo=1'), true);
+assert.equal(isCanaryQueryParam('?ktst_dev_override=1'), true);
+assert.equal(isCanaryQueryParam('?category=tools'), false);
+assert.equal(isCanaryQueryParam('?platform=Web'), false);
 
 assert.doesNotMatch(appSource, /addEventListener\(['"]hashchange/i, 'Eski hashchange router geri gelmemeli.');
 assert.doesNotMatch(appSource, /location\.hash\s*=/i, 'Navigasyon hash yazmamalı.');

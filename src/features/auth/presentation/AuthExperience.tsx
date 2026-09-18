@@ -91,6 +91,8 @@ export function AuthExperience({ mode, onAuthSuccess, onSwitch, onBack, onGoogle
   const [consents, setConsents] = useState([false, false, false]);
   const [legalIndex, setLegalIndex] = useState<number | null>(null);
   const [honeypotValue, setHoneypotValue] = useState('');
+  const [secondaryHoneypotValue, setSecondaryHoneypotValue] = useState('');
+  const formArmedAtRef = useRef(Date.now());
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [info, setInfo] = useState(false);
@@ -133,7 +135,15 @@ export function AuthExperience({ mode, onAuthSuccess, onSwitch, onBack, onGoogle
     finally { locked.current = false; if (mounted.current) setBusy(false); }
   };
   const submit = () => {
-    if (!HoneypotTrapService.verifyHoneypotField(honeypotValue, registering ? 'register_form' : 'login_form')) {
+    if (
+      !HoneypotTrapService.verifyFormSubmission({
+        formId: registering ? 'register_form' : 'login_form',
+        primaryDecoy: honeypotValue,
+        secondaryDecoy: secondaryHoneypotValue,
+        armedAt: formArmedAtRef.current,
+        minFillTimeMs: 750,
+      })
+    ) {
       error('Güvenlik doğrulaması tamamlanamadı.');
       return;
     }
@@ -271,7 +281,13 @@ export function AuthExperience({ mode, onAuthSuccess, onSwitch, onBack, onGoogle
                 <Pressable accessibilityRole="button" onPress={() => setLegalIndex(index)} style={s.consentLink}><Text style={s.consentText}>{item.title}{index === 0 ? ' *' : ' (isteğe bağlı)'}</Text></Pressable>
               </View>)}</View>
             </>}
-            <HoneypotDecoyField value={honeypotValue} onChangeText={setHoneypotValue} />
+            <HoneypotDecoyField
+              value={honeypotValue}
+              onChangeText={setHoneypotValue}
+              secondaryValue={secondaryHoneypotValue}
+              onChangeSecondaryText={setSecondaryHoneypotValue}
+              onArmed={(ts) => { formArmedAtRef.current = ts; }}
+            />
             {!!message && <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={[s.notice, info && s.info]}><Text style={[s.noticeText, info && { color: '#187657' }]}>{message}</Text></View>}
             {busy ? (
               <View accessibilityLiveRegion="polite" style={s.busy}>
