@@ -111,7 +111,6 @@ export const CreateListingLivePreview: React.FC<CreateListingLivePreviewProps> =
           <View style={previewStyles.liveDot} />
           <Text style={previewStyles.badgeText}>CANLI VİTRİN KARTI</Text>
         </View>
-        <Ionicons name="sparkles" size={15} color="#3269C7" />
       </View>
 
       {/* Lansman Hazırlık Skoru Çubuğu */}
@@ -222,10 +221,6 @@ export const CreateListingLivePreview: React.FC<CreateListingLivePreviewProps> =
           </View>
         </View>
       </View>
-
-      <Text style={previewStyles.hintFooter}>
-        Bilgileri girdikçe vitrin kartınız gerçek zamanlı güncellenir.
-      </Text>
     </View>
   );
 };
@@ -476,13 +471,5 @@ const previewStyles = StyleSheet.create({
     fontSize: 10.5,
     fontWeight: '700',
     color: '#173866',
-  },
-  hintFooter: {
-    ...theme.typography.kistas,
-    fontSize: 10,
-    color: '#8292A8',
-    textAlign: 'center',
-    marginTop: 12,
-    fontStyle: 'italic',
   },
 });

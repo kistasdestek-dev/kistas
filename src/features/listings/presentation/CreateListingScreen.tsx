@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { theme, breakpoints } from '../../../core/theme';
-import { Button } from '../../../shared/components/Button';
+import { CategoryStarsBanner } from '../../../shared/components/CategoryStarsBanner';
 import { BorderBeam } from '../../../shared/components/BorderBeam';
 import { KistasTopBrandBar } from '../../../shared/components/KistasTopBrandBar';
 import { AutoTransparentLogo } from '../../../shared/components/AutoTransparentLogo';
@@ -138,6 +138,22 @@ export const CreateListingScreen: React.FC<CreateListingScreenProps> = ({ onSucc
   const categoryName = useMemo(() => {
     return categories.find((c) => c.id === categoryId)?.name || null;
   }, [categories, categoryId]);
+
+  const submitWords = useMemo(() => {
+    if (isSubmitted) {
+      return [isRevision ? 'İncelemeye Gönderildi' : isEditing ? 'Proje Güncellendi' : 'Lansman Gönderildi'];
+    }
+    if (loading) {
+      return [isRevision ? 'Düzeltmeler Gönderiliyor…' : isEditing ? 'Güncelleniyor…' : 'Lansman Gönderiliyor…'];
+    }
+    if (isRevision) {
+      return ['Düzeltmeleri İncelemeye Gönder', 'Yeniden Lansman Yap', 'İncelemeye Sun'];
+    }
+    if (isEditing) {
+      return ['Değişiklikleri Kaydet', 'Güncellemeleri Gönder', 'İncelemeye Sun'];
+    }
+    return ['Lansmanı Gönder', 'Keşfedilmeye Başla', 'Topluluğa Katıl', 'Projeni Parlat'];
+  }, [isSubmitted, isRevision, isEditing, loading]);
 
   const applyDescriptionFormat = (format: 'bold' | 'h1' | 'h2') => {
     const { start, end } = descriptionSelection;
@@ -1064,39 +1080,14 @@ export const CreateListingScreen: React.FC<CreateListingScreenProps> = ({ onSucc
                 ? 'Güncellenen proje yeniden incelemeye gönderilir.'
                 : 'Bilgilerini son kez kontrol et ve projenle topluluğa katıl.'}
             </Text>
-            <Button
-              title={
-                isSubmitted
-                  ? isRevision
-                    ? 'İncelemeye Gönderildi'
-                    : isEditing
-                    ? 'Proje Güncellendi'
-                    : 'Lansman Gönderildi'
-                  : loading
-                  ? isRevision
-                    ? 'Gönderiliyor…'
-                    : isEditing
-                    ? 'Güncelleniyor…'
-                    : 'Lansman Gönderiliyor…'
-                  : isRevision
-                  ? 'Düzeltmeleri İncelemeye Gönder'
-                  : isEditing
-                  ? 'Değişiklikleri Kaydet'
-                  : 'Lansmanı Gönder'
-              }
-              showArrow={!loading && !isSubmitted}
-              variant="primary"
-              size="lg"
-              isLoading={loading}
+            <CategoryStarsBanner
+              size="xl"
+              fullWidth
+              words={submitWords}
               disabled={isLoadingCategories || loading || isSubmitted || coverUploading || isUploadingScreenshots}
               onPress={handleSubmit}
               style={styles.submitBtn}
-              tint={{
-                surface: '#0FA336',
-                border: '#0C8A2D',
-                accent: '#FFFFFF',
-                glow: 'rgba(15,163,54,0.28)',
-              }}
+              accessibilityLabel={isEditing ? 'Değişiklikleri Kaydet' : 'Lansmanı Gönder'}
             />
           </View>
         </View>

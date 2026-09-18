@@ -6,8 +6,12 @@ export interface CategoryStarsPillProps {
   words?: string[];
   interval?: number;
   animationDuration?: number;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   onPress?: () => void;
+  disabled?: boolean;
+  fullWidth?: boolean;
+  accessibilityLabel?: string;
+  style?: any;
 }
 
 /**
@@ -21,11 +25,16 @@ export const CategoryStarsBanner: React.FC<CategoryStarsPillProps> = ({
   animationDuration = 700,
   size = 'lg',
   onPress,
+  disabled = false,
+  fullWidth = false,
+  accessibilityLabel,
+  style,
 }) => {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
+    if (!words || words.length <= 1) return;
     const intervalId = setInterval(() => {
       setIsAnimating(true);
       setTimeout(() => {
@@ -37,9 +46,11 @@ export const CategoryStarsBanner: React.FC<CategoryStarsPillProps> = ({
     return () => clearInterval(intervalId);
   }, [words, interval, animationDuration]);
 
-  const currentWord = words[currentWordIndex];
+  const currentWord = words && words.length > 0 ? words[currentWordIndex % words.length] : '';
 
-  const dimensions = size === 'lg'
+  const dimensions = size === 'xl'
+    ? { height: 52, padding: '0 36px', fontSize: 16, letterSpacing: '-0.3px', shadow: '0 4px 22px rgba(236, 72, 153, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.4) inset' }
+    : size === 'lg'
     ? { height: 44, padding: '0 24px', fontSize: 14.5, letterSpacing: '-0.3px', shadow: '0 4px 18px rgba(236, 72, 153, 0.38), 0 0 0 1px rgba(255, 255, 255, 0.4) inset' }
     : size === 'sm'
     ? { height: 30, padding: '0 12px', fontSize: 11, letterSpacing: '-0.1px', shadow: '0 2px 8px rgba(236, 72, 153, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.3) inset' }
@@ -47,28 +58,32 @@ export const CategoryStarsBanner: React.FC<CategoryStarsPillProps> = ({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={onPress}
+      activeOpacity={disabled ? 1 : 0.85}
+      onPress={disabled ? undefined : onPress}
+      disabled={disabled}
       accessibilityRole="button"
-      accessibilityLabel="Kredi Mağazası - Kategorinin Yıldızları"
-      style={{ alignItems: 'center', justifyContent: 'center' }}
+      accessibilityLabel={accessibilityLabel || "Kredi Mağazası - Kategorinin Yıldızları"}
+      style={[{ alignItems: 'center', justifyContent: 'center' }, fullWidth && { width: '100%' }, style]}
     >
       <div
         className="kistas-text-flip-pill"
         style={{
           position: 'relative',
-          display: 'inline-flex',
+          display: fullWidth ? 'flex' : 'inline-flex',
+          width: fullWidth ? '100%' : undefined,
           alignItems: 'center',
           justifyContent: 'center',
+          opacity: disabled ? 0.65 : 1,
+          pointerEvents: disabled ? 'none' : 'auto',
         }}
       >
         {/* Main pill container */}
         <motion.div
           layout
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
+          whileHover={disabled ? {} : { scale: 1.02 }}
+          whileTap={disabled ? {} : { scale: 0.98 }}
           animate={{
-            scale: isAnimating ? [1, 0.98, 1] : 1,
+            scale: !disabled && isAnimating ? [1, 0.98, 1] : 1,
           }}
           transition={{
             duration: animationDuration / 1000,
@@ -84,8 +99,9 @@ export const CategoryStarsBanner: React.FC<CategoryStarsPillProps> = ({
             background: 'linear-gradient(90deg, #8b5cf6, #ec4899, #f97316)',
             boxShadow: dimensions.shadow,
             overflow: 'hidden',
-            cursor: 'pointer',
+            cursor: disabled ? 'not-allowed' : 'pointer',
             display: 'inline-flex',
+            width: fullWidth ? '100%' : undefined,
             alignItems: 'center',
             justifyContent: 'center',
           }}
