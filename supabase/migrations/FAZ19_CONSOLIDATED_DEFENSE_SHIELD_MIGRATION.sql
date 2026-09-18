@@ -14,6 +14,83 @@
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
+-- GÜVENLİK VE WAF ALTYAPI TABLOLARI (SELF-HEALING FOUNDATION)
+-- ----------------------------------------------------------------------------
+
+-- 1. Tehdit İstihbarat Radarı Tablosu
+CREATE TABLE IF NOT EXISTS public.security_threat_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    threat_actor_id UUID,
+    ip_address TEXT,
+    user_agent TEXT,
+    tool_fingerprint TEXT NOT NULL DEFAULT 'Unknown Tool',
+    attack_vector TEXT NOT NULL,
+    severity TEXT NOT NULL DEFAULT 'MEDIUM',
+    payload_snapshot TEXT,
+    action_taken TEXT NOT NULL DEFAULT 'LOGGED',
+    is_quarantined BOOLEAN NOT NULL DEFAULT false,
+    detected_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
+);
+
+CREATE INDEX IF NOT EXISTS idx_threat_events_detected_at ON public.security_threat_events (detected_at DESC);
+CREATE INDEX IF NOT EXISTS idx_threat_events_actor ON public.security_threat_events (threat_actor_id);
+ALTER TABLE public.security_threat_events ENABLE ROW LEVEL SECURITY;
+
+-- 2. Aktif Güvenlik Duvarı Karantina Listesi (security_quarantine_blocklist)
+CREATE TABLE IF NOT EXISTS public.security_quarantine_blocklist (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ip_address TEXT,
+    threat_actor_id UUID,
+    reason TEXT NOT NULL DEFAULT 'Siber güvenlik ihlali ve pentest girişimi nedeniyle karantinaya alındı.',
+    quarantined_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    quarantined_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    released_at TIMESTAMPTZ DEFAULT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_quarantine_ip_active ON public.security_quarantine_blocklist (ip_address) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_quarantine_actor_active ON public.security_quarantine_blocklist (threat_actor_id) WHERE is_active = true;
+ALTER TABLE public.security_quarantine_blocklist ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uq_quarantine_threat_actor') THEN
+        ALTER TABLE public.security_quarantine_blocklist ADD CONSTRAINT uq_quarantine_threat_actor UNIQUE (threat_actor_id);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uq_quarantine_ip_address') THEN
+        ALTER TABLE public.security_quarantine_blocklist ADD CONSTRAINT uq_quarantine_ip_address UNIQUE (ip_address);
+    END IF;
+EXCEPTION WHEN OTHERS THEN
+    NULL;
+END $$;
+
+-- 3. Adaptif Hız Sınırı ve İstek Takip Tablosu
+CREATE TABLE IF NOT EXISTS public.security_rate_limit_tracker (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    identifier TEXT NOT NULL,
+    action_type TEXT NOT NULL,
+    hit_count INT NOT NULL DEFAULT 1,
+    violation_count INT NOT NULL DEFAULT 0,
+    window_start TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+    last_hit TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
+);
+
+CREATE INDEX IF NOT EXISTS idx_rate_limit_lookup ON public.security_rate_limit_tracker (identifier, action_type, window_start);
+ALTER TABLE public.security_rate_limit_tracker ENABLE ROW LEVEL SECURITY;
+
+-- 4. Bal Küpü Tespit Günlüğü Tablosu
+CREATE TABLE IF NOT EXISTS public.security_honeypot_detections (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    trap_name TEXT NOT NULL,
+    caller_uid UUID,
+    payload TEXT,
+    detected_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
+);
+
+ALTER TABLE public.security_honeypot_detections ENABLE ROW LEVEL SECURITY;
+
+-- ----------------------------------------------------------------------------
 -- AŞAMA 1: SAVUNMA MEKANİZMASININ SİLAHLAŞTIRILMASI ENGELİ (ANTI-DOS SHIELD)
 -- ----------------------------------------------------------------------------
 
