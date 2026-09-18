@@ -39,10 +39,10 @@ BEGIN
 END $$;
 
 -- 2. ORDERS SİPARİŞ NUMARASI VE İLAN KİLİT BÜTÜNLÜĞÜ
--- Aynı ilan için aynı anda birden fazla 'pending_payment' veya 'paid' sipariş açılamaz.
+-- Aynı ilan için aynı anda birden fazla 'pending_payment' veya 'paid_escrow' sipariş açılamaz.
 CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_active_listing_unique
 ON public.orders (listing_id)
-WHERE status IN ('pending_payment', 'paid', 'shipped');
+WHERE status IN ('pending_payment', 'paid_escrow', 'shipped');
 
 -- 3. PROJECT_UPVOTES ÇİFT OYLAMA / EŞZAMANLI YARIŞ KORUMASI
 -- project_id ve user_id ikilisi üzerinde tekillik indeksi kesinleştirilir.

@@ -382,7 +382,7 @@ END $$;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_active_listing_unique
 ON public.orders (listing_id)
-WHERE status IN ('pending_payment', 'paid', 'shipped');
+WHERE status IN ('pending_payment', 'paid_escrow', 'shipped');
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_project_upvotes_unique_pair
 ON public.project_upvotes (project_id, user_id);
