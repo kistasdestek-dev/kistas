@@ -6,12 +6,14 @@ Eski Expo/Cloudflare Pages projesi `kistas` yalnız geçici geri dönüş noktas
 
 ## Her yayın paketi için kapı
 
-1. Root dizinde `pnpm sayos:audit` çalıştırılmalı. Bu fail-closed kapı bağımlılık denetimi, dört workspace lint/tip kontrolleri, 15 deterministik test dosyası ve Next üretim derlemesinden biri başarısız olduğunda yayını durdurur.
-2. `node scripts/security/check-xss.mjs` ve `node scripts/security/check-sql-injection.mjs` geçmeli. Canlı Supabase erişimi gerektiren `pnpm test:live`, yalnız uygun güvenli ortam ve ağ erişimi doğrulandıktan sonra ayrıca çalıştırılmalıdır; varsayılan CI/yayın kapısının deterministik parçası değildir.
+1. GitHub Actions `Quality Gate` kontrolü ilgili commit için başarılı olmalı. Root dizinde `pnpm sayos:audit` aynı fail-closed kapıyı yerel olarak çalıştırır; bağımlılık, repository secret, XSS, SQL enjeksiyonu, dört workspace lint/tip kontrolleri, 15 deterministik test dosyası ve Next üretim derlemesinden biri başarısız olduğunda yayını durdurur.
+2. Canlı Supabase erişimi gerektiren `pnpm test:live`, yalnız uygun güvenli ortam ve ağ erişimi doğrulandıktan sonra ayrıca çalıştırılmalıdır; varsayılan CI/yayın kapısının deterministik parçası değildir.
 3. `docs/SECURITY_ROADMAP.md` içinde açık P0/P1 bulunmamalı. Depoya alınacak dosyalarda gizli anahtar taraması yapılmalı; `apps/web/.env.local` ve diğer `.env` dosyaları asla commit edilmemeli. Migration geçmişi ayrıca incelenmeden `supabase db push` çalıştırılmamalı.
-4. `pnpm --filter @kistas/web build:vinext` ile Workers paketi hazırlanmalı; `pnpm --filter @kistas/web exec vinext-cloudflare deploy --dry-run` ile yapılandırma denetlenmeli.
+4. `pnpm --filter @kistas/web build:vinext` ile Workers paketi hazırlanmalı; `pnpm --filter @kistas/web exec wrangler deploy --dry-run --outdir .wrangler/dry-run` ile yapılandırma ve gerçek yükleme paketi denetlenmeli.
 5. Cloudflare oturumu açıkken `pnpm --filter @kistas/web exec vinext-cloudflare deploy --skip-build` çalıştırılmalı. Bu komut `www` route'unu da günceller. GitHub `main` dalına gönderim, mevcut Pages Git entegrasyonu nedeniyle bu Workers dağıtımının yerine geçmez.
 6. Canlı `www` adresinde ana sayfa, giriş, Keşfet, kayıt, blog, auth callback, proje detay, OG/rozet API'leri, mesajlaşma ve yönetici yetki sınırları uygun test hesaplarıyla doğrulanmalı. OAuth, şifre sıfırlama, mesaj gönderimi ve proje yayınlama oturumlu uçtan uca testler yapılmadan tamamlandı sayılmaz.
+
+CI yalnız doğrulama yapar; Cloudflare API tokenı veya Supabase servis anahtarı almaz ve otomatik deploy çalıştırmaz. Canlı yayın, başarılı kalite kapısından sonra bu belgedeki yetkili manuel adımla yapılır.
 
 ## Geri dönüş
 

@@ -84,6 +84,28 @@ Next.js 16, Cloudflare Workers ve Supabase tabanlı KISTAS web uygulamasını; g
 - `pnpm sayos:audit`: bilinen yüksek/kritik açık yok, lint 4/4, tip kontrolü 7/7, test grafiği 7/7 ve Next üretim derlemesi başarılıdır. XSS/SQL korumaları ve vinext Workers derlemesi ayrıca geçmiştir.
 - Canlı ağ testi bilinçli olarak otomatik kapıya alınmadı; deploy veya veritabanı değişikliği yapılmadı.
 
+## Faz 4 — CI Güvenlik ve Build Kapısı
+
+- GitHub Actions kalite kapısı `main` push, pull request ve manuel tetiklemede temiz Linux ortamında çalışır.
+- Workflow yalnız `contents: read` yetkisi alır; PR koduna secret veya deploy yetkisi verilmez.
+- Node.js ve pnpm sürümleri sabitlenir; bağımlılıklar mevcut `pnpm-lock.yaml` değiştirilmeden kurulur.
+- Kullanılan GitHub Actions tam commit SHA’larına kilitlenerek hareketli etiket kaynaklı tedarik zinciri riski azaltılır.
+- Birleşik güvenlik kapısı bağımlılık, repository secret, XSS ve SQL enjeksiyonu kontrollerini fail-closed uygular.
+- Lint, tip kontrolü, deterministik testler, Next üretim buildi, vinext Workers buildi ve Wrangler dry-run zorunludur.
+- pnpm store ve Turbo sonuçları önbelleğe alınır; Turbo cache yalnız başarılı `main` push çalışmasında kaydedilir.
+- CI hiçbir koşulda otomatik deploy, migration veya canlı Supabase testi çalıştırmaz.
+
+## Faz 4 Doğrulama Kaydı — 2026-09-24
+
+- Workflow YAML yapısı ayrıştırıldı; `quality` işi ve adımları doğrulandı. Action referansları güncel resmi etiketlerin tam commit SHA’larıyla eşleştirildi.
+- `pnpm install --frozen-lockfile` beş workspace için başarılı; lockfile değiştirilmedi ve tedarik zinciri politikalarından geçti.
+- Birleşik kapı başarılı: bilinen açık yok, repository secret/XSS/SQL temiz, lint 4/4, tip kontrolü 7/7, test grafiği 7/7 ve Next üretim buildi başarılı.
+- vinext Workers buildi ve Wrangler dry-run başarılı; 327 modül ile 2,41 MiB gzip yükleme paketi doğrulandı, deploy yapılmadı.
+- GitHub üzerindeki ilk gerçek workflow koşusu commit uzak depoya gönderildikten sonra doğrulanacaktır.
+- Takip notu: Edge Runtime deprecation ve 500 KB üzeri istemci chunk uyarıları sonraki performans fazlarında ele alınacaktır.
+
 ## Geri Dönüş
 
 Faz 1 yalnız depo hijyeni ve belgeleri değiştirir. Sorun halinde bu fazda değiştirilen `.gitignore` ve dokümantasyon satırları geri alınır; canlı Worker, Supabase ve eski Pages yayınına dokunulmaz.
+
+Faz 4 geri dönüşünde kalite workflow’u ve `sayos:security` zincirindeki ek kontroller geri alınır. CI’nın deploy yetkisi olmadığı için bu geri dönüş canlı Worker, veritabanı veya Pages yayını üzerinde işlem gerektirmez.

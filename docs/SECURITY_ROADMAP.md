@@ -1030,5 +1030,14 @@ Production veya magazaya cikis icin:
 - `pnpm sayos:audit` artık üretim buildinden önce test kapısını çalıştırır ve herhangi bir başarısızlıkta zinciri durdurur. XSS/SQL korumaları ve vinext Workers derlemesi ayrıca başarılıdır. Ağ erişimli Pars Defender testi ayrı `pnpm test:live` komutunda tutulur.
 - Bu fazda deploy, migration, canlı Supabase veya geri dönüşte tutulan Pages yayını değiştirilmedi.
 
+### 2026-09-24 - CI güvenlik ve Workers build kapısı
 
+- GitHub Actions kalite workflow’u `main` push, pull request ve manuel tetiklemede temiz `ubuntu-latest` ortamında çalışacak şekilde eklendi.
+- Workflow yetkisi `contents: read` ile sınırlandı; checkout kimlik bilgileri kalıcı tutulmaz, PR çalışmasına secret veya deploy yetkisi verilmez.
+- Node.js `24.18.0` ve manifestteki pnpm `12.4.2` sürümü sabittir. Kilit dosyası zorunlu ve frozen kurulum uygulanır.
+- `checkout`, `pnpm/setup` ve `actions/cache` bağımlılıkları tam commit SHA’larına kilitlendi. Turbo cache yalnız başarılı `main` push sonrasında kaydedilir.
+- `sayos:security` bağımlılık denetiminin yanında repository secret, XSS ve SQL enjeksiyonu kontrollerini de fail-closed çalıştırır.
+- CI zinciri lint, tip kontrolü, 15 deterministik test dosyası, Next build, vinext Workers build ve Wrangler deploy dry-run adımlarını zorunlu tutar.
+- Canlı Supabase testi, Cloudflare deploy ve migration CI dışında bırakıldı. Eski Pages geri dönüş yayınına ve veritabanına dokunulmadı.
+- Yerel kanıt: frozen kurulum, workflow YAML ayrıştırması, birleşik audit, vinext build ve Wrangler dry-run başarılıdır. Worker paketi 327 modül / 2,41 MiB gzip olarak doğrulandı; uzak GitHub Actions koşusu push sonrasına beklemektedir.
 

@@ -12,7 +12,7 @@
     "dev:web": "pnpm --filter @kistas/web dev",
     "build:web": "pnpm --filter @kistas/web build",
     "type-check": "turbo run type-check",
-    "sayos:security": "pnpm audit --audit-level high",
+    "sayos:security": "pnpm audit --audit-level high && node scripts/security/check-repo-secrets.mjs && node scripts/security/check-xss.mjs && node scripts/security/check-sql-injection.mjs",
     "sayos:audit": "pnpm sayos:security && pnpm lint && pnpm type-check && pnpm test && pnpm build",
     "check:system": "node scripts/system-check.mjs",
     "system:check": "node scripts/system-check.mjs",
