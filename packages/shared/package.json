@@ -5,6 +5,7 @@
   "types": "./src/index.ts",
   "scripts": {
     "lint": "tsc --noEmit",
+    "test": "node ../../scripts/tests/run-workspace-suite.mjs shared",
     "type-check": "tsc --noEmit",
     "build": "tsc"
   },

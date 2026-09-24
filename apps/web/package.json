@@ -10,6 +10,7 @@
     "build:vinext": "vinext build",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
+    "test": "node ../../scripts/tests/run-workspace-suite.mjs web",
     "type-check": "next typegen && tsc --noEmit",
     "sayos:security": "pnpm audit --audit-level high --filter @kistas/web"
   },

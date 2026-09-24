@@ -6,8 +6,8 @@ Eski Expo/Cloudflare Pages projesi `kistas` yalnız geçici geri dönüş noktas
 
 ## Her yayın paketi için kapı
 
-1. `pnpm --filter @kistas/web type-check` ve `pnpm --filter @kistas/web build` başarılı olmalı.
-2. `node scripts/security/check-xss.mjs`, `node scripts/security/check-sql-injection.mjs`, `node scripts/tests/core-domain.test.mjs` ve `node scripts/tests/chat-identity.test.mjs` geçmeli. `pnpm audit --audit-level high --filter @kistas/web` temiz olmalı.
+1. Root dizinde `pnpm sayos:audit` çalıştırılmalı. Bu fail-closed kapı bağımlılık denetimi, dört workspace lint/tip kontrolleri, 15 deterministik test dosyası ve Next üretim derlemesinden biri başarısız olduğunda yayını durdurur.
+2. `node scripts/security/check-xss.mjs` ve `node scripts/security/check-sql-injection.mjs` geçmeli. Canlı Supabase erişimi gerektiren `pnpm test:live`, yalnız uygun güvenli ortam ve ağ erişimi doğrulandıktan sonra ayrıca çalıştırılmalıdır; varsayılan CI/yayın kapısının deterministik parçası değildir.
 3. `docs/SECURITY_ROADMAP.md` içinde açık P0/P1 bulunmamalı. Depoya alınacak dosyalarda gizli anahtar taraması yapılmalı; `apps/web/.env.local` ve diğer `.env` dosyaları asla commit edilmemeli. Migration geçmişi ayrıca incelenmeden `supabase db push` çalıştırılmamalı.
 4. `pnpm --filter @kistas/web build:vinext` ile Workers paketi hazırlanmalı; `pnpm --filter @kistas/web exec vinext-cloudflare deploy --dry-run` ile yapılandırma denetlenmeli.
 5. Cloudflare oturumu açıkken `pnpm --filter @kistas/web exec vinext-cloudflare deploy --skip-build` çalıştırılmalı. Bu komut `www` route'unu da günceller. GitHub `main` dalına gönderim, mevcut Pages Git entegrasyonu nedeniyle bu Workers dağıtımının yerine geçmez.

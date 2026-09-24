@@ -66,6 +66,24 @@ Next.js 16, Cloudflare Workers ve Supabase tabanlı KISTAS web uygulamasını; g
 - Düzeltmeler: kararlı Supabase istemci referansları, eksiksiz hook bağımlılıkları, render dışında Google callback ref güncellemesi, güvenli iç navigasyon ve sıralı sohbet animasyonu.
 - Windows üzerinde Turbo build görevleri tamamlandıktan sonra süreç askıda kaldığı için root build kapısı topolojik ve tek eşzamanlı `pnpm -r` çalıştırıcısına geçirildi; lint ve type-check Turbo önbelleğini kullanmayı sürdürür.
 
+## Faz 3 — Test Görev Grafiği
+
+- Mevcut yerel regresyon testleri `shared`, `supabase`, `ui` ve `web` sorumluluklarına ayrılır.
+- Her workspace gerçek bir `test` görevi çalıştırır; eksik veya var olmayan görev başarı sayılmaz.
+- Test dosyaları Turbo global girdisi olarak izlenir ve başarılı sonuçlar önbelleğe alınır.
+- Ağ ve canlı Supabase erişimi gerektiren Pars Defender testi deterministik kapıdan ayrılarak yalnız `pnpm test:live` ile çalıştırılır.
+- `pnpm sayos:audit`, üretim derlemesinden önce bütün deterministik testleri fail-closed çalıştırır.
+- Eski Expo `dist` çıktısına bağlı SEO ve tipografi testleri Next.js App Router ile ortak UI token sözleşmesine taşınır.
+
+## Faz 3 Doğrulama Kaydı — 2026-09-24
+
+- Dört workspace’in tamamında test görevi mevcut; Turbo test grafiği 7/7 başarılıdır.
+- 15 deterministik test dosyası çalıştı; çekirdek domain 84/84 ve sohbet kimliği 4/4 başarılı, atlanan test yoktur.
+- İkinci çalıştırmada 7/7 görev Turbo önbelleğinden geldi; kök test dosyaları `globalDependencies` ile cache invalidation kapsamındadır.
+- Next.js SEO sözleşmesi 8 kaynak rota ve 11 sitemap URL’sini; UI tipografi sözleşmesi ortak Kıstas tokenını ve sistem font zincirini doğrular.
+- `pnpm sayos:audit`: bilinen yüksek/kritik açık yok, lint 4/4, tip kontrolü 7/7, test grafiği 7/7 ve Next üretim derlemesi başarılıdır. XSS/SQL korumaları ve vinext Workers derlemesi ayrıca geçmiştir.
+- Canlı ağ testi bilinçli olarak otomatik kapıya alınmadı; deploy veya veritabanı değişikliği yapılmadı.
+
 ## Geri Dönüş
 
 Faz 1 yalnız depo hijyeni ve belgeleri değiştirir. Sorun halinde bu fazda değiştirilen `.gitignore` ve dokümantasyon satırları geri alınır; canlı Worker, Supabase ve eski Pages yayınına dokunulmaz.

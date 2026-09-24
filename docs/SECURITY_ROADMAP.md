@@ -1021,7 +1021,14 @@ Production veya magazaya cikis icin:
 - Next.js ve vinext üretim derlemeleri başarılıdır. Bu değişiklikte deploy, migration veya veritabanı işlemi yapılmadı.
 - Windows üzerinde Turbo build görevleri tamamlandığı halde süreç kapanmadığı için root build kapısı topolojik `pnpm -r --workspace-concurrency=1` çalıştırıcısına geçirildi. Böylece birleşik audit komutu deterministik exit code üretir; lint ve type-check Turbo üzerinden devam eder.
 
+### 2026-09-24 - Monorepo test görev grafiği
 
+- 15 deterministik regresyon dosyası `shared`, `supabase`, `ui` ve `web` workspace sorumluluklarına ayrıldı; dört paketin her biri gerçek `test` görevi çalıştırır.
+- Turbo test grafiği 7/7 başarılıdır ve ikinci çalıştırmada 7/7 görev önbellekten gelmiştir. Kök test dosyaları global bağımlılık olarak izlenir; test değişikliği önbelleği geçersiz kılar.
+- Çekirdek domain 84/84, sohbet kimliği 4/4 ve diğer güvenlik/uyum/SEO/UI test dosyalarının tamamı başarılıdır; atlanan test yoktur.
+- Eski Expo `dist` çıktısını hedefleyen SEO testi Next.js App Router kaynakları, sitemap, robots ve llms sözleşmesine; tipografi testi ortak UI tokenı ve web sistem font zincirine taşındı.
+- `pnpm sayos:audit` artık üretim buildinden önce test kapısını çalıştırır ve herhangi bir başarısızlıkta zinciri durdurur. XSS/SQL korumaları ve vinext Workers derlemesi ayrıca başarılıdır. Ağ erişimli Pars Defender testi ayrı `pnpm test:live` komutunda tutulur.
+- Bu fazda deploy, migration, canlı Supabase veya geri dönüşte tutulan Pages yayını değiştirilmedi.
 
 
 
