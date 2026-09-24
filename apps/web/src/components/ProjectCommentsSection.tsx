@@ -453,14 +453,14 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
                       <div className="flex items-start gap-3">
                         <div className="shrink-0">
                           {isDefaultCommentAvatar ? (
-                            // eslint-disable-next-line @next/next/no-img-element
+
                             <img
                               src="/kistas-logo-transparent.png"
                               alt="Kıstas"
                               className="h-11 w-11 object-contain"
                             />
                           ) : (
-                            // eslint-disable-next-line @next/next/no-img-element
+
                             <img
                               src={resolveAvatarUrl(comment.user?.avatar_url)}
                               alt={comment.user?.full_name || 'Kullanıcı'}
@@ -538,14 +538,14 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
                                 return (
                                   <div key={reply.id} className="flex min-w-0 items-start gap-2.5">
                                     {isDefaultReplyAvatar ? (
-                                      // eslint-disable-next-line @next/next/no-img-element
+
                                       <img
                                         src="/kistas-logo-transparent.png"
                                         alt="Kıstas"
                                         className="h-9 w-9 shrink-0 object-contain"
                                       />
                                     ) : (
-                                      // eslint-disable-next-line @next/next/no-img-element
+
                                       <img
                                         src={resolveAvatarUrl(reply.user?.avatar_url)}
                                         alt={reply.user?.full_name || 'Kullanıcı'}

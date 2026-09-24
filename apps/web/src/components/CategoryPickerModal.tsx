@@ -279,7 +279,7 @@ export const CategoryPickerModal: React.FC<CategoryPickerModalProps> = ({
 
                     {visual && (
                       <span className="absolute right-2.5 top-2.5 z-10 flex h-14 w-14 items-center justify-center rounded-[17px] border border-white/20 bg-white/[0.12] p-1.5 shadow-sm backdrop-blur-md transition-transform duration-200 group-hover:scale-105 sm:h-16 sm:w-16">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        { }
                         <img
                           src={resolveCategoryIconPath(visual.icon3d)}
                           alt=""

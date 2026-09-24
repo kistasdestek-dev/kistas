@@ -9,9 +9,9 @@
     "build": "next build",
     "build:vinext": "vinext build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --max-warnings=0",
     "type-check": "next typegen && tsc --noEmit",
-    "sayos:security": "npm audit --audit-level=high || echo '\\n[!] GÜVENLİK UYARISI (PARS Kalkanı): High/Critical zafiyetler tespit edildi! Ayrıntılar için logları inceleyin.'"
+    "sayos:security": "pnpm audit --audit-level high --filter @kistas/web"
   },
   "dependencies": {
     "@kistas/shared": "workspace:*",

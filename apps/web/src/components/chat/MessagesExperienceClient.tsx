@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useTransition } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useTransition } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import {
@@ -68,7 +68,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
   });
   const [isPending, startTransition] = useTransition();
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   // Mobil mesajlaşmada dış sayfayı kilitle; yalnız iç listeler kaydırılabilir.
   useEffect(() => {
@@ -100,7 +100,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
   }, []);
 
   // Verileri Canlı Tazeleme
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
       const data = await ChatService.getConversations(supabase, currentUserId);
@@ -111,7 +111,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [currentUserId, router, supabase]);
 
   // Realtime Inbox Dinleyicisi
   useEffect(() => {
@@ -122,7 +122,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
     return () => {
       unsubscribe();
     };
-  }, [currentUserId]);
+  }, [handleRefresh, supabase]);
 
   // Kıstas Destek Sohbeti Başlatma
   const handleStartSupport = async () => {

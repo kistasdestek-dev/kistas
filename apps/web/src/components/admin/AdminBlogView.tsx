@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -61,7 +61,7 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
   const [readingTime, setReadingTime] = useState(4);
   const [isPublished, setIsPublished] = useState(true);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     if (posts && posts.length > 0) {
@@ -75,7 +75,7 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
           if (data) setLocalPosts(data as AdminBlogPost[]);
         });
     }
-  }, [posts]);
+  }, [posts, supabase]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);

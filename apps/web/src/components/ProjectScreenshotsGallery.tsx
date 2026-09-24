@@ -325,7 +325,7 @@ export const ProjectScreenshotsGallery: React.FC<ProjectScreenshotsGalleryProps>
                   }
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src={item.url}
                   alt={`${projectTitle} önizleme ${index + 1}`}
@@ -462,7 +462,7 @@ export const ProjectScreenshotsGallery: React.FC<ProjectScreenshotsGalleryProps>
                         isAdjacent ? 'cursor-pointer hover:opacity-100' : ''
                       }`}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      { }
                       <img
                         src={item.url}
                         alt={`${projectTitle} ekran görüntüsü ${index + 1}`}

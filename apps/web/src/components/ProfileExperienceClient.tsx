@@ -252,7 +252,7 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                 {/* Avatar Frame */}
                 <div className="relative flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-[24px] border border-white/10 bg-white/5 shadow-lg overflow-hidden">
                   {profile?.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
+
                     <img
                       src={profile.avatar_url}
                       alt={fullName}

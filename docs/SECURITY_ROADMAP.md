@@ -1013,7 +1013,13 @@ Production veya magazaya cikis icin:
 - Sınır: Google Identity Services ile mobil hesap seçimi ve gerçek oturum açma 2026-09-24 tarihinde kullanıcı cihazında doğrulandı. GitHub OAuth, şifre sıfırlama, oturumlu mesaj, proje yayınlama ve yönetici negatif yetki akışları bu yayında uçtan uca doğrulanmadı. Uzak migration geçmişi ayrışık olduğundan toplu migration gönderilmedi. Bu kontroller tamamlanana kadar eski Pages dağıtımı geri dönüş için korunur.
 - Geri dönüş: Workers `www.kistas.com.tr/*` route'unu kaldır; Pages custom domain ve DNS kaydına dokunma. Ayrıntı: `docs/WEB_RELEASE.md`.
 
+### 2026-09-24 - Monorepo lint ve fail-closed kalite kapısı
 
+- Next.js 16 ile kaldırılan `next lint`, ESLint 9 flat config ve Core Web Vitals kurallarıyla değiştirildi. Web lint 0 hata/0 uyarı, Turbo workspace lint 4/4 ve TypeScript görevleri 7/7 başarılıdır.
+- Root ve web bağımlılık denetimleri artık `|| echo` ile hata kodunu yutmaz; yüksek/kritik bulgu kalite kapısını durdurur. Güncel denetimde bilinen açık bulunmadı.
+- Hook bağımlılıkları ve Supabase istemci yaşam döngüsü sabitlendi; Google callback ref'i render sırasında mutasyondan çıkarıldı. XSS/SQL kontrolleri, çekirdek domain 84/84 ve sohbet kimliği 4/4 başarılıdır.
+- Next.js ve vinext üretim derlemeleri başarılıdır. Bu değişiklikte deploy, migration veya veritabanı işlemi yapılmadı.
+- Windows üzerinde Turbo build görevleri tamamlandığı halde süreç kapanmadığı için root build kapısı topolojik `pnpm -r --workspace-concurrency=1` çalıştırıcısına geçirildi. Böylece birleşik audit komutu deterministik exit code üretir; lint ve type-check Turbo üzerinden devam eder.
 
 
 

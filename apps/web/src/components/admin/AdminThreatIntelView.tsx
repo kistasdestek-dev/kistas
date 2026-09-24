@@ -54,7 +54,7 @@ export const AdminThreatIntelView: React.FC = () => {
   const [actionBusyId, setActionBusyId] = useState<string | null>(null);
   const [selectedPayload, setSelectedPayload] = useState<string | null>(null);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const loadData = useCallback(async (silent = false) => {
     if (!silent) setIsLoading(true);
@@ -104,7 +104,7 @@ export const AdminThreatIntelView: React.FC = () => {
     } finally {
       if (!silent) setIsLoading(false);
     }
-  }, [severityFilter]);
+  }, [severityFilter, supabase]);
 
   useEffect(() => {
     loadData();
@@ -458,7 +458,7 @@ export const AdminThreatIntelView: React.FC = () => {
             <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 h-44 w-44 rounded-full bg-gradient-to-b from-rose-500/25 via-rose-500/10 to-transparent blur-3xl" />
             <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
               <Terminal size={16} className="text-rose-400" />
-              <span>Saldırı Payload Snapshot'ı</span>
+              <span>Saldırı Payload Snapshot’ı</span>
             </h4>
             <div className="p-4 rounded-xl border border-white/10 bg-black/60 text-emerald-400 font-mono text-xs overflow-x-auto max-h-96 break-all backdrop-blur-md">
               {selectedPayload}

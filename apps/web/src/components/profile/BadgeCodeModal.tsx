@@ -114,7 +114,7 @@ export const BadgeCodeModal: React.FC<BadgeCodeModalProps> = ({
             Canlı Önizleme
           </span>
           <div className="mt-2 py-1 flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            { }
             <img
               src={`/api/badge/${effectiveId}?theme=${theme}`}
               alt="Kıstas Rozet Önizlemesi"

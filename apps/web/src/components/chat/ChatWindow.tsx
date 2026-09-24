@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -69,7 +69,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     direction: 'pending' | 'horizontal' | 'vertical';
   } | null>(null);
   const swipeReleaseTimerRef = useRef<number | null>(null);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const { isSupport, isOfficialSupport, name, avatarUrl, isVerified } = getConversationIdentity(conversation, currentUserId);
   const project = conversation.listing;
@@ -187,7 +187,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       isMounted = false;
       unsubscribe();
     };
-  }, [conversation.id, currentUserId]);
+  }, [conversation.id, currentUserId, supabase]);
 
   // Canlı Güvenlik Denetimi (Telefon, IBAN, Harici Link)
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

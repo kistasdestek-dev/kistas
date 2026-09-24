@@ -699,7 +699,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
                 <div className="flex items-center gap-4">
                   {(showcaseCover || screenshots[0]) && (
                     <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-slate-950 shadow-sm">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      { }
                       <img
                         src={showcaseCover || screenshots[0]}
                         alt="Vitrin Kapağı"
@@ -740,7 +740,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
                         key={idx}
                         className="relative group aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-sm"
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        { }
                         <img src={uri} alt={`Ekran ${idx + 1}`} className="h-full w-full object-cover" />
 
                         {/* Delete Badge */}

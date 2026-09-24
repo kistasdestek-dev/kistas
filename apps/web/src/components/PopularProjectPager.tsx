@@ -20,7 +20,6 @@ export const PopularProjectPager: React.FC<PopularProjectPagerProps> = ({
   title,
   subtitle,
   projects,
-  metric: _metric = 'lifetime',
   viewAllHref = '/popular',
   onOpenAll,
   showEmptyState = false,

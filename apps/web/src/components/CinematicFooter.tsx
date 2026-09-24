@@ -36,7 +36,7 @@ export const CinematicFooter: React.FC = () => {
         <div className="kcf-brand">
           <KistasLogo size={36} showWordmark glow />
           <p className="kcf-tagline">
-            Türkiye'nin bağımsız dijital projelerini, yenilikçi yazılımlarını ve mikro servislerini bir araya getiren prestijli vitrin.
+            Türkiye’nin bağımsız dijital projelerini, yenilikçi yazılımlarını ve mikro servislerini bir araya getiren prestijli vitrin.
           </p>
         </div>
 

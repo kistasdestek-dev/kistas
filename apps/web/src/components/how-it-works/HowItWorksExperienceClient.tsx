@@ -350,7 +350,7 @@ export const HowItWorksExperienceClient: React.FC = () => {
                 KISTAS EKOSİSTEMİ
               </span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white">
-                Kıstas'ta yerini almaya hazır mısın?
+                Kıstas’ta yerini almaya hazır mısın?
               </h2>
               <p className="text-sm sm:text-base text-zinc-300 leading-relaxed max-w-xl mx-auto">
                 Yeni bir dijital ürün keşfet veya geliştirdiğin bağımsız projeyi binlerce meraklı gözün önüne çıkar.

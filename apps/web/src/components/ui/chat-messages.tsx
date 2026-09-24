@@ -162,36 +162,35 @@ export function ChatMessages({
   }, []);
 
   const revealNext = useCallback(
-    async (index: number) => {
-      if (index >= chatMessages.length) {
-        isAutoPlaying.current = false;
-        return;
+    async (startIndex: number) => {
+      let index = startIndex;
+
+      while (index < chatMessages.length && isAutoPlaying.current) {
+        const message = chatMessages[index];
+
+        if (message.sender === 'assistant') {
+          setIsTyping(true);
+          await new Promise((resolve) => setTimeout(resolve, typingDuration));
+          setIsTyping(false);
+        }
+
+        setVisibleCount(index + 1);
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        scrollToBottom();
+
+        await new Promise((resolve) =>
+          setTimeout(
+            resolve,
+            autoPlayDelay -
+              (message.sender === 'assistant' ? typingDuration : 0) -
+              100
+          )
+        );
+
+        index += 1;
       }
 
-      const message = chatMessages[index];
-
-      if (message.sender === 'assistant') {
-        setIsTyping(true);
-        await new Promise((r) => setTimeout(r, typingDuration));
-        setIsTyping(false);
-      }
-
-      setVisibleCount(index + 1);
-      await new Promise((r) => setTimeout(r, 100));
-      scrollToBottom();
-
-      await new Promise((r) =>
-        setTimeout(
-          r,
-          autoPlayDelay -
-            (message.sender === 'assistant' ? typingDuration : 0) -
-            100
-        )
-      );
-
-      if (isAutoPlaying.current) {
-        revealNext(index + 1);
-      }
+      if (index >= chatMessages.length) isAutoPlaying.current = false;
     },
     [chatMessages, autoPlayDelay, typingDuration, scrollToBottom]
   );

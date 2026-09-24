@@ -183,7 +183,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             title="Profil fotoğrafını değiştir"
           >
             {draftAvatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
+
               <img
                 src={draftAvatarUrl}
                 alt="Avatar"

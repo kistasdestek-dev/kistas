@@ -121,7 +121,7 @@ export const ShareLaunchKitModal: React.FC<ShareLaunchKitModalProps> = ({
               <span className="font-bold text-sm">𝕏</span>
             </div>
             <span className="text-xs font-semibold text-white group-hover:text-blue-400 transition-colors">
-              X'te Paylaş
+              X’te Paylaş
             </span>
           </button>
 

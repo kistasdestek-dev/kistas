@@ -45,6 +45,27 @@ Next.js 16, Cloudflare Workers ve Supabase tabanlı KISTAS web uygulamasını; g
 - Takip notu: Edge Runtime deprecation, 500 KB üzeri istemci chunk'ları ve Cloudflare görsel optimizasyonu eksikliği sonraki performans/SEO fazlarına kaydedildi.
 - Depo temizliği: Kullanılmayan 128 ham PNG/JPG kategori varlığı (88,23 MB) kaldırıldı. Çalışma zamanında kullanılan 38 WebP varlığının tamamı doğrulandı; eksik referans yok. Yeni monorepo aday kapsamı 208 dosya ve yaklaşık 8,31 MB'a indirildi.
 
+## Faz 2 — Lint ve Kalite Kapısı
+
+- Next.js 16 tarafından kaldırılan `next lint`, ESLint 9 flat config ile değiştirilecektir.
+- Web uygulamasında `core-web-vitals` ve TypeScript kuralları uyarı toleransı olmadan çalışacaktır.
+- Root lint görevi dört workspace paketini Turbo üzerinden doğrulayacaktır.
+- Bağımlılık güvenlik denetimi hata kodunu yutmayacak; yüksek/kritik bulgu kalite kapısını durduracaktır.
+- Faz; lint, TypeScript, güvenlik/regresyon testleri ve üretim build kanıtlarıyla kapatılacaktır.
+- Geçiş istisnaları: mevcut Supabase adaptörlerindeki açık `any` tipleri, davranış değiştiren React saflık/efekt refactorları ve Cloudflare Images bağlanmadan önceki `<img>` kullanımları ayrı teknik borç olarak tutulacaktır. Hook bağımlılıkları, navigasyon, kullanılmayan kod ve JSX güvenliği bu fazda düzeltilir.
+
+## Faz 2 Doğrulama Kaydı — 2026-09-24
+
+- Next.js 16 uyumlu ESLint 9 flat config, Core Web Vitals ve TypeScript kuralları kuruldu.
+- Web lint: 0 hata, 0 uyarı; Turbo workspace lint: 4/4 başarılı.
+- TypeScript/Turbo: 7/7 görev başarılı.
+- Bağımlılık denetimi fail-closed çalıştı; bilinen açık bulunmadı.
+- XSS ve SQL enjeksiyonu kontrolleri başarılı.
+- Regresyon: çekirdek domain 84/84, sohbet kimliği 4/4 başarılı.
+- Next.js ve vinext üretim derlemeleri başarılı; deploy yapılmadı.
+- Düzeltmeler: kararlı Supabase istemci referansları, eksiksiz hook bağımlılıkları, render dışında Google callback ref güncellemesi, güvenli iç navigasyon ve sıralı sohbet animasyonu.
+- Windows üzerinde Turbo build görevleri tamamlandıktan sonra süreç askıda kaldığı için root build kapısı topolojik ve tek eşzamanlı `pnpm -r` çalıştırıcısına geçirildi; lint ve type-check Turbo önbelleğini kullanmayı sürdürür.
+
 ## Geri Dönüş
 
 Faz 1 yalnız depo hijyeni ve belgeleri değiştirir. Sorun halinde bu fazda değiştirilen `.gitignore` ve dokümantasyon satırları geri alınır; canlı Worker, Supabase ve eski Pages yayınına dokunulmaz.

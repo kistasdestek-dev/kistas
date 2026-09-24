@@ -233,7 +233,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center rounded-full bg-[#3269C7]/10 p-3 sm:p-3.5 border border-[#3269C7]/20 shadow-[0_0_18px_rgba(50,105,199,0.2)]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  { }
                   <img
                     src="/kistas-logo-transparent.png"
                     alt="Kıstas Logo"
@@ -456,14 +456,14 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
           <div className="flex flex-col items-stretch justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-sm sm:flex-row sm:items-start">
             <div className="flex w-full min-w-0 items-center gap-3.5 sm:w-auto">
               {isKistasDefaultAvatar(project.seller?.avatar_url) ? (
-                // eslint-disable-next-line @next/next/no-img-element
+
                 <img
                   src="/kistas-logo-transparent.png"
                   alt="Kıstas Geliştirici"
                   className="h-14 w-14 shrink-0 object-contain"
                 />
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
+
                 <img
                   src={resolveAvatarUrl(project.seller?.avatar_url)}
                   alt={cleanMakerName}
@@ -548,7 +548,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                 className="group relative inline-flex w-[164px] h-12 items-center justify-center bg-black transition-all hover:scale-105 active:scale-95 shadow-[0_6px_20px_rgba(0,0,0,0.7)] rounded-xl overflow-hidden border border-white/15 hover:border-white/30 cursor-pointer shrink-0"
                 title="App Store'da Aç"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src="/store-badges/app-store.png?v=2"
                   alt="Download on the App Store"
@@ -562,7 +562,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                 className="group relative inline-flex w-[164px] h-12 items-center justify-center bg-black transition-all hover:scale-105 active:scale-95 shadow-[0_6px_20px_rgba(0,0,0,0.7)] rounded-xl overflow-hidden border border-white/10 hover:border-white/20 cursor-pointer opacity-85 hover:opacity-100 shrink-0"
                 title="App Store bağlantısı henüz eklenmedi"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src="/store-badges/app-store.png?v=2"
                   alt="Download on the App Store"
@@ -580,7 +580,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                 className="group relative inline-flex w-[164px] h-12 items-center justify-center bg-black transition-all hover:scale-105 active:scale-95 shadow-[0_6px_20px_rgba(0,0,0,0.7)] rounded-xl overflow-hidden border border-white/15 hover:border-white/30 cursor-pointer shrink-0"
                 title="Google Play Store'da Aç"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src="/store-badges/google-play.png?v=2"
                   alt="GET IT ON Google Play"
@@ -594,7 +594,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                 className="group relative inline-flex w-[164px] h-12 items-center justify-center bg-black transition-all hover:scale-105 active:scale-95 shadow-[0_6px_20px_rgba(0,0,0,0.7)] rounded-xl overflow-hidden border border-white/10 hover:border-white/20 cursor-pointer opacity-85 hover:opacity-100 shrink-0"
                 title="Google Play Store bağlantısı henüz eklenmedi"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src="/store-badges/google-play.png?v=2"
                   alt="GET IT ON Google Play"
@@ -612,14 +612,14 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                 className="group relative inline-flex w-[164px] h-12 items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-[#090A0E] via-[#111625] to-[#0E131F] text-white shadow-[0_6px_20px_rgba(50,105,199,0.25)] transition-all hover:scale-105 active:scale-95 border border-white/15 hover:border-[#3269C7]/60 cursor-pointer overflow-hidden shrink-0"
                 title="Web Sitesinde Aç"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src="/kistas-logo-transparent.png"
                   alt="Kıstas Store"
                   className="h-6 w-6 object-contain transition-transform group-hover:scale-110 shrink-0"
                 />
                 <div className="text-left select-none">
-                  <div className="text-[9px] font-extrabold tracking-wider text-[#94A3B8]">WEB'DE</div>
+                  <div className="text-[9px] font-extrabold tracking-wider text-[#94A3B8]">WEB’DE</div>
                   <div className="text-[11.5px] font-black tracking-wide text-white leading-tight">GÖRÜNTÜLE</div>
                 </div>
               </a>
@@ -630,14 +630,14 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                 className="group relative inline-flex w-[164px] h-12 items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-[#090A0E] via-[#111625] to-[#0E131F] text-white shadow-[0_6px_20px_rgba(50,105,199,0.2)] transition-all hover:scale-105 active:scale-95 border border-white/10 hover:border-white/20 cursor-pointer opacity-85 hover:opacity-100 overflow-hidden shrink-0"
                 title="Web sitesi bağlantısı henüz eklenmedi"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src="/kistas-logo-transparent.png"
                   alt="Kıstas Store"
                   className="h-6 w-6 object-contain transition-transform group-hover:scale-110 shrink-0"
                 />
                 <div className="text-left select-none">
-                  <div className="text-[9px] font-extrabold tracking-wider text-[#94A3B8]">WEB'DE</div>
+                  <div className="text-[9px] font-extrabold tracking-wider text-[#94A3B8]">WEB’DE</div>
                   <div className="text-[11.5px] font-black tracking-wide text-white leading-tight">GÖRÜNTÜLE</div>
                 </div>
               </button>

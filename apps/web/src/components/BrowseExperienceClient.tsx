@@ -133,7 +133,7 @@ export const BrowseExperienceClient: React.FC = () => {
                 {/* Top Right: 3D Artwork Plate */}
                 <div className="absolute top-2.5 right-2.5 z-10">
                   <div className="flex h-14 w-14 sm:h-15 sm:w-15 items-center justify-center rounded-[19px] border border-white/30 bg-white/20 p-1.5 backdrop-blur-md shadow-sm transition-transform duration-300 group-hover:scale-105">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    { }
                     <img
                       src={resolveCategoryIconPath(cat.icon3d)}
                       alt={cat.name}

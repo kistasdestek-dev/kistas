@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   MessageSquare,
@@ -49,7 +49,7 @@ export const AdminSupportView: React.FC<AdminSupportViewProps> = ({
   const [filter, setFilter] = useState<'open' | 'closed'>('open');
   const [actionBusyId, setActionBusyId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     if (conversations && conversations.length > 0) {
@@ -64,7 +64,7 @@ export const AdminSupportView: React.FC<AdminSupportViewProps> = ({
           if (data) setLocalConversations(data as any);
         });
     }
-  }, [conversations]);
+  }, [conversations, supabase]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);

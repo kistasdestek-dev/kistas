@@ -84,7 +84,10 @@ export function GoogleIdentityButton({ disabled, onCredential, onError }: Google
   const targetRef = useRef<HTMLDivElement>(null);
   const callbacksRef = useRef({ onCredential, onError });
   const [failed, setFailed] = useState(false);
-  callbacksRef.current = { onCredential, onError };
+
+  useEffect(() => {
+    callbacksRef.current = { onCredential, onError };
+  }, [onCredential, onError]);
 
   useEffect(() => {
     let active = true;

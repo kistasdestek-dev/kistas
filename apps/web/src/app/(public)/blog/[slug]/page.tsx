@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { getBlogPostBySlug } from '@kistas/supabase';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 
 interface PageProps {
@@ -36,9 +37,9 @@ export default async function BlogPostPage({ params }: PageProps) {
   return (
     <article className="container mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-6">
-        <a href="/blog" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">
-          ← Blog'a Geri Dön
-        </a>
+        <Link href="/blog" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">
+          ← Blog’a Geri Dön
+        </Link>
       </div>
 
       <header className="border-b border-slate-800/80 pb-8">
