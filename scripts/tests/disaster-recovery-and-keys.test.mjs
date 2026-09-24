@@ -52,12 +52,12 @@ runTest('B9-02: Yedeklenecek dizinler src, supabase, docs, scripts ve App.tsx i�
   assert.strictEqual(content.includes('"App.tsx"'), true, 'App.tsx eksik');
 });
 
-runTest('B9-03: Yedekleme deposu (backups/) dizini mevcut ve erişilebilir olmalı', () => {
-  const backupDir = path.join(ROOT, 'backups');
-  assert.strictEqual(fs.existsSync(backupDir), true, 'backups/ klasörü bulunamadı');
-  const files = fs.readdirSync(backupDir);
-  const zipFiles = files.filter(f => f.endsWith('.zip'));
-  assert.strictEqual(zipFiles.length > 0, true, 'En az 1 adet güncel sistem yedeği bulunmalıdır');
+runTest('B9-03: Yedekleme deposu yerel kalmalı ve script tarafından hedeflenmeli', () => {
+  const backupScript = fs.readFileSync(BACKUP_SCRIPT_PATH, 'utf8');
+  const gitignore = fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8');
+  assert.match(backupScript, /\$backupDir\s*=\s*Join-Path[^\r\n]+["']\.\.\\backups["']/i, 'Script backups/ hedefini tanımlamıyor');
+  assert.match(backupScript, /\$backupFilePath\s*=\s*Join-Path\s+\$backupDir\s+\$backupFileName/i, 'Yedek dosyası backups/ altında oluşturulmuyor');
+  assert.match(gitignore, /^backups\/$/m, 'Yerel yedek klasörü Git dışında tutulmuyor');
 });
 
 // -------------------------------------------------------------
