@@ -985,8 +985,33 @@ Production veya magazaya cikis icin:
   5. **Aşama 5 (Pars DevState Siber Tehdit Radarı & Otomatik IP Karantinası):** `report_client_honeypot_trap` RPC'si PostgREST `request.headers` (`cf-connecting-ip`, `x-forwarded-for`, `x-real-ip`) ile sunucu seviyesinde teyitli IP'leri otonom yakalayacak ve Self-DoS korumalı (`is_safe_whitelisted_ip`) otomatik WAF karantinasına alacak şekilde sertleştirildi; `ThreatIntelligenceView` radarına özel `🍯 Pars Bal Küpü Tuzağına Düştü` rozeti ve `🍯 Bal Küpü Tuzakları` filtre segmenti eklendi.
 - Regresyon: `node scripts/tests/core-domain.test.mjs` (72/72 başarılı), `npx tsc --noEmit` (0 tip hatası), Fortress Sağlık Skoru %100 / 100 [A+].
 
+### SEC-077 - Yorum Tepkileri (Beğeni / Beğenmeme) Kalkanı: Atomik Toggle, Çift Sayım ve Sibyl/Flood Savunması
+- Tarih: 2026-09-22
+- Kapsam: `supabase/migrations/20260922000001_comment_reactions.sql`, `packages/shared/src/types.ts`, `packages/shared/src/commentReaction.ts`, `packages/supabase/src/queries/comments.ts`, `apps/web/src/app/actions/listings.ts`, `apps/web/src/components/ProjectCommentsSection.tsx`, `scripts/tests/core-domain.test.mjs`.
+- Bulgu: Yorumlara beğeni/beğenmeme özelliği eklendiğinde doğrudan PostgREST INSERT/UPDATE/DELETE erişimi, çift sayım, race condition, sibyl oylaması ve flood (hız saldırısı) vektörleri açığa çıkabilirdi.
+- Sertleştirme:
+  1. `project_comment_reactions` tablosunda doğrudan yazma mühürlendi (`REVOKE INSERT, UPDATE, DELETE ... FROM public, anon, authenticated`); okuma herkese açık (`GRANT SELECT` + RLS `SELECT true`).
+  2. `toggle_project_comment_reaction(p_comment_id, p_reaction)` RPC'si: SECURITY DEFINER + `SET search_path = ''`; oturum zorunluluğu, ±1 CHECK, doğrulanmış üyelik, yorum moderasyonu (mute) ve `enforce_adaptive_rate_limit` (10 sn / 20 istek, 3 ihlalde otonom karantina) kalkanları.
+  3. `UNIQUE (comment_id, user_id)` + `FOR UPDATE` kilidi ile çift kayıt ve yarış koruması; `likes_count`/`dislikes_count` sayaçları her işlemde tablodan yeniden hesaplanır (tek doğruluk kaynağı).
+  4. Geçiş kuralları tek modülde: `packages/shared/src/commentReaction.ts` (aynı tepki geri alınır, zıt tepki değiştirilir, sayaçlar negatife düşmez).
+- Zorunlu kontrol (Madde 5): RLS + negatif yetki ✔, `auth.uid()` doğrulaması ✔, RPC sabit yetki + `search_path` ✔, çift kayıt engeli ✔, girdi kontrolü (±1) ✔, rate limit ✔, sunucu yetkisi ✔, negatif test (doğrudan INSERT yasağı regresyon testi) ✔, migration + rollback adımı ✔.
+- Durum: KODLANDI — canlı Supabase migration bekleniyor.
+- Regresyon: `node scripts/tests/core-domain.test.mjs` (81/81 başarılı), `pnpm --filter @kistas/web type-check` + `pnpm --filter @kistas/shared type-check` + `pnpm --filter @kistas/supabase type-check` (0 tip hatası).
 
+### SEC-078 - Kategori Allowlist Bütünlüğü
+- Tarih: 2026-09-23
+- Kapsam: kategori sorguları, proje yayınlama filtreleri ve `20260923000001_limit_categories_to_app_store_catalog.sql`.
+- Bulgu: Eski e-ticaret kategori kayıtları (`Ayakkabı & Sneaker`, `Laptop & Tablet` vb.) dijital proje filtrelerinde görünebiliyordu.
+- Düzeltme: Tek doğruluk kaynağı olarak 15 oyun + 23 uygulama slug allowlisti tanımlandı; sorgular `is_active = true` ile sınırlandı ve diğer veritabanı kayıtları silinmeden pasife alındı.
+- Geri kazanma: Migration içindeki belgelenmiş `UPDATE public.categories SET is_active = TRUE` komutu kullanılabilir.
+- Durum: DOGRULANDI — TypeScript, kategori regresyon testi ve tarayıcı doğrulaması temiz.
 
+### 2026-09-24 - Next.js / Workers web yayını
+- Hedef: `www.kistas.com.tr/*` Cloudflare Workers `kistas-next`; eski Pages projesi silinmedi, yalnız geri dönüş için korunuyor.
+- Kapı kanıtı: Next ve vinext üretim derlemeleri başarılı; web TypeScript temiz; çekirdek domain 84/84, sohbet kimliği 4/4, XSS ve SQL enjeksiyon kontrolleri başarılı; web bağımlılıklarında yüksek/kritik açık raporlanmadı; kayıtlı P0/P1 satırlarında açık bulgu yok.
+- Canlı anonim kontroller: `/`, `/login`, `/signup`, `/browse`, `/blog`, `/hakkimizda`, `/robots.txt`, `/sitemap.xml` HTTP 200; `/messages` oturumsuz isteği `/login` adresine yönlendiriyor. `Content-Security-Policy`, `X-Frame-Options` ve HSTS başlıkları canlı yanıtta mevcut. Eski Expo `index.html` yayından kaldırıldı.
+- Sınır: Google Identity Services ile mobil hesap seçimi ve gerçek oturum açma 2026-09-24 tarihinde kullanıcı cihazında doğrulandı. GitHub OAuth, şifre sıfırlama, oturumlu mesaj, proje yayınlama ve yönetici negatif yetki akışları bu yayında uçtan uca doğrulanmadı. Uzak migration geçmişi ayrışık olduğundan toplu migration gönderilmedi. Bu kontroller tamamlanana kadar eski Pages dağıtımı geri dönüş için korunur.
+- Geri dönüş: Workers `www.kistas.com.tr/*` route'unu kaldır; Pages custom domain ve DNS kaydına dokunma. Ayrıntı: `docs/WEB_RELEASE.md`.
 
 
 

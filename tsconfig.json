@@ -1,24 +1,13 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "strict": true,
-    "skipLibCheck": true,
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "baseUrl": "."
   },
-  "include": [
-    "src/**/*",
-    "App.tsx",
-    "index.ts"
-  ],
   "exclude": [
     "node_modules",
     "backups",
-    "dist-web-next",
-    ".expo",
-    "supabase/functions"
+    "dist",
+    ".next",
+    "apps"
   ]
 }

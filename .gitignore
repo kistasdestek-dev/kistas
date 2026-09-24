@@ -9,6 +9,11 @@ scratch/
 .agents/
 .gemini/
 
+# monorepo and framework caches
+.next/
+.turbo/
+coverage/
+
 # Expo
 .expo/
 dist/
@@ -17,7 +22,9 @@ web-build/
 .tmp-*/
 dist-web/
 .wrangler/
+.vinext/
 remote-preview-url.txt
+dev-tunnel-url.txt
 expo-env.d.ts
 
 # Native

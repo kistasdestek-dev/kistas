@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /cdn-cgi/image/
+Disallow: /cdn-cgi/
+
+# ==============================================================================
+# KISTAS CANARY HONEYPOT TRAPS (Pars DevState Automated Deception Shield)
+# NOTICE: The following paths are strictly monitored canary decoy endpoints.
+# Probing or scanning these sensitive paths triggers immediate automated quarantine,
+# dynamic client fingerprinting, and security telemetry reporting.
+# ==============================================================================
+Disallow: /admin-internal-audit-portal/
+Disallow: /kistas-secret-vault-backup/
+Disallow: /api/v1/system-internal-probe/
+Disallow: /server-backup-archive/
+Disallow: /private-core-telemetry/
+
+Sitemap: https://www.kistas.com.tr/sitemap.xml

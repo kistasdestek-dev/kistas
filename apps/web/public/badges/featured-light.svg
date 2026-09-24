@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="250" height="54" viewBox="0 0 250 54" role="img" aria-label="Featured on Kıstas">
+  <defs>
+    <linearGradient id="flameOuterLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA" />
+      <stop offset="60%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="flameInnerLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#EF4444" />
+    </linearGradient>
+    <filter id="badgeShadowLight" x="-5%" y="-5%" width="110%" height="120%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000000" flood-opacity="0.12" />
+    </filter>
+  </defs>
+
+  <!-- Card Background -->
+  <rect x="1" y="1" width="248" height="52" rx="14" fill="#FFFFFF" stroke="rgba(203, 213, 225, 0.9)" stroke-width="1.2" filter="url(#badgeShadowLight)" />
+
+  <!-- Logo Mark Container -->
+  <g transform="translate(12, 10)">
+    <rect width="34" height="34" rx="9" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1" />
+
+    <!-- Vector Kıstas Flame Icon -->
+    <g transform="translate(5, 5)">
+      <!-- Outer Blue Flame -->
+      <path d="M12 2C8 6.5 6.2 9.8 6.2 13.6a5.8 5.8 0 0 0 11.6 0c0-3.8-2.2-7-5.8-11.6z" fill="url(#flameOuterLight)" />
+      <!-- Inner Amber Flame Core -->
+      <path d="M12 9.5c-1.3 1.6-2.1 2.8-2.1 4.2a2.1 2.1 0 0 0 4.2 0c0-1.4-0.8-2.6-2.1-4.2z" fill="url(#flameInnerLight)" />
+    </g>
+  </g>
+
+  <!-- Title and Eyebrow Text -->
+  <g transform="translate(56, 12)">
+    <text x="0" y="11" fill="#2563EB" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" letter-spacing="1.2">FEATURED ON</text>
+    <text x="0" y="27" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16.5" font-weight="800" letter-spacing="-0.4">Kıstas</text>
+  </g>
+
+  <!-- Upvote Counter Pill -->
+  <g transform="translate(178, 13)">
+    <rect width="60" height="28" rx="8" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1" />
+    <path d="M7 16 L12 9 L17 16 Z" fill="#2563EB" />
+    <text x="35" y="18.5" text-anchor="middle" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" letter-spacing="-0.2">Top 1</text>
+  </g>
+</svg>
