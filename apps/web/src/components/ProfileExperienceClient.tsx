@@ -28,6 +28,7 @@ import { KistasTopBrandBar } from './KistasTopBrandBar';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 import { InstagramVerifiedBadge } from './InstagramVerifiedBadge';
 import { createClient } from '@/lib/supabase/browser';
+import { isValidAnnouncementPath } from '@/lib/notifications';
 import { resolveAvatarUrl } from '@/lib/avatar';
 
 // Modals
@@ -763,12 +764,12 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
             return;
           }
           const actionPath = typeof notif.data?.action_path === 'string' ? notif.data.action_path : '';
-          if (notif.type === 'admin_announcement' && ['/', '/browse', '/new', '/popular', '/blog'].includes(actionPath)) {
+          if (notif.type === 'admin_announcement' && isValidAnnouncementPath(actionPath)) {
             router.push(actionPath);
             return;
           }
           if (notif.data?.listing_id) {
-            router.push(`/project/${notif.data.listing_id}`);
+            router.push(`/listings/${encodeURIComponent(String(notif.data.listing_id))}`);
           }
         }}
       />

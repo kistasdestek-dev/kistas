@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 const read = (relativePath) => readFileSync(new URL(`../../${relativePath}`, import.meta.url), 'utf8');
 
 const migration = read('supabase/migrations/20260925000002_chat_presence_and_admin_announcements.sql');
+const projectAnnouncementMigration = read('supabase/migrations/20260925000003_admin_announcements_allow_listing_path.sql');
 const chatService = read('apps/web/src/lib/services/chat.ts');
 const chatWindow = read('apps/web/src/components/chat/ChatWindow.tsx');
 const iconButton = read('apps/web/src/components/GlassIconButton.tsx');
@@ -12,6 +13,10 @@ const messagesExperience = read('apps/web/src/components/chat/MessagesExperience
 const provider = read('apps/web/src/components/MessageNotificationProvider.tsx');
 const adminDashboard = read('apps/web/src/components/admin/AdminDashboardClient.tsx');
 const adminAnnouncements = read('apps/web/src/components/admin/AdminAnnouncementsView.tsx');
+const notificationCard = read('apps/web/src/components/GlobalNotificationCard.tsx');
+const notificationsModal = read('apps/web/src/components/profile/NotificationsModal.tsx');
+const profileExperience = read('apps/web/src/components/ProfileExperienceClient.tsx');
+const notificationRules = read('apps/web/src/lib/notifications.ts');
 
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.conversation_typing_states/);
 assert.match(migration, /ALTER TABLE public\.conversation_typing_states ENABLE ROW LEVEL SECURITY/);
@@ -41,10 +46,27 @@ assert.match(migration, /ON CONFLICT \(created_by, idempotency_key\) DO NOTHING/
 assert.match(migration, /INSERT INTO public\.notifications[\s\S]*FROM public\.profiles AS profile/);
 assert.match(migration, /admin_announcement_sent/);
 assert.match(provider, /row\.type === 'admin_announcement'/);
-assert.match(provider, /allowedAnnouncementPaths/);
+assert.match(provider, /isValidAnnouncementPath/);
+assert.match(provider, /AnimatePresence/);
+assert.match(provider, /useReducedMotion/);
+assert.match(provider, /logoUrl: row\.data\?\.logo_url/);
 assert.match(adminDashboard, /permissions\?\.includes\('community'\)/);
 assert.match(adminDashboard, /AdminAnnouncementsView/);
 assert.match(adminAnnouncements, /admin_send_announcement/);
-assert.match(adminAnnouncements, /Tüm kullanıcılara gönder/);
+assert.match(adminAnnouncements, /Kıstas’ta yayında/);
+assert.doesNotMatch(adminAnnouncements, /🚀|Yeni Keşif/);
+assert.match(adminAnnouncements, /GlobalNotificationCard/);
+assert.match(notificationCard, /k-notification-glass/);
+assert.match(notificationCard, /AutoTransparentLogo/);
+assert.match(notificationsModal, /announcementLogoUrl/);
+assert.match(profileExperience, /isValidAnnouncementPath/);
+assert.match(notificationRules, /listingPathPattern/);
+assert.match(notificationRules, /\{36\}/);
+
+assert.match(projectAnnouncementMigration, /ADD COLUMN IF NOT EXISTS listing_id UUID REFERENCES public\.listings/);
+assert.match(projectAnnouncementMigration, /listing\.status = 'active'/);
+assert.match(projectAnnouncementMigration, /'logo_url', v_listing_logo_url/);
+assert.match(projectAnnouncementMigration, />= 5[\s\S]*RATE_LIMITED/);
+assert.doesNotMatch(projectAnnouncementMigration, />= 10/);
 
 console.log('Chat presence, read receipts, icon motion and admin announcement contracts passed.');

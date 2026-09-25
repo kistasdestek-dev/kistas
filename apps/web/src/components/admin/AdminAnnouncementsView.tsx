@@ -2,21 +2,22 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  BellRing,
+  Bell,
   CheckCircle2,
   Loader2,
   Megaphone,
   Send,
-  Sparkles,
   Search,
   ChevronRight,
-  Flame,
+  TrendingUp,
   Globe,
-  Radio,
+  Layers3,
   X,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/browser';
+import type { Listing } from '@kistas/shared';
 import { AutoTransparentLogo } from '../AutoTransparentLogo';
+import { GlobalNotificationCard } from '../GlobalNotificationCard';
 import { AnnouncementConfirmModal } from './AnnouncementConfirmModal';
 
 type TemplateKey = 'new_projects' | 'popular_projects' | 'discover' | 'custom';
@@ -30,6 +31,7 @@ interface AnnouncementDraft {
   actionPath: string;
   selectedProjectId?: string;
   selectedProjectTitle?: string;
+  selectedProjectLogoUrl?: string;
 }
 
 interface AnnouncementHistoryItem {
@@ -45,38 +47,36 @@ interface PublishedProjectItem {
   title: string;
   tagline: string | null;
   logo_url: string | null;
-  category_id?: string | null;
   upvotes_count: number;
-  created_at: string;
 }
 
 export interface AdminAnnouncementsViewProps {
-  projects?: any[];
+  projects?: Listing[];
 }
 
 const templates: AnnouncementDraft[] = [
   {
     key: 'new_projects',
-    label: 'Yeni projeler',
-    title: 'Yeni projeler seni bekliyor',
-    body: 'Topluluğun yeni ürünlerini incele, geri bildirim bırak ve erken destekçilerden biri ol.',
-    actionLabel: 'Yeni projeleri gör',
+    label: 'Yeni yayınlar',
+    title: 'Kıstas’ta yeni projeler yayında',
+    body: 'Yeni yayınlanan projeleri inceleyin, ürün deneyimlerini değerlendirin ve yapıcı geri bildiriminizi paylaşın.',
+    actionLabel: 'Yeni Projeleri İncele',
     actionPath: '/new',
   },
   {
     key: 'popular_projects',
-    label: 'Popüler projeler',
-    title: 'Bugünün popülerlerini keşfet',
-    body: 'Kıstas topluluğunun en çok desteklediği projelere göz at ve favorine desteğini ver.',
-    actionLabel: 'Popülerlere git',
+    label: 'Topluluk seçkisi',
+    title: 'Topluluğun öne çıkan projeleri',
+    body: 'Kıstas topluluğunun en çok ilgi gösterdiği projeleri inceleyin ve değerlendirmeye katkıda bulunun.',
+    actionLabel: 'Seçkiyi İncele',
     actionPath: '/popular',
   },
   {
     key: 'discover',
-    label: 'Keşfet',
-    title: 'Yeni bir fikre ilk desteği sen ver',
-    body: 'Henüz keşfedilmemiş projeleri incele; yorumun ve desteğin bir geliştiricinin yolunu açabilir.',
-    actionLabel: 'Projeleri keşfet',
+    label: 'Keşfedilmeyi bekleyenler',
+    title: 'Değerlendirilmeyi bekleyen projeler',
+    body: 'Yeni fikirleri erken aşamada inceleyin; değerlendirmeniz bağımsız geliştiricilerin ürünlerini geliştirmesine katkı sağlar.',
+    actionLabel: 'Projeleri İncele',
     actionPath: '/browse',
   },
 ];
@@ -103,14 +103,12 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
   const loadProjects = useCallback(async () => {
     if (externalProjects && externalProjects.length > 0) {
       setProjects(
-        externalProjects.map((p) => ({
+        externalProjects.filter((project) => project.status === 'active').map((p) => ({
           id: p.id,
           title: p.title,
           tagline: p.tagline || null,
           logo_url: p.logo_url || null,
-          category_id: p.category_id || null,
-          upvotes_count: Number(p.upvote_count ?? p.upvotes_count ?? 0),
-          created_at: p.created_at || new Date().toISOString(),
+          upvotes_count: Number(p.upvote_count || 0),
         }))
       );
       return;
@@ -121,18 +119,17 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
       const { data, error } = await supabase
         .from('listings')
         .select('id, title, tagline, logo_url, upvote_count, created_at, status')
+        .eq('status', 'active')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
         setProjects(
-          data.map((p: any) => ({
+          data.map((p) => ({
             id: p.id,
             title: p.title,
             tagline: p.tagline || null,
             logo_url: p.logo_url || null,
-            category_id: null,
-            upvotes_count: Number(p.upvote_count ?? p.upvotes_count ?? 0),
-            created_at: p.created_at || new Date().toISOString(),
+            upvotes_count: Number(p.upvote_count || 0),
           }))
         );
       }
@@ -158,7 +155,12 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
   }, [loadProjects, loadHistory]);
 
   const applyTemplate = (template: AnnouncementDraft) => {
-    setDraft({ ...template, selectedProjectId: undefined, selectedProjectTitle: undefined });
+    setDraft({
+      ...template,
+      selectedProjectId: undefined,
+      selectedProjectTitle: undefined,
+      selectedProjectLogoUrl: undefined,
+    });
     setFeedback(null);
     idempotencyKeyRef.current = newIdempotencyKey();
   };
@@ -172,8 +174,8 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
   // Proje seçildiğinde otomatik doldurma
   const handleSelectProject = (project: PublishedProjectItem) => {
     const targetPath = `/listings/${project.id}`;
-    const autoTitle = `🚀 Yeni Keşif: ${project.title}`.slice(0, 80);
-    const autoBody = (project.tagline || `${project.title} projesini inceleyin, görüşlerinizi paylaşın ve ilk desteğinizi verin.`).slice(0, 240);
+    const autoTitle = `${project.title} Kıstas’ta yayında`.slice(0, 80);
+    const autoBody = (project.tagline || `${project.title} projesini inceleyin ve ürün deneyimine ilişkin değerlendirmenizi paylaşın.`).slice(0, 240);
 
     setDraft({
       key: 'custom',
@@ -184,6 +186,7 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
       actionPath: targetPath,
       selectedProjectId: project.id,
       selectedProjectTitle: project.title,
+      selectedProjectLogoUrl: project.logo_url || undefined,
     });
     setFeedback(null);
     idempotencyKeyRef.current = newIdempotencyKey();
@@ -259,24 +262,24 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
 
   return (
     <div className="space-y-8 pb-12">
-      {/* 1. Bölüm: Paylaşılan Bütün Projeler Vitrini */}
+      {/* 1. Bölüm: Proje yayınları */}
       <section className="relative rounded-[28px] border border-white/10 bg-[#0E1626]/75 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-2xl bg-[#3269C7]/20 border border-[#3269C7]/40 text-[#8DB9FF] flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
-              <Radio size={22} className="animate-pulse" />
+              <Layers3 size={21} />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-black text-white tracking-tight">
-                  Paylaşılan Bütün Projeler
+                  Proje Yayınları
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full bg-[#3269C7]/20 border border-[#3269C7]/30 text-[10px] font-bold text-[#8DB9FF]">
                   {projects.length} Proje
                 </span>
               </div>
               <p className="mt-0.5 text-xs text-[#94A3B8] font-medium">
-                Bir projeye tıklayarak tüm platform kullanıcılarına o projeyle alakalı anlık bildirim gönderin.
+                Yayındaki bir projeyi seçin; kurumsal bildirimi hazırlayın ve toplulukla paylaşın.
               </p>
             </div>
           </div>
@@ -347,7 +350,7 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
                           {project.title}
                         </h3>
                         <span className="flex items-center gap-1 text-[10px] font-bold text-amber-400 shrink-0">
-                          <Flame size={11} /> {project.upvotes_count || 0}
+                          <TrendingUp size={11} /> {project.upvotes_count || 0}
                         </span>
                       </div>
                       <p className="mt-1 text-[11px] text-[#94A3B8] line-clamp-2 leading-relaxed">
@@ -358,7 +361,7 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
 
                   <div className="mt-3 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[10px]">
                     <span className="px-2 py-0.5 rounded-full bg-white/[0.05] text-slate-400 font-medium">
-                      {(project as any).category || 'Proje'}
+                      Yayında
                     </span>
 
                     <button
@@ -384,7 +387,7 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
         )}
       </section>
 
-      {/* 2. Bölüm: Bildirim Taslağı & Canlı Sıvı Cam Önizlemesi */}
+      {/* 2. Bölüm: Yayın taslağı ve kullanıcı görünümü */}
       <section
         ref={draftSectionRef}
         className="rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.7)]"
@@ -395,9 +398,9 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
               <Megaphone size={22} />
             </div>
             <div>
-              <h2 className="text-xl font-black text-white tracking-tight">Topluluk Duyurusu & Bildirim</h2>
+              <h2 className="text-xl font-black text-white tracking-tight">Duyuru Yayını</h2>
               <p className="mt-0.5 text-xs text-[#94A3B8] font-medium leading-relaxed">
-                Seçtiğiniz duyuru tüm kayıtlı kullanıcılara bildirim merkezinde ve sitede açıkken canlı cam kart olarak ulaşır.
+                Duyuru, kayıtlı kullanıcıların bildirim merkezine ve site açıkken üst bildirim alanına iletilir.
               </p>
             </div>
           </div>
@@ -431,7 +434,7 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
               }`}
             >
               <span className="flex items-center gap-2 text-xs font-bold text-white">
-                <Sparkles size={14} className="text-[#8DB9FF]" />
+                <Bell size={14} className="text-[#8DB9FF]" />
                 {template.label}
               </span>
               <span className="mt-1 block text-[11px] leading-relaxed text-[#94A3B8]">
@@ -450,7 +453,7 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
               maxLength={80}
               onChange={(event) => updateDraft('title', event.target.value)}
               className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 text-sm text-white placeholder-slate-500 outline-none focus:border-[#3269C7] focus:ring-1 focus:ring-[#3269C7] transition-all"
-              placeholder="Örn: 🚀 Yeni Keşif: Nova SaaS"
+              placeholder="Örn: Nova SaaS Kıstas’ta yayında"
             />
             <span className="text-right text-[10px] font-medium text-slate-400">{draft.title.length}/80</span>
           </label>
@@ -485,53 +488,33 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
               <input
                 value={draft.actionPath}
                 onChange={(event) => updateDraft('actionPath', event.target.value)}
-                className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 text-sm text-white placeholder-slate-500 outline-none focus:border-[#3269C7] transition-all"
+                readOnly={Boolean(draft.selectedProjectId)}
+                className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 text-sm text-white placeholder-slate-500 outline-none transition-all focus:border-[#3269C7] read-only:cursor-not-allowed read-only:text-white/55"
                 placeholder="/listings/... veya /browse"
               />
             </label>
           </div>
         </div>
 
-        {/* Canlı Bildirim Önizlemesi (Kıstas Sıvı Cam Formülü) */}
+        {/* Kullanıcının göreceği ortak glass bildirim kartı */}
         <div className="mt-8">
           <div className="flex items-center justify-between mb-2.5">
-            <span className="text-xs font-extrabold text-[#8DB9FF] tracking-wider uppercase flex items-center gap-1.5">
-              <BellRing size={13} /> Canlı Kullanıcı Bildirim Önizlemesi
+            <span className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[#8DB9FF]">
+              <Bell size={13} /> Kullanıcı Görünümü
             </span>
-            <span className="text-[10px] text-slate-400">Navbardaki gerçek sıvı cam yapısıyla eşlenik</span>
+            <span className="text-[10px] text-slate-400">Navbar ile aynı Kıstas glass yüzeyi</span>
           </div>
 
           <div className="p-6 sm:p-8 rounded-[24px] border border-white/10 bg-[#0E1626]/50 backdrop-blur-xl flex items-center justify-center">
-            {/* Önizleme Toast Kartı (.kdn-dock Sıvı Cam Formülü) */}
-            <div
-              style={{
-                background:
-                  'linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.07) 100%), rgba(255, 255, 255, 0.04)',
-                WebkitBackdropFilter: 'blur(28px) saturate(210%) brightness(115%)',
-                backdropFilter: 'blur(28px) saturate(210%) brightness(115%)',
-                boxShadow:
-                  '0 20px 50px -10px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.06), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.42), inset 0 -1px 1px 0 rgba(255, 255, 255, 0.06)',
-                borderColor: 'rgba(255, 255, 255, 0.20)',
-              }}
-              className="w-full max-w-sm rounded-[22px] border p-3.5 transition-all shadow-2xl"
-            >
-              <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 border border-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
-                  <Megaphone size={18} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-bold text-white tracking-tight">
-                    {draft.title || 'Duyuru başlığı'}
-                  </p>
-                  <p className="mt-1 text-[11px] leading-relaxed text-white/80 font-medium line-clamp-2">
-                    {draft.body || 'Duyuru açıklaması burada görünecektir.'}
-                  </p>
-                  <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-white/90">
-                    <BellRing size={10} /> {draft.actionLabel || 'Göz at'} →
-                  </span>
-                </div>
-              </div>
-            </div>
+            <GlobalNotificationCard
+              type="admin_announcement"
+              title={draft.title || 'Duyuru başlığı'}
+              body={draft.body || 'Duyuru açıklaması burada görünecektir.'}
+              actionLabel={draft.actionLabel || 'İncele'}
+              logoUrl={draft.selectedProjectLogoUrl}
+              logoAlt={draft.selectedProjectTitle}
+              preview
+            />
           </div>
         </div>
 

@@ -1159,3 +1159,11 @@ Production veya magazaya cikis icin:
 - Güvenlik/vault tabloları, tehdit radarı tabloları ve indeksleri, `token_valid_after`, yorum tepki tablosu ile sayaçları ve 38 kategorilik aktif katalog kuralı canlıda mevcuttur. Bu nedenle SQL yeniden çalıştırılmadı; yalnız Supabase migration geçmişi `applied` olarak onarıldı.
 - Tarih formatı taşımadığı için Supabase CLI tarafından atlanan dört konsolide kurtarma paketi gerçek migration dizininden `supabase/manual-sql/` altına taşındı. Belgeler ve regresyon testleri yeni konuma güncellendi; paketler felaket kurtarma amacıyla korunur ancak otomatik migration zincirine katılmaz.
 - Doğrulama: `supabase migration list --linked` yerel/canlı sürümleri birebir eşler; `supabase db push --linked --include-all --dry-run` yeni migration olmadığını ve uzak veritabanının güncel olduğunu bildirir.
+
+### 2026-09-25 - Kurumsal ve proje logolu yönetici duyuruları
+
+- Proje duyurusu yalnız `/listings/<uuid>` biçimindeki dahili rotayı kabul eder. UUID sunucuda ayrıştırılır; proje kaydı `active` değilse toplu gönderim reddedilir.
+- Bildirime eklenen `listing_id` ve `logo_url` istemciden doğruluk kaynağı olarak alınmaz; `SECURITY DEFINER` fonksiyonu bunları aktif proje kaydından üretir. Harici yönlendirme veya yeni secret eklenmez.
+- Topluluk yetkisi, yönetici başına saatlik beş gönderim kotası, advisory transaction lock ve idempotency koruması korunur. Duyuru denetim kaydı hedef proje kimliğini içerir.
+- İstemci, genel ve proje rotalarını tek bir allowlist yardımcı modülüyle doğrular. Proje logosu anlık glass kartta ve bildirim merkezinde gösterilir; logosuz projeler kontrollü ikona düşer.
+- Bildirim hareketi Framer Motion spring geçişi kullanır ve `prefers-reduced-motion` tercihinde sade opacity geçişine döner. Navbar ile aynı glass CSS yüzeyi ortaklaştırılmış, eski inline kopya kaldırılmıştır.

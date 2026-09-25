@@ -17,6 +17,7 @@ import {
   Megaphone,
 } from 'lucide-react';
 import { GlassIconButton } from '../GlassIconButton';
+import { AutoTransparentLogo } from '../AutoTransparentLogo';
 
 export interface NotificationItem {
   id: string;
@@ -271,6 +272,9 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
           ) : (
             filtered.map((item) => {
               const { Icon, color, bg } = getNotificationIcon(item.type);
+              const announcementLogoUrl = item.type === 'admin_announcement' && typeof item.data?.logo_url === 'string'
+                ? item.data.logo_url
+                : undefined;
 
               return (
                 <div
@@ -283,9 +287,17 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
                   }`}
                 >
                   <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${bg}`}
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border ${bg}`}
                   >
-                    <Icon size={18} color={color} />
+                    {announcementLogoUrl ? (
+                      <AutoTransparentLogo
+                        src={announcementLogoUrl}
+                        alt={item.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <Icon size={18} color={color} />
+                    )}
                   </div>
 
                   <div className="flex-1 min-w-0">
