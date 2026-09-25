@@ -46,3 +46,10 @@ Yeni Worker kaynaklı kritik sorun çıkarsa Cloudflare Workers & Pages panelind
 - Google bu özel buton katmanını resmen desteklemiyor; kullanıcı riski kabul ederek eski görünümün geri getirilmesini onayladı. Google ileride etkileşimi kısıtlarsa desteklenen `renderButton` görünümüne dönülmeli.
 - Geri dönüş: Cloudflare Workers panelinde bir önceki `kistas-next` sürümünü yükle; veritabanı veya Google Cloud ayarı değişmedi.
 - Yayın: Worker sürümü `bf6a24f6-563f-4de8-9e6c-54fac2c1eb9d`. TypeScript, Next/vinext derlemeleri, XSS/SQL taramaları, çekirdek testler (84/84), sohbet kimliği (4/4), bağımlılık denetimi ve Workers dry-run başarılı. Canlı `/login` ve yeni cam butonlu istemci paketi HTTP 200; mobil görünüm, dokunma, hesap seçimi ve gerçek oturum açma 2026-09-24 tarihinde kullanıcı cihazında başarıyla doğrulandı.
+
+## 2026-09-25 Kurumsal proje bildirimleri
+
+- Yönetim merkezindeki proje yayınları emojisiz kurumsal metinlere geçirildi. Proje kimliği ve logosu canlı veritabanından sunucu tarafında doğrulanır; yalnız aktif projeler toplu bildirim olarak gönderilebilir.
+- Anlık bildirim kartı navbar ile aynı glass CSS yüzeyini kullanır ve reduced-motion uyumlu üstten düşme animasyonuna sahiptir. Aynı proje logosu bildirim merkezinde de gösterilir.
+- Migration `20260925000003` canlıya uygulandı. Yayınlanan uygulama commit’i `f02d7d3`, Worker sürümü `0e1a2474-d584-4376-807f-e0a77a477fce` olarak `www.kistas.com.tr/*` rotasına dağıtıldı.
+- Canlı kanıt: `/`, `/browse`, `/new`, `/popular`, `/blog` ve `/login` HTTP 200; anonim `/admin`, `/messages` ve `/profile` istekleri girişe HTTP 307 ile yönlendirildi. Yayın paketinde ortak glass sınıfı, proje logo payload’ı, spring animasyonu ve kurumsal metin doğrulandı.

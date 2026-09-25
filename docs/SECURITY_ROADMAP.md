@@ -1167,3 +1167,5 @@ Production veya magazaya cikis icin:
 - Topluluk yetkisi, yönetici başına saatlik beş gönderim kotası, advisory transaction lock ve idempotency koruması korunur. Duyuru denetim kaydı hedef proje kimliğini içerir.
 - İstemci, genel ve proje rotalarını tek bir allowlist yardımcı modülüyle doğrular. Proje logosu anlık glass kartta ve bildirim merkezinde gösterilir; logosuz projeler kontrollü ikona düşer.
 - Bildirim hareketi Framer Motion spring geçişi kullanır ve `prefers-reduced-motion` tercihinde sade opacity geçişine döner. Navbar ile aynı glass CSS yüzeyi ortaklaştırılmış, eski inline kopya kaldırılmıştır.
+- Regresyon: tam `sayos:audit`, web 11/11, Supabase 5/5, çekirdek 85/85, Next/Vinext production build ve Wrangler dry-run başarılıdır. `20260925000003` migration’ı canlıya uygulanmış ve yerel/canlı geçmiş eşitlenmiştir.
+- Yayın: Git commit `f02d7d3`, Cloudflare Worker sürümü `0e1a2474-d584-4376-807f-e0a77a477fce`. Canlı public rotalar HTTP 200, anonim korumalı rotalar HTTP 307; CSP, HSTS, `nosniff` ve referrer policy başlıkları doğrulanmıştır.
