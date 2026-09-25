@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -33,6 +33,9 @@ interface ChatWindowProps {
   currentUserName: string;
   currentUserAvatarUrl?: string | null;
   onBackMobile?: () => void;
+  canManageSupport?: boolean;
+  isClosingSupport?: boolean;
+  onRequestCloseSupport?: () => void;
 }
 
 const formatMessageTime = (isoString?: string | null) => {
@@ -52,11 +55,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   currentUserName,
   currentUserAvatarUrl,
   onBackMobile,
+  canManageSupport = false,
+  isClosingSupport = false,
+  onRequestCloseSupport,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [isOtherPartyTyping, setIsOtherPartyTyping] = useState(false);
   const [sendError, setSendError] = useState('');
   const [securityViolations, setSecurityViolations] = useState<string[]>([]);
 
@@ -70,6 +77,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   } | null>(null);
   const swipeReleaseTimerRef = useRef<number | null>(null);
   const composerFocusTimerRef = useRef<number | null>(null);
+  const typingIdleTimerRef = useRef<number | null>(null);
+  const typingExpiryTimerRef = useRef<number | null>(null);
+  const typingActiveRef = useRef(false);
+  const lastTypingSignalRef = useRef(0);
   const supabase = useMemo(() => createClient(), []);
 
   const { isSupport, isOfficialSupport, name, avatarUrl, isVerified } = getConversationIdentity(conversation, currentUserId);
@@ -94,7 +105,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     if (composerFocusTimerRef.current !== null) {
       window.clearTimeout(composerFocusTimerRef.current);
     }
+    if (typingIdleTimerRef.current !== null) window.clearTimeout(typingIdleTimerRef.current);
+    if (typingExpiryTimerRef.current !== null) window.clearTimeout(typingExpiryTimerRef.current);
   }, []);
+
+  const stopTyping = useCallback(() => {
+    if (typingIdleTimerRef.current !== null) {
+      window.clearTimeout(typingIdleTimerRef.current);
+      typingIdleTimerRef.current = null;
+    }
+    if (!typingActiveRef.current) return;
+    typingActiveRef.current = false;
+    void ChatService.setConversationTyping(supabase, conversation.id, false);
+  }, [conversation.id, supabase]);
+
+  const signalTyping = useCallback(() => {
+    const now = Date.now();
+    if (!typingActiveRef.current || now - lastTypingSignalRef.current > 2800) {
+      typingActiveRef.current = true;
+      lastTypingSignalRef.current = now;
+      void ChatService.setConversationTyping(supabase, conversation.id, true);
+    }
+    if (typingIdleTimerRef.current !== null) window.clearTimeout(typingIdleTimerRef.current);
+    typingIdleTimerRef.current = window.setTimeout(stopTyping, 2600);
+  }, [conversation.id, stopTyping, supabase]);
 
   const handleComposerFocus = () => {
     window.requestAnimationFrame(() => scrollToBottom('auto'));
@@ -195,12 +229,58 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         if (newMessage.senderId !== currentUserId) {
           void ChatService.markConversationRead(supabase, conversation.id);
         }
+      },
+      (updatedMessage) => {
+        if (!isMounted) return;
+        setMessages((current) => current.map((message) => (
+          message.id === updatedMessage.id ? updatedMessage : message
+        )));
       }
     );
 
     return () => {
       isMounted = false;
       unsubscribe();
+    };
+  }, [conversation.id, currentUserId, supabase]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const refreshTypingState = async () => {
+      const states = await ChatService.getConversationTypingStates(supabase, conversation.id);
+      if (!isMounted) return;
+      const otherStates = states.filter((state) => state.userId !== currentUserId);
+      setIsOtherPartyTyping(otherStates.length > 0);
+
+      if (typingExpiryTimerRef.current !== null) window.clearTimeout(typingExpiryTimerRef.current);
+      if (otherStates.length > 0) {
+        const latestExpiry = Math.max(...otherStates.map((state) => new Date(state.expiresAt).getTime()));
+        typingExpiryTimerRef.current = window.setTimeout(
+          () => void refreshTypingState(),
+          Math.max(250, latestExpiry - Date.now() + 150)
+        );
+      }
+    };
+
+    void refreshTypingState();
+    const unsubscribe = ChatService.subscribeToTypingStates(
+      supabase,
+      conversation.id,
+      () => void refreshTypingState()
+    );
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+      if (typingExpiryTimerRef.current !== null) {
+        window.clearTimeout(typingExpiryTimerRef.current);
+        typingExpiryTimerRef.current = null;
+      }
+      if (typingActiveRef.current) {
+        typingActiveRef.current = false;
+        void ChatService.setConversationTyping(supabase, conversation.id, false);
+      }
     };
   }, [conversation.id, currentUserId, supabase]);
 
@@ -212,8 +292,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     if (text.trim()) {
       const check = ChatContentFilter.inspect(text);
       setSecurityViolations(check.violations);
+      signalTyping();
     } else {
       setSecurityViolations([]);
+      stopTyping();
     }
   };
 
@@ -232,6 +314,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
     setIsSending(true);
     setSendError('');
+    stopTyping();
 
     const res = await ChatService.sendMessage(supabase, conversation.id, text, 'text');
 
@@ -299,7 +382,26 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               )}
             </div>
 
-            {isOfficialSupport ? (
+            {isOtherPartyTyping ? (
+              <motion.p
+                initial={{ opacity: 0, y: 2 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-1.5 text-[11px] font-bold text-[#73B7FF]"
+                aria-live="polite"
+              >
+                <span>Yazıyor</span>
+                <span className="inline-flex gap-0.5" aria-hidden="true">
+                  {[0, 1, 2].map((index) => (
+                    <motion.span
+                      key={index}
+                      className="h-1 w-1 rounded-full bg-[#73B7FF]"
+                      animate={{ y: [0, -3, 0], opacity: [0.45, 1, 0.45] }}
+                      transition={{ duration: 0.7, repeat: Infinity, delay: index * 0.12 }}
+                    />
+                  ))}
+                </span>
+              </motion.p>
+            ) : isOfficialSupport ? (
               <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1.5 min-w-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 <span className="truncate">Kıstas Resmi Destek Kanalı</span>
@@ -317,13 +419,25 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         </div>
 
         {/* Sağ Butonlar (Proje bağlantısı veya Durum) */}
-        <div className="relative z-10 hidden items-center gap-2 lg:flex">
+        <div className="relative z-10 flex items-center gap-2">
+          {canManageSupport && isSupport && !isClosed && onRequestCloseSupport && (
+            <button
+              type="button"
+              onClick={onRequestCloseSupport}
+              disabled={isClosingSupport}
+              className="flex h-9 items-center justify-center gap-1.5 rounded-full border border-rose-300/15 bg-rose-500/10 px-2.5 text-[11px] font-bold text-rose-200 transition-colors hover:bg-rose-500/20 disabled:opacity-50 sm:px-3"
+              title="Destek görüşmesini sonlandır"
+            >
+              {isClosingSupport ? <Loader2 size={13} className="animate-spin" /> : <Lock size={13} />}
+              <span className="hidden sm:inline">Görüşmeyi sonlandır</span>
+            </button>
+          )}
           {safeProjectUrl && (
             <Link
               href={safeProjectUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="h-10 w-10 sm:w-auto sm:px-3.5 rounded-full border border-white/15 bg-white/10 hover:bg-white/15 text-xs font-bold text-white transition-all flex items-center justify-center gap-1.5 backdrop-blur-xl"
+              className="hidden h-10 w-10 items-center justify-center gap-1.5 rounded-full border border-white/15 bg-white/10 text-xs font-bold text-white transition-all hover:bg-white/15 sm:w-auto sm:px-3.5 lg:flex"
               title="Projeyi Görüntüle"
             >
               <ExternalLink size={12} />
@@ -332,7 +446,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           )}
 
           {isClosed && (
-            <span className="h-8.5 px-3 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-slate-400 flex items-center gap-1.5">
+            <span className="hidden h-8.5 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-bold text-slate-400 sm:flex">
               <Lock size={12} />
               <span>Görüşme Kapalı</span>
             </span>
@@ -398,7 +512,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                       <p className="whitespace-pre-wrap" title={time}>{msg.content}</p>
                       {isMe && (
                         <div className="mt-1 flex justify-end">
-                          <CheckCheck size={12} className="text-blue-200" />
+                          <CheckCheck
+                            size={12}
+                            className={msg.isRead ? 'text-[#57A5FF]' : 'text-[#758399]'}
+                            aria-label={msg.isRead ? 'Görüldü' : 'İletildi'}
+                          />
                         </div>
                       )}
                     </div>
@@ -453,6 +571,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 onFocus={handleComposerFocus}
+                onBlur={stopTyping}
                 placeholder="Mesajınızı yazın…"
                 className="block w-full bg-transparent resize-none text-[16px] sm:text-sm font-medium leading-7 text-white placeholder-[#728096] focus:outline-none max-h-24 min-h-7"
               />

@@ -28,6 +28,7 @@ export default async function AdminPage() {
     is_owner?: boolean;
     email?: string;
     admin_tier?: string;
+    permissions?: string[];
   };
 
   const adminAccessInfo: AdminAccessInfo = {
@@ -35,6 +36,7 @@ export default async function AdminPage() {
     is_owner: Boolean(typedAdminAccess?.is_owner),
     email: user.email || typedAdminAccess?.email,
     admin_tier: typedAdminAccess?.admin_tier || 'admin',
+    permissions: typedAdminAccess?.permissions || [],
   };
 
   // 2. Paralel Veri Çekimi (İstatistikler, Projeler, Kullanıcılar)

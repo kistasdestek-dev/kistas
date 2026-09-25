@@ -14,6 +14,7 @@ import {
   Wrench,
   Sparkles,
   Loader2,
+  Megaphone,
 } from 'lucide-react';
 import { GlassIconButton } from '../GlassIconButton';
 
@@ -70,6 +71,8 @@ const getNotificationIcon = (type: string) => {
       return { Icon: Wrench, color: '#B98916', bg: 'bg-[#B98916]/10 border-[#B98916]/20' };
     case 'credit_purchase':
       return { Icon: Sparkles, color: '#187657', bg: 'bg-[#187657]/10 border-[#187657]/20' };
+    case 'admin_announcement':
+      return { Icon: Megaphone, color: '#60A5FA', bg: 'bg-[#3269C7]/10 border-[#3269C7]/25' };
     default:
       return { Icon: Bell, color: '#3269C7', bg: 'bg-[#3269C7]/10 border-[#3269C7]/20' };
   }

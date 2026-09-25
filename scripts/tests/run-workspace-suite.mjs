@@ -22,8 +22,10 @@ const suites = {
   web: [
     'analytics-consent.test.mjs',
     'chat-keyboard-viewport.test.mjs',
+    'chat-presence-and-admin-announcements.test.mjs',
     'chat-identity.test.mjs',
     'google-identity.test.mjs',
+    'inbox-lifecycle-and-notifications.test.mjs',
     'profile-avatar-flow.test.mjs',
     'public-route-performance.test.mjs',
     'route-loading.test.mjs',

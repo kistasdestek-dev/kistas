@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useTransition } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import { motion, useAnimationControls, useReducedMotion } from 'framer-motion';
 import {
   ChevronLeft,
   RotateCw,
@@ -18,8 +19,10 @@ import { GlassIconButton } from '../GlassIconButton';
 import { KistasLogo } from '../KistasLogo';
 import { KistasFeedbackModal, KistasFeedbackType } from '../KistasFeedbackModal';
 import { ConversationCard } from './ConversationCard';
+import { ConversationActionModal } from './ConversationActionModal';
 import { ChatWindow } from './ChatWindow';
 import { ChatAvatar } from './ChatAvatar';
+import { MessageNotificationSettings } from './MessageNotificationSettings';
 import { getConversationIdentity } from './conversationIdentity';
 import {
   ChatService,
@@ -33,6 +36,7 @@ interface MessagesExperienceClientProps {
   currentUserName: string;
   currentUserAvatarUrl?: string | null;
   initialSelectedId?: string | null;
+  canManageSupport: boolean;
 }
 
 export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> = ({
@@ -41,6 +45,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
   currentUserName,
   currentUserAvatarUrl,
   initialSelectedId,
+  canManageSupport,
 }) => {
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
@@ -54,6 +59,9 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isStartingSupport, setIsStartingSupport] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Conversation | null>(null);
+  const [closeTarget, setCloseTarget] = useState<Conversation | null>(null);
+  const [actionBusyId, setActionBusyId] = useState<string | null>(null);
   const [isViewportReady, setIsViewportReady] = useState(false);
   const [feedbackModal, setFeedbackModal] = useState<{
     isOpen: boolean;
@@ -67,6 +75,8 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
     message: '',
   });
   const [isPending, startTransition] = useTransition();
+  const supportIconControls = useAnimationControls();
+  const shouldReduceMotion = useReducedMotion();
 
   const supabase = useMemo(() => createClient(), []);
 
@@ -112,7 +122,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const data = await ChatService.getConversations(supabase, currentUserId);
+      const data = await ChatService.getConversations(supabase, currentUserId, canManageSupport);
       setConversations(data);
       startTransition(() => {
         router.refresh();
@@ -120,7 +130,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
     } finally {
       setIsRefreshing(false);
     }
-  }, [currentUserId, router, supabase]);
+  }, [canManageSupport, currentUserId, router, supabase]);
 
   // Realtime Inbox Dinleyicisi
   useEffect(() => {
@@ -139,12 +149,20 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
 
   // Kıstas Destek Sohbeti Başlatma
   const handleStartSupport = async () => {
+    if (!shouldReduceMotion) {
+      void supportIconControls.start({
+        rotate: [0, 90, 180],
+        scale: [1, 1.3, 0.9, 1],
+        transition: { duration: 0.42, ease: 'easeOut' },
+      });
+    }
     setIsStartingSupport(true);
     try {
       const res = await ChatService.getOrCreateSupportConversation(supabase);
       if (res.success && res.conversationId) {
         await handleRefresh();
         setSelectedConversationId(res.conversationId);
+        router.replace(`/messages?conversationId=${encodeURIComponent(res.conversationId)}`, { scroll: false });
       } else {
         setFeedbackModal({
           isOpen: true,
@@ -156,6 +174,63 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
     } finally {
       setIsStartingSupport(false);
     }
+  };
+
+  const handleSelectConversation = (conversation: Conversation) => {
+    setSelectedConversationId(conversation.id);
+    router.replace(`/messages?conversationId=${encodeURIComponent(conversation.id)}`, { scroll: false });
+  };
+
+  const handleHideConversation = async () => {
+    if (!deleteTarget || actionBusyId) return;
+    const targetId = deleteTarget.id;
+    setActionBusyId(targetId);
+    const result = await ChatService.hideConversation(supabase, targetId);
+    if (result.success) {
+      setConversations((current) => current.filter((conversation) => conversation.id !== targetId));
+      if (selectedConversationId === targetId) {
+        setSelectedConversationId(null);
+        router.replace('/messages', { scroll: false });
+      }
+      setDeleteTarget(null);
+    } else {
+      setFeedbackModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Görüşme kaldırılamadı',
+        message: result.error || 'Lütfen tekrar deneyin.',
+      });
+    }
+    setActionBusyId(null);
+  };
+
+  const handleCloseSupportConversation = async () => {
+    if (!closeTarget || actionBusyId) return;
+    const targetId = closeTarget.id;
+    setActionBusyId(targetId);
+    const result = await ChatService.closeSupportConversation(supabase, targetId);
+    if (result.success) {
+      setConversations((current) => current.map((conversation) => (
+        conversation.id === targetId
+          ? { ...conversation, closedAt: result.closedAt || new Date().toISOString(), closedBy: currentUserId }
+          : conversation
+      )));
+      setCloseTarget(null);
+      setFeedbackModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Destek görüşmesi sonlandırıldı',
+        message: 'Kullanıcı ihtiyaç duyarsa Destek butonundan yeni bir görüşme başlatabilir.',
+      });
+    } else {
+      setFeedbackModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Görüşme sonlandırılamadı',
+        message: result.error || 'Yetkinizi ve görüşme durumunu kontrol edin.',
+      });
+    }
+    setActionBusyId(null);
   };
 
   // Filtrelenmiş ve Aranmış Konuşmalar
@@ -212,6 +287,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
               iconSize={18}
               onClick={() => router.back()}
               title="Geri dön"
+              animation="nudge"
             />
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 flex items-center justify-center">
@@ -231,6 +307,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
           </div>
 
           <div className="flex items-center gap-2.5">
+            <MessageNotificationSettings userId={currentUserId} />
             <button
               type="button"
               onClick={handleStartSupport}
@@ -241,7 +318,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
               {isStartingSupport ? (
                 <Loader2 size={15} className="animate-spin" />
               ) : (
-                <Headphones size={15} />
+                <motion.span animate={supportIconControls} className="inline-flex"><Headphones size={15} /></motion.span>
               )}
               <span className="hidden sm:inline">Canlı Destek</span>
             </button>
@@ -253,6 +330,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
               onClick={handleRefresh}
               disabled={isRefreshing || isPending}
               title="Verileri yenile"
+              animation="spin"
               className={isRefreshing || isPending ? 'animate-spin' : ''}
             />
           </div>
@@ -374,21 +452,24 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
                     conversation={conv}
                     currentUserId={currentUserId}
                     isSelected={conv.id === selectedConversationId}
-                    onSelect={(selected) => setSelectedConversationId(selected.id)}
+                    isDeleting={actionBusyId === conv.id}
+                    onSelect={handleSelectConversation}
+                    onDelete={conv.buyerId === currentUserId || conv.sellerId === currentUserId ? setDeleteTarget : undefined}
                   />
                 ))
               )}
             </div>
             <div className="lg:hidden absolute bottom-[max(14px,env(safe-area-inset-bottom))] left-1/2 z-20 -translate-x-1/2 flex items-center gap-1 rounded-full border border-white/10 bg-[#1B2431]/95 p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.55)] backdrop-blur-xl">
               <button type="button" onClick={handleStartSupport} disabled={isStartingSupport} className="flex h-10 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-white disabled:opacity-50" aria-label="Kıstas Destek görüşmesi aç">
-                {isStartingSupport ? <Loader2 size={17} className="animate-spin" /> : <Plus size={18} className="text-blue-400" />}
+                {isStartingSupport ? <Loader2 size={17} className="animate-spin" /> : <motion.span animate={supportIconControls} className="inline-flex"><Plus size={18} className="text-blue-400" /></motion.span>}
                 Destek
               </button>
               <GlassIconButton icon={Search} variant="bare" size={39} iconSize={18} iconColor="#77A9F8" onClick={() => {
                 if (isSearchOpen) setSearchQuery('');
                 setIsSearchOpen(!isSearchOpen);
-              }} title={isSearchOpen ? 'Aramayı kapat' : 'Mesaj ara'} className="!bg-[#273348] !border-white/[0.08] !shadow-none" />
-              <GlassIconButton icon={RotateCw} variant="bare" size={39} iconSize={18} iconColor="#77A9F8" onClick={handleRefresh} disabled={isRefreshing || isPending} title="Yenile" className="!bg-[#273348] !border-white/[0.08] !shadow-none" />
+              }} title={isSearchOpen ? 'Aramayı kapat' : 'Mesaj ara'} animation="pulse" className="!bg-[#273348] !border-white/[0.08] !shadow-none" />
+              <GlassIconButton icon={RotateCw} variant="bare" size={39} iconSize={18} iconColor="#77A9F8" onClick={handleRefresh} disabled={isRefreshing || isPending} title="Yenile" animation="spin" className="!bg-[#273348] !border-white/[0.08] !shadow-none" />
+              <MessageNotificationSettings userId={currentUserId} compact />
             </div>
           </div>
 
@@ -405,6 +486,9 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
                 currentUserId={currentUserId}
                 currentUserName={currentUserName}
                 currentUserAvatarUrl={currentUserAvatarUrl}
+                canManageSupport={canManageSupport}
+                isClosingSupport={actionBusyId === selectedConversation.id}
+                onRequestCloseSupport={() => setCloseTarget(selectedConversation)}
                 onBackMobile={() => {
                   setSelectedConversationId(null);
                   router.replace('/messages', { scroll: false });
@@ -446,6 +530,30 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
         type={feedbackModal.type}
         title={feedbackModal.title}
         message={feedbackModal.message}
+      />
+      <ConversationActionModal
+        isOpen={Boolean(deleteTarget)}
+        title="Görüşme Inbox’tan kaldırılsın mı?"
+        message="Bu işlem yalnızca sizin listenizi temizler; karşı tarafın mesajları silinmez. Yeni mesaj gelirse görüşme yeniden görünür."
+        confirmLabel="Kaldır"
+        destructive
+        isBusy={Boolean(deleteTarget && actionBusyId === deleteTarget.id)}
+        onCancel={() => {
+          if (!actionBusyId) setDeleteTarget(null);
+        }}
+        onConfirm={() => void handleHideConversation()}
+      />
+      <ConversationActionModal
+        isOpen={Boolean(closeTarget)}
+        title="Destek görüşmesi sonlandırılsın mı?"
+        message="Bu görüşmeye yeni mesaj gönderilemez. Kullanıcı Destek butonuna tekrar bastığında yönetim ekibine yeni bir görüşmeyle ulaşabilir."
+        confirmLabel="Sonlandır"
+        destructive
+        isBusy={Boolean(closeTarget && actionBusyId === closeTarget.id)}
+        onCancel={() => {
+          if (!actionBusyId) setCloseTarget(null);
+        }}
+        onConfirm={() => void handleCloseSupportConversation()}
       />
     </div>
   );

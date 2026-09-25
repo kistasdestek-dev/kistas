@@ -27,6 +27,7 @@ export interface Conversation {
   unreadCount: number;
   closedAt?: string | null;
   closedBy?: string | null;
+  hiddenAt?: string | null;
   listing?: {
     id: string;
     title: string;
@@ -39,6 +40,12 @@ export interface Conversation {
     avatarUrl?: string | null;
     isVerified?: boolean;
   };
+}
+
+export interface ConversationTypingState {
+  conversationId: string;
+  userId: string;
+  expiresAt: string;
 }
 
 /**
@@ -86,6 +93,7 @@ const mapConversationRows = (
 ): Conversation[] => {
   return rows.map((row: any) => {
     const isBuyer = row.buyer_id === currentUserId;
+    const isSeller = row.seller_id === currentUserId;
     const otherParty = profilesById.get(isBuyer ? row.seller_id : row.buyer_id);
     const listing = row.listings
       ? {
@@ -110,6 +118,7 @@ const mapConversationRows = (
         : Number(row.seller_unread_count || 0),
       closedAt: row.closed_at || null,
       closedBy: row.closed_by || null,
+      hiddenAt: (isBuyer ? row.buyer_hidden_at : isSeller ? row.seller_hidden_at : null) || null,
       listing,
       otherParty: otherParty
         ? {
@@ -129,10 +138,11 @@ export class ChatService {
    */
   public static async getConversations(
     supabase: SupabaseClient,
-    currentUserId: string
+    currentUserId: string,
+    canViewAllSupport = false
   ): Promise<Conversation[]> {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('conversations')
         .select(`
           id,
@@ -145,10 +155,18 @@ export class ChatService {
           seller_unread_count,
           closed_at,
           closed_by,
+          buyer_hidden_at,
+          seller_hidden_at,
           listings:listing_id (id, title, price, listing_images(image_url, is_cover))
-        `)
-        .or(`buyer_id.eq.${currentUserId},seller_id.eq.${currentUserId}`)
-        .order('last_message_at', { ascending: false, nullsFirst: false });
+        `);
+
+      query = query.or(
+        canViewAllSupport
+          ? `buyer_id.eq.${currentUserId},seller_id.eq.${currentUserId},listing_id.is.null`
+          : `buyer_id.eq.${currentUserId},seller_id.eq.${currentUserId}`
+      );
+
+      const { data, error } = await query.order('last_message_at', { ascending: false, nullsFirst: false });
 
       if (error || !data) {
         console.error('getConversations error:', error);
@@ -178,7 +196,11 @@ export class ChatService {
         }
       }
 
-      return mapConversationRows(data, currentUserId, profilesById);
+      return mapConversationRows(data, currentUserId, profilesById).filter((conversation) => {
+        if (!conversation.hiddenAt) return true;
+        if (!conversation.lastMessageAt) return false;
+        return new Date(conversation.lastMessageAt).getTime() > new Date(conversation.hiddenAt).getTime();
+      });
     } catch (err) {
       console.error('getConversations catch:', err);
       return [];
@@ -300,6 +322,39 @@ export class ChatService {
     }
   }
 
+  public static async setConversationTyping(
+    supabase: SupabaseClient,
+    conversationId: string,
+    isTyping: boolean
+  ): Promise<void> {
+    try {
+      await supabase.rpc('set_conversation_typing', {
+        p_conversation_id: conversationId,
+        p_is_typing: isTyping,
+      });
+    } catch {
+      // Yazıyor durumu mesajlaşmayı engelleyen kritik bir işlem değildir.
+    }
+  }
+
+  public static async getConversationTypingStates(
+    supabase: SupabaseClient,
+    conversationId: string
+  ): Promise<ConversationTypingState[]> {
+    const { data, error } = await supabase
+      .from('conversation_typing_states')
+      .select('conversation_id, user_id, expires_at')
+      .eq('conversation_id', conversationId)
+      .gt('expires_at', new Date().toISOString());
+
+    if (error || !data) return [];
+    return data.map((row) => ({
+      conversationId: row.conversation_id,
+      userId: row.user_id,
+      expiresAt: row.expires_at,
+    }));
+  }
+
   /**
    * Bir proje için satıcıyla konuşma oluşturur veya var olanı getirir
    */
@@ -339,6 +394,7 @@ export class ChatService {
         .maybeSingle();
 
       if (existing?.id) {
+        await this.restoreConversation(supabase, existing.id);
         return { success: true, conversationId: existing.id };
       }
 
@@ -354,6 +410,7 @@ export class ChatService {
         .single();
 
       if (created?.id) {
+        await this.restoreConversation(supabase, created.id);
         return { success: true, conversationId: created.id };
       }
 
@@ -385,10 +442,52 @@ export class ChatService {
         return { success: false, error: error?.message || 'Destek görüşmesi açılamadı.' };
       }
 
-      return { success: true, conversationId: String(data) };
+      const conversationId = String(data);
+      await this.restoreConversation(supabase, conversationId);
+      return { success: true, conversationId };
     } catch (err: any) {
       return { success: false, error: err?.message || 'Destek görüşmesi açılamadı.' };
     }
+  }
+
+  public static async hideConversation(
+    supabase: SupabaseClient,
+    conversationId: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const { error } = await supabase.rpc('hide_conversation_for_current_user', {
+      p_conversation_id: conversationId,
+    });
+    return error
+      ? { success: false, error: error.message || 'Görüşme Inbox’tan kaldırılamadı.' }
+      : { success: true };
+  }
+
+  public static async restoreConversation(
+    supabase: SupabaseClient,
+    conversationId: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const { error } = await supabase.rpc('restore_conversation_for_current_user', {
+      p_conversation_id: conversationId,
+    });
+    return error
+      ? { success: false, error: error.message || 'Görüşme yeniden açılamadı.' }
+      : { success: true };
+  }
+
+  public static async closeSupportConversation(
+    supabase: SupabaseClient,
+    conversationId: string
+  ): Promise<{ success: boolean; closedAt?: string; error?: string }> {
+    const { data, error } = await supabase.rpc('admin_close_support_conversation', {
+      p_conversation_id: conversationId,
+    });
+    if (error || !data) {
+      return { success: false, error: error?.message || 'Destek görüşmesi sonlandırılamadı.' };
+    }
+    return {
+      success: true,
+      closedAt: typeof data.closed_at === 'string' ? data.closed_at : new Date().toISOString(),
+    };
   }
 
   /**
@@ -397,8 +496,22 @@ export class ChatService {
   public static subscribeToMessages(
     supabase: SupabaseClient,
     conversationId: string,
-    onNewMessage: (msg: ChatMessage) => void
+    onNewMessage: (message: ChatMessage) => void,
+    onUpdatedMessage?: (message: ChatMessage) => void
   ) {
+    const mapMessage = (row: any): ChatMessage => ({
+      id: row.id,
+      conversationId: row.conversation_id,
+      senderId: row.sender_id,
+      content: row.content,
+      type: row.type || 'text',
+      metadata: row.metadata,
+      isFlagged: Boolean(row.is_flagged),
+      flagReason: row.flag_reason,
+      isRead: Boolean(row.is_read),
+      createdAt: row.created_at,
+    });
+
     const channel = supabase
       .channel(`chat_${conversationId}`)
       .on(
@@ -412,19 +525,46 @@ export class ChatService {
         (payload) => {
           const row = payload.new as any;
           if (!row || !row.id || !row.conversation_id) return;
-          onNewMessage({
-            id: row.id,
-            conversationId: row.conversation_id,
-            senderId: row.sender_id,
-            content: row.content,
-            type: row.type || 'text',
-            metadata: row.metadata,
-            isFlagged: Boolean(row.is_flagged),
-            flagReason: row.flag_reason,
-            isRead: Boolean(row.is_read),
-            createdAt: row.created_at,
-          });
+          onNewMessage(mapMessage(row));
         }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const row = payload.new as any;
+          if (!row || !row.id || !row.conversation_id || !onUpdatedMessage) return;
+          onUpdatedMessage(mapMessage(row));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }
+
+  public static subscribeToTypingStates(
+    supabase: SupabaseClient,
+    conversationId: string,
+    onChange: () => void
+  ) {
+    const channel = supabase
+      .channel(`typing_${conversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'conversation_typing_states',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        onChange
       )
       .subscribe();
 

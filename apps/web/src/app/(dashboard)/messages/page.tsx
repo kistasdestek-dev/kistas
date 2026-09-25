@@ -36,9 +36,22 @@ export default async function MessagesPage({ searchParams }: MessagesPageProps) 
     }
   }
 
-  // 3. Kullanıcının konuşmalarını ve sohbet avatarını paralel olarak çek
+  // 3. Destek ekibi yetkisini sunucuda çöz; yetkili ekip tüm destek taleplerini görebilir.
+  const { data: rawAdminAccess } = await supabase.rpc('get_current_admin_access');
+  const adminAccess = rawAdminAccess as {
+    is_admin?: boolean;
+    is_owner?: boolean;
+    permissions?: string[];
+  } | null;
+  const canManageSupport = Boolean(
+    adminAccess?.is_admin && (
+      adminAccess.is_owner || adminAccess.permissions?.includes('community')
+    )
+  );
+
+  // 4. Kullanıcının konuşmalarını ve sohbet avatarını paralel olarak çek.
   const [conversations, profileResult] = await Promise.all([
-    ChatService.getConversations(supabase, user.id),
+    ChatService.getConversations(supabase, user.id, canManageSupport),
     supabase
       .from('profiles')
       .select('full_name, avatar_url')
@@ -53,6 +66,7 @@ export default async function MessagesPage({ searchParams }: MessagesPageProps) 
       currentUserName={profileResult.data?.full_name || 'Siz'}
       currentUserAvatarUrl={profileResult.data?.avatar_url || null}
       initialSelectedId={initialSelectedId}
+      canManageSupport={canManageSupport}
     />
   );
 }

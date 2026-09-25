@@ -5,6 +5,7 @@ import { X, Camera, Check, Loader2, AlertCircle } from 'lucide-react';
 import { isReservedBrandName } from '@kistas/shared';
 import { createClient } from '@/lib/supabase/browser';
 import { KistasLogo } from '../KistasLogo';
+import { ShinyButton } from '../ui/shiny-button';
 import { KISTAS_AVATAR_PATHS, resolveAvatarUrl, toLocalKistasAvatarPath, toStoredAvatarUrl } from '@/lib/avatar';
 import type { Profile } from '@kistas/shared';
 
@@ -25,8 +26,6 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 }) => {
   const [draftName, setDraftName] = useState(profile?.full_name || '');
   const [draftBio, setDraftBio] = useState(profile?.bio || '');
-  const [draftCity, setDraftCity] = useState(profile?.city || '');
-  const [draftDistrict, setDraftDistrict] = useState(profile?.district || '');
   const [draftAvatarUrl, setDraftAvatarUrl] = useState(
     toLocalKistasAvatarPath(profile?.avatar_url) || profile?.avatar_url || ''
   );
@@ -139,11 +138,9 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         return;
       }
 
-      const updatePayload: Record<string, any> = {
+      const updatePayload: Record<string, string | null> = {
         full_name: trimmedName,
         bio: draftBio.trim() || null,
-        city: draftCity.trim() || null,
-        district: draftDistrict.trim() || null,
         avatar_url: draftAvatarUrl.trim() ? toStoredAvatarUrl(draftAvatarUrl.trim()) : null,
         updated_at: new Date().toISOString(),
       };
@@ -162,8 +159,6 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
       onSuccess({
         full_name: trimmedName,
         bio: draftBio.trim(),
-        city: draftCity.trim(),
-        district: draftDistrict.trim(),
         avatar_url: draftAvatarUrl.trim(),
       });
       onClose();
@@ -175,31 +170,35 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-hidden p-3 sm:p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-hidden bg-[#030814]/80 p-3 backdrop-blur-xl animate-in fade-in duration-200 sm:items-center sm:p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="profile-edit-title"
+    >
       <div
-        className="k-modal-glass-card w-full max-w-lg max-h-[calc(100dvh-1.5rem)] sm:max-h-[92vh] overflow-y-auto overscroll-contain p-5 sm:p-7"
+        className="relative w-full max-w-lg max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain rounded-[28px] border border-[#5E8FD8]/25 bg-[linear-gradient(145deg,rgba(15,31,57,.98),rgba(6,16,34,.98))] p-5 shadow-[0_24px_80px_rgba(0,0,0,.55),inset_0_1px_0_rgba(255,255,255,.08)] sm:max-h-[92vh] sm:p-7"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Ambient Top Glow */}
-        <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 h-44 w-44 rounded-full bg-gradient-to-b from-[#3B82F6]/25 via-[#60A5FA]/10 to-transparent blur-3xl" />
+        <div className="pointer-events-none absolute -top-24 left-1/2 h-52 w-72 -translate-x-1/2 rounded-full bg-[#3269C7]/20 blur-3xl" />
 
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
-          <h3 className="text-lg font-bold text-white tracking-tight">
+        <div className="relative flex items-center justify-between pb-5">
+          <h3 id="profile-edit-title" className="text-lg font-bold tracking-tight text-white">
             Profili düzenle
           </h3>
           <button
             type="button"
             disabled={saving || isUploadingAvatar}
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-all backdrop-blur-md cursor-pointer shadow-xs disabled:opacity-50"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.07] text-[#AFC5E6] transition-colors hover:bg-white/[0.12] hover:text-white cursor-pointer disabled:opacity-50"
+            aria-label="Profil düzenlemeyi kapat"
           >
             <X size={16} />
           </button>
         </div>
 
-        {/* Avatar Selection Row */}
-        <div className="flex items-center gap-4 py-5 border-b border-white/10">
+        <section className="relative rounded-2xl bg-[#0A172B]/55 p-4 sm:p-5" aria-labelledby="profile-photo-title">
           <input
             type="file"
             ref={fileInputRef}
@@ -208,77 +207,85 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             className="hidden"
           />
 
-          <div
-            onClick={() => !saving && !isUploadingAvatar && fileInputRef.current?.click()}
-            className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-[#161616] shadow-md cursor-pointer overflow-hidden group"
-            title="Profil fotoğrafını değiştir"
-          >
-            {draftAvatarUrl ? (
-
-              <img
-                src={resolveAvatarUrl(draftAvatarUrl)}
-                alt="Avatar"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <KistasLogo size={42} showWordmark={false} />
-            )}
-
-            <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-lg bg-[#1F1F1F] border-2 border-[#0E0E0E] text-white shadow-sm">
-              {isUploadingAvatar ? (
-                <Loader2 size={13} className="animate-spin text-[#3269C7]" />
-              ) : (
-                <Camera size={13} />
-              )}
-            </div>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-bold text-white">
-              Profil fotoğrafı
-            </h4>
-            <p className="mt-0.5 text-[11px] text-[#A1A1AA]">
-              Kare bir PNG, JPG veya WEBP görsel seçin.
-            </p>
+          <div className="flex items-center gap-4">
             <button
               type="button"
               disabled={saving || isUploadingAvatar}
               onClick={() => fileInputRef.current?.click()}
-              className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-[#3269C7]/30 bg-[#3269C7]/20 px-2.5 py-1 text-[11px] font-bold text-[#60A5FA] hover:bg-[#3269C7]/30 active:scale-98 transition-all cursor-pointer disabled:opacity-50"
+              className="group relative flex h-20 w-20 shrink-0 items-center justify-center overflow-visible rounded-full bg-transparent p-0 cursor-pointer disabled:opacity-50"
+              title="Profil fotoğrafını değiştir"
+              aria-label="Profil fotoğrafını değiştir"
             >
-              {isUploadingAvatar ? 'Yükleniyor...' : 'Fotoğrafı Değiştir'}
+              <span className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#0C1C35] transition-transform group-hover:scale-[1.03]">
+                {draftAvatarUrl ? (
+                  <img
+                    src={resolveAvatarUrl(draftAvatarUrl)}
+                    alt="Mevcut profil fotoğrafı"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <KistasLogo size={42} showWordmark={false} />
+                )}
+              </span>
+              <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-[#3269C7] text-white shadow-[0_5px_14px_rgba(50,105,199,.45)]">
+                {isUploadingAvatar ? (
+                  <Loader2 size={13} className="animate-spin" />
+                ) : (
+                  <Camera size={13} />
+                )}
+              </span>
             </button>
-          </div>
-        </div>
 
-        <div className="border-b border-white/10 pb-5">
-          <p className="mb-2.5 text-[11px] font-bold text-[#A1A1AA]">Kıstas avatarları</p>
-          <div className="grid grid-cols-4 gap-2.5" role="radiogroup" aria-label="Kıstas profil avatarları">
-            {KISTAS_AVATAR_PATHS.map((avatarPath, index) => {
-              const selected = toLocalKistasAvatarPath(draftAvatarUrl) === avatarPath;
-              return (
-                <button
-                  key={avatarPath}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  aria-label={`Kıstas avatarı ${index + 1}`}
-                  disabled={saving || isUploadingAvatar}
-                  onClick={() => setDraftAvatarUrl(avatarPath)}
-                  className={`aspect-square overflow-hidden rounded-2xl border p-0.5 transition-all cursor-pointer disabled:opacity-50 ${selected ? 'border-[#60A5FA] bg-[#3B82F6]/20 shadow-[0_0_18px_rgba(59,130,246,.35)]' : 'border-white/10 bg-white/5 hover:border-white/25'}`}
-                >
-                  <img src={avatarPath} alt="" className="h-full w-full rounded-[14px] object-cover" />
-                </button>
-              );
-            })}
+            <div className="min-w-0 flex-1">
+              <h4 id="profile-photo-title" className="text-sm font-bold text-white">
+                Profil fotoğrafı
+              </h4>
+              <p className="mt-1 text-[11px] leading-4 text-[#91A6C5]">
+                PNG, JPG veya WEBP biçiminde kare bir görsel seçin.
+              </p>
+              <button
+                type="button"
+                disabled={saving || isUploadingAvatar}
+                onClick={() => fileInputRef.current?.click()}
+                className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-[#3269C7]/18 px-3 py-1.5 text-[11px] font-bold text-[#8DB9FF] transition-colors hover:bg-[#3269C7]/28 cursor-pointer disabled:opacity-50"
+              >
+                {isUploadingAvatar ? 'Yükleniyor...' : 'Fotoğrafı değiştir'}
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Form Fields */}
-        <div className="space-y-4 pt-4">
-          {/* Full Name */}
+          <div className="mt-5 border-t border-[#6B8FC4]/15 pt-4">
+            <p className="mb-3 text-[11px] font-bold text-[#91A6C5]">Kıstas avatarları</p>
+            <div className="grid grid-cols-4 gap-3 sm:gap-4" role="radiogroup" aria-label="Kıstas profil avatarları">
+              {KISTAS_AVATAR_PATHS.map((avatarPath, index) => {
+                const selected = toLocalKistasAvatarPath(draftAvatarUrl) === avatarPath;
+                return (
+                  <button
+                    key={avatarPath}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    aria-label={`Kıstas avatarı ${index + 1}`}
+                    disabled={saving || isUploadingAvatar}
+                    onClick={() => setDraftAvatarUrl(avatarPath)}
+                    className={`relative aspect-square rounded-full bg-transparent p-0 transition-all cursor-pointer disabled:opacity-50 ${selected ? 'scale-[1.04] drop-shadow-[0_0_12px_rgba(74,144,245,.6)]' : 'opacity-80 hover:scale-[1.03] hover:opacity-100'}`}
+                  >
+                    <img src={avatarPath} alt="" className="h-full w-full rounded-full object-cover" />
+                    {selected ? (
+                      <span className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-[#3269C7] text-white shadow-[0_4px_10px_rgba(50,105,199,.5)]" aria-hidden="true">
+                        <Check size={12} strokeWidth={3} />
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <div className="relative space-y-4 pt-5">
           <div>
-            <label className="block text-xs font-bold text-[#A1A1AA] mb-1.5">
+            <label className="mb-1.5 block text-xs font-bold text-[#AFC5E6]">
               Ad ve soyad
             </label>
             <input
@@ -290,8 +297,8 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               }}
               maxLength={100}
               disabled={saving}
-              className={`w-full h-11 px-3.5 rounded-xl border bg-[#161616] text-xs font-semibold text-white focus:outline-none focus:border-[#3269C7] transition-all ${
-                isBrandReserved ? 'border-red-500' : 'border-white/10'
+              className={`h-12 w-full rounded-xl border bg-[#08162B]/80 px-4 text-sm font-semibold text-white outline-none transition-[border-color,box-shadow] focus:border-[#5C94E8] focus:shadow-[0_0_0_3px_rgba(50,105,199,.16)] ${
+                isBrandReserved ? 'border-red-500' : 'border-[#36577F]/60'
               }`}
             />
             {isBrandReserved && (
@@ -302,45 +309,12 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             )}
           </div>
 
-          {/* Location Row (City / District) */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-[#A1A1AA] mb-1.5">
-                Şehir
-              </label>
-              <input
-                type="text"
-                value={draftCity}
-                onChange={(e) => setDraftCity(e.target.value)}
-                maxLength={50}
-                placeholder="Örn. İstanbul"
-                disabled={saving}
-                className="w-full h-11 px-3.5 rounded-xl border border-white/10 bg-[#161616] text-xs font-semibold text-white placeholder-[#71717A] focus:outline-none focus:border-[#3269C7] transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-[#A1A1AA] mb-1.5">
-                İlçe
-              </label>
-              <input
-                type="text"
-                value={draftDistrict}
-                onChange={(e) => setDraftDistrict(e.target.value)}
-                maxLength={50}
-                placeholder="Örn. Kadıköy"
-                disabled={saving}
-                className="w-full h-11 px-3.5 rounded-xl border border-white/10 bg-[#161616] text-xs font-semibold text-white placeholder-[#71717A] focus:outline-none focus:border-[#3269C7] transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Bio */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-[#A1A1AA]">
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="text-xs font-bold text-[#AFC5E6]">
                 Hakkımda
               </label>
-              <span className="text-[10px] text-[#71717A]">
+              <span className="text-[10px] text-[#7187A7]">
                 {draftBio.length} / 500
               </span>
             </div>
@@ -348,40 +322,34 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               value={draftBio}
               onChange={(e) => setDraftBio(e.target.value)}
               maxLength={500}
-              rows={3}
+              rows={4}
               disabled={saving}
               placeholder="Kendinizden ve projelerinizden bahsedin..."
-              className="w-full p-3.5 rounded-xl border border-white/10 bg-[#161616] text-xs font-semibold text-white placeholder-[#71717A] focus:outline-none focus:border-[#3269C7] transition-all resize-none"
+              className="w-full resize-none rounded-xl border border-[#36577F]/60 bg-[#08162B]/80 p-4 text-sm font-medium leading-5 text-white outline-none transition-[border-color,box-shadow] placeholder:text-[#637895] focus:border-[#5C94E8] focus:shadow-[0_0_0_3px_rgba(50,105,199,.16)]"
             />
           </div>
 
-          {/* Error message */}
           {saveError && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400 font-medium flex items-center gap-2">
+            <div className="flex items-center gap-2 rounded-xl border border-red-400/25 bg-red-500/10 p-3 text-xs font-medium text-red-300">
               <AlertCircle size={14} className="shrink-0" />
               <span>{saveError}</span>
             </div>
           )}
 
-          {/* Submit Button */}
-          <button
-            type="button"
+          <ShinyButton
             disabled={saving || isUploadingAvatar || isBrandReserved}
             onClick={handleSave}
-            className="k-modal-glass-btn-primary w-full h-12 mt-4 inline-flex items-center justify-center gap-2 rounded-xl font-bold text-xs active:scale-98 cursor-pointer disabled:opacity-50"
+            className="mt-2 min-h-12"
           >
-            {saving ? (
-              <>
+            <span className="inline-flex items-center justify-center gap-2">
+              {saving ? (
                 <Loader2 size={16} className="animate-spin" />
-                <span>Kaydediliyor...</span>
-              </>
-            ) : (
-              <>
+              ) : (
                 <Check size={16} />
-                <span>Değişiklikleri kaydet</span>
-              </>
-            )}
-          </button>
+              )}
+              <span>{saving ? 'Kaydediliyor...' : 'Değişiklikleri kaydet'}</span>
+            </span>
+          </ShinyButton>
         </div>
       </div>
     </div>

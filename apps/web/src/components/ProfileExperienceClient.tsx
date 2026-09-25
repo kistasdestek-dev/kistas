@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -18,7 +18,6 @@ import {
   Sparkles,
   Eye,
   Trash2,
-  MapPin,
   Wrench,
   ChevronRight,
 } from 'lucide-react';
@@ -89,13 +88,25 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
   const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false);
   const [visibilityListingId, setVisibilityListingId] = useState<string | null>(null);
 
+  useEffect(() => {
+    const handleNotification = (event: Event) => {
+      const item = (event as CustomEvent<NotificationItem>).detail;
+      if (!item?.id) return;
+      setNotifications((current) => (
+        current.some((notification) => notification.id === item.id)
+          ? current
+          : [item, ...current]
+      ));
+    };
+    window.addEventListener('kistas:notification-received', handleNotification);
+    return () => window.removeEventListener('kistas:notification-received', handleNotification);
+  }, []);
+
   // Computed values
   const isGuest = !user;
   const fullName = profile?.full_name || user?.email?.split('@')[0] || 'Kıstas Üyesi';
   const boostCredits = profile?.boost_credits ?? 0;
   const isVerified = Boolean(profile?.is_verified) || isAdmin;
-  const location = [profile?.city, profile?.district].filter(Boolean).join(', ');
-
   const unreadNotificationsCount = useMemo(
     () => notifications.filter((n) => !n.is_read).length,
     [notifications]
@@ -278,12 +289,6 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                   <p className="mt-0.5 text-xs font-semibold text-[#94A3B8]">
                     {isAdmin ? 'Kıstas yönetim ekibi' : 'Kıstas topluluğu'}
                   </p>
-                  {location ? (
-                    <div className="mt-1 flex items-center gap-1 text-[11px] text-[#94A3B8]">
-                      <MapPin size={12} className="shrink-0" />
-                      <span className="truncate">{location}</span>
-                    </div>
-                  ) : null}
                 </div>
               </div>
 
@@ -747,6 +752,21 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
         onDeleteSingle={handleDeleteSingleNotification}
         onSelectNotification={(notif) => {
           setIsNotificationsModalOpen(false);
+          if (!notif.is_read) {
+            void supabase.from('notifications').update({ is_read: true }).eq('id', notif.id);
+            setNotifications((current) => current.map((item) => (
+              item.id === notif.id ? { ...item, is_read: true } : item
+            )));
+          }
+          if (notif.type === 'message' && notif.data?.conversation_id) {
+            router.push(`/messages?conversationId=${encodeURIComponent(String(notif.data.conversation_id))}`);
+            return;
+          }
+          const actionPath = typeof notif.data?.action_path === 'string' ? notif.data.action_path : '';
+          if (notif.type === 'admin_announcement' && ['/', '/browse', '/new', '/popular', '/blog'].includes(actionPath)) {
+            router.push(actionPath);
+            return;
+          }
           if (notif.data?.listing_id) {
             router.push(`/project/${notif.data.listing_id}`);
           }

@@ -16,6 +16,7 @@ import {
   Search,
   X,
   ArrowRight,
+  Megaphone,
 } from 'lucide-react';
 import { GlassIconButton } from '../GlassIconButton';
 import { KistasLogo } from '../KistasLogo';
@@ -26,6 +27,7 @@ import { AdminUsersView, type AdminUserItem } from './AdminUsersView';
 import { AdminThreatIntelView } from './AdminThreatIntelView';
 import { AdminBlogView } from './AdminBlogView';
 import { AdminSupportView } from './AdminSupportView';
+import { AdminAnnouncementsView } from './AdminAnnouncementsView';
 import { createClient } from '@/lib/supabase/browser';
 import type { Listing } from '@kistas/shared';
 
@@ -44,6 +46,7 @@ export interface AdminAccessInfo {
   is_owner: boolean;
   email?: string;
   admin_tier?: string;
+  permissions?: string[];
 }
 
 interface AdminDashboardClientProps {
@@ -60,6 +63,7 @@ export type AdminTab =
   | 'listings'
   | 'users'
   | 'blog'
+  | 'announcements'
   | 'analytics'
   | 'threat_intel';
 
@@ -79,6 +83,7 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
   const [isPending, startTransition] = useTransition();
 
   const supabase = createClient();
+  const canSendAnnouncements = adminAccess.is_owner || adminAccess.permissions?.includes('community');
 
   // Verileri canlı tazeleme
   const handleRefresh = async () => {
@@ -208,7 +213,16 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
       bgGradient: 'from-[#FFF2F4] to-white',
       accentBg: 'rgba(189,53,76,0.12)',
     },
-  ], [stats]);
+    ...(canSendAnnouncements ? [{
+      id: 'announcements' as AdminTab,
+      label: 'Topluluk duyurusu',
+      value: 'Yayınla',
+      icon: Megaphone,
+      color: '#3269C7',
+      bgGradient: 'from-[#EFF7FF] to-white',
+      accentBg: 'rgba(50,105,199,0.12)',
+    }] : []),
+  ], [canSendAnnouncements, stats]);
 
   // Arama filtresi
   const filteredListings = useMemo(() => {
@@ -355,7 +369,7 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
         </div>
 
         {/* Arama Çubuğu (Kıstas Neumorphic İç Bükey Arama Alanı) */}
-        {activeTab !== 'analytics' && activeTab !== 'threat_intel' && (
+        {activeTab !== 'analytics' && activeTab !== 'threat_intel' && activeTab !== 'announcements' && (
           <div className="rounded-2xl border border-white/90 bg-[#EAF0F7]/80 px-4 py-3 shadow-[inset_2px_2px_4px_rgba(130,146,168,0.14)] flex items-center gap-3">
             <Search size={16} className="text-[#64748B] shrink-0" />
             <input
@@ -436,6 +450,10 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
               onRefresh={handleRefresh}
               searchQuery={searchQuery}
             />
+          )}
+
+          {activeTab === 'announcements' && canSendAnnouncements && (
+            <AdminAnnouncementsView />
           )}
 
           {/* 8. Toplam Etkileşim / Analitik */}

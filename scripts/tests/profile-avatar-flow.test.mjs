@@ -7,6 +7,7 @@ const read = (relativePath) => readFileSync(resolve(root, relativePath), 'utf8')
 
 const migration = read('supabase/migrations/20260924000001_google_and_kistas_profile_avatars.sql');
 const modal = read('apps/web/src/components/profile/ProfileEditModal.tsx');
+const profileExperience = read('apps/web/src/components/ProfileExperienceClient.tsx');
 const avatarLib = read('apps/web/src/lib/avatar.ts');
 const footerBanner = read('apps/web/src/components/FooterSloganBanner.tsx');
 const routeFooter = read('apps/web/src/components/RouteAwareFooter.tsx');
@@ -18,6 +19,9 @@ assert.match(migration, /avatar_url = COALESCE\(public\.profiles\.avatar_url, EX
 assert.match(modal, /document\.body\.style\.position = 'fixed'/);
 assert.match(modal, /overscroll-contain/);
 assert.match(modal, /KISTAS_AVATAR_PATHS\.map/);
+assert.match(modal, /rounded-full bg-transparent p-0/);
+assert.doesNotMatch(modal, /draftCity|draftDistrict|city:|district:|Şehir|İlçe/);
+assert.doesNotMatch(profileExperience, /profile\?\.city|profile\?\.district|MapPin/);
 assert.match(avatarLib, /toStoredAvatarUrl/);
 assert.doesNotMatch(footerBanner, /onClick|role="button"|tabIndex|cursor-pointer|onPress/);
 assert.match(routeFooter, /pathname === '\/browse'/);

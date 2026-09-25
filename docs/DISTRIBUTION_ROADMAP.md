@@ -62,6 +62,10 @@ Bir ürün vitrini kendi kendine trafik üretmez. Trafik, **geliştiricilerin ke
 ## 📢 Faz 3: Medya Gücü & Makers Ağı (Distribution Channels)
 *Hedef: Siteye girmeyen insanlara bile Kıstas projelerini ulaştırmak.*
 
+- [x] **3.0. Platform İçi Topluluk Duyuruları:**
+  - Topluluk yetkili yöneticisinin yeni, popüler ve keşfedilmeyi bekleyen projeleri tüm kayıtlı üyelere glass bildirimle ulaştırdığı güvenli dağıtım kanalı.
+  - Duyurular izinli Kıstas rotalarına yönlenir, kullanıcı bildirim merkezinde saklanır ve gönderim denetim izi üretir.
+
 - [ ] **3.1. Haftalık "Kıstas Seçkisi" E-Posta Bülteni:**
   - Her Pazar günü abonelere gönderilen, haftanın en iyi 5 bağımsız projesini anlatan editoryal bülten.
   - Geliştirici için en büyük ödül: Binlerce teknoloji meraklısının e-posta kutusuna girmek.

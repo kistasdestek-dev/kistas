@@ -5,6 +5,7 @@ import { KistasGlassDock } from '@/components/KistasGlassDock';
 import { RouteAwareFooter } from '@/components/RouteAwareFooter';
 import { AnalyticsProvider } from '@/components/AnalyticsProvider';
 import { NavigationLoadingOverlay } from '@/components/NavigationLoadingOverlay';
+import { MessageNotificationProvider } from '@/components/MessageNotificationProvider';
 
 export const metadata: Metadata = {
   title: 'Kıstas — Dijital Proje Vitrini ve Bağımsız Geliştirici Ekosistemi',
@@ -40,6 +41,7 @@ export default function RootLayout({
 
         {/* Global Apple-Style Cinematic Footer */}
         <RouteAwareFooter />
+        <MessageNotificationProvider />
         <AnalyticsProvider />
         <Suspense fallback={null}>
           <NavigationLoadingOverlay />

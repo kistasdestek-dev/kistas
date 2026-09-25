@@ -1134,3 +1134,21 @@ Production veya magazaya cikis icin:
 - Eşit yatay padding, `max-w-full`, `justify-center` ve `text-center` ile italik harflerin içerik genişliği kaynaklı görsel kayması engellendi.
 - Yeni veri, girdi, dış URL, secret, yetki, RPC veya migration eklenmedi. Değişiklik yalnız sunum katmanındadır.
 - Yayın: Cloudflare Worker `e7ac7c34-01a2-4560-b0e0-cf9d0ef44f83` production rotasına dağıtıldı. Canlı 390 px viewport ölçümünde metnin ekran merkezinden sapması `0 px` olarak doğrulandı.
+
+### 2026-09-25 - Inbox yaşam döngüsü ve uygulama içi mesaj bildirimleri
+
+- Konuşma kaldırma işlemi fiziksel silme yerine kullanıcıya özel `buyer_hidden_at` / `seller_hidden_at` alanları ve katılımcı doğrulayan `SECURITY DEFINER` RPC ile uygulanır. Karşı tarafın konuşması ve ortak mesaj geçmişi korunur; gizleme sonrasındaki yeni mesaj görüşmeyi otomatik olarak Inbox'a döndürür.
+- Bildirim tercihi kullanıcı kimliğine bağlı `notification_preferences` tablosunda default-on olarak saklanır. RLS yalnız hesap sahibinin okumasına izin verir; yazma işlemi `auth.uid()` kullanan sabit `search_path` RPC üzerinden yapılır.
+- Mesaj bildirimi tetikleyicisi alıcıyı konuşma katılımcılarından sunucu tarafında türetir, gönderenin kendi kendine bildirim almasını ve sistem mesajlarının bildirim üretmesini engeller. İstemci yalnız kendi `user_id` filtresi ve mevcut notification RLS'i üzerinden Realtime dinler.
+- Eski bildirim şemasından kalan `WITH CHECK (TRUE)` INSERT politikası düşürülmüş ve `authenticated` rolünün doğrudan bildirim ekleme yetkisi kaldırılmıştır; sahte bildirim üretimi güvenilir sunucu fonksiyonlarıyla sınırlandırılır.
+- Destek sonlandırma aksiyonu yalnız `community` yetkili yönetici arayüzünde görünür; gerçek yetki kontrolü mevcut `admin_close_support_conversation` RPC'sinde tekrar yapılır. Kapalı görüşmeye mesaj gönderilemez ve kullanıcının sonraki Destek isteği yeni bir görüşme oluşturur.
+- İşletim sistemi/web-push kapsam dışıdır; service worker, push aboneliği, cihaz tokenı veya yeni dış servis/secret eklenmedi. Glass bildirim yalnız site açıkken gösterilir, aynı görüşme bildirimleri gruplanır ve ekrandaki kart sayısı ikiyle sınırlandırılır.
+- Geri dönüş: kök `MessageNotificationProvider`, Inbox ayar ve aksiyon bileşenleri kaldırılır; `trg_notify_chat_message` tetikleyicisi ve üç yeni RPC düşürülür, `notification_preferences` tablosu kaldırılır. Gizleme kolonları ancak geri dönüş öncesi kullanıcı görünürlük tercihlerinin kaybı kabul edilirse kaldırılır.
+
+### 2026-09-25 - Güvenli sohbet varlığı, okundu bilgisi ve yönetici duyuruları
+
+- Yazıyor durumu kalıcı mesaj verisine eklenmemiştir. Altı saniyede süresi dolan `conversation_typing_states` kaydı yalnız görüşme katılımcısı veya `community` yetkili destek ekibi tarafından sabit `search_path` RPC üzerinden değiştirilebilir; istemcinin doğrudan yazma yetkisi yoktur.
+- Okundu bilgisi mevcut `messages.is_read` alanını ve katılımcı doğrulamalı `mark_conversation_read` RPC'sini kullanır. Realtime UPDATE yalnız mevcut mesaj SELECT/RLS görünürlüğü altında dağıtılır; paralel veya istemciye güvenen okundu kaydı oluşturulmaz.
+- Toplu duyuru yalnız `has_admin_permission('community')` kontrolünden geçen yönetici tarafından gönderilebilir. Başlık/gövde/aksiyon uzunlukları, dahili rota allowlist'i, yönetici başına saatte beş gönderim kotası ve idempotency anahtarı sunucuda doğrulanır.
+- Duyuru her kullanıcı için mevcut RLS korumalı `notifications` tablosuna eklenir; işlem alıcı sayısıyla `admin_action_audit` kaydına yazılır. İstemci duyuru rotasını ikinci kez allowlist ile doğrular ve harici URL çalıştırmaz.
+- İşletim sistemi push, cihaz tokenı, dış bildirim servisi, yeni secret veya kullanıcı PII aktarımı eklenmemiştir. Geri dönüşte `admin_send_announcement` ve `set_conversation_typing` fonksiyonları, iki yeni tablo, typing publication kaydı ve ilgili UI bileşenleri kaldırılır; oluşturulmuş kullanıcı bildirimleri mevcut üç günlük saklama politikasıyla temizlenir.

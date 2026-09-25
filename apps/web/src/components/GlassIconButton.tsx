@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { motion, useAnimationControls, useReducedMotion } from 'framer-motion';
 
 interface GlassIconButtonProps {
   icon: LucideIcon;
@@ -17,6 +18,7 @@ interface GlassIconButtonProps {
   title?: string;
   ariaLabel?: string;
   className?: string;
+  animation?: 'pop' | 'spin' | 'pulse' | 'nudge';
 }
 
 export const GlassIconButton: React.FC<GlassIconButtonProps> = ({
@@ -33,7 +35,10 @@ export const GlassIconButton: React.FC<GlassIconButtonProps> = ({
   title,
   ariaLabel,
   className = '',
+  animation = 'pop',
 }) => {
+  const iconControls = useAnimationControls();
+  const shouldReduceMotion = useReducedMotion();
   // Eğer explicitly 'as' belirtilmemişse: onClick varsa 'button', yoksa (dekoratif/ikon tablası) 'div' olarak render et
   // Böylece başka bir <button> veya <Link> içine konulduğunda nested button hatası vermez.
   const Component = as || (onClick ? 'button' : 'div');
@@ -52,9 +57,29 @@ export const GlassIconButton: React.FC<GlassIconButtonProps> = ({
     } ${className}`,
   };
 
+  const handleClick = () => {
+    if (disabled) return;
+    if (!shouldReduceMotion) {
+      const keyframes = animation === 'spin'
+        ? { rotate: [0, -18, 360], scale: [1, 0.88, 1] }
+        : animation === 'pulse'
+          ? { scale: [1, 1.28, 0.92, 1] }
+          : animation === 'nudge'
+            ? { x: [0, 5, -2, 0], scale: [1, 0.92, 1] }
+            : { scale: [1, 0.72, 1.18, 1], rotate: [0, -8, 5, 0] };
+      void iconControls.start({
+        ...keyframes,
+        transition: { duration: animation === 'spin' ? 0.48 : 0.32, ease: 'easeOut' },
+      });
+    }
+    onClick?.();
+  };
+
   const innerContent = (
     <>
-      <Icon size={iconSize} color={iconColor} className="transition-transform duration-200" />
+      <motion.span animate={iconControls} className="inline-flex items-center justify-center">
+        <Icon size={iconSize} color={iconColor} />
+      </motion.span>
       {badge !== undefined && badge !== null && (
         <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#3269C7] px-1 text-[10px] font-bold text-white shadow-sm border border-white">
           {badge}
@@ -67,7 +92,7 @@ export const GlassIconButton: React.FC<GlassIconButtonProps> = ({
     return (
       <button
         type="button"
-        onClick={onClick}
+        onClick={handleClick}
         disabled={disabled}
         {...sharedProps}
       >
@@ -77,7 +102,7 @@ export const GlassIconButton: React.FC<GlassIconButtonProps> = ({
   }
 
   return (
-    <div {...sharedProps} role={onClick ? 'button' : undefined} onClick={onClick}>
+    <div {...sharedProps} role={onClick ? 'button' : undefined} onClick={onClick ? handleClick : undefined}>
       {innerContent}
     </div>
   );
