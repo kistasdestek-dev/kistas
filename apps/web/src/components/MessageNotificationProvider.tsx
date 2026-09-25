@@ -15,7 +15,6 @@ interface GlobalNotificationToast {
   body: string;
   count: number;
   conversationId?: string;
-  actionLabel?: string;
   actionPath?: string;
   logoUrl?: string;
   logoAlt?: string;
@@ -32,7 +31,6 @@ interface NotificationRow {
   data?: {
     conversation_id?: string;
     announcement_id?: string;
-    action_label?: string;
     action_path?: string;
     listing_id?: string;
     logo_url?: string;
@@ -169,7 +167,6 @@ export const MessageNotificationProvider: React.FC = () => {
                 title: row.title,
                 body: row.body,
                 count: 1,
-                actionLabel: row.data?.action_label || 'Göz at',
                 actionPath,
                 logoUrl: row.data?.logo_url,
                 logoAlt: row.title,
@@ -217,7 +214,7 @@ export const MessageNotificationProvider: React.FC = () => {
   };
 
   return (
-    <div className="pointer-events-none fixed inset-x-3 top-[max(14px,env(safe-area-inset-top))] z-[1000002] ml-auto flex max-w-sm flex-col gap-2 sm:right-5 sm:left-auto sm:top-5 sm:w-[360px]" aria-live="polite">
+    <div className="pointer-events-none fixed inset-x-3 top-[max(14px,env(safe-area-inset-top))] z-[1000002] ml-auto flex max-w-[480px] flex-col gap-2 sm:right-5 sm:left-auto sm:top-5 sm:w-[460px]" aria-live="polite">
       <AnimatePresence initial={false} mode="popLayout">
         {visibleToasts.map((toast) => (
           <motion.div
@@ -232,7 +229,6 @@ export const MessageNotificationProvider: React.FC = () => {
               type={toast.type}
               title={toast.title}
               body={toast.body}
-              actionLabel={toast.type === 'message' ? 'Mesajı aç' : toast.actionLabel || 'Göz at'}
               logoUrl={toast.logoUrl}
               logoAlt={toast.logoAlt}
               count={toast.count}

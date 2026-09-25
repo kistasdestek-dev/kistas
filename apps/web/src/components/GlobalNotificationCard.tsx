@@ -8,7 +8,6 @@ export interface GlobalNotificationCardProps {
   type: 'message' | 'admin_announcement';
   title: string;
   body: string;
-  actionLabel: string;
   logoUrl?: string;
   logoAlt?: string;
   count?: number;
@@ -21,7 +20,6 @@ export const GlobalNotificationCard: React.FC<GlobalNotificationCardProps> = ({
   type,
   title,
   body,
-  actionLabel,
   logoUrl,
   logoAlt,
   count = 1,
@@ -32,27 +30,27 @@ export const GlobalNotificationCard: React.FC<GlobalNotificationCardProps> = ({
   const FallbackIcon = type === 'admin_announcement' ? Megaphone : MessageSquare;
 
   return (
-    <div className={`k-notification-glass overflow-hidden rounded-[22px] ${preview ? 'w-full max-w-sm' : 'w-full'}`}>
-      <div className="flex items-start gap-3 p-3.5">
+    <div className={`k-notification-glass overflow-hidden rounded-[22px] ${preview ? 'w-full max-w-lg' : 'w-full'}`}>
+      <div className="flex items-center gap-3 px-3.5 py-2.5">
         <button
           type="button"
           onClick={onOpen}
           disabled={!onOpen}
-          className="group flex min-w-0 flex-1 items-start gap-3 text-left disabled:cursor-default"
+          className="group flex min-w-0 flex-1 items-center gap-3 text-left disabled:cursor-default"
         >
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-white/20 bg-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] transition-transform group-hover:scale-[1.03]">
-            {logoUrl ? (
-              <AutoTransparentLogo
-                src={logoUrl}
-                alt={logoAlt || title}
-                className="h-full w-full object-cover"
-              />
-            ) : (
+          {logoUrl ? (
+            <AutoTransparentLogo
+              src={logoUrl}
+              alt={logoAlt || title}
+              className="h-10 w-10 shrink-0 object-contain transition-transform group-hover:scale-[1.03]"
+            />
+          ) : (
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center text-white/85">
               <FallbackIcon size={18} />
-            )}
-          </span>
+            </span>
+          )}
 
-          <span className="min-w-0 flex-1 py-0.5">
+          <span className="min-w-0 flex-1">
             <span className="flex items-center gap-2">
               <span className="truncate text-[13px] font-bold tracking-[-0.01em] text-white">{title}</span>
               {count > 1 && (
@@ -61,10 +59,12 @@ export const GlobalNotificationCard: React.FC<GlobalNotificationCardProps> = ({
                 </span>
               )}
             </span>
-            <span className="mt-1 block line-clamp-2 text-[11px] font-medium leading-relaxed text-white/75">{body}</span>
-            <span className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-semibold text-white/90 transition-colors group-hover:text-white">
-              <Bell size={10} /> {actionLabel}
-            </span>
+            <span className="mt-0.5 block line-clamp-2 text-[11px] font-medium leading-relaxed text-white/75">{body}</span>
+            {type === 'message' && (
+              <span className="mt-1 inline-flex items-center gap-1.5 text-[10px] font-semibold text-white/90 transition-colors group-hover:text-white">
+                <Bell size={10} /> Mesajı aç
+              </span>
+            )}
           </span>
         </button>
 

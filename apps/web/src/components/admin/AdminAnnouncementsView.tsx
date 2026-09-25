@@ -182,7 +182,7 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
       label: project.title,
       title: autoTitle,
       body: autoBody,
-      actionLabel: 'Projeyi İncele',
+      actionLabel: 'Göz at',
       actionPath: targetPath,
       selectedProjectId: project.id,
       selectedProjectTitle: project.title,
@@ -471,29 +471,16 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
             <span className="text-right text-[10px] font-medium text-slate-400">{draft.body.length}/240</span>
           </label>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className="grid gap-1.5 text-xs font-bold text-white/90">
-              Buton Metni
-              <input
-                value={draft.actionLabel}
-                maxLength={32}
-                onChange={(event) => updateDraft('actionLabel', event.target.value)}
-                className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 text-sm text-white placeholder-slate-500 outline-none focus:border-[#3269C7] transition-all"
-                placeholder="Örn: Projeyi İncele"
-              />
-            </label>
-
-            <label className="grid gap-1.5 text-xs font-bold text-white/90">
-              Hedef Sayfa (Rota)
-              <input
-                value={draft.actionPath}
-                onChange={(event) => updateDraft('actionPath', event.target.value)}
-                readOnly={Boolean(draft.selectedProjectId)}
-                className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 text-sm text-white placeholder-slate-500 outline-none transition-all focus:border-[#3269C7] read-only:cursor-not-allowed read-only:text-white/55"
-                placeholder="/listings/... veya /browse"
-              />
-            </label>
-          </div>
+          <label className="grid gap-1.5 text-xs font-bold text-white/90">
+            Hedef Sayfa (Rota)
+            <input
+              value={draft.actionPath}
+              onChange={(event) => updateDraft('actionPath', event.target.value)}
+              readOnly={Boolean(draft.selectedProjectId)}
+              className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 text-sm text-white placeholder-slate-500 outline-none transition-all focus:border-[#3269C7] read-only:cursor-not-allowed read-only:text-white/55"
+              placeholder="/listings/... veya /browse"
+            />
+          </label>
         </div>
 
         {/* Kullanıcının göreceği ortak glass bildirim kartı */}
@@ -510,7 +497,6 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
               type="admin_announcement"
               title={draft.title || 'Duyuru başlığı'}
               body={draft.body || 'Duyuru açıklaması burada görünecektir.'}
-              actionLabel={draft.actionLabel || 'İncele'}
               logoUrl={draft.selectedProjectLogoUrl}
               logoAlt={draft.selectedProjectTitle}
               preview
