@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { getCategories, getCuratedListings } from '@kistas/supabase';
+import { createAnonClient, getCategories, getCuratedListings } from '@kistas/supabase';
 import { DiscoverExperienceClient } from '@/components/DiscoverExperienceClient';
 import type { DiscoverPlatform } from '@/components/DynamicDiscoverFilters';
 
@@ -41,7 +40,7 @@ export default async function PlatformDiscoveryPage({ params }: PageProps) {
   const platform = resolvePlatform(pathValue);
   if (!platform) notFound();
 
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const [categories, listings] = await Promise.all([
     getCategories(supabase),
     getCuratedListings(supabase, 'popular', 100),

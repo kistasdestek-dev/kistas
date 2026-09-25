@@ -2,10 +2,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { KistasLogo } from './KistasLogo';
 import { NavAnimatedIcon, NavTabKey } from './NavAnimatedIcon';
-import { createClient } from '@/lib/supabase/browser';
 
 interface NavItem {
   key: NavTabKey;
@@ -15,23 +14,38 @@ interface NavItem {
 
 export const KistasGlassDock: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  useEffect(() => {
+    router.prefetch('/browse');
+  }, [router]);
 
   // Check Supabase session on mount & subscribe to auth state changes
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-    });
+    let isCancelled = false;
+    let unsubscribe = () => {};
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session);
-    });
+    const initializeAuth = async () => {
+      const { createClient } = await import('@/lib/supabase/browser');
+      if (isCancelled) return;
+
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (isCancelled) return;
+
+      setIsAuthenticated(Boolean(session));
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+        setIsAuthenticated(Boolean(nextSession));
+      });
+      unsubscribe = () => subscription.unsubscribe();
+    };
+
+    void initializeAuth();
 
     return () => {
-      subscription.unsubscribe();
+      isCancelled = true;
+      unsubscribe();
     };
   }, []);
 
@@ -82,6 +96,12 @@ export const KistasGlassDock: React.FC = () => {
     }
   };
 
+  const handleNavClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (pathname === href) {
+      event.preventDefault();
+    }
+  };
+
   // Auth pages (login & signup) have a dedicated focused layout (EARLY RETURN AFTER ALL HOOKS)
   if (pathname === '/login' || pathname === '/signup' || pathname.startsWith('/messages')) {
     return null;
@@ -114,10 +134,13 @@ export const KistasGlassDock: React.FC = () => {
                   <Link
                     key={item.key}
                     href={item.href}
+                    prefetch
+                    onClick={(event) => handleNavClick(event, item.href)}
                     data-tab={item.key}
                     className={`kdn-pill-tab${isActive ? ' is-active' : ''}`}
                     role="tab"
                     aria-selected={isActive}
+                    aria-current={isActive ? 'page' : undefined}
                     aria-label={item.label}
                     title={item.label}
                   >

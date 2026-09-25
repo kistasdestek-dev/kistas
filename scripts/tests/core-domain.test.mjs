@@ -2,13 +2,41 @@
  * Kıstas Çekirdek İş Mantığı & Mimari Regresyon Testleri (Core Domain Regression Suite)
  * 
  * Bu test paketi, sistemdeki kritik iş kurallarının bozulmadığını
- * (sponsorluk rotasyonu, oy hesapları, platform tipleri, girdi güvenliği ve hata kalkanları)
- * doğrudan assertion'lar ile garanti eder.
+ * (sponsorluk rotasyonu, oy hesapları, platform tipleri, girdi güvenliği ve mimari sözleşmeler)
+ * doğrudan @kistas/shared kaynak kodundan import edilen gerçek fonksiyonlar ile garanti eder.
  */
 
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
+
+// Gerçek domain mantığı ve doğrulama motorları (TEK DOĞRULUK KAYNAĞI)
+import {
+  isListingSponsored,
+  isListingCategorySponsored,
+  validateListingMetrics,
+  sanitizeUserInput,
+  isNotificationExpired,
+} from '../../packages/shared/src/domain.ts';
+
+import {
+  rotateListingsByHour,
+  isReservedBrandName,
+  isValidCategorySlug,
+  APP_STORE_CATEGORY_SLUGS,
+  ROUTES,
+} from '../../packages/shared/src/constants.ts';
+
+import {
+  resolveCommentReactionTransition,
+} from '../../packages/shared/src/commentReaction.ts';
+
+import {
+  createListingSchema,
+  createOrderSchema,
+  boostListingSchema,
+  updateProfileSchema,
+} from '../../packages/shared/src/schemas.ts';
 
 const ROOT = process.cwd();
 
@@ -30,28 +58,18 @@ function runTest(name, fn) {
 }
 
 // -------------------------------------------------------------
-// 1. SPONSORLUK & BOOST ZAMAN AŞIMI MANTIĞI
+// 1. SPONSORLUK & BOOST ZAMAN AŞIMI MANTIĞI (@kistas/shared/domain)
 // -------------------------------------------------------------
-const isListingSponsored = (listing, referenceTime = Date.now()) => {
-  if (!listing || !listing.boostedUntil) return false;
-  const expiresAt = Date.parse(listing.boostedUntil);
-  return Number.isFinite(expiresAt) && expiresAt > referenceTime;
-};
-
-const isListingCategorySponsored = (listing, referenceTime = Date.now()) => {
-  if (!listing || !listing.categoryBoostedUntil) return false;
-  const expiresAt = Date.parse(listing.categoryBoostedUntil);
-  return Number.isFinite(expiresAt) && expiresAt > referenceTime;
-};
-
 runTest('Sponsorluk: Gelecekteki boost tarihi aktif (true) dönmeli', () => {
   const futureDate = new Date(Date.now() + 3600 * 1000).toISOString();
   assert.strictEqual(isListingSponsored({ boostedUntil: futureDate }), true);
+  assert.strictEqual(isListingSponsored({ boosted_until: futureDate }), true);
 });
 
 runTest('Sponsorluk: Geçmiş boost tarihi pasif (false) dönmeli', () => {
   const pastDate = new Date(Date.now() - 3600 * 1000).toISOString();
   assert.strictEqual(isListingSponsored({ boostedUntil: pastDate }), false);
+  assert.strictEqual(isListingSponsored({ boosted_until: pastDate }), false);
 });
 
 runTest('Sponsorluk: Boş, tanımsız veya geçersiz tarih güvenle false dönmeli', () => {
@@ -59,70 +77,75 @@ runTest('Sponsorluk: Boş, tanımsız veya geçersiz tarih güvenle false dönme
   assert.strictEqual(isListingSponsored({ boostedUntil: undefined }), false);
   assert.strictEqual(isListingSponsored({ boostedUntil: 'invalid-date-string' }), false);
   assert.strictEqual(isListingSponsored(null), false);
+  assert.strictEqual(isListingSponsored(undefined), false);
 });
 
 runTest('Kategori Sponsorluğu: Bağımsız categoryBoostedUntil doğru hesaplanmalı', () => {
   const futureDate = new Date(Date.now() + 7200 * 1000).toISOString();
   const pastDate = new Date(Date.now() - 1000).toISOString();
   assert.strictEqual(isListingCategorySponsored({ categoryBoostedUntil: futureDate }), true);
+  assert.strictEqual(isListingCategorySponsored({ category_boosted_until: futureDate }), true);
   assert.strictEqual(isListingCategorySponsored({ categoryBoostedUntil: pastDate }), false);
+  assert.strictEqual(isListingCategorySponsored(null), false);
 });
 
 // -------------------------------------------------------------
 // 2. OY VE PUAN DEĞER ARALIKLARI (INVARIANTS)
 // -------------------------------------------------------------
-function validateListingMetrics(listing) {
-  if (typeof listing.upvotesCount !== 'number' || listing.upvotesCount < 0) {
-    throw new Error('Oy sayısı negatif olamaz');
-  }
-  if (listing.seller?.ratingAverage !== undefined) {
-    const r = listing.seller.ratingAverage;
-    if (r < 0 || r > 5) {
-      throw new Error('Puan ortalaması 0 ile 5 arasında olmalıdır');
-    }
-  }
-  return true;
-}
-
 runTest('Metrik Doğrulama: Geçerli oy ve puan aralığı onaylanmalı', () => {
   assert.strictEqual(
     validateListingMetrics({ upvotesCount: 42, seller: { ratingAverage: 4.8 } }),
     true
   );
+  assert.strictEqual(
+    validateListingMetrics({ upvote_count: 0, rating_average: 5.0 }),
+    true
+  );
 });
 
 runTest('Metrik Doğrulama: Negatif oy veya taşkın puan reddedilmeli', () => {
-  assert.throws(() => validateListingMetrics({ upvotesCount: -1 }), /Oy sayısı negatif olamaz/);
+  assert.throws(() => validateListingMetrics({ upvotesCount: -1 }), /Oy sayısı negatif veya geçersiz/);
   assert.throws(() => validateListingMetrics({ upvotesCount: 5, seller: { ratingAverage: 5.5 } }), /0 ile 5 arasında/);
+  assert.throws(() => validateListingMetrics({ upvotesCount: 5, seller: { ratingAverage: -0.1 } }), /0 ile 5 arasında/);
 });
 
 // -------------------------------------------------------------
-// 3. PLATFORM & MODEL TİP BÜTÜNLÜĞÜ
+// 3. PLATFORM & ZOD ŞEMA SÖZLEŞMELERİ (FAIL-CLOSED DATA VALIDATION)
 // -------------------------------------------------------------
-const ALLOWED_PLATFORMS = new Set(['iOS', 'Android', 'Web', 'macOS', 'SaaS']);
-const ALLOWED_PRICING = new Set(['free', 'freemium', 'paid', 'subscription']);
-
-runTest('Platform Bütünlüğü: Tanımlı platformlar sistem şemasına uygun olmalı', () => {
-  const samplePlatforms = ['iOS', 'Web', 'Android'];
-  samplePlatforms.forEach(p => assert.ok(ALLOWED_PLATFORMS.has(p), `Geçersiz platform: ${p}`));
+runTest('Zod Şemaları: Geçerli ilan verisi şemayı geçmeli', () => {
+  const validData = {
+    title: 'Harika Mikro SaaS',
+    tagline: 'Geliştiriciler için araçlar',
+    description: 'En az on karakter uzunluğunda açıklama metni.',
+    categoryId: '11111111-1111-1111-1111-111111111111',
+    price: 199,
+    pricingModel: 'subscription',
+  };
+  const parsed = createListingSchema.safeParse(validData);
+  assert.strictEqual(parsed.success, true);
 });
 
-runTest('Fiyatlandırma Bütünlüğü: Pricing modelleri şemaya uymalı', () => {
-  const sampleModels = ['free', 'freemium', 'paid', 'subscription'];
-  sampleModels.forEach(m => assert.ok(ALLOWED_PRICING.has(m), `Geçersiz fiyatlandırma modeli: ${m}`));
+runTest('Zod Şemaları: Negatif fiyat veya kısa başlık reddedilmeli', () => {
+  const invalidPrice = {
+    title: 'Test',
+    description: 'Açıklama metni yeterince uzun.',
+    categoryId: '11111111-1111-1111-1111-111111111111',
+    price: -50,
+  };
+  const parsed = createListingSchema.safeParse(invalidPrice);
+  assert.strictEqual(parsed.success, false);
+});
+
+runTest('Kategori Bütünlüğü: Yalnızca tanımlı 38 kategori slug geçerli sayılmalı', () => {
+  assert.strictEqual(isValidCategorySlug('app-devtools'), true);
+  assert.strictEqual(isValidCategorySlug('game-action'), true);
+  assert.strictEqual(isValidCategorySlug('illegal-category'), false);
+  assert.strictEqual(isValidCategorySlug(''), false);
 });
 
 // -------------------------------------------------------------
 // 4. GİRDİ GÜVENLİĞİ & XSS SAVUNMASI (SANITIZATION)
 // -------------------------------------------------------------
-function sanitizeUserInput(text) {
-  if (typeof text !== 'string') return '';
-  return text
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/javascript:[^\s]*/gi, '')
-    .replace(/on\w+\s*=/gi, '');
-}
-
 runTest('Güvenlik: Zararlı script ve event handler etiketleri arındırılmalı', () => {
   const attackVector = 'Harika App <script>alert("hack")</script><img src="x" onerror="stealCookie()">';
   const clean = sanitizeUserInput(attackVector);
@@ -130,31 +153,29 @@ runTest('Güvenlik: Zararlı script ve event handler etiketleri arındırılmal�
   assert.ok(!clean.includes('onerror='), 'Onerror handler temizlenmedi');
 });
 
-// -------------------------------------------------------------
-// 5. MİMARİ & HATA KALKANI (ERROR BOUNDARY) GÜVENCESİ
-// -------------------------------------------------------------
-runTest('Mimari Kalkanı: ErrorBoundary bileşeni mevcut ve sağlam olmalı', () => {
-  const ebPath = path.join(ROOT, 'src', 'shared', 'components', 'ErrorBoundary.tsx');
-  assert.ok(fs.existsSync(ebPath), 'ErrorBoundary.tsx dosyası mevcut değil!');
-  const content = fs.readFileSync(ebPath, 'utf8');
-  assert.ok(content.includes('componentDidCatch'), 'componentDidCatch yaşam döngüsü eksik!');
-  assert.ok(content.includes('getDerivedStateFromError'), 'getDerivedStateFromError eksik!');
+runTest('Güvenlik: javascript: protokol enjeksiyonu arındırılmalı', () => {
+  const attackVector = 'Link <a href="javascript:alert(1)">Tıkla</a>';
+  const clean = sanitizeUserInput(attackVector);
+  assert.ok(!clean.includes('javascript:'), 'javascript protokolü temizlenmedi');
 });
 
-runTest('Mimari Kalkanı: FeaturedBoostShowcase ErrorBoundary ile korunmalı ve modüler olmalı', () => {
-  const fbsPath = path.join(ROOT, 'src', 'shared', 'components', 'FeaturedBoostShowcase.tsx');
-  assert.ok(fs.existsSync(fbsPath), 'FeaturedBoostShowcase.tsx mevcut değil!');
+// -------------------------------------------------------------
+// 5. MİMARİ & BİLEŞEN SÖZLEŞMELERİ (NEXT.JS 16 WEB APP)
+// -------------------------------------------------------------
+runTest('Mimari Kalkanı: AutoTransparentLogo Web bileşeni mevcut ve sağlam olmalı', () => {
+  const webLogoPath = path.join(ROOT, 'apps', 'web', 'src', 'components', 'AutoTransparentLogo.tsx');
+  assert.ok(fs.existsSync(webLogoPath), 'apps/web AutoTransparentLogo.tsx eksik!');
+  const content = fs.readFileSync(webLogoPath, 'utf8');
+  assert.ok(content.includes('use client'), 'AutoTransparentLogo use client direktifi içermeli!');
+  assert.ok(content.includes('AutoTransparentLogoProps'), 'Bileşen prop tipi eksik!');
+});
+
+runTest('Mimari Kalkanı: FeaturedBoostShowcase modüler ve Next.js uyumlu olmalı', () => {
+  const fbsPath = path.join(ROOT, 'apps', 'web', 'src', 'components', 'FeaturedBoostShowcase.tsx');
+  assert.ok(fs.existsSync(fbsPath), 'apps/web FeaturedBoostShowcase.tsx eksik!');
   const content = fs.readFileSync(fbsPath, 'utf8');
-  const lines = content.split('\n').length;
-  assert.ok(lines < 250, `FeaturedBoostShowcase çok büyük (${lines} satır), modüler olmalı!`);
-  assert.ok(content.includes('<ErrorBoundary'), 'FeaturedBoostShowcase içinde ErrorBoundary sarmalayıcısı eksik!');
-});
-
-runTest('Mimari Kalkanı: AutoTransparentLogo ayrıştırması mevcut olmalı', () => {
-  const webLogoPath = path.join(ROOT, 'src', 'shared', 'components', 'AutoTransparentLogo.web.tsx');
-  const nativeLogoPath = path.join(ROOT, 'src', 'shared', 'components', 'AutoTransparentLogo.tsx');
-  assert.ok(fs.existsSync(webLogoPath), 'AutoTransparentLogo.web.tsx eksik!');
-  assert.ok(fs.existsSync(nativeLogoPath), 'AutoTransparentLogo.tsx eksik!');
+  assert.ok(content.includes('use client'), 'FeaturedBoostShowcase use client direktifi içermeli!');
+  assert.ok(content.includes('ShinyButton'), 'Kıstas Glass ShinyButton entegrasyonu bulunmalı!');
 });
 
 // -------------------------------------------------------------
@@ -171,6 +192,7 @@ runTest('Otonom Hijyen: Self-Healing motoru mevcut ve fonksiyonel olmalı', asyn
 runTest('Performans Radarı: Bundle Budget analiz motoru bütçeyi doğrulamalı', async () => {
   const budgetEnginePath = path.join(ROOT, 'scripts', 'engine', 'bundle-budget.mjs');
   assert.ok(fs.existsSync(budgetEnginePath), 'bundle-budget.mjs eksik!');
+  const budgetModule = await import('../engine/bundle-budget.mjs');
   assert.strictEqual(typeof budgetModule.analyzeBundleBudget, 'function');
   const res = budgetModule.analyzeBundleBudget(ROOT);
   assert.ok(typeof res.rawUsagePct === 'number', 'Ham bütçe yüzdesi hesaplanamadı');
@@ -180,14 +202,6 @@ runTest('Performans Radarı: Bundle Budget analiz motoru bütçeyi doğrulamalı
 // -------------------------------------------------------------
 // 7. BİLDİRİM SAKLAMA & 3 GÜNLÜK (72 SAAT) RETENTION KALKANI
 // -------------------------------------------------------------
-const RETENTION_MS = 3 * 24 * 60 * 60 * 1000; // 3 gün = 259,200,000 ms
-
-const isNotificationExpired = (createdAtIso, nowMs = Date.now()) => {
-  const createdMs = new Date(createdAtIso).getTime();
-  if (isNaN(createdMs)) return true;
-  return (nowMs - createdMs) > RETENTION_MS;
-};
-
 runTest('Bildirim Saklama Kalkanı: 3 günden yeni bildirimler KORUNMALI, 3 günü aşanlar SİLİNMELİ', () => {
   const now = Date.now();
   const oneHourAgo = new Date(now - 1 * 60 * 60 * 1000).toISOString();
@@ -234,27 +248,7 @@ runTest('Bildirim Saklama Kalkanı: 3 günlük temizlik istemciden bağımsız s
 // -------------------------------------------------------------
 // 7. MARKA ADI VE KİMLİK TAKLİDİ KORUMASI (SEC-003)
 // -------------------------------------------------------------
-const isReservedBrandName = (name) => {
-  if (!name || typeof name !== 'string') return false;
-  const raw = name.trim();
-  if (!raw) return false;
-
-  const normalized = raw
-    .toLocaleLowerCase('tr-TR')
-    .replace(/[ıİiîíïì]/g, 'i')
-    .replace(/[@4]/g, 'a')
-    .replace(/[1!|]/g, 'i')
-    .replace(/[0]/g, 'o')
-    .replace(/[5$]/g, 's')
-    .replace(/[^a-z0-9]/g, '');
-
-  if (normalized.includes('kistas')) {
-    return true;
-  }
-
-  const spacedRegex = /k[\W_]*[ıİiîíïì1!|][\W_]*[s5$][\W_]*t[\W_]*[a@4][\W_]*[s5$]/i;
-  return spacedRegex.test(raw);
-};
+// packages/shared/src/constants.ts içinden import edilen isReservedBrandName doğrulanır
 
 runTest('Marka Koruma: Kıstas varyasyonları (büyük/küçük, leetspeak, noktalı) filtrelenmeli', () => {
   assert.strictEqual(isReservedBrandName('Kıstas'), true);
@@ -567,6 +561,32 @@ runTest('Günün Vitrini: son geçerli lider ve saatlik adil rotasyon backend ta
   );
 });
 
+runTest('Sponsorlu Vitrin: rotateListingsByHour her saatte dizilimi tam 1 kademe ilerletmeli ve eşitlik sağlamalı', () => {
+  const mockSponsors = ['Notein', 'Getir', 'Shots'];
+  // 1 saat = 3,600,000 ms
+  const baseTime = 1774162800000; // Saat X
+  const nextHour = baseTime + 3600 * 1000; // Saat X + 1
+  const afterTwoHours = baseTime + 7200 * 1000; // Saat X + 2
+
+  const hour0 = rotateListingsByHour(mockSponsors, baseTime);
+  const hour1 = rotateListingsByHour(mockSponsors, nextHour);
+  const hour2 = rotateListingsByHour(mockSponsors, afterTwoHours);
+
+  // Hepsi 3 elemandan oluşmalı
+  assert.strictEqual(hour0.length, 3);
+  assert.strictEqual(hour1.length, 3);
+  assert.strictEqual(hour2.length, 3);
+
+  // Her saat başı 1. sıradaki eleman değişmeli (aynı kalmamalı!)
+  assert.notStrictEqual(hour0[0], hour1[0], 'Bir sonraki saatte ilk sıradaki proje aynı kalmış!');
+  assert.notStrictEqual(hour1[0], hour2[0], 'İki saat sonra ilk sıradaki proje aynı kalmış!');
+  assert.notStrictEqual(hour0[0], hour2[0], 'Üç proje varken 2 saat sonra ilk sıradaki proje aynı kalmış!');
+
+  // 3 saatlik periyotta 3 projenin her biri tam 1 kez 1. sıraya geçmeli
+  const firstItems = [hour0[0], hour1[0], hour2[0]];
+  assert.deepStrictEqual([...firstItems].sort(), [...mockSponsors].sort(), 'Projelerin her biri 1 kez ilk sıraya geçmedi!');
+});
+
 runTest('Günün Vitrini: Keşfet kotası korunmalı ve kategori ekranından kaldırılmalı', () => {
   const discoverSource = fs.readFileSync(
     path.join(ROOT, 'src', 'features', 'listings', 'presentation', 'DiscoverScreen.tsx'),
@@ -599,6 +619,24 @@ runTest('Keşfet: ilk ekran veri ve logo işleme bütçesi proje sayısından ba
   assert.match(discoverSource, /getSponsoredListings\(categoryId, HOME_SPONSOR_LIMIT\)\.then/i, 'LCP sponsor isteği bağımsız tamamlanmıyor!');
   assert.doesNotMatch(discoverSource, /getUserUpvotedProjectIds\(\)/i, 'Keşfet kullanılmayan sınırsız destek geçmişini çekiyor!');
   assert.match(logoSource, /IntersectionObserver[\s\S]*rootMargin:\s*'320px'/i, 'Görünmeyen logoların tarayıcı işlemesi ertelenmiyor!');
+});
+
+runTest('Kategori bütünlüğü: yalnız 15 oyun ve 23 uygulama kategorisi kullanılmalı', () => {
+  const constantsSource = fs.readFileSync(
+    path.join(ROOT, 'packages', 'shared', 'src', 'constants.ts'),
+    'utf8'
+  );
+  const categoryQuerySource = fs.readFileSync(
+    path.join(ROOT, 'packages', 'supabase', 'src', 'queries', 'categories.ts'),
+    'utf8'
+  );
+  const catalogSlugs = [...constantsSource.matchAll(/'(game|app)-[a-z-]+'/g)].map((match) => match[0]);
+
+  assert.equal(catalogSlugs.filter((slug) => slug.startsWith("'game-")).length, 15, 'Oyun kategorisi sayısı 15 olmalı!');
+  assert.equal(catalogSlugs.filter((slug) => slug.startsWith("'app-")).length, 23, 'Uygulama kategorisi sayısı 23 olmalı!');
+  assert.equal(new Set(catalogSlugs).size, 38, 'Kategori slug listesi benzersiz 38 kayıt içermeli!');
+  assert.match(categoryQuerySource, /\.eq\('is_active', true\)/, 'Kategori sorgusunda aktiflik filtresi eksik!');
+  assert.match(categoryQuerySource, /\.in\('slug', \[\.\.\.APP_STORE_CATEGORY_SLUGS\]\)/, 'Kategori sorgusunda resmi allowlist eksik!');
 });
 
 runTest('Editoryal katalog: Google Play kaynakları açıkça belirtilmeli ve yönetilebilir kalmalı', () => {
@@ -1396,6 +1434,107 @@ runTest('BAL KÜPÜ AŞAMA 5: Pars DevState Siber Tehdit Radarı ile Tam Entegra
   assert.match(radarContent, /filteredEvents/i, 'Olay listelemesinde filteredEvents kullanılmalı!');
 });
 
+// -------------------------------------------------------------
+// 15. YORUM TEPKİLERİ (BEĞENİ / BEĞENMEME) KALKANI
+// -------------------------------------------------------------
+// packages/shared/src/commentReaction.ts içinden import edilen gerçek fonksiyon doğrulanır
+
+runTest('Yorum Tepkisi: Yeni tepki eklenir (beğeni)', () => {
+  const next = resolveCommentReactionTransition({ likes_count: 0, dislikes_count: 0, my_reaction: null }, 1);
+  assert.strictEqual(next.likes_count, 1, 'Beğeni sayısı artmalı');
+  assert.strictEqual(next.my_reaction, 1, 'Üyenin tepkisi kaydedilmeli');
+});
+
+runTest('Yorum Tepkisi: Aynı tepki geri alınır (toggle-off)', () => {
+  const next = resolveCommentReactionTransition({ likes_count: 1, dislikes_count: 0, my_reaction: 1 }, 1);
+  assert.strictEqual(next.likes_count, 0, 'Beğeni geri alınmalı');
+  assert.strictEqual(next.my_reaction, null, 'Tepki sıfırlanmalı');
+});
+
+runTest('Yorum Tepkisi: Zıt tepki değiştirilir (beğenmeme -> beğeni)', () => {
+  const next = resolveCommentReactionTransition({ likes_count: 0, dislikes_count: 1, my_reaction: -1 }, 1);
+  assert.strictEqual(next.likes_count, 1, 'Beğeni artmalı');
+  assert.strictEqual(next.dislikes_count, 0, 'Beğenmeme düşmeli');
+  assert.strictEqual(next.my_reaction, 1, 'Tepki değişmeli');
+});
+
+runTest('Yorum Tepkisi: Sayaçlar asla negatife düşmez', () => {
+  const off = resolveCommentReactionTransition({ likes_count: 0, dislikes_count: 0, my_reaction: -1 }, -1);
+  assert.strictEqual(off.dislikes_count, 0, 'Beğenmeme negatife düşemez');
+  const sw = resolveCommentReactionTransition({ likes_count: 0, dislikes_count: 1, my_reaction: -1 }, 1);
+  assert.strictEqual(sw.dislikes_count, 0, 'Değiştirmede beğenmeme sıfırlanmalı');
+});
+
+runTest('Yorum Tepkisi: Paylaşılan geçiş modülü tek kaynak olarak mevcut', () => {
+  const sharedModulePath = path.join(ROOT, 'packages', 'shared', 'src', 'commentReaction.ts');
+  const sharedModule = fs.readFileSync(sharedModulePath, 'utf8');
+  assert.match(sharedModule, /export function resolveCommentReactionTransition/i, 'resolveCommentReactionTransition tek kaynak modülü eksik!');
+  assert.match(sharedModule, /Math\.max\(0/i, 'Negatif sayaç kalkanı eksik!');
+});
+
+runTest('Yorum Tepki Migration: Tablo mühürleri doğrulandı', () => {
+  const migrationSql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260922000001_comment_reactions.sql'),
+    'utf8'
+  );
+  assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS public\.project_comment_reactions/i, 'project_comment_reactions tablosu eksik!');
+  assert.match(migrationSql, /UNIQUE \(comment_id, user_id\)/i, 'Tek tepki kuralı (unique) eksik!');
+  assert.match(migrationSql, /CHECK \(reaction IN \(1, -1\)\)/i, '±1 CHECK kısıtı eksik!');
+  assert.match(migrationSql, /ENABLE ROW LEVEL SECURITY/i, 'RLS eksik!');
+  assert.match(migrationSql, /REVOKE INSERT, UPDATE, DELETE ON TABLE public\.project_comment_reactions/i, 'Doğrudan yazma mührü eksik!');
+  assert.match(migrationSql, /GRANT SELECT ON TABLE public\.project_comment_reactions TO anon, authenticated/i, 'Okuma granti eksik!');
+});
+
+runTest('Yorum Tepki RPC: Savunma kalkanları doğrulandı', () => {
+  const migrationSql = fs.readFileSync(
+    path.join(ROOT, 'supabase', 'migrations', '20260922000001_comment_reactions.sql'),
+    'utf8'
+  );
+  assert.match(migrationSql, /CREATE OR REPLACE FUNCTION public\.toggle_project_comment_reaction\(\s*p_comment_id UUID,\s*p_reaction SMALLINT\s*\)/i, 'Toggle RPC imzası eksik!');
+  assert.match(migrationSql, /SECURITY DEFINER/i, 'SECURITY DEFINER eksik!');
+  assert.match(migrationSql, /SET search_path = ''/, 'search_path kalkanı eksik!');
+  assert.match(migrationSql, /FOR UPDATE/i, 'Yarış kalkanı (FOR UPDATE) eksik!');
+  assert.match(migrationSql, /enforce_adaptive_rate_limit/i, 'Adaptif hız limiti bağlanmamış!');
+  assert.match(migrationSql, /REVOKE ALL ON FUNCTION public\.toggle_project_comment_reaction\(UUID, SMALLINT\) FROM PUBLIC, anon/i, 'Anon yetki iptali eksik!');
+  assert.match(migrationSql, /GRANT EXECUTE ON FUNCTION public\.toggle_project_comment_reaction\(UUID, SMALLINT\) TO authenticated/i, 'RPC execute granti eksik!');
+});
+
+runTest('Yorum Tepki Web: Doğrudan INSERT yasağı ve RPC yolu doğrulandı', () => {
+  const actionPath = path.join(ROOT, 'apps', 'web', 'src', 'app', 'actions', 'listings.ts');
+  const actionContent = fs.readFileSync(actionPath, 'utf8');
+  assert.match(actionContent, /rpc\('toggle_project_comment_reaction'/i, 'Web action RPC yolunu kullanmıyor!');
+  assert.ok(
+    !/from\('project_comment_reactions'\)[\s\S]*?\.insert\(/.test(actionContent),
+    'project_comment_reactions tablosuna doğrudan INSERT yapılamaz!'
+  );
+});
+
+runTest('Web Proje Düzenleme: edit kimliği sahiplik kontrolüyle yüklenmeli', () => {
+  const pageContent = fs.readFileSync(
+    path.join(ROOT, 'apps', 'web', 'src', 'app', '(dashboard)', 'create-listing', 'page.tsx'),
+    'utf8'
+  );
+  assert.match(pageContent, /params\.edit/i, 'Düzenleme kimliği URL parametresinden okunmuyor!');
+  assert.match(pageContent, /\.eq\('seller_id', user\.id\)/i, 'Proje yüklemede sunucu tarafı sahiplik kontrolü eksik!');
+  assert.match(pageContent, /initialListing=\{initialListing\}/i, 'Mevcut proje form bileşenine aktarılmıyor!');
+});
+
+runTest('Web Proje Düzenleme: yeni kayıt yerine güvenli UPDATE kullanılmalı', () => {
+  const actionContent = fs.readFileSync(
+    path.join(ROOT, 'apps', 'web', 'src', 'app', 'actions', 'listings.ts'),
+    'utf8'
+  );
+  const clientContent = fs.readFileSync(
+    path.join(ROOT, 'apps', 'web', 'src', 'components', 'CreateListingExperienceClient.tsx'),
+    'utf8'
+  );
+  assert.match(actionContent, /export async function updateListingAction/i, 'Sunucu güncelleme işlemi eksik!');
+  assert.match(actionContent, /\.update\([\s\S]*?\.eq\('id', listingId\)[\s\S]*?\.eq\('seller_id', user\.id\)/i, 'UPDATE işleminde ID ve sahiplik filtresi eksik!');
+  assert.match(actionContent, /currentListing\.status === 'banned'/i, 'Askıdaki proje düzenleme engeli eksik!');
+  assert.match(clientContent, /await updateListingAction\(formData\)/i, 'Düzenleme formu güvenli UPDATE işlemine bağlı değil!');
+});
+
+
 console.log(`\n📊 Sonuç: ${passedTests} Başarılı, ${failedTests} Başarısız`);
 
 if (failedTests > 0) {
@@ -1403,5 +1542,3 @@ if (failedTests > 0) {
 } else {
   process.exit(0);
 }
-
-

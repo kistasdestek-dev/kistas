@@ -14,7 +14,6 @@ import { BlurView } from 'expo-blur';
 import { breakpoints, kistasStyle, theme } from '../../core/theme';
 import { Listing, PlatformType } from '../../features/listings/domain/Listing';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
-import { GlassIconButton } from './GlassIconButton';
 import { getOptimizedImageUrl } from '../../core/media/imageDelivery';
 
 export interface TodayShowcaseRowProps {
@@ -124,7 +123,6 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
         {featuredProjects.map((project) => {
           const sourceImage = project.coverImageUrl || project.logoUrl || IMAGE_FALLBACK;
           const coverImage = getOptimizedImageUrl(sourceImage, isPhone ? 640 : 800) || sourceImage;
-          const makerName = project.developerName || project.seller?.fullName || 'Bağımsız geliştirici';
           const initials = project.title.slice(0, 2).toUpperCase();
           const platform = project.platforms?.[0];
 
@@ -151,62 +149,47 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
                 <LinearGradient
-                  colors={['rgba(241,245,250,0)', 'rgba(241,245,250,0.40)', 'rgba(241,245,250,0.88)', '#F1F5FA']}
-                  locations={[0.20, 0.46, 0.70, 0.92]}
+                  colors={['rgba(2,8,23,0.42)', 'rgba(2,8,23,0.08)', 'rgba(5,13,29,0.58)', 'rgba(7,16,31,0.36)']}
+                  locations={[0, 0.34, 0.7, 1]}
                   style={StyleSheet.absoluteFill}
                 />
                 <View style={styles.cardTopRow}>
                   <View style={styles.leaderBadge}>
-                    <Ionicons name="trophy-outline" size={12} color="#3269C7" />
+                    <Ionicons name="trophy-outline" size={12} color="#7DD3FC" />
                     <Text style={styles.leaderText} numberOfLines={1}>
                       {(project.showcaseCategoryName || 'KATEGORİ').toLocaleUpperCase('tr-TR')} LİDERİ
                     </Text>
                   </View>
                   <View style={styles.platformBadge}>
-                    <Ionicons name={getPlatformIcon(platform)} size={13} color="#3269C7" />
+                    <Ionicons name={getPlatformIcon(platform)} size={13} color="#BFDBFE" />
                     <Text style={styles.platformText}>{platform || 'Dijital'}</Text>
                   </View>
-                </View>
-                <View style={styles.viewBadge}>
-                  <Ionicons name="eye-outline" size={13} color="#25364E" />
-                  <Text style={styles.viewBadgeText}>{formatSupportCount(project.viewCount)}</Text>
                 </View>
               </View>
 
               <View style={styles.cardBody}>
+                <Text style={styles.editorialTitle} numberOfLines={1}>{project.title}</Text>
                 <Text style={styles.heroStatement} numberOfLines={2}>
                   {project.tagline || project.description || project.title}
                 </Text>
 
-                <BlurView intensity={68} tint="light" style={styles.productDock}>
-                  <View style={styles.logoWell}>
-                    {project.logoUrl ? (
-                      <AutoTransparentLogo
-                        src={project.logoUrl}
-                        alt={`${project.title} logosu`}
-                        style={styles.logoImage}
-                      />
-                    ) : (
-                      <Text style={styles.logoInitials}>{initials}</Text>
-                    )}
-                  </View>
+                <BlurView intensity={55} tint="dark" style={styles.productDock}>
+                  {project.logoUrl ? (
+                    <AutoTransparentLogo
+                      src={project.logoUrl}
+                      alt={`${project.title} logosu`}
+                      style={styles.logoImage}
+                    />
+                  ) : (
+                    <Text style={styles.logoInitials}>{initials}</Text>
+                  )}
                   <View style={styles.productInfo}>
                     <Text style={styles.projectTitle} numberOfLines={1}>{project.title}</Text>
-                    <Text style={styles.makerName} numberOfLines={1}>{makerName}</Text>
-                    <View style={styles.supportRow}>
-                      <Ionicons name="chevron-up" size={11} color="#3269C7" />
-                      <Text style={styles.supportMeta} numberOfLines={1}>
-                        {formatSupportCount(project.showcaseSupportCount)} günlük destek
-                      </Text>
-                    </View>
                   </View>
-                  <GlassIconButton
-                    icon="arrow-forward"
-                    iconSize={17}
-                    size={38}
-                    accessibilityLabel={`${project.title} detayına git`}
-                    style={styles.openButton}
-                  />
+                  <View style={styles.dockSupport}>
+                    <Ionicons name="chevron-up" size={13} color="#7DD3FC" />
+                    <Text style={styles.dockSupportText}>{formatSupportCount(project.showcaseSupportCount)}</Text>
+                  </View>
                 </BlurView>
               </View>
               <View pointerEvents="none" style={styles.cardRim} />
@@ -314,13 +297,18 @@ const styles = StyleSheet.create({
   cardStage: {
     borderRadius: 26,
     overflow: 'hidden',
-    backgroundColor: NEO.surface,
+    backgroundColor: '#07101F',
     borderWidth: 1,
-    borderColor: 'rgba(50,105,199,0.24)',
-    boxShadow: '-9px -9px 22px rgba(255,255,255,0.92), 11px 13px 27px rgba(130,146,168,0.25)' as any,
+    borderColor: 'rgba(96,165,250,0.36)',
+    boxShadow: '0 22px 46px -17px rgba(0,0,0,0.82), 0 9px 24px -14px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.1)' as any,
     outlineStyle: 'none' as any,
+    transform: 'translateZ(0)',
+    backfaceVisibility: 'hidden',
+    willChange: 'transform',
+    contain: 'paint',
+    clipPath: 'inset(0 round 26px)',
   },
-  cardStagePremium: { borderColor: 'rgba(50,105,199,0.3)' },
+  cardStagePremium: { borderColor: 'rgba(125,211,252,0.56)' },
   cardPressed: { opacity: 0.9, transform: [{ scale: 0.988 }] },
   mediaFrame: {
     position: 'absolute',
@@ -330,7 +318,7 @@ const styles = StyleSheet.create({
     left: 0,
     borderRadius: 26,
     overflow: 'hidden',
-    backgroundColor: NEO.global,
+    backgroundColor: '#07101F',
   },
   cardTopRow: {
     position: 'absolute',
@@ -348,37 +336,22 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(247,250,255,0.94)',
+    backgroundColor: 'rgba(5,15,32,0.68)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.9)',
+    borderColor: 'rgba(147,197,253,0.3)',
   },
-  leaderText: { ...theme.typography.kistas, marginLeft: 5, color: NEO.ink, fontSize: 8.5, fontWeight: '700', letterSpacing: 0.65 },
+  leaderText: { ...theme.typography.kistas, marginLeft: 5, color: '#BFDBFE', fontSize: 8.5, fontWeight: '700', letterSpacing: 0.65 },
   platformBadge: {
     minHeight: 30,
     paddingHorizontal: 10,
     borderRadius: 999,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(247,250,255,0.94)',
+    backgroundColor: 'rgba(5,15,32,0.68)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.9)',
+    borderColor: 'rgba(147,197,253,0.3)',
   },
-  platformText: { ...theme.typography.kistas, marginLeft: 5, color: NEO.ink, fontSize: 9, fontWeight: '700' },
-  viewBadge: {
-    position: 'absolute',
-    top: 52,
-    right: 14,
-    minHeight: 28,
-    paddingHorizontal: 9,
-    borderRadius: 999,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: 'rgba(247,250,255,0.94)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.9)',
-  },
-  viewBadgeText: { ...theme.typography.kistas, color: NEO.ink, fontSize: 10, fontWeight: '700' },
+  platformText: { ...theme.typography.kistas, marginLeft: 5, color: '#DBEAFE', fontSize: 9, fontWeight: '700' },
   cardBody: {
     flex: 1,
     zIndex: 2,
@@ -386,44 +359,46 @@ const styles = StyleSheet.create({
     paddingTop: 228,
     paddingBottom: 14,
     justifyContent: 'flex-end',
-    gap: 12,
+    gap: 6,
+  },
+  editorialTitle: {
+    ...theme.typography.kistas,
+    color: '#FFFFFF',
+    fontSize: 22,
+    lineHeight: 26,
+    fontWeight: '800',
+    letterSpacing: -0.7,
+    textShadowColor: 'rgba(0,0,0,0.85)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10,
   },
   heroStatement: {
     ...theme.typography.kistas,
-    color: NEO.ink,
-    fontSize: 17.5,
-    lineHeight: 23,
-    fontWeight: '700',
-    letterSpacing: -0.35,
+    color: '#CBD5E1',
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '500',
+    letterSpacing: -0.1,
+    marginBottom: 6,
   },
   productDock: {
-    minHeight: 70,
-    padding: 8,
-    borderRadius: 18,
+    minHeight: 52,
+    padding: 7,
+    borderRadius: 15,
     flexDirection: 'row',
     alignItems: 'center',
     overflow: 'hidden',
-    backgroundColor: 'rgba(247,250,255,0.76)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.88)',
-    boxShadow: '0 8px 22px rgba(10,30,62,0.2), inset 0 1px 0 rgba(255,255,255,0.82)' as any,
+    backgroundColor: 'rgba(255,255,255,0.035)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255,255,255,0.18)',
+    boxShadow: '0 12px 28px rgba(0,0,0,0.22)' as any,
   },
-  logoWell: {
-    width: 52,
-    height: 52,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.24)',
-  },
-  logoImage: { width: 48, height: 48 },
-  logoInitials: { ...theme.typography.kistas, color: NEO.ink, fontSize: 18, fontWeight: '700' },
+  logoImage: { width: 36, height: 36, flexShrink: 0 },
+  logoInitials: { ...theme.typography.kistas, width: 36, textAlign: 'center', color: '#93C5FD', fontSize: 15, fontWeight: '700' },
   productInfo: { flex: 1, minWidth: 0, marginLeft: 9 },
-  projectTitle: { ...theme.typography.kistas, color: NEO.ink, fontSize: 14.5, lineHeight: 18, fontWeight: '700' },
-  makerName: { ...theme.typography.kistas, marginTop: 2, color: '#64748B', fontSize: 10, fontWeight: '600' },
-  supportRow: { marginTop: 5, flexDirection: 'row', alignItems: 'center' },
-  supportMeta: { ...theme.typography.kistas, marginLeft: 2, color: '#3269C7', fontSize: 8.5, fontWeight: '700' },
-  openButton: { marginLeft: 8, flexShrink: 0 },
+  projectTitle: { ...theme.typography.kistas, color: '#FFFFFF', fontSize: 14.5, lineHeight: 18, fontWeight: '700' },
+  dockSupport: { minWidth: 36, flexShrink: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' },
+  dockSupportText: { ...theme.typography.kistas, marginLeft: 2, color: '#7DD3FC', fontSize: 11, fontWeight: '800' },
   cardRim: {
     position: 'absolute',
     top: 5,
@@ -433,7 +408,7 @@ const styles = StyleSheet.create({
     zIndex: 4,
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(50,105,199,0.2)',
-    boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.72)' as any,
+    borderColor: 'rgba(147,197,253,0.18)',
+    boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)' as any,
   },
 });

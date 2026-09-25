@@ -59,17 +59,19 @@ const DESKTOP_STYLES = `
   padding:4px 10px 4px 12px;
   box-sizing:border-box;
   border-radius:9999px;
-  border:1px solid rgba(255,255,255,.55);
-  background:linear-gradient(155deg,rgba(255,255,255,.07),rgba(255,255,255,0) 55%),rgba(248,250,255,.16);
-  backdrop-filter:blur(8px) saturate(145%);
-  -webkit-backdrop-filter:blur(8px) saturate(145%);
-  box-shadow:0 8px 24px -2px rgba(15,23,42,.12),0 2px 8px rgba(0,0,0,.04);
+  border:1px solid rgba(255,255,255,.20);
+  background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.03) 50%,rgba(255,255,255,.07) 100%),rgba(255,255,255,.04);
+  backdrop-filter:blur(28px) saturate(210%) brightness(115%);
+  -webkit-backdrop-filter:blur(28px) saturate(210%) brightness(115%);
+  box-shadow:0 20px 50px -10px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.06),inset 0 1.5px 1px 0 rgba(255,255,255,.42),inset 0 -1px 1px 0 rgba(255,255,255,.06);
   pointer-events:auto;
-  transition:border-color .3s ease,box-shadow .3s ease;
+  transition:border-color .3s ease,box-shadow .3s ease,transform .3s ease;
 }
 .kdn-dock:hover{
-  border-color:rgba(255,255,255,.8);
-  box-shadow:0 12px 30px -2px rgba(15,23,42,.16),0 4px 12px rgba(0,0,0,.06);
+  border-color:rgba(255,255,255,.30);
+  background:linear-gradient(135deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.04) 50%,rgba(255,255,255,.10) 100%),rgba(255,255,255,.06);
+  box-shadow:0 24px 54px -8px rgba(0,0,0,.95),0 0 0 1px rgba(255,255,255,.10),inset 0 1.5px 1px 0 rgba(255,255,255,.55),inset 0 -1px 1px 0 rgba(255,255,255,.10);
+  transform:translateY(-1px);
 }
 .kdn-dock.is-mobile{height:58px;padding:5px;max-width:100%}
 
@@ -88,7 +90,7 @@ const DESKTOP_STYLES = `
 .kdn-brand:hover{transform:scale(1.06)}
 .kdn-brand:active{transform:scale(.95)}
 
-.kdn-divider{width:1px;height:22px;background:rgba(255,255,255,.55);box-shadow:1px 0 0 rgba(50,105,199,.12);margin:0 5px 0 3px;flex-shrink:0}
+.kdn-divider{width:1px;height:22px;background:rgba(255,255,255,.18);box-shadow:1px 0 0 rgba(255,255,255,.06);margin:0 5px 0 3px;flex-shrink:0}
 
 .kdn-tabs{display:inline-flex;align-items:center;gap:3px}
 
@@ -102,7 +104,7 @@ const DESKTOP_STYLES = `
   border-radius:9999px;
   border:1px solid transparent;
   background:transparent;
-  color:#25364E;
+  color:rgba(255,255,255,.75);
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
   user-select:none;
@@ -110,35 +112,35 @@ const DESKTOP_STYLES = `
   transition:all .35s cubic-bezier(.175,.885,.32,1.4);
 }
 .kdn-pill-tab.is-mobile-tab{height:38px;padding:0 9px}
-.kdn-pill-tab:hover:not(.is-active){background:rgba(255,255,255,.36);box-shadow:inset 1px 1px 1px 0 rgba(255,255,255,.5)}
+.kdn-pill-tab:hover:not(.is-active){background:rgba(255,255,255,.12);color:#FFFFFF}
 .kdn-pill-tab:active{transform:scale(.95)}
 
 .kdn-pill-tab.is-active{padding:0 14px 0 12px}
 .kdn-pill-tab.is-mobile-tab.is-active{padding:0 12px 0 10px}
 
 /* Keşfet (Discover) - Liquid Sapphire */
-.kdn-pill-tab[data-tab="discover"]:hover:not(.is-active){background:rgba(50,105,199,.10);color:#1E4E9E}
-.kdn-pill-tab[data-tab="discover"].is-active{background:rgba(50,105,199,.15);color:#1E4E9E;border-color:rgba(50,105,199,.28);box-shadow:0 4px 14px -3px rgba(50,105,199,.22),inset 1px 1px 1px 0 rgba(255,255,255,.8)}
+.kdn-pill-tab[data-tab="discover"]:hover:not(.is-active){background:rgba(255,255,255,.12);color:#FFFFFF}
+.kdn-pill-tab[data-tab="discover"].is-active{background:linear-gradient(135deg,rgba(50,105,199,.50) 0%,rgba(30,75,160,.30) 100%);color:#FFFFFF;border-color:rgba(96,165,250,.70);box-shadow:0 4px 20px -2px rgba(50,105,199,.65),inset 0 1px 1px 0 rgba(255,255,255,.45)}
 
 /* Göz At (Browse) - Liquid Indigo */
-.kdn-pill-tab[data-tab="browse"]:hover:not(.is-active){background:rgba(99,102,241,.10);color:#4338CA}
-.kdn-pill-tab[data-tab="browse"].is-active{background:rgba(99,102,241,.15);color:#4338CA;border-color:rgba(99,102,241,.28);box-shadow:0 4px 14px -3px rgba(99,102,241,.22),inset 1px 1px 1px 0 rgba(255,255,255,.8)}
+.kdn-pill-tab[data-tab="browse"]:hover:not(.is-active){background:rgba(255,255,255,.12);color:#FFFFFF}
+.kdn-pill-tab[data-tab="browse"].is-active{background:linear-gradient(135deg,rgba(99,102,241,.50) 0%,rgba(67,56,202,.30) 100%);color:#FFFFFF;border-color:rgba(129,140,248,.70);box-shadow:0 4px 20px -2px rgba(99,102,241,.65),inset 0 1px 1px 0 rgba(255,255,255,.45)}
 
 /* Krediler (Credits) - Liquid Amber */
-.kdn-pill-tab[data-tab="credits"]:hover:not(.is-active){background:rgba(245,158,11,.10);color:#B45309}
-.kdn-pill-tab[data-tab="credits"].is-active{background:rgba(245,158,11,.15);color:#B45309;border-color:rgba(245,158,11,.30);box-shadow:0 4px 14px -3px rgba(245,158,11,.22),inset 1px 1px 1px 0 rgba(255,255,255,.8)}
+.kdn-pill-tab[data-tab="credits"]:hover:not(.is-active){background:rgba(255,255,255,.12);color:#FFFFFF}
+.kdn-pill-tab[data-tab="credits"].is-active{background:linear-gradient(135deg,rgba(245,158,11,.50) 0%,rgba(180,100,10,.30) 100%);color:#FFFFFF;border-color:rgba(251,191,36,.70);box-shadow:0 4px 20px -2px rgba(245,158,11,.65),inset 0 1px 1px 0 rgba(255,255,255,.45)}
 
 /* Profil (Profile) - Liquid Violet */
-.kdn-pill-tab[data-tab="profile"]:hover:not(.is-active){background:rgba(139,92,246,.10);color:#6D28D9}
-.kdn-pill-tab[data-tab="profile"].is-active{background:rgba(139,92,246,.15);color:#6D28D9;border-color:rgba(139,92,246,.28);box-shadow:0 4px 14px -3px rgba(139,92,246,.22),inset 1px 1px 1px 0 rgba(255,255,255,.8)}
+.kdn-pill-tab[data-tab="profile"]:hover:not(.is-active){background:rgba(255,255,255,.12);color:#FFFFFF}
+.kdn-pill-tab[data-tab="profile"].is-active{background:linear-gradient(135deg,rgba(139,92,246,.50) 0%,rgba(109,40,217,.30) 100%);color:#FFFFFF;border-color:rgba(167,139,250,.70);box-shadow:0 4px 20px -2px rgba(139,92,246,.65),inset 0 1px 1px 0 rgba(255,255,255,.45)}
 
 /* Mesajlar (Messages) - Liquid Emerald */
-.kdn-pill-tab[data-tab="messages"]:hover:not(.is-active){background:rgba(16,185,129,.10);color:#047857}
-.kdn-pill-tab[data-tab="messages"].is-active{background:rgba(16,185,129,.15);color:#047857;border-color:rgba(16,185,129,.28);box-shadow:0 4px 14px -3px rgba(16,185,129,.22),inset 1px 1px 1px 0 rgba(255,255,255,.8)}
+.kdn-pill-tab[data-tab="messages"]:hover:not(.is-active){background:rgba(255,255,255,.12);color:#FFFFFF}
+.kdn-pill-tab[data-tab="messages"].is-active{background:linear-gradient(135deg,rgba(16,185,129,.50) 0%,rgba(4,120,87,.30) 100%);color:#FFFFFF;border-color:rgba(52,211,153,.70);box-shadow:0 4px 20px -2px rgba(16,185,129,.65),inset 0 1px 1px 0 rgba(255,255,255,.45)}
 
 /* Lansman Yap (Create) - Liquid Cobalt */
-.kdn-pill-tab[data-tab="create"]:hover:not(.is-active){background:rgba(37,99,235,.10);color:#1D4ED8}
-.kdn-pill-tab[data-tab="create"].is-active{background:rgba(37,99,235,.16);color:#1D4ED8;border-color:rgba(37,99,235,.30);box-shadow:0 4px 14px -3px rgba(37,99,235,.24),inset 1px 1px 1px 0 rgba(255,255,255,.8)}
+.kdn-pill-tab[data-tab="create"]:hover:not(.is-active){background:rgba(255,255,255,.12);color:#FFFFFF}
+.kdn-pill-tab[data-tab="create"].is-active{background:linear-gradient(135deg,rgba(37,99,235,.50) 0%,rgba(29,78,216,.30) 100%);color:#FFFFFF;border-color:rgba(96,165,250,.70);box-shadow:0 4px 20px -2px rgba(37,99,235,.65),inset 0 1px 1px 0 rgba(255,255,255,.45)}
 
 .kdn-pill-icon{display:inline-flex;align-items:center;justify-content:center;position:relative;width:20px;height:20px;flex-shrink:0;transition:transform .3s cubic-bezier(.175,.885,.32,1.4);overflow:visible}
 .kdn-pill-tab:hover .kdn-pill-icon{transform:scale(1.15)}

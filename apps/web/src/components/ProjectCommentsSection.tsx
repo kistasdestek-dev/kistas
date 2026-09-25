@@ -455,7 +455,7 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
                           {isDefaultCommentAvatar ? (
 
                             <img
-                              src="/kistas-logo-transparent.png"
+                              src="/kistas-logo-256.webp"
                               alt="Kıstas"
                               className="h-11 w-11 object-contain"
                             />
@@ -466,7 +466,7 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
                               alt={comment.user?.full_name || 'Kullanıcı'}
                               onError={(e) => {
                                 e.currentTarget.onerror = null;
-                                e.currentTarget.src = '/kistas-logo-transparent.png';
+                                e.currentTarget.src = '/kistas-logo-256.webp';
                               }}
                               className="h-11 w-11 rounded-full object-cover"
                             />
@@ -540,7 +540,7 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
                                     {isDefaultReplyAvatar ? (
 
                                       <img
-                                        src="/kistas-logo-transparent.png"
+                                        src="/kistas-logo-256.webp"
                                         alt="Kıstas"
                                         className="h-9 w-9 shrink-0 object-contain"
                                       />
@@ -551,7 +551,7 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
                                         alt={reply.user?.full_name || 'Kullanıcı'}
                                         onError={(e) => {
                                           e.currentTarget.onerror = null;
-                                          e.currentTarget.src = '/kistas-logo-transparent.png';
+                                          e.currentTarget.src = '/kistas-logo-256.webp';
                                         }}
                                         className="h-9 w-9 shrink-0 rounded-full object-cover"
                                       />

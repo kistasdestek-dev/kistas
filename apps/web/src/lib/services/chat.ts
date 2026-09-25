@@ -435,13 +435,16 @@ export class ChatService {
 
   /**
    * Gelen Kutusu (Inbox) Dinleyicisi
+   * Deterministik kullanıcı bazlı kanal adı kullanarak hayalet bağlantıların birikmesini önler.
    */
   public static subscribeToInbox(
     supabase: SupabaseClient,
-    onChange: () => void
+    onChange: () => void,
+    userId?: string
   ) {
+    const channelKey = userId ? `inbox_user_${userId}` : 'inbox_stream_default';
     const channel = supabase
-      .channel(`inbox_${Math.random().toString(36).slice(2)}`)
+      .channel(channelKey)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'conversations' },

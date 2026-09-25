@@ -20,7 +20,9 @@ if (Test-Path $stagingDir) {
 }
 New-Item -ItemType Directory -Path $stagingDir | Out-Null
 
-$itemsToCopy = @(
+$directoriesToCopy = @(
+    "apps",
+    "packages",
     "src",
     "assets",
     "public",
@@ -29,10 +31,18 @@ $itemsToCopy = @(
     "docs",
     "scripts",
     "PARSRAPOR",
+    "reports"
+)
+
+$filesToCopy = @(
     "App.tsx",
     "index.ts",
     "package.json",
     "package-lock.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "turbo.json",
+    "tsconfig.base.json",
     "app.json",
     "tsconfig.json",
     "PROJECT_MAP.md",
@@ -44,11 +54,20 @@ $itemsToCopy = @(
 
 $projectRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 
-foreach ($item in $itemsToCopy) {
-    $srcPath = Join-Path $projectRoot $item
+foreach ($dir in $directoriesToCopy) {
+    $srcPath = Join-Path $projectRoot $dir
     if (Test-Path $srcPath) {
-        $destPath = Join-Path $stagingDir $item
-        Copy-Item -Path $srcPath -Destination $destPath -Recurse -Force
+        $destPath = Join-Path $stagingDir $dir
+        New-Item -ItemType Directory -Path $destPath -Force | Out-Null
+        robocopy $srcPath $destPath /E /XD node_modules .next .turbo .expo .cache .git /XF *.log *.tmp /NJH /NJS /NDL /NC /NS | Out-Null
+    }
+}
+
+foreach ($file in $filesToCopy) {
+    $srcPath = Join-Path $projectRoot $file
+    if (Test-Path $srcPath) {
+        $destPath = Join-Path $stagingDir $file
+        Copy-Item -Path $srcPath -Destination $destPath -Force
     }
 }
 

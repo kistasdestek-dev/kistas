@@ -1,4 +1,15 @@
-import { BlurTargetView, BlurView } from 'expo-blur';
+/**
+ * ============================================================================
+ * KISTAS - ARŞİVLENMİŞ ESKİ GİRİŞ NOKTASI (ARCHIVED PRE-MONOREPO ENTRYPOINT)
+ * ============================================================================
+ * Bu dosya projenin eski tekil React Native Web mimarisinden kalma arşiv dosyasıdır.
+ * Canlı ve üretimdeki web platformu tamamen Next.js 16 App Router mimarisine
+ * taşınmıştır ve `apps/web/` altından bağımsız olarak çalışır.
+ *
+ * Bu dosya yalnızca geçmiş güvenlik/regresyon denetim testleri için tutulmaktadır.
+ * ============================================================================
+ */
+
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar, Alert, Platform, Pressable, Text, useWindowDimensions } from 'react-native';
 import { AdaptiveAppNavigation, TabKey } from './src/shared/navigation/AdaptiveAppNavigation';
@@ -134,35 +145,58 @@ function AppContent() {
   // Alt ekran durumları
   const [selectedProject, setSelectedProject] = useState<Listing | null>(null);
   const [editingProject, setEditingProject] = useState<Listing | null>(null);
-  const [activeChatConvId, setActiveChatConvId] = useState<string | null>(null);
-  const [activeChatProjectTitle, setActiveChatProjectTitle] = useState<string>('Kıstas AI Studio');
-  const [activeChatOtherPartyName, setActiveChatOtherPartyName] = useState<string>('Kıstas Üyesi');
-  const [activeChatOtherPartyAvatar, setActiveChatOtherPartyAvatar] = useState<string | null>(null);
-  const [activeChatCanManageSupport, setActiveChatCanManageSupport] = useState(false);
+  interface ActiveChatSession {
+    conversationId: string;
+    projectTitle: string;
+    otherPartyName: string;
+    otherPartyAvatar: string | null;
+    canManageSupport: boolean;
+  }
+  const [activeChat, setActiveChat] = useState<ActiveChatSession | null>(null);
   const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
   const [isVisibilityManagementOpen, setIsVisibilityManagementOpen] = useState(false);
   const [visibilityTargetListingId, setVisibilityTargetListingId] = useState<string | null>(null);
   const [isAccountSecurityOpen, setIsAccountSecurityOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAuthSuccessVisible, setIsAuthSuccessVisible] = useState(false);
-  const [isAboutOpen, setIsAboutOpen] = useState(initialWebRoute.screen === 'about');
-  const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(initialWebRoute.screen === 'how-it-works');
-  const [isFaqOpen, setIsFaqOpen] = useState(initialWebRoute.screen === 'faq');
-  const [isPrivacyOpen, setIsPrivacyOpen] = useState(initialWebRoute.screen === 'privacy');
-  const [isSecurityOpen, setIsSecurityOpen] = useState(initialWebRoute.screen === 'security');
+  // Konsolide Tam Ekran Overlay Durumu (Ponytail State Consolidation)
+  type ActiveOverlay = null | 'about' | 'how-it-works' | 'faq' | 'privacy' | 'security' | 'blog' | 'showcase' | 'popular' | 'new';
+  const initialOverlay: ActiveOverlay =
+    (['about', 'how-it-works', 'faq', 'privacy', 'security', 'blog', 'showcase', 'popular', 'new'] as const).includes(initialWebRoute.screen as any)
+      ? (initialWebRoute.screen as ActiveOverlay)
+      : null;
+
+  const [activeOverlay, setActiveOverlay] = useState<ActiveOverlay>(initialOverlay);
+
+  const isAboutOpen = activeOverlay === 'about';
+  const isHowItWorksOpen = activeOverlay === 'how-it-works';
+  const isFaqOpen = activeOverlay === 'faq';
+  const isPrivacyOpen = activeOverlay === 'privacy';
+  const isSecurityOpen = activeOverlay === 'security';
+  const isBlogOpen = activeOverlay === 'blog';
+  const isShowcaseOpen = activeOverlay === 'showcase';
+  const isPopularOpen = activeOverlay === 'popular';
+  const isNewOpen = activeOverlay === 'new';
+
+  const setIsAboutOpen = useCallback((v: boolean) => setActiveOverlay(v ? 'about' : null), []);
+  const setIsHowItWorksOpen = useCallback((v: boolean) => setActiveOverlay(v ? 'how-it-works' : null), []);
+  const setIsFaqOpen = useCallback((v: boolean) => setActiveOverlay(v ? 'faq' : null), []);
+  const setIsPrivacyOpen = useCallback((v: boolean) => setActiveOverlay(v ? 'privacy' : null), []);
+  const setIsSecurityOpen = useCallback((v: boolean) => setActiveOverlay(v ? 'security' : null), []);
+  const setIsBlogOpen = useCallback((v: boolean) => setActiveOverlay(v ? 'blog' : null), []);
+  const setIsShowcaseOpen = useCallback((v: boolean) => setActiveOverlay(v ? 'showcase' : null), []);
+  const setIsPopularOpen = useCallback((v: boolean) => setActiveOverlay(v ? 'popular' : null), []);
+  const setIsNewOpen = useCallback((v: boolean) => setActiveOverlay(v ? 'new' : null), []);
+
   const [analyticsConsent, setAnalyticsConsent] = useState<boolean | null>(readAnalyticsConsent);
-  const [isBlogOpen, setIsBlogOpen] = useState(initialWebRoute.screen === 'blog');
   const [blogPostSlug, setBlogPostSlug] = useState<string | null>(initialWebRoute.blogSlug || null);
   const [activeCategoryScreenId, setActiveCategoryScreenId] = useState<string | null>(
     initialWebRoute.screen === 'category' ? initialWebRoute.categoryId || null : null,
   );
-  const [isShowcaseOpen, setIsShowcaseOpen] = useState(initialWebRoute.screen === 'showcase');
   const [showcaseFilters, setShowcaseFilters] = useState<ShowcaseFilters>({
     categoryId: initialWebRoute.screen === 'showcase' ? initialWebRoute.categoryId || null : null,
     platform: initialWebRoute.screen === 'showcase' ? initialWebRoute.platform || 'all' : 'all',
   });
-  const [isPopularOpen, setIsPopularOpen] = useState(initialWebRoute.screen === 'popular');
-  const [isNewOpen, setIsNewOpen] = useState(initialWebRoute.screen === 'new');
   const [curatedFilters, setCuratedFilters] = useState<ShowcaseFilters>({
     categoryId: (initialWebRoute.screen === 'popular' || initialWebRoute.screen === 'new') ? initialWebRoute.categoryId || null : null,
     platform: (initialWebRoute.screen === 'popular' || initialWebRoute.screen === 'new') ? initialWebRoute.platform || 'all' : 'all',
@@ -653,134 +687,33 @@ function AppContent() {
       }
       const route = parseWebRoute();
       isHandlingPopstateRef.current = true;
-      setIsFaqOpen(route.screen === 'faq');
-
-      if (route.screen === 'blog') {
-        setIsShowcaseOpen(false);
-        setIsBlogOpen(true);
+      if (['about', 'how-it-works', 'faq', 'privacy', 'security', 'blog', 'showcase', 'popular', 'new'].includes(route.screen)) {
+        setActiveOverlay(route.screen as ActiveOverlay);
         setBlogPostSlug(route.blogSlug || null);
-        setIsAboutOpen(false);
-        setIsHowItWorksOpen(false);
-        setIsPrivacyOpen(false);
         setActiveCategoryScreenId(null);
         setSelectedProject(null);
-      } else if (route.screen === 'about') {
-        setIsShowcaseOpen(false);
-        setIsAboutOpen(true);
-        setIsBlogOpen(false);
-        setBlogPostSlug(null);
-        setIsHowItWorksOpen(false);
-        setIsPrivacyOpen(false);
-        setActiveCategoryScreenId(null);
-        setSelectedProject(null);
-      } else if (route.screen === 'how-it-works') {
-        setIsShowcaseOpen(false);
-        setIsHowItWorksOpen(true);
-        setIsAboutOpen(false);
-        setIsBlogOpen(false);
-        setBlogPostSlug(null);
-        setIsPrivacyOpen(false);
-        setActiveCategoryScreenId(null);
-        setSelectedProject(null);
-      } else if (route.screen === 'faq') {
-        setIsShowcaseOpen(false);
-        setIsPopularOpen(false);
-        setIsNewOpen(false);
-        setIsAboutOpen(false);
-        setIsBlogOpen(false);
-        setBlogPostSlug(null);
-        setIsHowItWorksOpen(false);
-        setIsPrivacyOpen(false);
-        setActiveCategoryScreenId(null);
-        setSelectedProject(null);
-      } else if (route.screen === 'privacy') {
-        setIsShowcaseOpen(false);
-        setIsPrivacyOpen(true);
-        setIsSecurityOpen(false);
-        setIsAboutOpen(false);
-        setIsBlogOpen(false);
-        setBlogPostSlug(null);
-        setIsHowItWorksOpen(false);
-        setActiveCategoryScreenId(null);
-        setSelectedProject(null);
-      } else if (route.screen === 'security') {
-        setIsShowcaseOpen(false);
-        setIsSecurityOpen(true);
-        setIsPrivacyOpen(false);
-        setIsAboutOpen(false);
-        setIsBlogOpen(false);
-        setBlogPostSlug(null);
-        setIsHowItWorksOpen(false);
-        setIsFaqOpen(false);
-        setActiveCategoryScreenId(null);
-        setSelectedProject(null);
+        if (route.screen === 'showcase') {
+          setShowcaseFilters({
+            categoryId: route.categoryId || null,
+            platform: route.platform || 'all',
+          });
+          setActiveTab('discover');
+        } else if (route.screen === 'popular' || route.screen === 'new') {
+          setCuratedFilters({
+            categoryId: route.categoryId || null,
+            platform: route.platform || 'all',
+          });
+          setActiveTab('discover');
+        }
       } else if (route.screen === 'category' && route.categoryId) {
-        setIsShowcaseOpen(false);
-        setActiveCategoryScreenId(route.categoryId);
-        setIsAboutOpen(false);
-        setIsBlogOpen(false);
+        setActiveOverlay(null);
         setBlogPostSlug(null);
-        setIsHowItWorksOpen(false);
-        setIsPrivacyOpen(false);
+        setActiveCategoryScreenId(route.categoryId);
         setSelectedProject(null);
         setActiveTab('browse');
-      } else if (route.screen === 'showcase') {
-        setIsShowcaseOpen(true);
-        setShowcaseFilters({
-          categoryId: route.categoryId || null,
-          platform: route.platform || 'all',
-        });
-        setIsPopularOpen(false);
-        setIsNewOpen(false);
-        setIsAboutOpen(false);
-        setIsBlogOpen(false);
-        setBlogPostSlug(null);
-        setIsHowItWorksOpen(false);
-        setIsPrivacyOpen(false);
-        setActiveCategoryScreenId(null);
-        setSelectedProject(null);
-        setActiveTab('discover');
-      } else if (route.screen === 'popular') {
-        setIsPopularOpen(true);
-        setIsNewOpen(false);
-        setCuratedFilters({
-          categoryId: route.categoryId || null,
-          platform: route.platform || 'all',
-        });
-        setIsShowcaseOpen(false);
-        setIsAboutOpen(false);
-        setIsBlogOpen(false);
-        setBlogPostSlug(null);
-        setIsHowItWorksOpen(false);
-        setIsPrivacyOpen(false);
-        setActiveCategoryScreenId(null);
-        setSelectedProject(null);
-        setActiveTab('discover');
-      } else if (route.screen === 'new') {
-        setIsNewOpen(true);
-        setIsPopularOpen(false);
-        setCuratedFilters({
-          categoryId: route.categoryId || null,
-          platform: route.platform || 'all',
-        });
-        setIsShowcaseOpen(false);
-        setIsAboutOpen(false);
-        setIsBlogOpen(false);
-        setBlogPostSlug(null);
-        setIsHowItWorksOpen(false);
-        setIsPrivacyOpen(false);
-        setActiveCategoryScreenId(null);
-        setSelectedProject(null);
-        setActiveTab('discover');
       } else {
-        setIsShowcaseOpen(false);
-        setIsPopularOpen(false);
-        setIsNewOpen(false);
-        setIsAboutOpen(false);
-        setIsBlogOpen(false);
+        setActiveOverlay(null);
         setBlogPostSlug(null);
-        setIsHowItWorksOpen(false);
-        setIsPrivacyOpen(false);
         setActiveCategoryScreenId(null);
         setSelectedProject(null);
         setActiveTab(route.tab);
@@ -864,17 +797,9 @@ function AppContent() {
   }, [activeTab, isBlogOpen, blogPostSlug, isAboutOpen, isFaqOpen, isHowItWorksOpen, isPrivacyOpen, isSecurityOpen, activeCategoryScreenId, isShowcaseOpen, showcaseFilters, isPopularOpen, isNewOpen, curatedFilters, isPasswordRecovery]);
 
   const handleTabChange = useCallback((tab: TabKey) => {
-    const wasStandalonePageOpen = isAboutOpen || isFaqOpen || isPrivacyOpen || isSecurityOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || isPopularOpen || isNewOpen || Boolean(activeCategoryScreenId);
-    if (isShowcaseOpen) setIsShowcaseOpen(false);
-    if (isPopularOpen) setIsPopularOpen(false);
-    if (isNewOpen) setIsNewOpen(false);
-    if (isAboutOpen) setIsAboutOpen(false);
-    if (isPrivacyOpen) setIsPrivacyOpen(false);
-    if (isSecurityOpen) setIsSecurityOpen(false);
-    if (isHowItWorksOpen) setIsHowItWorksOpen(false);
-    if (isFaqOpen) setIsFaqOpen(false);
-    if (isBlogOpen) {
-      setIsBlogOpen(false);
+    const wasStandalonePageOpen = Boolean(activeOverlay || activeCategoryScreenId);
+    if (activeOverlay) {
+      setActiveOverlay(null);
       setBlogPostSlug(null);
     }
     if (activeCategoryScreenId) setActiveCategoryScreenId(null);
@@ -913,12 +838,7 @@ function AppContent() {
     scrollDirectionRef.current = null;
     scrollDirectionDistanceRef.current = 0;
     updateNavCompact(false);
-    setIsAboutOpen(true);
-    setIsFaqOpen(false);
-    setIsHowItWorksOpen(false);
-    setIsPrivacyOpen(false);
-    setIsSecurityOpen(false);
-    setIsBlogOpen(false);
+    setActiveOverlay('about');
     setBlogPostSlug(null);
   }, [updateNavCompact]);
 
@@ -927,12 +847,7 @@ function AppContent() {
     scrollDirectionRef.current = null;
     scrollDirectionDistanceRef.current = 0;
     updateNavCompact(false);
-    setIsAboutOpen(false);
-    setIsFaqOpen(false);
-    setIsHowItWorksOpen(true);
-    setIsPrivacyOpen(false);
-    setIsSecurityOpen(false);
-    setIsBlogOpen(false);
+    setActiveOverlay('how-it-works');
     setBlogPostSlug(null);
   }, [updateNavCompact]);
 
@@ -941,12 +856,7 @@ function AppContent() {
     scrollDirectionRef.current = null;
     scrollDirectionDistanceRef.current = 0;
     updateNavCompact(false);
-    setIsAboutOpen(false);
-    setIsFaqOpen(false);
-    setIsHowItWorksOpen(false);
-    setIsPrivacyOpen(true);
-    setIsSecurityOpen(false);
-    setIsBlogOpen(false);
+    setActiveOverlay('privacy');
     setBlogPostSlug(null);
   }, [updateNavCompact]);
 
@@ -955,31 +865,22 @@ function AppContent() {
     scrollDirectionRef.current = null;
     scrollDirectionDistanceRef.current = 0;
     updateNavCompact(false);
-    setIsAboutOpen(false);
-    setIsFaqOpen(false);
-    setIsHowItWorksOpen(false);
-    setIsPrivacyOpen(false);
-    setIsSecurityOpen(true);
-    setIsBlogOpen(false);
+    setActiveOverlay('security');
     setBlogPostSlug(null);
   }, [updateNavCompact]);
 
   const handleAboutExplore = useCallback(() => {
-    setIsAboutOpen(false);
-    setIsFaqOpen(false);
-    setIsHowItWorksOpen(false);
-    setIsPrivacyOpen(false);
-    setIsSecurityOpen(false);
-    setIsBlogOpen(false);
+    setActiveOverlay(null);
     setBlogPostSlug(null);
     setSelectedProject(null);
+    setActiveCategoryScreenId(null);
+    setActiveTab('discover');
     setDiscoverPreset({
       categoryId: null,
       searchQuery: '',
       feedSort: 'trending',
       platform: 'all',
     });
-    setActiveTab('discover');
   }, []);
 
   const handleBrowseCategory = useCallback((categoryId: string) => {
@@ -1052,7 +953,7 @@ function AppContent() {
   }, [updateNavCompact]);
 
   const isCheckoutLikeOpen = () => {
-    return isPasswordRecovery || isAuthModalOpen || isAuthSuccessVisible || !!selectedProject || isAdminDashboardOpen || isVisibilityManagementOpen || isAccountSecurityOpen || isAboutOpen || isFaqOpen || isPrivacyOpen || isHowItWorksOpen || isBlogOpen || isShowcaseOpen || isPopularOpen || isNewOpen;
+    return isPasswordRecovery || isAuthModalOpen || isAuthSuccessVisible || !!selectedProject || isAdminDashboardOpen || isVisibilityManagementOpen || isAccountSecurityOpen || Boolean(activeOverlay);
   };
 
   const backdropVariant: PremiumBackdropVariant = selectedProject
@@ -1060,14 +961,14 @@ function AppContent() {
     : 'discover';
   const isPhoneWeb = Platform.OS === 'web' && viewportWidth <= breakpoints.phoneMax;
   const isMobileChatOpen = activeTab === 'messages'
-    && Boolean(activeChatConvId)
+    && Boolean(activeChat?.conversationId)
     && (Platform.OS !== 'web' || isPhoneWeb);
   const showNavigation = !isCheckoutLikeOpen() && !isMobileChatOpen;
   const webContentWidth = Math.min(viewportWidth, 1600);
   const scrollProgressPageKey = [
     activeTab,
     authView,
-    activeChatConvId || '',
+    activeChat?.conversationId || '',
     selectedProject?.id || '',
     editingProject?.id || '',
     activeCategoryScreenId || '',
@@ -1077,14 +978,7 @@ function AppContent() {
     isVisibilityManagementOpen,
     isAccountSecurityOpen,
     isAuthModalOpen,
-    isPrivacyOpen,
-    isBlogOpen,
-    isAboutOpen,
-    isFaqOpen,
-    isHowItWorksOpen,
-    isShowcaseOpen,
-    isPopularOpen,
-    isNewOpen,
+    activeOverlay || '',
   ].join(':');
 
   if (isQuarantined) {
@@ -1415,23 +1309,25 @@ function AppContent() {
             }}
           />
         ) : activeTab === 'messages' && currentUser ? (
-          activeChatConvId ? (
+          activeChat ? (
             <ChatScreen
-              conversationId={activeChatConvId}
-              projectTitle={activeChatProjectTitle}
-              otherPartyName={activeChatOtherPartyName}
-              otherPartyAvatar={activeChatOtherPartyAvatar}
-              canManageSupport={activeChatCanManageSupport}
-              onBack={() => setActiveChatConvId(null)}
+              conversationId={activeChat.conversationId}
+              projectTitle={activeChat.projectTitle}
+              otherPartyName={activeChat.otherPartyName}
+              otherPartyAvatar={activeChat.otherPartyAvatar}
+              canManageSupport={activeChat.canManageSupport}
+              onBack={() => setActiveChat(null)}
             />
           ) : (
             <ConversationsScreen
               onSelectConversation={(conversation) => {
-                setActiveChatConvId(conversation.id);
-                setActiveChatProjectTitle(conversation.listing?.title || 'Kıstas Destek');
-                setActiveChatOtherPartyName(conversation.otherParty?.fullName || 'Kıstas Üyesi');
-                setActiveChatOtherPartyAvatar(conversation.otherParty?.avatarUrl || null);
-                setActiveChatCanManageSupport(false);
+                setActiveChat({
+                  conversationId: conversation.id,
+                  projectTitle: conversation.listing?.title || 'Kıstas Destek',
+                  otherPartyName: conversation.otherParty?.fullName || 'Kıstas Üyesi',
+                  otherPartyAvatar: conversation.otherParty?.avatarUrl || null,
+                  canManageSupport: false,
+                });
               }}
               onScrollOffsetChange={Platform.OS === 'web' ? undefined : handleContentScroll}
             />

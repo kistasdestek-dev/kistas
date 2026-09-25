@@ -1,10 +1,11 @@
-import { createClient } from '@/lib/supabase/server';
-import { getCuratedListings } from '@kistas/supabase';
+import { createAnonClient, getCuratedListings } from '@kistas/supabase';
 import Link from 'next/link';
 import { ChevronUp, Flame, Sparkles } from 'lucide-react';
 
+export const revalidate = 60;
+
 export default async function PopularPage() {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const dbItems = await getCuratedListings(supabase, 'popular', 30);
   const items = dbItems || [];
 

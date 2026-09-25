@@ -1,11 +1,10 @@
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
-import { getPublishedBlogPosts } from '@kistas/supabase';
+import { createAnonClient, getPublishedBlogPosts } from '@kistas/supabase';
 
 export const revalidate = 300; // 5 minutes ISR for blog
 
 export default async function BlogPage() {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const posts = await getPublishedBlogPosts(supabase);
 
   return (

@@ -30,7 +30,7 @@ export const ChatAvatar: React.FC<ChatAvatarProps> = ({
     >
       <span className="absolute inset-0 flex items-center justify-center p-[8%]">
         <img
-          src="/kistas-logo-transparent.png"
+          src="/kistas-logo-256.webp"
           alt="Kıstas"
           className="h-full w-full object-contain"
         />

@@ -18,6 +18,9 @@ export interface ProjectComment {
   createdAt: string;
   author: ProjectCommentAuthor;
   replies: ProjectComment[];
+  likesCount: number;
+  dislikesCount: number;
+  myReaction?: 1 | -1 | null;
 }
 
 const mapRow = (row: any): ProjectComment => ({
@@ -34,7 +37,19 @@ const mapRow = (row: any): ProjectComment => ({
     isVerified: !!row.author?.is_verified,
   },
   replies: [],
+  likesCount: row.likes_count ?? 0,
+  dislikesCount: row.dislikes_count ?? 0,
+  myReaction: row.my_reaction ?? null,
 });
+
+export interface ToggleReactionResult {
+  success: boolean;
+  action?: string;
+  myReaction?: 1 | -1 | null;
+  likesCount?: number;
+  dislikesCount?: number;
+  error?: string;
+}
 
 export class ProjectCommentService {
   public static async getComments(listingId: string): Promise<ProjectComment[]> {
@@ -47,6 +62,8 @@ export class ProjectCommentService {
         parent_id,
         body,
         created_at,
+        likes_count,
+        dislikes_count,
         author:author_id (id, full_name, avatar_url, is_verified)
       `)
       .eq('listing_id', listingId)
@@ -88,6 +105,38 @@ export class ProjectCommentService {
     }
 
     return { success: true };
+  }
+
+  public static async toggleReaction(
+    commentId: string,
+    reaction: 1 | -1
+  ): Promise<ToggleReactionResult> {
+    const { data, error } = await supabase.rpc('toggle_project_comment_reaction', {
+      p_comment_id: commentId,
+      p_reaction: reaction,
+    });
+
+    if (error) {
+      if (error.message?.includes('AUTH_REQUIRED')) {
+        return { success: false, error: 'Tepki vermek için giriş yapmalısınız.' };
+      }
+      if (error.message?.includes('RATE_LIMITED')) {
+        return { success: false, error: 'Çok hızlı tepki veriyorsunuz.' };
+      }
+      if (error.message?.includes('VERIFICATION_REQUIRED')) {
+        return { success: false, error: 'Tepki vermek için hesabınızı doğrulamalısınız.' };
+      }
+      return { success: false, error: error.message };
+    }
+
+    const d = data as any;
+    return {
+      success: !!d?.success,
+      action: d?.action,
+      myReaction: d?.my_reaction ?? null,
+      likesCount: d?.likes_count ?? 0,
+      dislikesCount: d?.dislikes_count ?? 0,
+    };
   }
 
   public static subscribe(listingId: string, onChange: () => void) {

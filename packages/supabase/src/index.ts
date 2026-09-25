@@ -1,4 +1,5 @@
 export * from './client';
+export * from './database.types';
 export * from './rpc';
 export * from './queries/listings';
 export * from './queries/categories';

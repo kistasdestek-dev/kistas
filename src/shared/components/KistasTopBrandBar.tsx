@@ -33,8 +33,14 @@ export const KistasTopBrandBar: React.FC<KistasTopBrandBarProps> = ({
   const handlePress = () => {
     if (onPress) {
       onPress();
-    } else if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const isRoot = window.location.pathname === '/' && (!window.location.hash || window.location.hash === '#/');
+      if (!isRoot && !onPress) {
+        window.location.href = '/';
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   };
 

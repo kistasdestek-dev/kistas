@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "test": "node ../../scripts/tests/run-workspace-suite.mjs web",
+    "test:e2e": "playwright test",
     "type-check": "next typegen && tsc --noEmit",
     "sayos:security": "pnpm audit --audit-level high --filter @kistas/web"
   },
@@ -32,7 +33,6 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.4.7",
     "lucide-react": "^0.475.0",
-    "motion": "^13.4.0",
     "next": "^16.3.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.57.3",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.13.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

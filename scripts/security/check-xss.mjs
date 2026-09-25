@@ -1,10 +1,10 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, join } from 'node:path';
 
 const root = process.cwd();
 const sourceExtensions = new Set(['.js', '.jsx', '.mjs', '.ts', '.tsx']);
-const sourceRoots = ['src', 'supabase/functions'];
-const rootSourceFiles = ['App.tsx', 'index.ts'];
+const sourceRoots = ['src', 'supabase/functions', 'apps/web/src', 'packages/shared/src', 'packages/supabase/src', 'packages/ui/src'].filter((dir) => existsSync(join(root, dir)));
+const rootSourceFiles = ['App.tsx', 'index.ts'].filter((file) => existsSync(join(root, file)));
 const findings = [];
 
 const rules = [

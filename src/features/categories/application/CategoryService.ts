@@ -46,18 +46,6 @@ export const APP_STORE_CATEGORY_SLUGS = [
   'app-productivity',
 ] as const;
 
-const PROJECT_CATEGORY_SLUGS = [
-  'ai-ml',
-  'games',
-  'productivity',
-  'fintech',
-  'social',
-  'devtools',
-  'saas',
-  'design',
-  ...APP_STORE_CATEGORY_SLUGS,
-] as const;
-
 const mapCategoryRow = (row: any): Category => ({
   id: row.id,
   parentId: row.parent_id ?? null,
@@ -78,7 +66,7 @@ export class CategoryService {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .in('slug', [...PROJECT_CATEGORY_SLUGS])
+        .in('slug', [...APP_STORE_CATEGORY_SLUGS])
         .eq('is_active', true)
         .order('order_index', { ascending: true });
 
@@ -103,6 +91,8 @@ export class CategoryService {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
+        .in('slug', [...APP_STORE_CATEGORY_SLUGS])
+        .eq('is_active', true)
         .order('order_index', { ascending: true });
 
       if (error || !data) {
@@ -123,83 +113,6 @@ export class CategoryService {
 
   public static getDefaultCategories(): Category[] {
     return [
-      {
-        id: 'c-ai',
-        name: 'Yapay Zeka & ML',
-        slug: 'ai-ml',
-        iconUrl: '🤖',
-        commissionRate: 0,
-        orderIndex: 1,
-        subcategories: [
-          { id: 'c-ai-1', name: 'LLM & Ajanlar', slug: 'llm-agents', iconUrl: '🧠', commissionRate: 0, orderIndex: 1 },
-          { id: 'c-ai-2', name: 'Görsel & Ses Üretimi', slug: 'image-audio-ai', iconUrl: '🎨', commissionRate: 0, orderIndex: 2 },
-        ],
-      },
-      {
-        id: 'c-games',
-        name: 'Mobil Oyun & Eğlence',
-        slug: 'games',
-        iconUrl: '🎮',
-        commissionRate: 0,
-        orderIndex: 2,
-        subcategories: [
-          { id: 'c-games-1', name: 'Bağımsız (Indie) Oyunlar', slug: 'indie-games', iconUrl: '🕹️', commissionRate: 0, orderIndex: 1 },
-          { id: 'c-games-2', name: 'Strateji & Bulmaca', slug: 'puzzle-strategy', iconUrl: '🧩', commissionRate: 0, orderIndex: 2 },
-        ],
-      },
-      {
-        id: 'c-prod',
-        name: 'Verimlilik & Araçlar',
-        slug: 'productivity',
-        iconUrl: '⚡',
-        commissionRate: 0,
-        orderIndex: 3,
-        subcategories: [
-          { id: 'c-prod-1', name: 'Görev & Not Yönetimi', slug: 'tasks-notes', iconUrl: '📝', commissionRate: 0, orderIndex: 1 },
-          { id: 'c-prod-2', name: 'Zaman & Takvim', slug: 'time-calendar', iconUrl: '⏱️', commissionRate: 0, orderIndex: 2 },
-        ],
-      },
-      {
-        id: 'c-fin',
-        name: 'Finans & Web3',
-        slug: 'fintech',
-        iconUrl: '💳',
-        commissionRate: 0,
-        orderIndex: 4,
-      },
-      {
-        id: 'c-soc',
-        name: 'Sosyal & Topluluk',
-        slug: 'social',
-        iconUrl: '📱',
-        commissionRate: 0,
-        orderIndex: 5,
-      },
-      {
-        id: 'c-dev',
-        name: 'Geliştirici Araçları',
-        slug: 'devtools',
-        iconUrl: '🛠️',
-        commissionRate: 0,
-        orderIndex: 6,
-      },
-      {
-        id: 'c-saas',
-        name: 'SaaS & B2B',
-        slug: 'saas',
-        iconUrl: '💼',
-        commissionRate: 0,
-        orderIndex: 7,
-      },
-      {
-        id: 'c-des',
-        name: 'Tasarım & Yaratıcılık',
-        slug: 'design',
-        iconUrl: '🎨',
-        commissionRate: 0,
-        orderIndex: 8,
-      },
-
       // OYUNLAR (15)
       { id: 'game-family', name: 'Aile', slug: 'game-family', iconUrl: 'people-outline', commissionRate: 0, orderIndex: 101 },
       { id: 'game-action', name: 'Aksiyon', slug: 'game-action', iconUrl: 'flash-outline', commissionRate: 0, orderIndex: 102 },

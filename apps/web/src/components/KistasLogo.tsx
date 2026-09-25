@@ -25,7 +25,7 @@ export const KistasLogo: React.FC<KistasLogoProps> = ({
         style={{ width: size, height: size }}
       >
         <Image
-          src="/kistas-logo-transparent.png"
+          src="/kistas-logo-256.webp"
           alt="Kıstas Logo"
           width={size}
           height={size}

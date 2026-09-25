@@ -15,9 +15,21 @@ import {
   Sparkles,
   ArrowRight,
 } from 'lucide-react';
-import { SplineSceneRobot } from '@/components/ui/SplineSceneRobot';
+import dynamic from 'next/dynamic';
 import { KistasTopBrandBar } from '@/components/KistasTopBrandBar';
 import { GlassIconButton } from '@/components/GlassIconButton';
+
+const SplineSceneRobot = dynamic(
+  () => import('@/components/ui/SplineSceneRobot').then((mod) => mod.SplineSceneRobot),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full min-h-[460px] sm:min-h-[500px] rounded-[24px] sm:rounded-[32px] border border-white/10 bg-[#060A12] flex items-center justify-center">
+        <div className="h-16 w-16 rounded-full bg-blue-500/20 animate-pulse blur-xl" />
+      </div>
+    ),
+  }
+);
 
 export const AboutExperienceClient: React.FC = () => {
   const router = useRouter();

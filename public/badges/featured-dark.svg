@@ -1,8 +1,75 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="244" height="54" viewBox="0 0 244 54" role="img" aria-labelledby="title">
-  <title id="title">Featured on Kıstas</title>
-  <rect x="0.5" y="0.5" width="243" height="53" rx="13" fill="#0B1830" stroke="#6FB6FF"/>
-  <circle cx="28" cy="27" r="16" fill="#F5FAFF" stroke="#8AC6FF"/>
-  <path d="M22 18v18m2-9 9-9m-9 9 9 9" fill="none" stroke="#2873C8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="55" y="22" fill="#A9C6E8" font-family="Arial, sans-serif" font-size="11" font-weight="600">FEATURED ON</text>
-  <text x="55" y="40" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="20" font-weight="700">Kıstas</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="250" height="54" viewBox="0 0 250 54" role="img" aria-label="Featured on Kıstas">
+  <defs>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#091326" />
+      <stop offset="50%" stop-color="#080E1E" />
+      <stop offset="100%" stop-color="#0D1A33" />
+    </linearGradient>
+    <linearGradient id="shimmerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#60A5FA" stop-opacity="0" />
+      <stop offset="50%" stop-color="#60A5FA" stop-opacity="1" />
+      <stop offset="100%" stop-color="#93C5FD" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="flameOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA" />
+      <stop offset="60%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="flameInner" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#EF4444" />
+    </linearGradient>
+    <filter id="glassGlow" x="-10%" y="-10%" width="120%" height="130%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="rgba(0, 0, 0, 0.55)" />
+    </filter>
+    <style>
+      @keyframes kistasShimmer {
+        0% { stroke-dashoffset: 0; }
+        100% { stroke-dashoffset: -560; }
+      }
+      @keyframes kistasBreathe {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; }
+      }
+      .glass-border-anim {
+        stroke-dasharray: 75 205;
+        animation: kistasShimmer 4.5s linear infinite;
+      }
+      .flame-anim {
+        animation: kistasBreathe 3s ease-in-out infinite;
+      }
+    </style>
+  </defs>
+
+  <!-- Base Card Shadow & Glass Fill -->
+  <rect x="1.5" y="1.5" width="247" height="51" rx="16" fill="url(#cardGrad)" stroke="rgba(59, 130, 246, 0.3)" stroke-width="1.2" filter="url(#glassGlow)" />
+
+  <!-- Animated Conic Shimmer Border (Kıstas Glass Light Ray) -->
+  <rect x="1.5" y="1.5" width="247" height="51" rx="16" fill="none" stroke="url(#shimmerGrad)" stroke-width="1.8" stroke-linecap="round" class="glass-border-anim" />
+
+  <!-- Logo Mark Glass Container -->
+  <g transform="translate(12, 10)">
+    <rect width="34" height="34" rx="10" fill="rgba(59, 130, 246, 0.15)" stroke="rgba(59, 130, 246, 0.4)" stroke-width="1" />
+    
+    <!-- Vector Kıstas Flame Icon -->
+    <g transform="translate(5, 5)" class="flame-anim">
+      <!-- Outer Blue Flame -->
+      <path d="M12 2C8 6.5 6.2 9.8 6.2 13.6a5.8 5.8 0 0 0 11.6 0c0-3.8-2.2-7-5.8-11.6z" fill="url(#flameOuter)" />
+      <!-- Inner Amber Flame Core -->
+      <path d="M12 9.5c-1.3 1.6-2.1 2.8-2.1 4.2a2.1 2.1 0 0 0 4.2 0c0-1.4-0.8-2.6-2.1-4.2z" fill="url(#flameInner)" />
+    </g>
+  </g>
+
+  <!-- Title & Eyebrow Text -->
+  <g transform="translate(56, 12)">
+    <text x="0" y="11" fill="#60A5FA" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" letter-spacing="1.2">FEATURED ON</text>
+    <text x="0" y="27" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16.5" font-weight="800" letter-spacing="-0.3">Kıstas</text>
+  </g>
+
+  <!-- Upvote Live Counter Pill (Glass Pill) -->
+  <g transform="translate(178, 13)">
+    <rect width="60" height="28" rx="9" fill="rgba(255, 255, 255, 0.08)" stroke="rgba(255, 255, 255, 0.16)" stroke-width="1" />
+    <path d="M7 16.5 L12 9.5 L17 16.5 Z" fill="#3B82F6" />
+    <text x="35" y="18.5" text-anchor="middle" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="800" letter-spacing="-0.2">▲ OY</text>
+  </g>
 </svg>

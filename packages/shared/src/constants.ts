@@ -35,6 +35,14 @@ export const APP_STORE_CATEGORY_SLUGS = [
 ] as const;
 
 /**
+ * Kategori slug'ının platformun geçerli 38 kategorisinden biri olduğunu doğrular.
+ */
+export function isValidCategorySlug(slug?: string | null): boolean {
+  if (!slug || typeof slug !== 'string') return false;
+  return (APP_STORE_CATEGORY_SLUGS as readonly string[]).includes(slug.trim());
+}
+
+/**
  * Kıstas marka adı ve varyasyonlarının (leetspeak, noktalama, Türkçe karakter vb.)
  * yetkisiz kullanıcılar tarafından profil ismi olarak kullanılmasını engeller.
  */

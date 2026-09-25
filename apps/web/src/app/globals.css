@@ -66,7 +66,7 @@ body.k-messages-open {
 
 .k-messages-root {
   position: fixed;
-  top: 0;
+  top: var(--k-messages-vtop, 0px);
   right: 0;
   left: 0;
   z-index: 2147483000;
@@ -1995,16 +1995,19 @@ body.k-category-picker-open .kdn-shell {
   justify-content: center;
   gap: 3px;
   padding: 6px 10px;
-  border: 0.5px solid rgba(52, 211, 153, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
-  background: rgba(16, 185, 129, 0.13);
-  color: #34d399;
+  background: linear-gradient(145deg, rgba(255,255,255,.12), rgba(9,19,38,.58));
+  color: #dbeafe;
   font-size: 12px;
   font-weight: 800;
   backdrop-filter: blur(16px) saturate(170%);
   -webkit-backdrop-filter: blur(16px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 5px 16px rgba(0,0,0,.28), 0 0 18px rgba(59,130,246,.12);
 }
-.ios-project-support-locked { border-color: rgba(255,255,255,.1); background: rgba(255,255,255,.06); color: #94a3b8; }
+.ios-project-support svg { color: #60a5fa; filter: drop-shadow(0 0 6px rgba(96,165,250,.45)); }
+.ios-project-support-locked { border-color: rgba(255,255,255,.1); background: rgba(9,19,38,.38); color: #94a3b8; box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+.ios-project-support-locked svg { color: #94a3b8; filter: none; }
 .ios-project-chevron { color: #68778d; transition: color .2s ease, transform .2s ease; }
 .ios-project-row:hover .ios-project-chevron { color: #60a5fa; transform: translateX(2px); }
 .ios-project-separator { position: absolute; right: 13px; bottom: 0; left: 99px; height: 0.5px; background: rgba(255,255,255,.09); }
@@ -2322,4 +2325,79 @@ body.k-category-picker-open .kdn-shell {
 
 @media (max-width: 360px) {
   .crd-f3d-card { width: 260px; height: 380px; }
+}
+
+/* Legacy Expo loading overlay, ported without the former dark glass backdrop. */
+.kistas-route-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background: transparent;
+  pointer-events: none;
+  user-select: none;
+  touch-action: none;
+}
+
+.kistas-route-loader__wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+}
+
+.kistas-route-loader__aura {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(50, 105, 199, 0.35) 0%,
+    rgba(96, 165, 250, 0.14) 48%,
+    transparent 72%
+  );
+  animation: kistas-route-loader-aura 2.2s ease-in-out infinite alternate;
+}
+
+.kistas-route-loader__logo {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 4px 14px rgba(50, 105, 199, 0.38));
+  animation: kistas-route-loader-breath 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
+}
+
+@keyframes kistas-route-loader-breath {
+  from {
+    transform: scale(0.93);
+    opacity: 0.88;
+  }
+  to {
+    transform: scale(1.07);
+    opacity: 1;
+  }
+}
+
+@keyframes kistas-route-loader-aura {
+  from {
+    transform: scale(0.75);
+    opacity: 0.3;
+  }
+  to {
+    transform: scale(1.3);
+    opacity: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kistas-route-loader__aura,
+  .kistas-route-loader__logo {
+    animation: none;
+  }
 }

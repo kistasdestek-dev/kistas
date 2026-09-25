@@ -32,11 +32,15 @@ import {
 import { ProjectStatus } from '../../listings/domain/Listing';
 import { ChatService } from '../../chat/application/ChatService';
 import { Conversation } from '../../chat/domain/Chat';
-import { BlogPost, BLOG_CATEGORIES, generateSlug } from '../../blog/domain/BlogPost';
+import { BlogPost } from '../../blog/domain/BlogPost';
 import { BlogService } from '../../blog/application/BlogService';
 import { CategoryService, Category } from '../../categories/application/CategoryService';
 import { ThreatIntelligenceView } from './ThreatIntelligenceView';
 import { kistasStyle } from '../../../core/theme';
+import { AdminBlogModal } from './modals/AdminBlogModal';
+import { AdminSupportModals } from './modals/AdminSupportModals';
+import { AdminPermissionModal } from './modals/AdminPermissionModal';
+import { AdminProjectModals } from './modals/AdminProjectModals';
 
 interface AdminDashboardScreenProps {
   onBack: () => void;
@@ -189,33 +193,21 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
   const [editingBlogPost, setEditingBlogPost] = useState<BlogPost | null>(null);
-  const [blogFormTitle, setBlogFormTitle] = useState('');
-  const [blogFormSlug, setBlogFormSlug] = useState('');
-  const [blogFormExcerpt, setBlogFormExcerpt] = useState('');
-  const [blogFormContent, setBlogFormContent] = useState('');
-  const [blogFormCover, setBlogFormCover] = useState('');
-  const [blogFormCategory, setBlogFormCategory] = useState('Girişimcilik');
-  const [blogFormPublished, setBlogFormPublished] = useState(true);
-  const [isSavingBlog, setIsSavingBlog] = useState(false);
   const [deleteBlogTarget, setDeleteBlogTarget] = useState<BlogPost | null>(null);
-  const [isDeletingBlog, setIsDeletingBlog] = useState(false);
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryModalTarget, setCategoryModalTarget] = useState<AdminListingItem | null>(null);
-  const [selectedNewCategoryId, setSelectedNewCategoryId] = useState<string | null>(null);
-  const [isUpdatingCategory, setIsUpdatingCategory] = useState(false);
-  const [categoryModalError, setCategoryModalError] = useState<string | null>(null);
-  const [categorySearchQuery, setCategorySearchQuery] = useState('');
-  const [categorySegment, setCategorySegment] = useState<'all' | 'game' | 'app'>('all');
   const [supportModalTarget, setSupportModalTarget] = useState<AdminListingItem | null>(null);
-  const [supportAmount, setSupportAmount] = useState<number>(1);
-  const [customSupportInput, setCustomSupportInput] = useState<string>('');
-  const [isGrantingSupport, setIsGrantingSupport] = useState<boolean>(false);
-  const [supportModalError, setSupportModalError] = useState<string | null>(null);
   const [viewModalTarget, setViewModalTarget] = useState<AdminListingItem | null>(null);
-  const [viewAmount, setViewAmount] = useState<number>(50);
-  const [customViewInput, setCustomViewInput] = useState<string>('');
-  const [isGrantingViews, setIsGrantingViews] = useState<boolean>(false);
-  const [viewModalError, setViewModalError] = useState<string | null>(null);
+  const [revisionTarget, setRevisionTarget] = useState<AdminListingItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminListingItem | null>(null);
+
+  const [supportCloseTarget, setSupportCloseTarget] = useState<Conversation | null>(null);
+  const [supportClearTarget, setSupportClearTarget] = useState<Conversation | null>(null);
+
+  const [adminAccess, setAdminAccess] = useState<AdminAccess | null>(null);
+  const [permissionTarget, setPermissionTarget] = useState<AdminUserSummary | null>(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [listingFilter, setListingFilter] = useState<AdminListingFilter>('all');
   const [sponsorView, setSponsorView] = useState<SponsorView>('active');
@@ -223,23 +215,6 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [successDialog, setSuccessDialog] = useState<SuccessDialog | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<AdminListingItem | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [revisionTarget, setRevisionTarget] = useState<AdminListingItem | null>(null);
-  const [revisionFeedback, setRevisionFeedback] = useState('');
-  const [revisionError, setRevisionError] = useState<string | null>(null);
-  const [isRequestingRevision, setIsRequestingRevision] = useState(false);
-  const [supportCloseTarget, setSupportCloseTarget] = useState<Conversation | null>(null);
-  const [isClosingSupportConversation, setIsClosingSupportConversation] = useState(false);
-  const [supportCloseError, setSupportCloseError] = useState<string | null>(null);
-  const [supportClearTarget, setSupportClearTarget] = useState<Conversation | null>(null);
-  const [isClearingSupportMessages, setIsClearingSupportMessages] = useState(false);
-  const [supportClearError, setSupportClearError] = useState<string | null>(null);
-  const [adminAccess, setAdminAccess] = useState<AdminAccess | null>(null);
-  const [permissionTarget, setPermissionTarget] = useState<AdminUserSummary | null>(null);
-  const [selectedPermissions, setSelectedPermissions] = useState<AdminPermission[]>([]);
-  const [isSavingPermissions, setIsSavingPermissions] = useState(false);
-  const [permissionError, setPermissionError] = useState<string | null>(null);
   const dialogTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const successDialogProgress = useRef(new Animated.Value(0)).current;
 
@@ -367,52 +342,6 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
 
   const openRevisionDialog = (project: AdminListingItem) => {
     setRevisionTarget(project);
-    setRevisionFeedback('');
-    setRevisionError(null);
-  };
-
-  const closeRevisionDialog = () => {
-    if (isRequestingRevision) return;
-    setRevisionTarget(null);
-    setRevisionFeedback('');
-    setRevisionError(null);
-  };
-
-  const confirmRevisionRequest = async () => {
-    if (!revisionTarget || isRequestingRevision) return;
-    const feedback = revisionFeedback.trim();
-    if (feedback.length < 10) {
-      setRevisionError('Lütfen kullanıcıya yol gösterecek en az 10 karakterlik bir açıklama yazın.');
-      return;
-    }
-    setIsRequestingRevision(true);
-    setRevisionError(null);
-    const project = revisionTarget;
-    const result = await AdminService.requestListingRevision(project.id, feedback);
-    setIsRequestingRevision(false);
-    if (!result.success) {
-      setRevisionError(result.error || 'Düzeltme talebi gönderilemedi.');
-      return;
-    }
-    setRevisionTarget(null);
-    setRevisionFeedback('');
-    showSuccessDialog(`“${project.title}” düzeltme için geliştiriciye gönderildi.`, 'construct-outline');
-    loadData();
-  };
-
-  const confirmDeleteListing = async () => {
-    if (!deleteTarget || isDeleting) return;
-    const project = deleteTarget;
-    setIsDeleting(true);
-    const result = await AdminService.deleteListing(project.id);
-    setIsDeleting(false);
-    if (!result.success) {
-      Alert.alert('Proje silinemedi', result.error || 'İşlem sunucuda tamamlanamadı.');
-      return;
-    }
-    setDeleteTarget(null);
-    showSuccessDialog(`“${project.title}” kalıcı olarak silindi.`, 'trash-outline');
-    loadData();
   };
 
   const handleGrantCredits = async (user: AdminUserSummary, amount: number) => {
@@ -457,75 +386,14 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
   const openPermissionDialog = (user: AdminUserSummary) => {
     if (!adminAccess?.isOwner || user.isAdminOwner) return;
     setPermissionTarget(user);
-    setSelectedPermissions(user.adminPermissions);
-    setPermissionError(null);
-  };
-
-  const togglePermission = (permission: AdminPermission) => {
-    if (isSavingPermissions) return;
-    setSelectedPermissions((current) => current.includes(permission)
-      ? current.filter((item) => item !== permission)
-      : [...current, permission]);
-    setPermissionError(null);
-  };
-
-  const saveTeamPermissions = async () => {
-    if (!permissionTarget || !adminAccess?.isOwner || isSavingPermissions) return;
-    setIsSavingPermissions(true);
-    setPermissionError(null);
-    const result = await AdminService.setTeamMemberPermissions(permissionTarget.id, selectedPermissions);
-    setIsSavingPermissions(false);
-    if (!result.success) {
-      setPermissionError(result.error || 'Ekip yetkileri güncellenemedi.');
-      return;
-    }
-    const removed = selectedPermissions.length === 0;
-    setPermissionTarget(null);
-    showSuccessDialog(
-      removed ? `“${permissionTarget.fullName}” yönetim ekibinden çıkarıldı.` : `“${permissionTarget.fullName}” için görev yetkileri güncellendi.`,
-      removed ? 'person-remove-outline' : 'shield-checkmark-outline',
-    );
-    void loadData();
   };
 
   const handleCloseSupportConversation = (conversation: Conversation) => {
-    setSupportCloseError(null);
     setSupportCloseTarget(conversation);
   };
 
-  const confirmCloseSupportConversation = async () => {
-    if (!supportCloseTarget || isClosingSupportConversation) return;
-    setIsClosingSupportConversation(true);
-    setSupportCloseError(null);
-    const result = await ChatService.closeSupportConversation(supportCloseTarget.id);
-    setIsClosingSupportConversation(false);
-    if (!result.success) {
-      setSupportCloseError(result.error || 'Görüşme sonlandırılamadı.');
-      return;
-    }
-    setSupportCloseTarget(null);
-    showSuccessDialog('Destek görüşmesi sonlandırıldı ve arşivlendi.', 'checkmark-done-outline');
-    void loadData();
-  };
-
   const handleClearSupportMessages = (conversation: Conversation) => {
-    setSupportClearError(null);
     setSupportClearTarget(conversation);
-  };
-
-  const confirmClearSupportMessages = async () => {
-    if (!supportClearTarget || isClearingSupportMessages) return;
-    setIsClearingSupportMessages(true);
-    setSupportClearError(null);
-    const result = await ChatService.clearSupportMessages(supportClearTarget.id);
-    setIsClearingSupportMessages(false);
-    if (!result.success) {
-      setSupportClearError(result.error || 'Mesaj geçmişi temizlenemedi.');
-      return;
-    }
-    setSupportClearTarget(null);
-    showSuccessDialog(`${result.deletedCount || 0} mesaj kalıcı olarak silindi.`, 'trash-outline');
-    void loadData();
   };
 
   const categoryMap = useMemo(() => {
@@ -534,165 +402,16 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
     return map;
   }, [categories]);
 
-  const filteredModalCategories = useMemo(() => {
-    const q = categorySearchQuery.trim().toLocaleLowerCase('tr-TR');
-    return categories.filter((cat) => {
-      if (categorySegment === 'game' && !cat.slug.startsWith('game-')) return false;
-      if (categorySegment === 'app' && !cat.slug.startsWith('app-')) return false;
-      if (!q) return true;
-      return (
-        cat.name.toLocaleLowerCase('tr-TR').includes(q) ||
-        cat.slug.toLocaleLowerCase('tr-TR').includes(q)
-      );
-    });
-  }, [categories, categorySearchQuery, categorySegment]);
-
   const handleOpenCategoryModal = (project: AdminListingItem) => {
     setCategoryModalTarget(project);
-    setSelectedNewCategoryId(project.categoryId || null);
-    setCategorySearchQuery('');
-    setCategoryModalError(null);
-    const currentCat = project.categoryId ? categoryMap.get(project.categoryId) : undefined;
-    if (currentCat?.slug.startsWith('game-')) {
-      setCategorySegment('game');
-    } else if (currentCat?.slug.startsWith('app-')) {
-      setCategorySegment('app');
-    } else {
-      setCategorySegment('all');
-    }
-  };
-
-  const handleSaveCategoryChange = async () => {
-    if (!categoryModalTarget) return;
-
-    if (!selectedNewCategoryId) {
-      setCategoryModalError('Lütfen projenin atanacağı yeni kategoriyi seçin.');
-      return;
-    }
-
-    if (selectedNewCategoryId === categoryModalTarget.categoryId) {
-      const currentCatName = categoryMap.get(selectedNewCategoryId)?.name || 'Mevcut Kategori';
-      setCategoryModalError(`Proje zaten “${currentCatName}” kategorisinde bulunuyor. Farklı bir kategori seçiniz.`);
-      return;
-    }
-
-    setCategoryModalError(null);
-    setIsUpdatingCategory(true);
-    try {
-      const result = await AdminService.updateListingCategory(
-        categoryModalTarget.id,
-        selectedNewCategoryId
-      );
-      if (!result.success) {
-        setCategoryModalError(result.error || 'Kategori güncellenemedi.');
-        return;
-      }
-      const newCategory = categoryMap.get(selectedNewCategoryId);
-      const categoryName = newCategory?.name || 'Yeni Kategori';
-      setListings((prev) =>
-        prev.map((p) =>
-          p.id === categoryModalTarget.id ? { ...p, categoryId: selectedNewCategoryId } : p
-        )
-      );
-      showSuccessDialog(
-        `“${categoryModalTarget.title}” projesinin kategorisi “${categoryName}” olarak güncellendi.`,
-        'checkmark-circle-outline'
-      );
-      setCategoryModalTarget(null);
-      void loadData();
-    } catch (err: any) {
-      setCategoryModalError(err?.message || 'Beklenmedik bir hata oluştu.');
-    } finally {
-      setIsUpdatingCategory(false);
-    }
   };
 
   const handleOpenSupportModal = (project: AdminListingItem) => {
     setSupportModalTarget(project);
-    setSupportAmount(1);
-    setCustomSupportInput('');
-    setSupportModalError(null);
-  };
-
-  const handleConfirmGrantSupport = async () => {
-    if (!supportModalTarget) return;
-    const finalAmount = customSupportInput ? parseInt(customSupportInput, 10) : supportAmount;
-    if (isNaN(finalAmount) || finalAmount <= 0) {
-      setSupportModalError('Lütfen geçerli bir destek miktarı girin (en az 1).');
-      return;
-    }
-    if (finalAmount > 100) {
-      setSupportModalError('Tek seferde en fazla 100 destek puanı tanımlanabilir.');
-      return;
-    }
-
-    setSupportModalError(null);
-    setIsGrantingSupport(true);
-    try {
-      const result = await AdminService.grantProjectSupport(supportModalTarget.id, finalAmount);
-      if (!result.success) {
-        setSupportModalError(result.error || 'Yönetim desteği tanımlanamadı.');
-        return;
-      }
-      const newCount = result.newUpvotesCount ?? (supportModalTarget.upvotesCount + finalAmount);
-      setListings((prev) =>
-        prev.map((p) => (p.id === supportModalTarget.id ? { ...p, upvotesCount: newCount, likesCount: newCount } : p))
-      );
-      showSuccessDialog(
-        `“${supportModalTarget.title}” projesine +${finalAmount} yönetim desteği eklendi. Güncel destek: ${newCount}`,
-        'rocket-outline'
-      );
-      setSupportModalTarget(null);
-      void loadData();
-    } catch (err: any) {
-      setSupportModalError(err?.message || 'Beklenmedik bir hata oluştu.');
-    } finally {
-      setIsGrantingSupport(false);
-    }
   };
 
   const handleOpenViewModal = (project: AdminListingItem) => {
     setViewModalTarget(project);
-    setViewAmount(50);
-    setCustomViewInput('');
-    setViewModalError(null);
-  };
-
-  const handleConfirmGrantViews = async () => {
-    if (!viewModalTarget) return;
-    const finalAmount = customViewInput ? parseInt(customViewInput, 10) : viewAmount;
-    if (isNaN(finalAmount) || finalAmount <= 0) {
-      setViewModalError('Lütfen geçerli bir görünürlük miktarı girin (en az 1).');
-      return;
-    }
-    if (finalAmount > 100000) {
-      setViewModalError('Tek seferde en fazla 100.000 görünürlük tanımlanabilir.');
-      return;
-    }
-
-    setViewModalError(null);
-    setIsGrantingViews(true);
-    try {
-      const result = await AdminService.grantProjectViews(viewModalTarget.id, finalAmount);
-      if (!result.success) {
-        setViewModalError(result.error || 'Görünürlük tanımlanamadı.');
-        return;
-      }
-      const newCount = result.newViewCount ?? (viewModalTarget.viewCount + finalAmount);
-      setListings((prev) =>
-        prev.map((p) => (p.id === viewModalTarget.id ? { ...p, viewCount: newCount } : p))
-      );
-      showSuccessDialog(
-        `“${viewModalTarget.title}” projesine +${finalAmount} görünürlük eklendi. Güncel görünürlük: ${newCount}`,
-        'eye-outline'
-      );
-      setViewModalTarget(null);
-      void loadData();
-    } catch (err: any) {
-      setViewModalError(err?.message || 'Beklenmedik bir hata oluştu.');
-    } finally {
-      setIsGrantingViews(false);
-    }
   };
 
   const renderCategoryBadge = (project: AdminListingItem) => {
@@ -773,95 +492,15 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
   }, [blogPosts, searchQuery]);
 
   const handleOpenBlogModal = (postToEdit?: BlogPost) => {
-    if (postToEdit) {
-      setEditingBlogPost(postToEdit);
-      setBlogFormTitle(postToEdit.title);
-      setBlogFormSlug(postToEdit.slug);
-      setBlogFormExcerpt(postToEdit.excerpt);
-      setBlogFormContent(postToEdit.content);
-      setBlogFormCover(postToEdit.cover_image_url);
-      setBlogFormCategory(postToEdit.category);
-      setBlogFormPublished(postToEdit.is_published);
-    } else {
-      setEditingBlogPost(null);
-      setBlogFormTitle('');
-      setBlogFormSlug('');
-      setBlogFormExcerpt('');
-      setBlogFormContent('');
-      setBlogFormCover('https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1200&auto=format&fit=crop');
-      setBlogFormCategory('Girişimcilik');
-      setBlogFormPublished(true);
-    }
+    setEditingBlogPost(postToEdit || null);
     setIsBlogModalOpen(true);
-  };
-
-  const handleSaveBlogPost = async () => {
-    if (!blogFormTitle.trim()) {
-      Alert.alert('Eksik Alan', 'Lütfen bir başlık girin.');
-      return;
-    }
-    if (!blogFormExcerpt.trim()) {
-      Alert.alert('Eksik Alan', 'Lütfen kısa bir özet girin (Google arama sonucu için gereklidir).');
-      return;
-    }
-    if (!blogFormContent.trim()) {
-      Alert.alert('Eksik Alan', 'Lütfen yazı içeriğini girin.');
-      return;
-    }
-
-    setIsSavingBlog(true);
-    try {
-      if (editingBlogPost) {
-        await BlogService.updatePost(editingBlogPost.id, {
-          title: blogFormTitle.trim(),
-          slug: blogFormSlug ? generateSlug(blogFormSlug) : generateSlug(blogFormTitle),
-          excerpt: blogFormExcerpt.trim(),
-          content: blogFormContent,
-          cover_image_url: blogFormCover.trim(),
-          category: blogFormCategory,
-          is_published: blogFormPublished,
-        });
-        showSuccessDialog('Blog yazısı başarıyla güncellendi.', 'checkmark-circle-outline');
-      } else {
-        await BlogService.createPost({
-          title: blogFormTitle.trim(),
-          custom_slug: blogFormSlug ? generateSlug(blogFormSlug) : undefined,
-          excerpt: blogFormExcerpt.trim(),
-          content: blogFormContent,
-          cover_image_url: blogFormCover.trim(),
-          category: blogFormCategory,
-          is_published: blogFormPublished,
-        });
-        showSuccessDialog('Yeni blog yazısı yayınlandı.', 'newspaper-outline');
-      }
-      setIsBlogModalOpen(false);
-      const updatedPosts = await BlogService.getAllPostsAdmin();
-      setBlogPosts(updatedPosts);
-    } catch {
-      Alert.alert('Hata', 'Yazı kaydedilirken bir sorun oluştu.');
-    } finally {
-      setIsSavingBlog(false);
-    }
   };
 
   const handleTogglePublishBlog = async (post: BlogPost) => {
     const nextState = !post.is_published;
     await BlogService.togglePublish(post.id, nextState);
-    setBlogPosts(prev => prev.map(p => p.id === post.id ? { ...p, is_published: nextState } : p));
+    setBlogPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, is_published: nextState } : p)));
     showSuccessDialog(nextState ? 'Yazı yayına alındı.' : 'Yazı taslağa çekildi.', nextState ? 'eye-outline' : 'eye-off-outline');
-  };
-
-  const handleConfirmDeleteBlog = async () => {
-    if (!deleteBlogTarget) return;
-    setIsDeletingBlog(true);
-    try {
-      await BlogService.deletePost(deleteBlogTarget.id);
-      setBlogPosts(prev => prev.filter(p => p.id !== deleteBlogTarget.id));
-      setDeleteBlogTarget(null);
-      showSuccessDialog('Blog yazısı başarıyla silindi.', 'trash-outline');
-    } finally {
-      setIsDeletingBlog(false);
-    }
   };
 
   const unreadSupportCount = useMemo(
@@ -1520,248 +1159,62 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
       </ScrollView>
       </View>
 
-      <Modal
-        visible={Boolean(permissionTarget)}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => !isSavingPermissions && setPermissionTarget(null)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View accessibilityRole="alert" style={styles.permissionDialog}>
-            <LinearGradient colors={['#173B72', '#3269C7', '#4F87DF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.dialogHero}>
-              <View style={styles.dialogHeroGlow} />
-              <View style={styles.dialogHeroIcon}><Ionicons name="shield-checkmark-outline" size={27} color="#FFFFFF" /></View>
-              <View style={styles.dialogHeroCopy}>
-                <Text style={styles.dialogHeroEyebrow}>EKİP YETKİLERİ</Text>
-                <Text style={styles.dialogHeroTitle}>Görev alanlarını seçin</Text>
-              </View>
-            </LinearGradient>
-            <View style={styles.dialogBody}>
-              <Text style={styles.permissionUserName} numberOfLines={1}>{permissionTarget?.fullName}</Text>
-              <Text style={styles.permissionHelper}>Yalnızca seçtiğiniz alanlar yönetim panelinde görünür ve sunucu tarafından izinli olur.</Text>
-              <View style={styles.permissionOptions}>
-                {ADMIN_PERMISSION_OPTIONS.map((option) => {
-                  const selected = selectedPermissions.includes(option.key);
-                  return (
-                    <TouchableOpacity
-                      key={option.key}
-                      style={[styles.permissionOption, selected && styles.permissionOptionSelected]}
-                      onPress={() => togglePermission(option.key)}
-                      disabled={isSavingPermissions}
-                      activeOpacity={0.74}
-                      accessibilityRole="checkbox"
-                      accessibilityState={{ checked: selected }}
-                    >
-                      <GlassIconButton icon={option.icon} iconSize={18} size={40} active={selected} />
-                      <View style={styles.permissionOptionCopy}>
-                        <Text style={styles.permissionOptionTitle}>{option.title}</Text>
-                        <Text style={styles.permissionOptionDescription}>{option.description}</Text>
-                      </View>
-                      <View style={[styles.permissionCheck, selected && styles.permissionCheckSelected]}>
-                        {selected ? <Ionicons name="checkmark" size={14} color="#FFFFFF" /> : null}
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-              {permissionError ? <Text style={styles.supportDialogError}>{permissionError}</Text> : null}
-              <Text style={styles.permissionRemoveHint}>Tüm seçimleri kaldırıp kaydetmek, kullanıcıyı yönetim ekibinden çıkarır.</Text>
-              <View style={styles.dialogActions}>
-                <TouchableOpacity style={styles.dialogSecondaryButton} onPress={() => setPermissionTarget(null)} disabled={isSavingPermissions} activeOpacity={0.75}>
-                  <Text style={styles.dialogSecondaryText}>Vazgeç</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.dialogPrimaryButton, styles.supportCloseConfirmButton]} onPress={() => { void saveTeamPermissions(); }} disabled={isSavingPermissions} activeOpacity={0.75}>
-                  {isSavingPermissions ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Ionicons name="shield-checkmark-outline" size={17} color="#FFFFFF" />}
-                  <Text style={styles.supportCloseConfirmText}>{isSavingPermissions ? 'Kaydediliyor' : 'Yetkileri Kaydet'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <AdminPermissionModal
+        target={permissionTarget}
+        isOwner={Boolean(adminAccess?.isOwner)}
+        onClose={() => setPermissionTarget(null)}
+        onSuccess={(msg, icon) => {
+          showSuccessDialog(msg, icon);
+          void loadData();
+        }}
+      />
 
-      <Modal
-        visible={Boolean(supportCloseTarget)}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => !isClosingSupportConversation && setSupportCloseTarget(null)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View accessibilityRole="alert" style={styles.commandDialog}>
-            <LinearGradient colors={['#173B72', '#3269C7', '#4F87DF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.dialogHero}>
-              <View style={styles.dialogHeroGlow} />
-              <View style={styles.dialogHeroIcon}><Ionicons name="checkmark-done-outline" size={27} color="#FFFFFF" /></View>
-              <View style={styles.dialogHeroCopy}>
-                <Text style={styles.dialogHeroEyebrow}>CANLI DESTEK</Text>
-                <Text style={styles.dialogHeroTitle}>Sohbeti sonlandır?</Text>
-              </View>
-            </LinearGradient>
-            <View style={styles.dialogBody}>
-              <Text style={styles.supportDialogParty} numberOfLines={1}>{supportCloseTarget?.otherParty?.fullName || 'Kıstas Üyesi'}</Text>
-              <Text style={styles.supportDialogMessage}>Görüşme arşivlenecek ve kullanıcı bu talebe artık mesaj gönderemeyecek. Yeni talebi ayrı bir görüşme olarak açılacaktır.</Text>
-              {supportCloseError ? <Text style={styles.supportDialogError}>{supportCloseError}</Text> : null}
-              <View style={styles.dialogActions}>
-                <TouchableOpacity style={styles.dialogSecondaryButton} onPress={() => setSupportCloseTarget(null)} disabled={isClosingSupportConversation} activeOpacity={0.75}>
-                  <Text style={styles.dialogSecondaryText}>Vazgeç</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.dialogPrimaryButton, styles.supportCloseConfirmButton]} onPress={() => { void confirmCloseSupportConversation(); }} disabled={isClosingSupportConversation} activeOpacity={0.75}>
-                  {isClosingSupportConversation ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Ionicons name="checkmark-done-outline" size={17} color="#FFFFFF" />}
-                  <Text style={styles.supportCloseConfirmText}>{isClosingSupportConversation ? 'Sonlandırılıyor' : 'Sohbeti Sonlandır'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <AdminSupportModals
+        closeTarget={supportCloseTarget}
+        clearTarget={supportClearTarget}
+        onCancelClose={() => setSupportCloseTarget(null)}
+        onCancelClear={() => setSupportClearTarget(null)}
+        onSuccess={(msg, icon) => {
+          showSuccessDialog(msg, icon);
+          void loadData();
+        }}
+      />
 
-      <Modal
-        visible={Boolean(supportClearTarget)}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => !isClearingSupportMessages && setSupportClearTarget(null)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View accessibilityRole="alert" style={styles.commandDialog}>
-            <LinearGradient colors={['#70263A', '#A9334E', '#C75770']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.dialogHero}>
-              <View style={styles.dialogHeroGlow} />
-              <View style={styles.dialogHeroIcon}><Ionicons name="trash-outline" size={27} color="#FFFFFF" /></View>
-              <View style={styles.dialogHeroCopy}>
-                <Text style={styles.dialogHeroEyebrow}>DESTEK ARŞİVİ</Text>
-                <Text style={styles.dialogHeroTitle}>Mesajları sil?</Text>
-              </View>
-            </LinearGradient>
-            <View style={styles.dialogBody}>
-              <Text style={styles.supportDialogParty} numberOfLines={1}>{supportClearTarget?.otherParty?.fullName || 'Kıstas Üyesi'}</Text>
-              <Text style={styles.supportDialogMessage}>Bu görüşmedeki tüm mesajlar kalıcı olarak silinecek. Sonlandırılan görüşme kaydı destek taleplerinde görünmeye devam edecektir.</Text>
-              {supportClearError ? <Text style={styles.supportDialogError}>{supportClearError}</Text> : null}
-              <View style={styles.dialogActions}>
-                <TouchableOpacity style={styles.dialogSecondaryButton} onPress={() => setSupportClearTarget(null)} disabled={isClearingSupportMessages} activeOpacity={0.75}>
-                  <Text style={styles.dialogSecondaryText}>Vazgeç</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.dialogPrimaryButton, styles.dialogDeleteButton]} onPress={() => { void confirmClearSupportMessages(); }} disabled={isClearingSupportMessages} activeOpacity={0.75}>
-                  {isClearingSupportMessages ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Ionicons name="trash-outline" size={17} color="#FFFFFF" />}
-                  <Text style={styles.dialogDeleteText}>{isClearingSupportMessages ? 'Siliniyor' : 'Mesajları Sil'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <AdminProjectModals
+        categoryTarget={categoryModalTarget}
+        categories={categories}
+        onCloseCategory={() => setCategoryModalTarget(null)}
+        supportTarget={supportModalTarget}
+        onCloseSupport={() => setSupportModalTarget(null)}
+        viewsTarget={viewModalTarget}
+        onCloseViews={() => setViewModalTarget(null)}
+        revisionTarget={revisionTarget}
+        onCloseRevision={() => setRevisionTarget(null)}
+        deleteTarget={deleteTarget}
+        onCloseDelete={() => setDeleteTarget(null)}
+        onSuccess={showSuccessDialog}
+        onRefresh={loadData}
+      />
 
-      <Modal
-        visible={Boolean(revisionTarget)}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={closeRevisionDialog}
-      >
-        <View style={styles.modalBackdrop}>
-          <View accessibilityRole="alert" style={styles.commandDialog}>
-            <LinearGradient colors={['#76510D', '#B98916', '#D8A52A']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.dialogHero}>
-              <View style={styles.dialogHeroGlow} />
-              <View style={styles.dialogHeroIcon}>
-                <Ionicons name="construct-outline" size={27} color="#FFFFFF" />
-              </View>
-              <View style={styles.dialogHeroCopy}>
-                <Text style={styles.dialogHeroEyebrow}>PROJE İNCELEMESİ</Text>
-                <Text style={styles.dialogHeroTitle}>Düzeltme isteyin</Text>
-              </View>
-              <View style={styles.dialogStepBadge}><Ionicons name="create-outline" size={15} color="#FFFFFF" /></View>
-            </LinearGradient>
-            <View style={styles.dialogBody}>
-              <Text style={styles.revisionProjectName} numberOfLines={1}>{revisionTarget?.title}</Text>
-              <Text style={styles.revisionHelper}>Eksik veya geliştirilmesi gereken noktaları açıkça belirtin. Bu not kullanıcının bildirimlerine gönderilecektir.</Text>
-              <View style={[styles.revisionInputShell, revisionError ? styles.revisionInputShellError : null]}>
-                <TextInput
-                  value={revisionFeedback}
-                  onChangeText={(value) => {
-                    setRevisionFeedback(value);
-                    if (revisionError) setRevisionError(null);
-                  }}
-                  placeholder="Örn. Logo çözünürlüğünü yükseltin ve en az üç vitrin görseli ekleyin."
-                  placeholderTextColor="#9A958A"
-                  multiline
-                  maxLength={1200}
-                  textAlignVertical="top"
-                  style={styles.revisionInput}
-                  editable={!isRequestingRevision}
-                  autoFocus={Platform.OS === 'web'}
-                />
-                <Text style={styles.revisionCounter}>{revisionFeedback.trim().length}/1200</Text>
-              </View>
-              {revisionError ? (
-                <View style={styles.revisionErrorRow}>
-                  <Ionicons name="alert-circle-outline" size={15} color="#A9334E" />
-                  <Text style={styles.revisionErrorText}>{revisionError}</Text>
-                </View>
-              ) : null}
-              <View style={styles.dialogActions}>
-                <TouchableOpacity style={styles.dialogSecondaryButton} onPress={closeRevisionDialog} disabled={isRequestingRevision} activeOpacity={0.75}>
-                  <Text style={styles.dialogSecondaryText}>Vazgeç</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.dialogPrimaryButton, styles.revisionSubmitButton]} onPress={confirmRevisionRequest} disabled={isRequestingRevision} activeOpacity={0.75}>
-                  {isRequestingRevision ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Ionicons name="send-outline" size={17} color="#FFFFFF" />}
-                  <Text style={styles.revisionSubmitText}>{isRequestingRevision ? 'Gönderiliyor' : 'Kullanıcıya Gönder'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        visible={Boolean(deleteTarget)}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => !isDeleting && setDeleteTarget(null)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View accessibilityRole="alert" style={styles.commandDialog}>
-            <LinearGradient colors={['#7E263C', '#B83D57', '#D96772']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.dialogHero}>
-              <View style={styles.dialogHeroGlow} />
-              <View style={styles.dialogHeroIcon}>
-                <Ionicons name="trash-outline" size={27} color="#FFFFFF" />
-              </View>
-              <View style={styles.dialogHeroCopy}>
-                <Text style={styles.dialogHeroEyebrow}>KALICI İŞLEM</Text>
-                <Text style={styles.dialogHeroTitle}>Projeyi sil?</Text>
-              </View>
-              <View style={styles.dialogStepBadge}><Ionicons name="alert" size={15} color="#FFFFFF" /></View>
-            </LinearGradient>
-            <View style={styles.dialogBody}>
-              <View style={styles.dialogNotice}>
-                <View style={styles.dialogNoticeMark}><Ionicons name="alert" size={14} color="#B83D57" /></View>
-                <Text style={styles.dialogMessage}>
-                  {deleteTarget ? `“${deleteTarget.title}” kalıcı olarak silinecek. Bu işlem geri alınamaz.` : ''}
-                </Text>
-              </View>
-              <View style={styles.dialogActions}>
-                <TouchableOpacity
-                  style={styles.dialogSecondaryButton}
-                  onPress={() => setDeleteTarget(null)}
-                  disabled={isDeleting}
-                  activeOpacity={0.75}
-                >
-                  <Text style={styles.dialogSecondaryText}>Vazgeç</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.dialogPrimaryButton, styles.dialogDeleteButton]}
-                  onPress={confirmDeleteListing}
-                  disabled={isDeleting}
-                  activeOpacity={0.75}
-                >
-                  {isDeleting ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Ionicons name="trash-outline" size={17} color="#FFFFFF" />}
-                  <Text style={styles.dialogDeleteText}>{isDeleting ? 'Siliniyor' : 'Kalıcı Olarak Sil'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <AdminBlogModal
+        isOpen={isBlogModalOpen}
+        editingPost={editingBlogPost}
+        deleteTarget={deleteBlogTarget}
+        onClose={() => {
+          setIsBlogModalOpen(false);
+          setEditingBlogPost(null);
+        }}
+        onSaved={(msg, icon) => {
+          showSuccessDialog(msg, icon);
+          void BlogService.getAllPostsAdmin().then(setBlogPosts);
+        }}
+        onDeleted={(msg, icon) => {
+          showSuccessDialog(msg, icon);
+          setBlogPosts((prev) => prev.filter((p) => p.id !== deleteBlogTarget?.id));
+          setDeleteBlogTarget(null);
+        }}
+        onCancelDelete={() => setDeleteBlogTarget(null)}
+      />
 
       <Modal
         visible={Boolean(successDialog)}
@@ -1819,848 +1272,6 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({ onBa
             </View>
             <LinearGradient colors={['#3269C7', '#91B3A6', '#187657']} style={styles.successAccentLine} />
           </Animated.View>
-        </View>
-      </Modal>
-
-      {/* Blog Delete Confirmation Modal */}
-      <Modal
-        visible={Boolean(deleteBlogTarget)}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => !isDeletingBlog && setDeleteBlogTarget(null)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View accessibilityRole="alert" style={styles.commandDialog}>
-            <LinearGradient colors={['#7E263C', '#B83D57', '#D96772']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.dialogHero}>
-              <View style={styles.dialogHeroGlow} />
-              <View style={styles.dialogHeroIcon}>
-                <Ionicons name="trash-outline" size={27} color="#FFFFFF" />
-              </View>
-              <View style={styles.dialogHeroCopy}>
-                <Text style={styles.dialogHeroEyebrow}>KALICI İŞLEM</Text>
-                <Text style={styles.dialogHeroTitle}>Makaleyi sil?</Text>
-              </View>
-              <View style={styles.dialogStepBadge}><Ionicons name="alert" size={15} color="#FFFFFF" /></View>
-            </LinearGradient>
-            <View style={styles.dialogBody}>
-              <View style={styles.dialogNotice}>
-                <View style={styles.dialogNoticeMark}><Ionicons name="alert" size={14} color="#B83D57" /></View>
-                <Text style={styles.dialogMessage}>
-                  {deleteBlogTarget ? `“${deleteBlogTarget.title}” başlıklı blog yazısı silinecek. Bu işlem geri alınamaz.` : ''}
-                </Text>
-              </View>
-              <View style={styles.dialogActions}>
-                <TouchableOpacity
-                  style={styles.dialogSecondaryButton}
-                  onPress={() => setDeleteBlogTarget(null)}
-                  disabled={isDeletingBlog}
-                  activeOpacity={0.75}
-                >
-                  <Text style={styles.dialogSecondaryText}>Vazgeç</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.dialogPrimaryButton, styles.dialogDeleteButton]}
-                  onPress={handleConfirmDeleteBlog}
-                  disabled={isDeletingBlog}
-                  activeOpacity={0.75}
-                >
-                  {isDeletingBlog ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Ionicons name="trash-outline" size={17} color="#FFFFFF" />}
-                  <Text style={styles.dialogDeleteText}>{isDeletingBlog ? 'Siliniyor' : 'Kalıcı Olarak Sil'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Blog Editor Modal */}
-      <Modal
-        visible={isBlogModalOpen}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => !isSavingBlog && setIsBlogModalOpen(false)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.blogModalBox}>
-            <View style={styles.blogModalHeader}>
-              <View>
-                <Text style={styles.dialogEyebrow}>KISTAS SEO İÇERİK EDİTÖRÜ</Text>
-                <Text style={styles.blogModalHeaderTitle}>
-                  {editingBlogPost ? 'Makaleyi Düzenle' : 'Yeni Blog Makalesi'}
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.blogModalCloseBtn}
-                onPress={() => setIsBlogModalOpen(false)}
-                disabled={isSavingBlog}
-              >
-                <Ionicons name="close" size={20} color="#25364E" />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.blogModalScroll} contentContainerStyle={styles.blogModalScrollContent} showsVerticalScrollIndicator={false}>
-              {/* Title */}
-              <View style={styles.blogInputGroup}>
-                <Text style={styles.blogInputLabel}>Makale Başlığı (H1 / Title)</Text>
-                <TextInput
-                  style={styles.blogTextInput}
-                  value={blogFormTitle}
-                  onChangeText={(val) => {
-                    setBlogFormTitle(val);
-                    if (!editingBlogPost && (!blogFormSlug || blogFormSlug === generateSlug(blogFormTitle))) {
-                      setBlogFormSlug(generateSlug(val));
-                    }
-                  }}
-                  placeholder="Örn: 2026'da SaaS Girişimi Başlatırken Dikkat Edilmesi Gerekenler"
-                  placeholderTextColor="#908c9f"
-                />
-              </View>
-
-              {/* Slug */}
-              <View style={styles.blogInputGroup}>
-                <View style={styles.blogLabelRow}>
-                  <Text style={styles.blogInputLabel}>SEO URL Bağlantısı (Slug)</Text>
-                  <Text style={styles.blogHelperHint}>www.kistas.com.tr/blog/{blogFormSlug || '...'}</Text>
-                </View>
-                <TextInput
-                  style={styles.blogTextInput}
-                  value={blogFormSlug}
-                  onChangeText={(val) => setBlogFormSlug(generateSlug(val))}
-                  placeholder="saas-girisimi-baslatirken-dikkat-edilmesi-gerekenler"
-                  placeholderTextColor="#908c9f"
-                  autoCapitalize="none"
-                />
-              </View>
-
-              {/* Category */}
-              <View style={styles.blogInputGroup}>
-                <Text style={styles.blogInputLabel}>Kategori</Text>
-                <View style={styles.blogCategoryPills}>
-                  {BLOG_CATEGORIES.map((cat) => {
-                    const isSelected = blogFormCategory === cat;
-                    return (
-                      <TouchableOpacity
-                        key={cat}
-                        style={[styles.blogCategorySelectPill, isSelected && styles.blogCategorySelectPillActive]}
-                        onPress={() => setBlogFormCategory(cat)}
-                        activeOpacity={0.8}
-                      >
-                        <Text style={[styles.blogCategorySelectPillText, isSelected && styles.blogCategorySelectPillTextActive]}>
-                          {cat}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-
-              {/* Excerpt / Meta Description */}
-              <View style={styles.blogInputGroup}>
-                <View style={styles.blogLabelRow}>
-                  <Text style={styles.blogInputLabel}>Meta Açıklaması & Özet (Google Snippet)</Text>
-                  <Text style={[
-                    styles.blogCharCount,
-                    blogFormExcerpt.length >= 120 && blogFormExcerpt.length <= 160 && styles.blogCharCountOptimal
-                  ]}>
-                    {blogFormExcerpt.length}/160 karakter
-                  </Text>
-                </View>
-                <TextInput
-                  style={[styles.blogTextInput, styles.blogTextAreaSmall]}
-                  value={blogFormExcerpt}
-                  onChangeText={setBlogFormExcerpt}
-                  placeholder="Google arama sonuçlarında görünecek 120-160 karakterlik özet metin..."
-                  placeholderTextColor="#908c9f"
-                  multiline
-                  maxLength={250}
-                />
-              </View>
-
-              {/* Cover Image URL */}
-              <View style={styles.blogInputGroup}>
-                <Text style={styles.blogInputLabel}>Kapak Görseli URL'si</Text>
-                <TextInput
-                  style={styles.blogTextInput}
-                  value={blogFormCover}
-                  onChangeText={setBlogFormCover}
-                  placeholder="https://images.unsplash.com/..."
-                  placeholderTextColor="#908c9f"
-                  autoCapitalize="none"
-                />
-                {blogFormCover ? (
-                  <View style={styles.blogCoverPreviewBox}>
-                    <Image source={{ uri: blogFormCover }} style={styles.blogCoverPreviewImg} resizeMode="cover" />
-                  </View>
-                ) : null}
-              </View>
-
-              {/* Content */}
-              <View style={styles.blogInputGroup}>
-                <View style={styles.blogLabelRow}>
-                  <Text style={styles.blogInputLabel}>Makale İçeriği (Markdown & Paragraflar)</Text>
-                  <Text style={styles.blogHelperHint}>## Alt Başlık, - Madde</Text>
-                </View>
-                <TextInput
-                  style={[styles.blogTextInput, styles.blogTextAreaContent]}
-                  value={blogFormContent}
-                  onChangeText={setBlogFormContent}
-                  placeholder="Makalenizi buraya yazın. Başlıklar için ##, listeler için - kullanabilirsiniz..."
-                  placeholderTextColor="#908c9f"
-                  multiline
-                  textAlignVertical="top"
-                />
-              </View>
-
-              {/* Publish Toggle */}
-              <TouchableOpacity
-                style={styles.blogPublishToggleRow}
-                onPress={() => setBlogFormPublished(!blogFormPublished)}
-                activeOpacity={0.8}
-              >
-                <Ionicons
-                  name={blogFormPublished ? 'checkbox' : 'square-outline'}
-                  size={20}
-                  color={blogFormPublished ? '#187657' : '#686474'}
-                />
-                <View style={styles.blogPublishToggleCopy}>
-                  <Text style={styles.blogPublishToggleTitle}>
-                    {blogFormPublished ? 'Yazıyı doğrudan yayına al' : 'Taslak olarak kaydet'}
-                  </Text>
-                  <Text style={styles.blogPublishToggleSubtitle}>
-                    {blogFormPublished
-                      ? 'Yazı kaydedildiği anda ziyaretçilere ve Google botlarına açık olacaktır.'
-                      : 'Yazı yalnızca admin panelinde görünür, yayına alınana kadar gizli kalır.'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </ScrollView>
-
-            <View style={styles.blogModalFooter}>
-              <TouchableOpacity
-                style={styles.blogModalCancelBtn}
-                onPress={() => setIsBlogModalOpen(false)}
-                disabled={isSavingBlog}
-                activeOpacity={0.75}
-              >
-                <Text style={styles.blogModalCancelText}>Vazgeç</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.blogModalSaveBtn}
-                onPress={handleSaveBlogPost}
-                disabled={isSavingBlog}
-                activeOpacity={0.8}
-              >
-                {isSavingBlog ? (
-                  <ActivityIndicator size="small" color="#FAFBFD" />
-                ) : (
-                  <>
-                    <Ionicons name="checkmark-circle-outline" size={17} color="#FAFBFD" />
-                    <Text style={styles.blogModalSaveText}>
-                      {editingBlogPost ? 'Değişiklikleri Kaydet' : 'Makaleyi Yayınla'}
-                    </Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* KATEGORİ DEĞİŞTİRME MODALI */}
-      <Modal
-        visible={!!categoryModalTarget}
-        transparent
-        animationType="fade"
-        onRequestClose={() => {
-          if (!isUpdatingCategory) setCategoryModalTarget(null);
-        }}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.categoryModalBox}>
-            <LinearGradient
-              colors={['#173866', '#285DA8', '#3D78CB']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.categoryModalHeader}
-            >
-              <View style={styles.categoryModalHeaderGlow} />
-              <View style={styles.categoryModalHeaderCopy}>
-                <Text style={styles.categoryModalEyebrow}>KATEGORİ MODERASYONU</Text>
-                <Text style={styles.categoryModalTitle}>Kategori Değiştir</Text>
-                <Text style={styles.categoryModalSubtitle}>Projeyi doğru keşif alanına taşıyın.</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.categoryModalCloseBtn}
-                onPress={() => setCategoryModalTarget(null)}
-                disabled={isUpdatingCategory}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="close" size={19} color="#FFFFFF" />
-              </TouchableOpacity>
-            </LinearGradient>
-
-            {/* Proje Bilgi Şeridi */}
-            {categoryModalTarget ? (
-              <View style={styles.categoryModalProjectCard}>
-                <View style={styles.categoryModalProjectInfo}>
-                  <Text style={styles.categoryModalProjectLabel}>DÜZENLENEN PROJE</Text>
-                  <Text style={styles.categoryModalProjectTitle} numberOfLines={1}>
-                    {categoryModalTarget.title}
-                  </Text>
-                  <Text style={styles.categoryModalProjectTagline} numberOfLines={1}>
-                    {categoryModalTarget.tagline || 'Dijital Proje'}
-                  </Text>
-                </View>
-                <View style={styles.categoryModalCurrentPill}>
-                  <Text style={styles.categoryModalCurrentLabel}>MEVCUT KATEGORİ</Text>
-                  <Text style={styles.categoryModalCurrentVal} numberOfLines={1}>
-                    {categoryModalTarget.categoryId
-                      ? categoryMap.get(categoryModalTarget.categoryId)?.name || 'Bilinmiyor'
-                      : 'Atanmamış'}
-                  </Text>
-                </View>
-              </View>
-            ) : null}
-
-            {/* Hata Bildirimi */}
-            {categoryModalError ? (
-              <View style={styles.categoryModalErrorBox}>
-                <Ionicons name="alert-circle" size={17} color="#B83D57" />
-                <Text style={styles.categoryModalErrorText}>{categoryModalError}</Text>
-              </View>
-            ) : null}
-
-            {/* Kategori Filtre Sekmeleri */}
-            <View style={styles.categorySegmentRow}>
-              {[
-                { id: 'all', label: `Tümü (${categories.length})` },
-                { id: 'game', label: `Oyunlar (${categories.filter((c) => c.slug.startsWith('game-')).length})` },
-                { id: 'app', label: `Uygulamalar (${categories.filter((c) => c.slug.startsWith('app-')).length})` },
-              ].map((tab) => {
-                const isSelected = categorySegment === tab.id;
-                return (
-                  <TouchableOpacity
-                    key={tab.id}
-                    style={[styles.categorySegmentBtn, isSelected && styles.categorySegmentBtnActive]}
-                    onPress={() => setCategorySegment(tab.id as any)}
-                    activeOpacity={0.75}
-                  >
-                    <Text
-                      style={[
-                        styles.categorySegmentBtnText,
-                        isSelected && styles.categorySegmentBtnTextActive,
-                      ]}
-                    >
-                      {tab.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            {/* Arama Kutusu */}
-            <View style={styles.categoryModalSearch}>
-              <Ionicons name="search-outline" size={17} color="#686474" />
-              <TextInput
-                value={categorySearchQuery}
-                onChangeText={setCategorySearchQuery}
-                placeholder="Kategori ara (ör. Finans, Bulmaca, Sosyal...)"
-                placeholderTextColor="#686474"
-                style={styles.categoryModalSearchInput}
-                autoCorrect={false}
-                autoCapitalize="none"
-              />
-              {categorySearchQuery ? (
-                <TouchableOpacity onPress={() => setCategorySearchQuery('')} hitSlop={8}>
-                  <Ionicons name="close-circle" size={16} color="#686474" />
-                </TouchableOpacity>
-              ) : null}
-            </View>
-
-            {/* Kategori Seçim Listesi */}
-            <ScrollView
-              style={styles.categoryModalList}
-              contentContainerStyle={styles.categoryModalListContent}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={true}
-            >
-              {filteredModalCategories.length === 0 ? (
-                <View style={styles.categoryModalEmpty}>
-                  <Ionicons name="search-outline" size={26} color="#8a8597" />
-                  <Text style={styles.categoryModalEmptyText}>Aramanızla eşleşen kategori bulunamadı.</Text>
-                </View>
-              ) : (
-                filteredModalCategories.map((cat) => {
-                  const isSelected = selectedNewCategoryId === cat.id;
-                  const isGame = cat.slug.startsWith('game-');
-
-                  return (
-                    <TouchableOpacity
-                      key={cat.id}
-                      style={[styles.categoryOptionCard, isSelected && styles.categoryOptionCardSelected]}
-                      onPress={() => {
-                        setSelectedNewCategoryId(cat.id);
-                        setCategoryModalError(null);
-                      }}
-                      activeOpacity={0.75}
-                    >
-                      <View style={styles.categoryOptionLeft}>
-                        <View style={styles.categoryOptionTexts}>
-                          <Text style={[styles.categoryOptionName, isSelected && styles.categoryOptionNameSelected]}>
-                            {cat.name}
-                          </Text>
-                          <View style={styles.categoryOptionMeta}>
-                            <Text style={[styles.categoryOptionKind, isGame ? styles.categoryOptionKindGame : styles.categoryOptionKindApp]}>
-                              {isGame ? 'OYUN' : 'UYGULAMA'}
-                            </Text>
-                            <Text style={styles.categoryOptionSlug}>{cat.slug}</Text>
-                          </View>
-                        </View>
-                      </View>
-                      <View style={[styles.categoryRadio, isSelected && styles.categoryRadioSelected]}>
-                        {isSelected ? <Ionicons name="checkmark" size={14} color="#FAFBFD" /> : null}
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })
-              )}
-            </ScrollView>
-
-            {/* Alt Butonlar */}
-            <View style={styles.categoryModalFooter}>
-              <View style={styles.categoryModalSelection}>
-                <Text style={styles.categoryModalSelectionLabel}>SEÇİLEN</Text>
-                <Text style={styles.categoryModalSelectionValue} numberOfLines={1}>
-                  {selectedNewCategoryId ? categoryMap.get(selectedNewCategoryId)?.name || 'Kategori' : 'Henüz seçilmedi'}
-                </Text>
-              </View>
-              <View style={styles.categoryModalFooterActions}>
-                <TouchableOpacity
-                  style={styles.categoryModalCancelBtn}
-                  onPress={() => setCategoryModalTarget(null)}
-                  disabled={isUpdatingCategory}
-                  activeOpacity={0.75}
-                >
-                  <Text style={styles.categoryModalCancelText}>Vazgeç</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.categoryModalSaveBtn,
-                    (!selectedNewCategoryId || selectedNewCategoryId === categoryModalTarget?.categoryId) &&
-                      styles.categoryModalSaveBtnSubdued,
-                  ]}
-                  onPress={handleSaveCategoryChange}
-                  disabled={isUpdatingCategory}
-                  activeOpacity={0.8}
-                >
-                  {isUpdatingCategory ? (
-                    <ActivityIndicator size="small" color="#FAFBFD" />
-                  ) : (
-                    <>
-                      <Text style={styles.categoryModalSaveText}>Kategoriyi Güncelle</Text>
-                      <Ionicons name="arrow-forward" size={16} color="#FAFBFD" />
-                    </>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* GİZLİ YÖNETİM DESTEĞİ MODALI */}
-      <Modal
-        visible={!!supportModalTarget}
-        transparent
-        animationType="fade"
-        onRequestClose={() => {
-          if (!isGrantingSupport) setSupportModalTarget(null);
-        }}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.supportModalBox}>
-            <LinearGradient
-              colors={['#173866', '#246592', '#218B87']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.supportModalHeader}
-            >
-              <View style={styles.supportModalGlow} />
-              <View style={styles.supportModalHeaderCopy}>
-                <View style={styles.supportSecretPill}>
-                  <View style={styles.supportSecretDot} />
-                  <Text style={styles.supportSecretPillText}>KISTAS YÖNETİM DESTEĞİ</Text>
-                </View>
-                <Text style={styles.supportModalTitle}>Geliştiriciye Destek Ol</Text>
-                <Text style={styles.supportModalSubtitle}>
-                  Projeye eklenecek destek puanını seçin ve yeni toplamı onaylayın.
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.categoryModalCloseBtn}
-                onPress={() => setSupportModalTarget(null)}
-                disabled={isGrantingSupport}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="close" size={19} color="#FFFFFF" />
-              </TouchableOpacity>
-            </LinearGradient>
-
-            {/* Proje Bilgi Kartı */}
-            {supportModalTarget ? (
-              <View style={styles.supportProjectCard}>
-                <View style={styles.supportProjectInfo}>
-                  <Text style={styles.supportProjectLabel}>HEDEF PROJE</Text>
-                  <Text style={styles.supportProjectTitle} numberOfLines={1}>
-                    {supportModalTarget.title}
-                  </Text>
-                  <Text style={styles.supportProjectTagline} numberOfLines={1}>
-                    {supportModalTarget.tagline || 'Dijital Proje'}
-                  </Text>
-                </View>
-                <View style={styles.supportCurrentBadge}>
-                  <Text style={styles.supportCurrentLabel}>MEVCUT DESTEK</Text>
-                  <Text style={styles.supportCurrentVal}>
-                    ▲ {formatNumber(supportModalTarget.upvotesCount)}
-                  </Text>
-                </View>
-              </View>
-            ) : null}
-
-            {/* Hata Bildirimi */}
-            {supportModalError ? (
-              <View style={styles.categoryModalErrorBox}>
-                <Ionicons name="alert-circle" size={17} color="#B83D57" />
-                <Text style={styles.categoryModalErrorText}>{supportModalError}</Text>
-              </View>
-            ) : null}
-
-            <ScrollView
-              style={styles.supportModalScroll}
-              contentContainerStyle={styles.supportModalBody}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              <View style={styles.supportChoicePanel}>
-                <View style={styles.supportChoiceHeader}>
-                  <View>
-                    <Text style={styles.supportSectionLabel}>DESTEK MİKTARI</Text>
-                    <Text style={styles.supportSectionHint}>Hazır bir paket seçin veya özel değer girin.</Text>
-                  </View>
-                  <View style={styles.supportLimitBadge}><Text style={styles.supportLimitText}>1–100 PUAN</Text></View>
-                </View>
-                <View style={styles.supportPresetRow}>
-                  {[1, 3, 5, 10, 25].map((amt) => {
-                    const isSelected = !customSupportInput && supportAmount === amt;
-                    return (
-                      <TouchableOpacity
-                        key={amt}
-                        style={[styles.supportPresetPill, isSelected && styles.supportPresetPillActive]}
-                        onPress={() => {
-                          setSupportAmount(amt);
-                          setCustomSupportInput('');
-                          setSupportModalError(null);
-                        }}
-                        activeOpacity={0.8}
-                      >
-                        <Text style={[styles.supportPresetAmount, isSelected && styles.supportPresetAmountActive]}>+{amt}</Text>
-                        <Text style={[styles.supportPresetPillText, isSelected && styles.supportPresetPillTextActive]}>puan</Text>
-                        {isSelected ? <View style={styles.supportPresetCheck}><Ionicons name="checkmark" size={10} color="#FFFFFF" /></View> : null}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-
-                <View style={styles.supportCustomInputGroup}>
-                  <Text style={styles.supportCustomLabel}>ÖZEL MİKTAR</Text>
-                  <View style={[styles.supportInputWrap, Boolean(customSupportInput) && styles.supportInputWrapActive]}>
-                    <Text style={styles.supportInputPrefix}>+</Text>
-                    <TextInput
-                      style={styles.supportTextInput}
-                      placeholder="Örn. 12"
-                      placeholderTextColor="#98A2B3"
-                      keyboardType="number-pad"
-                      value={customSupportInput}
-                      onChangeText={(val) => {
-                        setCustomSupportInput(val.replace(/[^0-9]/g, ''));
-                        setSupportModalError(null);
-                      }}
-                    />
-                    <Text style={styles.supportInputSuffix}>DESTEK PUANI</Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Hesaplanan Özet Şeridi */}
-              {supportModalTarget ? (
-                <View style={styles.supportCalculationCard}>
-                  <View style={styles.supportCalcItem}>
-                    <Text style={styles.supportCalcLabel}>MEVCUT</Text>
-                    <Text style={styles.supportCalcOldVal}>
-                      {formatNumber(supportModalTarget.upvotesCount)}
-                    </Text>
-                  </View>
-                  <View style={styles.supportCalcOperator}><Text style={styles.supportCalcOperatorText}>+</Text></View>
-                  <View style={styles.supportCalcItem}>
-                    <Text style={styles.supportCalcLabel}>EKLENECEK</Text>
-                    <Text style={styles.supportCalcAddVal}>
-                      +{customSupportInput ? (parseInt(customSupportInput, 10) || 0) : supportAmount}
-                    </Text>
-                  </View>
-                  <View style={styles.supportCalcOperator}><Text style={styles.supportCalcOperatorText}>=</Text></View>
-                  <View style={[styles.supportCalcItem, styles.supportCalcTotalItem]}>
-                    <Text style={[styles.supportCalcLabel, styles.supportCalcTotalLabel]}>YENİ TOPLAM</Text>
-                    <Text style={styles.supportCalcTotalVal}>
-                      {formatNumber(
-                        supportModalTarget.upvotesCount +
-                          (customSupportInput ? (parseInt(customSupportInput, 10) || 0) : supportAmount)
-                      )}
-                    </Text>
-                  </View>
-                </View>
-              ) : null}
-
-              {/* Gizli Sır Notu */}
-              <View style={styles.supportSecretNotice}>
-                <Ionicons name="shield-checkmark" size={16} color="#059669" />
-                <Text style={styles.supportSecretNoticeText}>
-                  Bu işlem yalnızca yönetim panelinde görünür. Dışarıdan bakan kullanıcılar için organik ve gerçek topluluk desteği olarak işlenir.
-                </Text>
-              </View>
-            </ScrollView>
-
-            {/* Modal Butonları */}
-            <View style={styles.supportModalFooter}>
-              <View style={styles.supportFooterAmount}>
-                <Text style={styles.supportFooterLabel}>TANIMLANACAK</Text>
-                <Text style={styles.supportFooterValue}>+{customSupportInput ? (parseInt(customSupportInput, 10) || 0) : supportAmount} destek</Text>
-              </View>
-              <View style={styles.supportFooterActions}>
-                <TouchableOpacity
-                  style={styles.categoryModalCancelBtn}
-                  onPress={() => setSupportModalTarget(null)}
-                  disabled={isGrantingSupport}
-                  activeOpacity={0.75}
-                >
-                  <Text style={styles.categoryModalCancelText}>Vazgeç</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.supportModalConfirmBtn}
-                  onPress={handleConfirmGrantSupport}
-                  disabled={isGrantingSupport}
-                  activeOpacity={0.8}
-                >
-                  {isGrantingSupport ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
-                    <>
-                      <Text style={styles.supportModalConfirmText}>Desteği Tanımla</Text>
-                      <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
-                    </>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* GÖRÜNÜRLÜK ARTTIRMA MODALI */}
-      <Modal
-        visible={!!viewModalTarget}
-        transparent
-        animationType="fade"
-        onRequestClose={() => {
-          if (!isGrantingViews) setViewModalTarget(null);
-        }}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.supportModalBox}>
-            <LinearGradient
-              colors={['#0F2B5C', '#1D4ED8', '#2563EB']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.supportModalHeader}
-            >
-              <View style={styles.supportModalGlow} />
-              <View style={styles.supportModalHeaderCopy}>
-                <View style={styles.supportSecretPill}>
-                  <View style={styles.supportSecretDot} />
-                  <Text style={styles.supportSecretPillText}>KISTAS GÖRÜNÜRLÜK YÖNETİMİ</Text>
-                </View>
-                <Text style={styles.supportModalTitle}>Görünürlük Tanımla</Text>
-                <Text style={styles.supportModalSubtitle}>
-                  Projeye eklenecek görüntülenme (görünürlük) sayısını belirleyin.
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.categoryModalCloseBtn}
-                onPress={() => setViewModalTarget(null)}
-                disabled={isGrantingViews}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="close" size={19} color="#FFFFFF" />
-              </TouchableOpacity>
-            </LinearGradient>
-
-            {/* Proje Bilgi Kartı */}
-            {viewModalTarget ? (
-              <View style={styles.supportProjectCard}>
-                <View style={styles.supportProjectInfo}>
-                  <Text style={styles.supportProjectLabel}>HEDEF PROJE</Text>
-                  <Text style={styles.supportProjectTitle} numberOfLines={1}>
-                    {viewModalTarget.title}
-                  </Text>
-                  <Text style={styles.supportProjectTagline} numberOfLines={1}>
-                    {viewModalTarget.tagline || 'Dijital Proje'}
-                  </Text>
-                </View>
-                <View style={styles.supportCurrentBadge}>
-                  <Text style={styles.supportCurrentLabel}>MEVCUT GÖRÜNÜRLÜK</Text>
-                  <Text style={styles.supportCurrentVal}>
-                    👁️ {formatNumber(viewModalTarget.viewCount)}
-                  </Text>
-                </View>
-              </View>
-            ) : null}
-
-            {/* Hata Bildirimi */}
-            {viewModalError ? (
-              <View style={styles.categoryModalErrorBox}>
-                <Ionicons name="alert-circle" size={17} color="#B83D57" />
-                <Text style={styles.categoryModalErrorText}>{viewModalError}</Text>
-              </View>
-            ) : null}
-
-            <ScrollView
-              style={styles.supportModalScroll}
-              contentContainerStyle={styles.supportModalBody}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              <View style={styles.supportChoicePanel}>
-                <View style={styles.supportChoiceHeader}>
-                  <View>
-                    <Text style={styles.supportSectionLabel}>GÖRÜNÜRLÜK MİKTARI</Text>
-                    <Text style={styles.supportSectionHint}>Hazır bir paket seçin veya özel değer girin.</Text>
-                  </View>
-                  <View style={styles.supportLimitBadge}><Text style={styles.supportLimitText}>1–100.000</Text></View>
-                </View>
-                <View style={styles.supportPresetRow}>
-                  {[25, 50, 100, 250, 500].map((amt) => {
-                    const isSelected = !customViewInput && viewAmount === amt;
-                    return (
-                      <TouchableOpacity
-                        key={amt}
-                        style={[styles.supportPresetPill, isSelected && styles.supportPresetPillActive]}
-                        onPress={() => {
-                          setViewAmount(amt);
-                          setCustomViewInput('');
-                          setViewModalError(null);
-                        }}
-                        activeOpacity={0.8}
-                      >
-                        <Text style={[styles.supportPresetAmount, isSelected && styles.supportPresetAmountActive]}>+{amt}</Text>
-                        <Text style={[styles.supportPresetPillText, isSelected && styles.supportPresetPillTextActive]}>görünürlük</Text>
-                        {isSelected ? <View style={styles.supportPresetCheck}><Ionicons name="checkmark" size={10} color="#FFFFFF" /></View> : null}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-
-                <View style={styles.supportCustomInputGroup}>
-                  <Text style={styles.supportCustomLabel}>ÖZEL MİKTAR</Text>
-                  <View style={[styles.supportInputWrap, Boolean(customViewInput) && styles.supportInputWrapActive]}>
-                    <Text style={styles.supportInputPrefix}>+</Text>
-                    <TextInput
-                      style={styles.supportTextInput}
-                      placeholder="Örn. 75"
-                      placeholderTextColor="#98A2B3"
-                      keyboardType="number-pad"
-                      value={customViewInput}
-                      onChangeText={(val) => {
-                        setCustomViewInput(val.replace(/[^0-9]/g, ''));
-                        setViewModalError(null);
-                      }}
-                    />
-                    <Text style={styles.supportInputSuffix}>GÖRÜNTÜLENME</Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Hesaplanan Özet Şeridi */}
-              {viewModalTarget ? (
-                <View style={styles.supportCalculationCard}>
-                  <View style={styles.supportCalcItem}>
-                    <Text style={styles.supportCalcLabel}>MEVCUT</Text>
-                    <Text style={styles.supportCalcOldVal}>
-                      {formatNumber(viewModalTarget.viewCount)}
-                    </Text>
-                  </View>
-                  <View style={styles.supportCalcOperator}><Text style={styles.supportCalcOperatorText}>+</Text></View>
-                  <View style={styles.supportCalcItem}>
-                    <Text style={styles.supportCalcLabel}>EKLENECEK</Text>
-                    <Text style={styles.supportCalcAddVal}>
-                      +{customViewInput ? (parseInt(customViewInput, 10) || 0) : viewAmount}
-                    </Text>
-                  </View>
-                  <View style={styles.supportCalcOperator}><Text style={styles.supportCalcOperatorText}>=</Text></View>
-                  <View style={[styles.supportCalcItem, styles.supportCalcTotalItem]}>
-                    <Text style={[styles.supportCalcLabel, styles.supportCalcTotalLabel]}>YENİ TOPLAM</Text>
-                    <Text style={styles.supportCalcTotalVal}>
-                      {formatNumber(
-                        viewModalTarget.viewCount +
-                          (customViewInput ? (parseInt(customViewInput, 10) || 0) : viewAmount)
-                      )}
-                    </Text>
-                  </View>
-                </View>
-              ) : null}
-
-              {/* Bilgilendirme Notu */}
-              <View style={styles.supportSecretNotice}>
-                <Ionicons name="eye" size={16} color="#059669" />
-                <Text style={styles.supportSecretNoticeText}>
-                  Tanımlanan miktar doğrudan projenin toplam görüntülenme (view_count) sayacına eklenir ve vitrinde gerçek veri olarak yansıtılır.
-                </Text>
-              </View>
-            </ScrollView>
-
-            {/* Modal Butonları */}
-            <View style={styles.supportModalFooter}>
-              <View style={styles.supportFooterAmount}>
-                <Text style={styles.supportFooterLabel}>TANIMLANACAK</Text>
-                <Text style={styles.supportFooterValue}>+{customViewInput ? (parseInt(customViewInput, 10) || 0) : viewAmount} görünürlük</Text>
-              </View>
-              <View style={styles.supportFooterActions}>
-                <TouchableOpacity
-                  style={styles.categoryModalCancelBtn}
-                  onPress={() => setViewModalTarget(null)}
-                  disabled={isGrantingViews}
-                  activeOpacity={0.75}
-                >
-                  <Text style={styles.categoryModalCancelText}>Vazgeç</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.supportModalConfirmBtn}
-                  onPress={handleConfirmGrantViews}
-                  disabled={isGrantingViews}
-                  activeOpacity={0.8}
-                >
-                  {isGrantingViews ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
-                    <>
-                      <Text style={styles.supportModalConfirmText}>Görünürlüğü Tanımla</Text>
-                      <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
-                    </>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
         </View>
       </Modal>
 

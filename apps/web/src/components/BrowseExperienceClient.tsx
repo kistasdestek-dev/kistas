@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Gamepad2,
   LayoutGrid,
@@ -31,6 +32,7 @@ const PLATFORM_OPTIONS = [
 ] as const;
 
 export const BrowseExperienceClient: React.FC = () => {
+  const router = useRouter();
   const [activeSegment, setActiveSegment] = useState<CategorySegment>('games');
   const categories = activeSegment === 'games' ? GAMES_CATEGORIES : APPS_CATEGORIES;
 
@@ -42,9 +44,6 @@ export const BrowseExperienceClient: React.FC = () => {
       <main className="container mx-auto max-w-[1180px] px-4 sm:px-6 pt-2 pb-12">
         {/* 2. Sayfa Başlığı (Page Header) */}
         <div className="mb-6 pt-1">
-          <div className="text-[10px] font-extrabold tracking-[1.1px] text-[#60A5FA] uppercase mb-1.5">
-            İLGİ ALANINI KEŞFET
-          </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
             Göz At
           </h1>
@@ -114,6 +113,7 @@ export const BrowseExperienceClient: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {categories.map((cat) => {
             const tints = CATEGORY_CARD_TINTS[cat.tintKey] ?? CATEGORY_CARD_TINTS.fallback;
+            const categoryHref = `/browse/${cat.slug}`;
             const gradientStyle = {
               background: `linear-gradient(135deg, ${tints[0]} 6%, ${tints[1]} 52%, ${tints[2]} 94%)`,
             };
@@ -121,7 +121,11 @@ export const BrowseExperienceClient: React.FC = () => {
             return (
               <Link
                 key={cat.id}
-                href={`/browse/${cat.slug}`}
+                href={categoryHref}
+                prefetch={false}
+                onPointerEnter={() => router.prefetch(categoryHref)}
+                onFocus={() => router.prefetch(categoryHref)}
+                onTouchStart={() => router.prefetch(categoryHref)}
                 className="group relative h-28 sm:h-32 w-full overflow-hidden rounded-[20px] border border-white/15 shadow-[0_12px_28px_rgba(0,0,0,0.6)] transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl active:scale-[0.985]"
               >
                 {/* Dynamic Vibrant Gradient */}
@@ -163,10 +167,15 @@ export const BrowseExperienceClient: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             {PLATFORM_OPTIONS.map((item) => {
               const Icon = item.icon;
+              const platformHref = `/browse/platform/${item.id}`;
               return (
                 <Link
                   key={item.id}
-                  href={`/browse/platform/${item.id}`}
+                  href={platformHref}
+                  prefetch={false}
+                  onPointerEnter={() => router.prefetch(platformHref)}
+                  onFocus={() => router.prefetch(platformHref)}
+                  onTouchStart={() => router.prefetch(platformHref)}
                   className="group flex min-h-[48px] items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-2 shadow-sm transition-all hover:scale-102 hover:bg-white/10 active:scale-98"
                 >
                   <GlassIconButton

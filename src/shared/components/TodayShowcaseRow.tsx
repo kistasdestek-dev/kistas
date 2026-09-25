@@ -16,7 +16,6 @@ import { BlurView } from 'expo-blur';
 import { kistasStyle, theme } from '../../core/theme';
 import { Listing, PlatformType } from '../../features/listings/domain/Listing';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
-import { GlassIconButton } from './GlassIconButton';
 
 export interface TodayShowcaseRowProps {
   projects: Listing[];
@@ -78,7 +77,6 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = React.memo(({
 }) => {
   const coverImage = project.coverImageUrl || project.logoUrl || IMAGE_FALLBACK;
   const platform = project.platforms?.[0];
-  const makerName = project.developerName || project.seller?.fullName || 'Bağımsız geliştirici';
   const initials = project.title.slice(0, 2).toUpperCase();
   const isPremium = !!project.isDailyShowcaseWinner;
   const carouselInputRange = [
@@ -124,6 +122,8 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = React.memo(({
 
   return (
     <Animated.View
+      renderToHardwareTextureAndroid
+      shouldRasterizeIOS
       style={[
         styles.cardStage,
         { width, height },
@@ -177,65 +177,50 @@ const ShowcaseCard: React.FC<ShowcaseCardProps> = React.memo(({
           ]}
         />
         <LinearGradient
-          colors={['rgba(241,245,250,0)', 'rgba(241,245,250,0.40)', 'rgba(241,245,250,0.88)', '#F1F5FA']}
-          locations={[0.20, 0.46, 0.70, 0.92]}
+          colors={['rgba(2,8,23,0.42)', 'rgba(2,8,23,0.08)', 'rgba(5,13,29,0.58)', 'rgba(7,16,31,0.36)']}
+          locations={[0, 0.34, 0.7, 1]}
           style={StyleSheet.absoluteFill}
         />
         <View style={styles.cardTopRow}>
           <View style={[styles.rankBadge, styles.rankBadgeFirst]}>
-            <Ionicons name="trophy-outline" size={12} color="#3269C7" />
+            <Ionicons name="trophy-outline" size={12} color="#7DD3FC" />
             <Text style={[styles.rankText, styles.rankTextFirst]} numberOfLines={1}>
               {(project.showcaseCategoryName || 'KATEGORİ').toLocaleUpperCase('tr-TR')} LİDERİ
             </Text>
           </View>
 
           <View style={styles.platformBadge}>
-            <Ionicons name={getPlatformIcon(platform)} size={13} color="#3269C7" />
+            <Ionicons name={getPlatformIcon(platform)} size={13} color="#BFDBFE" />
             <Text style={styles.platformText}>{platform || 'Dijital'}</Text>
           </View>
-        </View>
-        <View style={styles.viewBadge}>
-          <Ionicons name="eye-outline" size={13} color="#25364E" />
-          <Text style={styles.viewBadgeText}>{formatSupportCount(project.viewCount)}</Text>
         </View>
       </View>
 
       <View style={styles.cardBody}>
+        <Text style={styles.editorialTitle} numberOfLines={1}>{project.title}</Text>
         <Text style={styles.heroStatement} numberOfLines={2}>
           {project.tagline || project.description || project.title}
         </Text>
 
-        <BlurView intensity={68} tint="light" style={styles.productDock}>
-          <View style={styles.logoWell}>
-            {project.logoUrl ? (
-              <AutoTransparentLogo
-                src={project.logoUrl}
-                alt={`${project.title} logosu`}
-                style={styles.logoImage}
-              />
-            ) : (
-              <Text style={styles.logoInitials}>{initials}</Text>
-            )}
-          </View>
+        <BlurView intensity={55} tint="dark" style={styles.productDock}>
+          {project.logoUrl ? (
+            <AutoTransparentLogo
+              src={project.logoUrl}
+              alt={`${project.title} logosu`}
+              style={styles.logoImage}
+            />
+          ) : (
+            <Text style={styles.logoInitials}>{initials}</Text>
+          )}
 
           <View style={styles.productInfo}>
             <Text style={styles.projectTitle} numberOfLines={1}>{project.title}</Text>
-            <Text style={styles.makerName} numberOfLines={1}>{makerName}</Text>
-            <View style={styles.projectMetaRow}>
-              <Ionicons name="chevron-up" size={11} color="#3269C7" />
-              <Text style={styles.projectMetaText}>
-                {formatSupportCount(project.showcaseSupportCount)} günlük destek
-              </Text>
-            </View>
+          </View>
+          <View style={styles.dockSupport}>
+            <Ionicons name="chevron-up" size={13} color="#7DD3FC" />
+            <Text style={styles.dockSupportText}>{formatSupportCount(project.showcaseSupportCount)}</Text>
           </View>
 
-          <GlassIconButton
-            icon="arrow-forward"
-            iconSize={17}
-            size={38}
-            accessibilityLabel={`${project.title} detayına git`}
-            style={styles.openButton}
-          />
         </BlurView>
       </View>
       <View pointerEvents="none" style={styles.cardRim} />
@@ -449,25 +434,25 @@ const styles = StyleSheet.create({
   },
   cardStage: {
     borderRadius: 26,
-    shadowColor: NEO.shadow,
+    shadowColor: '#020817',
     shadowOffset: { width: 8, height: 10 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.42,
     shadowRadius: 18,
     elevation: 7,
   },
   cardStagePremium: {
-    shadowColor: '#3269C7',
-    shadowOpacity: 0.16,
+    shadowColor: '#2563EB',
+    shadowOpacity: 0.28,
   },
   card: {
     flex: 1,
     borderRadius: 26,
     overflow: 'hidden',
-    backgroundColor: NEO.surface,
+    backgroundColor: '#07101F',
     borderWidth: 1,
-    borderColor: 'rgba(50,105,199,0.24)',
+    borderColor: 'rgba(96,165,250,0.36)',
   },
-  cardPremium: { borderColor: 'rgba(50,105,199,0.3)' },
+  cardPremium: { borderColor: 'rgba(125,211,252,0.56)' },
   mediaFrame: {
     position: 'absolute',
     top: 0,
@@ -476,7 +461,7 @@ const styles = StyleSheet.create({
     left: 0,
     borderRadius: 26,
     overflow: 'hidden',
-    backgroundColor: NEO.global,
+    backgroundColor: '#07101F',
   },
   coverImage: {
     width: '100%',
@@ -498,24 +483,24 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(247,250,255,0.94)',
+    backgroundColor: 'rgba(5,15,32,0.78)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.9)',
+    borderColor: 'rgba(147,197,253,0.3)',
   },
   rankBadgeFirst: {
-    backgroundColor: 'rgba(247,250,255,0.94)',
-    borderColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: 'rgba(5,15,32,0.78)',
+    borderColor: 'rgba(147,197,253,0.3)',
   },
   rankText: {
     ...theme.typography.kistas,
     marginLeft: 5,
-    color: NEO.ink,
+    color: '#BFDBFE',
     fontSize: 8.5,
     fontWeight: '700',
     letterSpacing: 0.75,
   },
   rankTextFirst: {
-    color: NEO.ink,
+    color: '#BFDBFE',
   },
   platformBadge: {
     minHeight: 30,
@@ -523,35 +508,15 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(247,250,255,0.94)',
+    backgroundColor: 'rgba(5,15,32,0.78)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.9)',
+    borderColor: 'rgba(147,197,253,0.3)',
   },
   platformText: {
     ...theme.typography.kistas,
     marginLeft: 5,
-    color: NEO.ink,
+    color: '#DBEAFE',
     fontSize: 9,
-    fontWeight: '700',
-  },
-  viewBadge: {
-    position: 'absolute',
-    top: 52,
-    right: 14,
-    minHeight: 28,
-    paddingHorizontal: 9,
-    borderRadius: 999,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: 'rgba(247,250,255,0.94)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.9)',
-  },
-  viewBadgeText: {
-    ...theme.typography.kistas,
-    color: NEO.ink,
-    fontSize: 10,
     fontWeight: '700',
   },
   cardBody: {
@@ -561,43 +526,50 @@ const styles = StyleSheet.create({
     paddingTop: 228,
     paddingBottom: 14,
     justifyContent: 'flex-end',
-    gap: 12,
+    gap: 6,
+  },
+  editorialTitle: {
+    ...theme.typography.kistas,
+    color: '#FFFFFF',
+    fontSize: 22,
+    lineHeight: 26,
+    fontWeight: '800',
+    letterSpacing: -0.7,
+    textShadowColor: 'rgba(0,0,0,0.85)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10,
   },
   heroStatement: {
     ...theme.typography.kistas,
-    color: NEO.ink,
-    fontSize: 17.5,
-    lineHeight: 23,
-    fontWeight: '700',
-    letterSpacing: -0.35,
+    color: '#CBD5E1',
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '500',
+    letterSpacing: -0.1,
+    marginBottom: 6,
   },
   productDock: {
-    minHeight: 70,
-    padding: 8,
-    borderRadius: 18,
+    minHeight: 52,
+    padding: 7,
+    borderRadius: 15,
     flexDirection: 'row',
     alignItems: 'center',
     overflow: 'hidden',
-    backgroundColor: 'rgba(247,250,255,0.76)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.88)',
-  },
-  logoWell: {
-    width: 52,
-    height: 52,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.24)',
+    backgroundColor: 'rgba(255,255,255,0.035)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   logoImage: {
-    width: 48,
-    height: 48,
+    width: 36,
+    height: 36,
+    flexShrink: 0,
   },
   logoInitials: {
     ...theme.typography.kistas,
-    color: NEO.ink,
-    fontSize: 18,
+    width: 36,
+    textAlign: 'center',
+    color: '#93C5FD',
+    fontSize: 15,
     fontWeight: '700',
   },
   productInfo: {
@@ -607,34 +579,25 @@ const styles = StyleSheet.create({
   },
   projectTitle: {
     ...theme.typography.kistas,
-    color: NEO.ink,
+    color: '#FFFFFF',
     fontSize: 14.5,
     lineHeight: 18,
     fontWeight: '700',
     letterSpacing: -0.2,
   },
-  makerName: {
-    ...theme.typography.kistas,
-    marginTop: 2,
-    color: '#64748B',
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  projectMetaRow: {
-    marginTop: 5,
+  dockSupport: {
+    minWidth: 36,
+    flexShrink: 0,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
   },
-  projectMetaText: {
+  dockSupportText: {
     ...theme.typography.kistas,
     marginLeft: 2,
-    color: '#3269C7',
-    fontSize: 8.5,
-    fontWeight: '700',
-  },
-  openButton: {
-    marginLeft: 8,
-    flexShrink: 0,
+    color: '#7DD3FC',
+    fontSize: 11,
+    fontWeight: '800',
   },
   cardRim: {
     position: 'absolute',
@@ -645,6 +608,6 @@ const styles = StyleSheet.create({
     zIndex: 4,
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(50,105,199,0.2)',
+    borderColor: 'rgba(147,197,253,0.18)',
   },
 });

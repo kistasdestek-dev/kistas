@@ -16,16 +16,26 @@ import {
   Loader2,
   Check,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 import { GlassIconButton } from './GlassIconButton';
 import { DiscoveryRevealStatement } from './DiscoveryRevealStatement';
-import { CategoryPickerModal } from './CategoryPickerModal';
 import { DescriptionRichText } from './DescriptionRichText';
 import { HoneypotDecoyField } from './HoneypotDecoyField';
-import { KistasFeedbackModal, KistasFeedbackType } from './KistasFeedbackModal';
+import { type KistasFeedbackType } from './KistasFeedbackModal';
 import { uploadToStorage, pickImageFiles } from '@/lib/storage';
 import { createListingAction, updateListingAction } from '@/app/actions/listings';
 import type { Category } from '@kistas/shared';
+
+const CategoryPickerModal = dynamic(
+  () => import('./CategoryPickerModal').then((m) => m.CategoryPickerModal),
+  { ssr: false }
+);
+
+const KistasFeedbackModal = dynamic(
+  () => import('./KistasFeedbackModal').then((m) => m.KistasFeedbackModal),
+  { ssr: false }
+);
 
 type PlatformType = 'iOS' | 'Android' | 'Web' | 'macOS';
 type PricingModel = 'free' | 'freemium' | 'subscription' | 'paid';

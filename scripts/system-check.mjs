@@ -162,11 +162,12 @@ for (const srcFile of allSrcFiles) {
   const baseName = path.basename(srcFile).replace(/\.(tsx|ts|web\.tsx|native\.tsx)$/, '');
   if (baseName === 'index' || baseName.endsWith('.web') || baseName.endsWith('.native')) continue;
   
-  const relRegex = new RegExp(baseName, 'i');
+  const importRegex = new RegExp(`['"][^'"]*\\b${baseName}\\b['"]`);
+  const identRegex = new RegExp(`\\b${baseName}\\b`);
   let isUsed = false;
   for (const other of allContents) {
     if (other.path === srcFile) continue;
-    if (relRegex.test(other.content)) {
+    if (importRegex.test(other.content) || identRegex.test(other.content)) {
       isUsed = true;
       break;
     }
@@ -319,12 +320,8 @@ if (godComponents.length > 0) {
 // -------------------------------------------------------------
 console.log('\n📐 [5/8] TypeScript Derlemesi & Tip Güvenlik Kalkanı...');
 try {
-  const tscBin = path.join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc');
-  if (fs.existsSync(tscBin)) {
-    execSync(`node "${tscBin}" --noEmit`, { stdio: 'pipe' });
-  } else {
-    execSync('npx tsc --noEmit', { stdio: 'pipe' });
-  }
+  const pnpmBin = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+  execSync(`${pnpmBin} run type-check`, { stdio: 'pipe' });
   console.log('   ✅ 0 Tip Hatası! Tüm proje TypeScript kurallarına %100 uyumlu.');
 } catch (err) {
   console.error('   ❌ TypeScript derleme hatası tespit edildi!');
@@ -487,31 +484,50 @@ async function testSupabaseHealth() {
 
 await testSupabaseHealth();
 
+let localPort = 3000;
+let tunnelUrl = null;
+
+const devTunnelState = path.join(ROOT, '.tmp-dev-tunnel', 'state.json');
 const previewStatePath = path.join(ROOT, '.tmp-remote-preview', 'state.json');
-if (fs.existsSync(previewStatePath)) {
+const urlPath = path.join(ROOT, 'dev-tunnel-url.txt');
+
+if (fs.existsSync(devTunnelState)) {
   try {
-    const raw = fs.readFileSync(previewStatePath, 'utf8').replace(/^\uFEFF/, '').trim();
-    const state = JSON.parse(raw);
-    const localPort = state.port || 8090;
-    const tunnelUrl = state.url || state.publicUrl;
+    const s = JSON.parse(fs.readFileSync(devTunnelState, 'utf8'));
+    if (s.port) localPort = s.port;
+    if (s.url) tunnelUrl = s.url;
+  } catch {}
+} else if (fs.existsSync(previewStatePath)) {
+  try {
+    const s = JSON.parse(fs.readFileSync(previewStatePath, 'utf8'));
+    if (s.port) localPort = s.port;
+    if (s.url) tunnelUrl = s.url;
+  } catch {}
+}
 
-    await new Promise((resolve) => {
-      const req = http.get(`http://127.0.0.1:${localPort}`, { timeout: 3000 }, (res) => {
-        console.log(`   ✅ Yerel Sunucu: http://127.0.0.1:${localPort} -> HTTP ${res.statusCode} (Canlı & Yanıt Veriyor)`);
-        resolve();
-      });
-      req.on('error', (e) => {
-        console.log(`   ⚠️ Yerel Sunucu Yanıt Vermiyor: ${e.message}`);
-        totalWarnings++;
-        resolve();
-      });
-      req.on('timeout', () => {
-        req.destroy();
-        resolve();
-      });
-    });
+if (!tunnelUrl && fs.existsSync(urlPath)) {
+  try {
+    tunnelUrl = fs.readFileSync(urlPath, 'utf8').trim();
+  } catch {}
+}
 
-    if (tunnelUrl) {
+await new Promise((resolve) => {
+  const req = http.get(`http://127.0.0.1:${localPort}`, { timeout: 3000 }, (res) => {
+    console.log(`   ✅ Yerel Sunucu: http://127.0.0.1:${localPort} -> HTTP ${res.statusCode} (Canlı & Yanıt Veriyor)`);
+    resolve();
+  });
+  req.on('error', (e) => {
+    console.log(`   ⚠️ Yerel Sunucu Yanıt Vermiyor: ${e.message}`);
+    totalWarnings++;
+    resolve();
+  });
+  req.on('timeout', () => {
+    req.destroy();
+    resolve();
+  });
+});
+
+if (tunnelUrl) {
       await new Promise((resolve) => {
         let settled = false;
         const done = () => {
@@ -546,13 +562,9 @@ if (fs.existsSync(previewStatePath)) {
           done();
         });
       });
+    } else {
+      console.log('   ℹ️ Canlı önizleme tüneli şu anda yapılandırılmamış.');
     }
-  } catch (e) {
-    console.log(`   ℹ️ Önizleme bilgisi okunamadı: ${e.message}`);
-  }
-} else {
-  console.log('   ℹ️ Canlı önizleme şu anda aktif değil. (Gerektiğinde: npm run preview:tunnel)');
-}
 
 // -------------------------------------------------------------
 // ÖZET VE SAĞLIK PUANI

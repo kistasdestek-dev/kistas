@@ -34,7 +34,7 @@ export async function getListings(
 ): Promise<{ data: Listing[]; count: number }> {
   let query = client
     .from('listings')
-    .select('*, seller:profiles(id, full_name, avatar_url, rating_average, rating_count, is_verified), images:listing_images(*)', { count: 'exact' })
+    .select('*, images:listing_images(*)', { count: 'exact' })
     .eq('status', 'active')
     .order('created_at', { ascending: false });
 
@@ -56,7 +56,10 @@ export async function getListings(
   }
 
   const { data, count, error } = await query;
-  if (error || !data) {
+  if (error) {
+    throw new Error(`Public listings query failed (${error.code})`);
+  }
+  if (!data) {
     return { data: [], count: 0 };
   }
   return { data: (data as any[]).map(mapListing), count: count || 0 };
@@ -71,11 +74,17 @@ export async function getListingById(
 ): Promise<Listing | null> {
   const { data, error } = await client
     .from('listings')
-    .select('*, seller:profiles(id, full_name, avatar_url, rating_average, rating_count, is_verified), images:listing_images(*)')
+    .select('*, images:listing_images(*)')
     .eq('id', id)
     .single();
 
-  if (error || !data) {
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null;
+    }
+    throw new Error(`Public listing detail query failed (${error.code})`);
+  }
+  if (!data) {
     return null;
   }
   return mapListing(data);
@@ -91,7 +100,28 @@ export async function getCuratedListings(
 ): Promise<Listing[]> {
   let query = client
     .from('listings')
-    .select('*, seller:profiles(id, full_name, avatar_url, rating_average, rating_count, is_verified), images:listing_images(*)')
+    .select(`
+      id,
+      seller_id,
+      category_id,
+      title,
+      tagline,
+      description,
+      price,
+      status,
+      boosted_until,
+      upvotes_count,
+      platforms,
+      web_url,
+      app_store_url,
+      play_store_url,
+      logo_url,
+      pricing_model,
+      developer_name,
+      created_at,
+      updated_at,
+      images:listing_images(id, listing_id, image_url, display_order, is_cover, created_at)
+    `)
     .eq('status', 'active')
     .limit(limit);
 
@@ -102,7 +132,10 @@ export async function getCuratedListings(
   }
 
   const { data, error } = await query;
-  if (error || !data) {
+  if (error) {
+    throw new Error(`Public curated listings query failed (${error.code})`);
+  }
+  if (!data) {
     return [];
   }
   return (data as any[]).map(mapListing);

@@ -15,19 +15,33 @@ import {
   MessageSquare,
   Code,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 import { GlassIconButton } from './GlassIconButton';
 import { ShinyButton } from './ui/shiny-button';
-import { BadgeCodeModal } from './profile/BadgeCodeModal';
-import { ShareLaunchKitModal } from './ShareLaunchKitModal';
 import { DescriptionRichText } from './DescriptionRichText';
 import { ProjectScreenshotsGallery } from './ProjectScreenshotsGallery';
 import { ProjectCommentsSection } from './ProjectCommentsSection';
 import { toggleProjectUpvoteAction, recordProjectViewAction } from '@/app/actions/listings';
 import { isKistasDefaultAvatar, resolveAvatarUrl } from '@/lib/avatar';
 import { InstagramVerifiedBadge } from './InstagramVerifiedBadge';
-import { KistasFeedbackModal, KistasFeedbackType } from './KistasFeedbackModal';
+import { type KistasFeedbackType } from './KistasFeedbackModal';
 import type { Listing, ProjectComment } from '@kistas/shared';
+
+const BadgeCodeModal = dynamic(
+  () => import('./profile/BadgeCodeModal').then((m) => m.BadgeCodeModal),
+  { ssr: false }
+);
+
+const ShareLaunchKitModal = dynamic(
+  () => import('./ShareLaunchKitModal').then((m) => m.ShareLaunchKitModal),
+  { ssr: false }
+);
+
+const KistasFeedbackModal = dynamic(
+  () => import('./KistasFeedbackModal').then((m) => m.KistasFeedbackModal),
+  { ssr: false }
+);
 
 interface ProjectDetailExperienceClientProps {
   project: Listing;
@@ -235,7 +249,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                 <div className="flex h-full w-full items-center justify-center rounded-full bg-[#3269C7]/10 p-3 sm:p-3.5 border border-[#3269C7]/20 shadow-[0_0_18px_rgba(50,105,199,0.2)]">
                   { }
                   <img
-                    src="/kistas-logo-transparent.png"
+                    src="/kistas-logo-256.webp"
                     alt="Kıstas Logo"
                     className="h-full w-full object-contain"
                   />
@@ -458,7 +472,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
               {isKistasDefaultAvatar(project.seller?.avatar_url) ? (
 
                 <img
-                  src="/kistas-logo-transparent.png"
+                  src="/kistas-logo-256.webp"
                   alt="Kıstas Geliştirici"
                   className="h-14 w-14 shrink-0 object-contain"
                 />
@@ -469,7 +483,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                   alt={cleanMakerName}
                   onError={(e) => {
                     e.currentTarget.onerror = null;
-                    e.currentTarget.src = '/kistas-logo-transparent.png';
+                    e.currentTarget.src = '/kistas-logo-256.webp';
                   }}
                   className="h-14 w-14 shrink-0 rounded-full object-cover"
                 />
@@ -614,7 +628,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
               >
                 { }
                 <img
-                  src="/kistas-logo-transparent.png"
+                  src="/kistas-logo-256.webp"
                   alt="Kıstas Store"
                   className="h-6 w-6 object-contain transition-transform group-hover:scale-110 shrink-0"
                 />
@@ -632,7 +646,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
               >
                 { }
                 <img
-                  src="/kistas-logo-transparent.png"
+                  src="/kistas-logo-256.webp"
                   alt="Kıstas Store"
                   className="h-6 w-6 object-contain transition-transform group-hover:scale-110 shrink-0"
                 />

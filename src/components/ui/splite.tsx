@@ -1,10 +1,49 @@
-'use client';
-
 import React, { Suspense, lazy } from 'react';
-import { Card } from './card';
-import { Spotlight } from './spotlight';
 
 const Spline = lazy(() => import('@splinetool/react-spline'));
+
+function Spotlight({ className = '', fill = 'white' }: { className?: string; fill?: string }) {
+  return (
+    <svg
+      className={`pointer-events-none absolute z-[1] h-[169%] w-[138%] lg:w-[84%] opacity-0 animate-spotlight ${className}`}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 3787 2842"
+      fill="none"
+      style={{
+        position: 'absolute',
+        pointerEvents: 'none',
+        zIndex: 1,
+      }}
+    >
+      <g filter="url(#spotlight-filter)">
+        <ellipse
+          cx="1924.71"
+          cy="273.501"
+          rx="1924.71"
+          ry="273.501"
+          transform="matrix(-0.822377 -0.568943 -0.568943 0.822377 3631.88 2291.09)"
+          fill={fill || 'white'}
+          fillOpacity="0.21"
+        />
+      </g>
+      <defs>
+        <filter
+          id="spotlight-filter"
+          x="0.860352"
+          y="0.838989"
+          width="3785.16"
+          height="2840.26"
+          filterUnits="userSpaceOnUse"
+          colorInterpolationFilters="sRGB"
+        >
+          <feFlood floodOpacity="0" result="BackgroundImageFix" />
+          <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+          <feGaussianBlur stdDeviation="151" result="effect1_foregroundBlur_1065_8" />
+        </filter>
+      </defs>
+    </svg>
+  );
+}
 
 export interface SplineSceneProps {
   scene: string;
@@ -148,7 +187,20 @@ export function SplineSceneBasic({
   className,
 }: SplineSceneBasicProps = {}) {
   return (
-    <Card className={`w-full h-[500px] bg-black/[0.96] relative overflow-hidden ${className ?? ''}`}>
+    <div
+      className={`k-card w-full h-[500px] bg-black/[0.96] relative overflow-hidden ${className ?? ''}`}
+      style={{
+        width: '100%',
+        minHeight: 500,
+        height: 500,
+        backgroundColor: 'rgba(0, 0, 0, 0.96)',
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: 24,
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+      }}
+    >
       <Spotlight
         className="-top-40 left-0 md:left-60 md:-top-20"
         fill="white"
@@ -226,6 +278,6 @@ export function SplineSceneBasic({
           />
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

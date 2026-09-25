@@ -23,11 +23,13 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { GlassIconButton } from './GlassIconButton';
+import { ShinyButton } from './ui/shiny-button';
 import { KistasLogo } from './KistasLogo';
 import { KistasTopBrandBar } from './KistasTopBrandBar';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 import { InstagramVerifiedBadge } from './InstagramVerifiedBadge';
 import { createClient } from '@/lib/supabase/browser';
+import { resolveAvatarUrl } from '@/lib/avatar';
 
 // Modals
 import { ProfileEditModal } from './profile/ProfileEditModal';
@@ -254,7 +256,7 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                   {profile?.avatar_url ? (
 
                     <img
-                      src={profile.avatar_url}
+                      src={resolveAvatarUrl(profile.avatar_url)}
                       alt={fullName}
                       className="h-full w-full object-cover rounded-[23px]"
                     />
@@ -354,14 +356,12 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                   <span>Hareketler</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => router.push('/credits')}
-                  className="flex-1 h-11 inline-flex items-center justify-center gap-2 rounded-xl border border-blue-500/30 bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white shadow-lg shadow-blue-500/25 active:scale-98 transition-all cursor-pointer"
-                >
-                  <Plus size={15} className="text-white" />
-                  <span>Kredi al</span>
-                </button>
+                <ShinyButton href="/credits" className="flex-1 !h-11 !rounded-xl !px-4 !py-0 !text-xs">
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Plus size={15} aria-hidden="true" />
+                    Kredi al
+                  </span>
+                </ShinyButton>
               </div>
             </div>
 

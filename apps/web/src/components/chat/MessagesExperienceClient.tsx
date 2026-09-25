@@ -73,10 +73,16 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
   // Mobil mesajlaşmada dış sayfayı kilitle; yalnız iç listeler kaydırılabilir.
   useEffect(() => {
     const syncViewportHeight = () => {
-      const visibleHeight = window.visualViewport?.height ?? window.innerHeight;
+      const viewport = window.visualViewport;
+      const visibleHeight = viewport?.height ?? window.innerHeight;
+      const visibleTop = viewport?.offsetTop ?? 0;
       document.documentElement.style.setProperty(
         '--k-messages-vh',
         `${Math.round(visibleHeight)}px`
+      );
+      document.documentElement.style.setProperty(
+        '--k-messages-vtop',
+        `${Math.round(visibleTop)}px`
       );
     };
 
@@ -88,14 +94,17 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
     window.addEventListener('resize', syncViewportHeight);
     window.addEventListener('orientationchange', syncViewportHeight);
     window.visualViewport?.addEventListener('resize', syncViewportHeight);
+    window.visualViewport?.addEventListener('scroll', syncViewportHeight);
 
     return () => {
       window.removeEventListener('resize', syncViewportHeight);
       window.removeEventListener('orientationchange', syncViewportHeight);
       window.visualViewport?.removeEventListener('resize', syncViewportHeight);
+      window.visualViewport?.removeEventListener('scroll', syncViewportHeight);
       document.documentElement.classList.remove('k-messages-open');
       document.body.classList.remove('k-messages-open');
       document.documentElement.style.removeProperty('--k-messages-vh');
+      document.documentElement.style.removeProperty('--k-messages-vtop');
     };
   }, []);
 
@@ -115,14 +124,18 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
 
   // Realtime Inbox Dinleyicisi
   useEffect(() => {
-    const unsubscribe = ChatService.subscribeToInbox(supabase, () => {
-      void handleRefresh();
-    });
+    const unsubscribe = ChatService.subscribeToInbox(
+      supabase,
+      () => {
+        void handleRefresh();
+      },
+      currentUserId
+    );
 
     return () => {
       unsubscribe();
     };
-  }, [handleRefresh, supabase]);
+  }, [currentUserId, handleRefresh, supabase]);
 
   // Kıstas Destek Sohbeti Başlatma
   const handleStartSupport = async () => {

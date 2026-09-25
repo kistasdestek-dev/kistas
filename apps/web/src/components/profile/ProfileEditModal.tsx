@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { X, Camera, Check, Loader2, AlertCircle } from 'lucide-react';
 import { isReservedBrandName } from '@kistas/shared';
 import { createClient } from '@/lib/supabase/browser';
 import { KistasLogo } from '../KistasLogo';
+import { KISTAS_AVATAR_PATHS, resolveAvatarUrl, toLocalKistasAvatarPath, toStoredAvatarUrl } from '@/lib/avatar';
 import type { Profile } from '@kistas/shared';
 
 interface ProfileEditModalProps {
@@ -26,13 +27,43 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   const [draftBio, setDraftBio] = useState(profile?.bio || '');
   const [draftCity, setDraftCity] = useState(profile?.city || '');
   const [draftDistrict, setDraftDistrict] = useState(profile?.district || '');
-  const [draftAvatarUrl, setDraftAvatarUrl] = useState(profile?.avatar_url || '');
+  const [draftAvatarUrl, setDraftAvatarUrl] = useState(
+    toLocalKistasAvatarPath(profile?.avatar_url) || profile?.avatar_url || ''
+  );
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
+
+  useEffect(() => {
+    if (!isOpen || typeof document === 'undefined') return;
+
+    const scrollY = window.scrollY;
+    const previousBody = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+    };
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBody.overflow;
+      document.body.style.position = previousBody.position;
+      document.body.style.top = previousBody.top;
+      document.body.style.width = previousBody.width;
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -113,7 +144,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         bio: draftBio.trim() || null,
         city: draftCity.trim() || null,
         district: draftDistrict.trim() || null,
-        avatar_url: draftAvatarUrl.trim() || null,
+        avatar_url: draftAvatarUrl.trim() ? toStoredAvatarUrl(draftAvatarUrl.trim()) : null,
         updated_at: new Date().toISOString(),
       };
 
@@ -144,9 +175,9 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-hidden p-3 sm:p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200" onClick={onClose}>
       <div
-        className="k-modal-glass-card w-full max-w-lg max-h-[92vh] overflow-y-auto p-6 sm:p-7"
+        className="k-modal-glass-card w-full max-w-lg max-h-[calc(100dvh-1.5rem)] sm:max-h-[92vh] overflow-y-auto overscroll-contain p-5 sm:p-7"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Ambient Top Glow */}
@@ -185,7 +216,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             {draftAvatarUrl ? (
 
               <img
-                src={draftAvatarUrl}
+                src={resolveAvatarUrl(draftAvatarUrl)}
                 alt="Avatar"
                 className="h-full w-full object-cover"
               />
@@ -217,6 +248,29 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             >
               {isUploadingAvatar ? 'Yükleniyor...' : 'Fotoğrafı Değiştir'}
             </button>
+          </div>
+        </div>
+
+        <div className="border-b border-white/10 pb-5">
+          <p className="mb-2.5 text-[11px] font-bold text-[#A1A1AA]">Kıstas avatarları</p>
+          <div className="grid grid-cols-4 gap-2.5" role="radiogroup" aria-label="Kıstas profil avatarları">
+            {KISTAS_AVATAR_PATHS.map((avatarPath, index) => {
+              const selected = toLocalKistasAvatarPath(draftAvatarUrl) === avatarPath;
+              return (
+                <button
+                  key={avatarPath}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  aria-label={`Kıstas avatarı ${index + 1}`}
+                  disabled={saving || isUploadingAvatar}
+                  onClick={() => setDraftAvatarUrl(avatarPath)}
+                  className={`aspect-square overflow-hidden rounded-2xl border p-0.5 transition-all cursor-pointer disabled:opacity-50 ${selected ? 'border-[#60A5FA] bg-[#3B82F6]/20 shadow-[0_0_18px_rgba(59,130,246,.35)]' : 'border-white/10 bg-white/5 hover:border-white/25'}`}
+                >
+                  <img src={avatarPath} alt="" className="h-full w-full rounded-[14px] object-cover" />
+                </button>
+              );
+            })}
           </div>
         </div>
 

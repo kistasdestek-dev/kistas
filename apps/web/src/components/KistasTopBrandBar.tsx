@@ -46,7 +46,7 @@ export const KistasTopBrandBar: React.FC<KistasTopBrandBarProps> = ({
         {/* Logo Plate */}
         <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl sm:rounded-3xl border border-white/20 bg-white/[0.08] p-2 shadow-[0_12px_28px_-4px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-all duration-300 group-hover:scale-105 group-hover:border-[#3B82F6]/60 group-hover:shadow-[0_14px_32px_-4px_rgba(59,130,246,0.4)]">
           <Image
-            src="/kistas-logo-transparent.png"
+            src="/kistas-logo-256.webp"
             alt="Kıstas Logosu"
             width={60}
             height={60}

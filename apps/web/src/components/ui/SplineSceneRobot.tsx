@@ -24,6 +24,7 @@ export const SplineSceneRobot: React.FC<SplineSceneRobotProps> = ({
   useEffect(() => {
     let isCancelled = false;
     let appInstance: { dispose?: () => void } | null = null;
+    let observer: IntersectionObserver | null = null;
 
     const loadSpline = async () => {
       try {
@@ -51,13 +52,32 @@ export const SplineSceneRobot: React.FC<SplineSceneRobotProps> = ({
       }
     };
 
-    const timer = setTimeout(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if ('IntersectionObserver' in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const [entry] = entries;
+          if (entry?.isIntersecting) {
+            loadSpline();
+            observer?.disconnect();
+            observer = null;
+          }
+        },
+        { rootMargin: '200px' }
+      );
+      observer.observe(container);
+    } else {
+      // Fallback for older browsers without IntersectionObserver
       loadSpline();
-    }, 50);
+    }
 
     return () => {
       isCancelled = true;
-      clearTimeout(timer);
+      if (observer) {
+        observer.disconnect();
+      }
       try {
         if (appInstance && typeof appInstance.dispose === 'function') {
           appInstance.dispose();

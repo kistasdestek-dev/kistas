@@ -165,7 +165,7 @@ export async function GET(
     status: 200,
     headers: {
       'Content-Type': 'image/svg+xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=60, s-maxage=120, stale-while-revalidate=600',
+      'Cache-Control': 'public, max-age=600, s-maxage=1800, stale-while-revalidate=86400',
     },
   });
 }

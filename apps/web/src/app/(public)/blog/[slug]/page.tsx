@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
-import { getBlogPostBySlug } from '@kistas/supabase';
+import { cache } from 'react';
+import { createAnonClient, getBlogPostBySlug } from '@kistas/supabase';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
@@ -10,10 +10,16 @@ interface PageProps {
   }>;
 }
 
+export const revalidate = 300;
+
+const getPost = cache(async (slug: string) => {
+  const supabase = createAnonClient();
+  return getBlogPostBySlug(supabase, slug);
+});
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-  const post = await getBlogPostBySlug(supabase, slug);
+  const post = await getPost(slug);
 
   if (!post) {
     return { title: 'Yazı Bulunamadı — Kıstas' };
@@ -27,8 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
-  const supabase = await createClient();
-  const post = await getBlogPostBySlug(supabase, slug);
+  const post = await getPost(slug);
 
   if (!post) {
     notFound();

@@ -20,6 +20,17 @@ const contentSecurityPolicy = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@kistas/shared', '@kistas/supabase', '@kistas/ui'],
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      'date-fns',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-label',
+      '@radix-ui/react-separator',
+    ],
+  },
   allowedDevOrigins: [
     'outer-prompt-magazines-tissue.trycloudflare.com',
     '*.trycloudflare.com',

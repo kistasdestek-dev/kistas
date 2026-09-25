@@ -69,6 +69,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     direction: 'pending' | 'horizontal' | 'vertical';
   } | null>(null);
   const swipeReleaseTimerRef = useRef<number | null>(null);
+  const composerFocusTimerRef = useRef<number | null>(null);
   const supabase = useMemo(() => createClient(), []);
 
   const { isSupport, isOfficialSupport, name, avatarUrl, isVerified } = getConversationIdentity(conversation, currentUserId);
@@ -90,7 +91,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     if (swipeReleaseTimerRef.current !== null) {
       window.clearTimeout(swipeReleaseTimerRef.current);
     }
+    if (composerFocusTimerRef.current !== null) {
+      window.clearTimeout(composerFocusTimerRef.current);
+    }
   }, []);
+
+  const handleComposerFocus = () => {
+    window.requestAnimationFrame(() => scrollToBottom('auto'));
+    if (composerFocusTimerRef.current !== null) {
+      window.clearTimeout(composerFocusTimerRef.current);
+    }
+    composerFocusTimerRef.current = window.setTimeout(() => {
+      scrollToBottom('auto');
+      composerFocusTimerRef.current = null;
+    }, 300);
+  };
 
   const handleMessagePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.pointerType !== 'touch' || !event.isPrimary) return;
@@ -437,6 +452,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 value={inputText}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
+                onFocus={handleComposerFocus}
                 placeholder="Mesajınızı yazın…"
                 className="block w-full bg-transparent resize-none text-[16px] sm:text-sm font-medium leading-7 text-white placeholder-[#728096] focus:outline-none max-h-24 min-h-7"
               />

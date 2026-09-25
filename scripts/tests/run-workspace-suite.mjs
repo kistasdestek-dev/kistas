@@ -21,8 +21,12 @@ const suites = {
   ],
   web: [
     'analytics-consent.test.mjs',
+    'chat-keyboard-viewport.test.mjs',
     'chat-identity.test.mjs',
     'google-identity.test.mjs',
+    'profile-avatar-flow.test.mjs',
+    'public-route-performance.test.mjs',
+    'route-loading.test.mjs',
     'seo-output.test.mjs',
     'web-routing.test.mjs',
   ],
@@ -44,7 +48,7 @@ console.log(`Running ${suiteName} suite (${testFiles.length} files)...`);
 
 for (const testFile of testFiles) {
   const testPath = resolve(import.meta.dirname, testFile);
-  const result = spawnSync(process.execPath, [testPath], {
+  const result = spawnSync(process.execPath, ['--experimental-strip-types', testPath], {
     cwd: projectRoot,
     env: process.env,
     stdio: 'inherit',

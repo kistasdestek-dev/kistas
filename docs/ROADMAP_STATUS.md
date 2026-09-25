@@ -4,6 +4,27 @@
 
 ---
 
+## 🎯 Topluluk & Dağıtım Motoru (Distribution Engine) — Aktif Strateji
+*Kıstas'ın Türkiye'deki bağımsız geliştiricileri kitleyle buluşturan büyüme ve dağıtım omurgası.*
+
+- [x] **Faz 1: Dışa Açılan Virallik Silahları** (Embed rozetleri `/api/badge/[id]`, 30 dk CDN cache, dinamik sosyal medya lansman kartları `/api/og` 7 gün Edge cache, Schema.org JSON-LD yapısal SEO verileri TAMAMLANDI)
+- [ ] **Faz 2: Lansman Günü & Rekabet Heyecanı** (24 saatlik yarış döngüsü, Günün #1 rozetleri, Maker profili)
+- [ ] **Faz 3: Medya Gücü & Makers Ağı** (Haftalık e-posta bülteni, Changelog ile yeniden lansman, Maker AMA)
+- [ ] **Faz 4: Yerli Ekosistem İş Birlikleri** (Kuluçka merkezleri, üniversite girişimcilik kulüpleri)
+
+---
+
+## 🏆 Üst Düzey Üretim Mimarisi (Elite Production Architecture) — MÜHÜRLENDİ
+- [x] **Faz 6: 3D Bundle İzolasyonu & Dynamic Imports**: `@splinetool/runtime` ve Three.js 1.25 MB kütüphanesi IntersectionObserver ile lazy-loading'e alındı; `motion` ölü paketi temizlendi; modallar dinamik import'a geçirildi.
+- [x] **Faz 7: Edge Önbellekleme, Dinamik OG & Dağıtım Motoru SEO**: `/api/og` 7 günlük CDN cache, `/api/badge/[id]` 30 dk CDN cache, Schema.org `SoftwareApplication` JSON-LD yapısal verisi mühürlendi.
+- [x] **Faz 8: Supabase Veri Katmanı Sertleştirmesi & Tip Güvenliği**: Browser Client Singleton cache kuruldu, `inbox_user_${userId}` deterministik kanal ile hayalet abonelikler önlendi, monorepo geneli `database.types.ts` ve `TypedSupabaseClient` mühürlendi.
+- [x] **Faz 9: Playwright E2E & Kritik Kullanıcı Yolculukları**: 9/9 E2E test sıfır hatayla geçti (Keşif, Dağıtım Motoru Rozet/OG, Yetkilendirme Kalkanı, 404 Dayanıklılığı).
+- [x] **Faz 10: Canlı Lansman, Üretim Derlemesi, Yedekleme ve Bayrak Devri**: Next.js 16 App Router Turbopack 24/24 rota tam üretim derlemesi, %100/100 Fortress Sağlık Puanı, `KISTAS_backup_2026-09-24_14-27.zip` resmi yedeği ve `docs/HANDOFF_STATE.md` v3.0 devir teslim el kitabı tamamlandı.
+
+Detaylı yol haritası: `docs/DISTRIBUTION_ROADMAP.md`.
+
+---
+
 ## Web Adaptasyonu — Faz 3 Tamamlandı
 
 - [x] RevenueCat servisi `.native.ts` ve `.web.ts` platform sınırlarına ayrıldı; iOS/Android satın alma davranışı korundu.
@@ -130,4 +151,15 @@ Detaylı sıra: `docs/WEB_ADAPTATION_PLAN.md`.
 - [x] **Regresyon Testleri & Fortress Check**: 67/67 test tam başarılı, 0 TypeScript hatası, %100 / 100 [A+] kale skoru.
 - Detaylı iş akışı ve kapanış kaydı: `docs/FAZ20_DEFENSE_WORKFLOW.md` ve `docs/SECURITY_ROADMAP.md` (SEC-071 - SEC-075).
 
+
+---
+
+## 🛡️ Güvenlik & Topluluk — Yorum Tepkileri (Beğeni / Beğenmeme) Kalkanı KODLANDI
+- [x] **Yorum tepki tablosu mühürlendi**: `project_comment_reactions` — doğrudan yazma kapalı (REVOKE), okuma herkese açık (RLS `SELECT true`); kullanıcı başına tek tepki (`UNIQUE (comment_id, user_id)`).
+- [x] **Atomik toggle RPC**: `toggle_project_comment_reaction()` — SECURITY DEFINER, `SET search_path = ''`, oturum + doğrulanmış üyelik + moderasyon (mute) + adaptif hız limiti (10 sn / 20 istek, 3 ihlalde otonom karantina) kalkanları; aynı tepki geri alınır, zıt tepki değiştirilir; sayaçlar (`likes_count` / `dislikes_count`) tablodan yeniden hesaplanır.
+- [x] **Instagram stili tepki rayı (web)**: `GlassIconButton` standardıyla beğeni/beğenmeme ikonları, sayaç ikonun hemen üzerinde; iyimser güncelleme + hata geri alma; yanıtlar da kapsar.
+- [x] **Tek doğruluk kaynağı**: `packages/shared/src/commentReaction.ts` (UI iyimser geçiş motoru) + `getViewerCommentReactions()` okuma yardımcısı.
+- [x] **Regresyon Testleri**: `node scripts/tests/core-domain.test.mjs` (81/81 başarılı); web/shared/supabase type-check 0 hata.
+- [ ] **Canlı Göç (Bekleniyor)**: `supabase/migrations/20260922000001_comment_reactions.sql` canlı Supabase'e basılacak.
+- Detaylı kapanış kaydı: `docs/SECURITY_ROADMAP.md` (SEC-077).
 

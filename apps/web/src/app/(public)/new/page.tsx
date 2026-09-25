@@ -1,10 +1,11 @@
-import { createClient } from '@/lib/supabase/server';
-import { getCuratedListings } from '@kistas/supabase';
+import { createAnonClient, getCuratedListings } from '@kistas/supabase';
 import Link from 'next/link';
 import { Sparkles, ChevronUp, Calendar } from 'lucide-react';
 
+export const revalidate = 60;
+
 export default async function NewListingsPage() {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
   const dbItems = await getCuratedListings(supabase, 'new', 30);
   const items = dbItems || [];
 

@@ -240,10 +240,7 @@ export const DiscoverExperienceClient: React.FC<DiscoverExperienceClientProps> =
       )}
 
       {/* 10. FOOTER SLOGAN BANNER (Waving bold-on-hover magnetic text) */}
-      <FooterSloganBanner
-        text="Fikirler Kıstas ile Değerlenir"
-        onPress={() => router.push('/browse')}
-      />
+      <FooterSloganBanner text="Fikirler Kıstas ile Değerlenir" />
     </div>
   );
 };

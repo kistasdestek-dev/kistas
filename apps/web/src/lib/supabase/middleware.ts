@@ -1,6 +1,14 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+const PROTECTED_ROUTE_PREFIXES = [
+  '/admin',
+  '/create-listing',
+  '/dashboard',
+  '/messages',
+  '/profile',
+] as const;
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -34,9 +42,11 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') ||
-                           request.nextUrl.pathname.startsWith('/admin') ||
-                           request.nextUrl.pathname.startsWith('/profile');
+  const isProtectedRoute = PROTECTED_ROUTE_PREFIXES.some(
+    (prefix) =>
+      request.nextUrl.pathname === prefix ||
+      request.nextUrl.pathname.startsWith(`${prefix}/`),
+  );
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();

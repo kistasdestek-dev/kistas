@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { BrowseExperienceClient } from '@/components/BrowseExperienceClient';
 
+export const revalidate = 86_400;
+
 export const metadata: Metadata = {
   title: 'Dijital Projeleri Keşfet | Kıstas',
   description:

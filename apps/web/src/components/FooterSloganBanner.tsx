@@ -1,33 +1,19 @@
-'use client';
-
-import React, { useState } from 'react';
+import React from 'react';
 
 export interface FooterSloganBannerProps {
   text?: string;
-  onPress?: () => void;
 }
 
 export const FooterSloganBanner: React.FC<FooterSloganBannerProps> = ({
   text = 'Fikirler Kıstas ile Değerlenir',
-  onPress,
 }) => {
-  const [isActive, setIsActive] = useState(false);
   const chars = text.split('');
 
-  const triggerWave = () => {
-    setIsActive(true);
-    setTimeout(() => setIsActive(false), 1200);
-    onPress?.();
-  };
-
   return (
-    <div className="relative mt-10 mb-2 flex items-center justify-center py-1 text-center select-none">
+    <div className="relative mt-10 mb-2 flex w-full items-center justify-center py-1 text-center select-none">
       <div
-        onClick={triggerWave}
-        role="button"
-        tabIndex={0}
         aria-label={text}
-        className="group inline-flex cursor-pointer items-center justify-center flex-wrap gap-x-0"
+        className="group flex w-full max-w-full flex-wrap items-center justify-center gap-x-0 px-4 text-center"
       >
         {chars.map((char, index) => {
           const delay = `${index * 25}ms`;
@@ -37,11 +23,7 @@ export const FooterSloganBanner: React.FC<FooterSloganBannerProps> = ({
               style={{
                 transitionDelay: delay,
               }}
-              className={`inline-block text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight italic transition-all duration-300 ${
-                isActive
-                  ? 'text-[#3B82F6] -translate-y-2 scale-110'
-                  : 'text-white group-hover:text-[#60A5FA] group-hover:-translate-y-1.5'
-              }`}
+              className="inline-block text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight italic text-white transition-all duration-300 group-hover:text-[#60A5FA] group-hover:-translate-y-1.5"
             >
               {char === ' ' ? '\u00A0' : char}
             </span>

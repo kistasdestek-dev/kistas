@@ -1,7 +1,10 @@
+import { Suspense } from 'react';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { KistasGlassDock } from '@/components/KistasGlassDock';
-import { CinematicFooter } from '@/components/CinematicFooter';
+import { RouteAwareFooter } from '@/components/RouteAwareFooter';
+import { AnalyticsProvider } from '@/components/AnalyticsProvider';
+import { NavigationLoadingOverlay } from '@/components/NavigationLoadingOverlay';
 
 export const metadata: Metadata = {
   title: 'Kıstas — Dijital Proje Vitrini ve Bağımsız Geliştirici Ekosistemi',
@@ -36,7 +39,11 @@ export default function RootLayout({
         </main>
 
         {/* Global Apple-Style Cinematic Footer */}
-        <CinematicFooter />
+        <RouteAwareFooter />
+        <AnalyticsProvider />
+        <Suspense fallback={null}>
+          <NavigationLoadingOverlay />
+        </Suspense>
       </body>
     </html>
   );

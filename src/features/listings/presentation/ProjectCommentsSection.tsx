@@ -1,13 +1,70 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  Animated,
   ActivityIndicator,
   Alert,
   Platform,
 } from 'react-native';
+
+// ── Animated heart reaction button (framer-motion scale bounce → RN Animated) ──
+const ReactionButton: React.FC<{
+  type: 1 | -1;
+  count: number;
+  active: boolean;
+  onPress: () => void;
+}> = ({ type, count, active, onPress }) => {
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const handlePress = () => {
+    Animated.sequence([
+      Animated.timing(scale, { toValue: 1.35, duration: 120, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 18, bounciness: 6 }),
+    ]).start();
+    onPress();
+  };
+
+  const iconName = type === 1
+    ? (active ? 'heart' : 'heart-outline')
+    : (active ? 'heart-dislike' : 'heart-dislike-outline');
+
+  const activeColor = type === 1 ? '#E53935' : '#9E9E9E';
+  const iconColor = active ? activeColor : '#B0B8C4';
+  const countColor = active ? activeColor : '#B0B8C4';
+
+  return (
+    <TouchableOpacity
+      onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={type === 1 ? 'Begen' : 'Begenme'}
+      style={reactionBtnStyle.wrap}
+    >
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <Ionicons name={iconName as any} size={22} color={iconColor} />
+      </Animated.View>
+      {count > 0 && (
+        <Text style={[reactionBtnStyle.count, { color: countColor }]}>{count}</Text>
+      )}
+    </TouchableOpacity>
+  );
+};
+
+const reactionBtnStyle = StyleSheet.create({
+  wrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    padding: 6,
+    borderRadius: 20,
+  },
+  count: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+});
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -60,6 +117,9 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
   const [replyBody, setReplyBody] = useState('');
   const [replyingTo, setReplyingTo] = useState<ProjectComment | null>(null);
   const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [reactionState, setReactionState] = useState<
+    Record<string, { myReaction: 1 | -1 | null; likesCount: number; dislikesCount: number }>
+  >({});
 
   const isProjectOwner = currentUser?.id === sellerId && !isEditorial;
   const canCreateComment = !!currentUser?.isVerified;
@@ -67,7 +127,14 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
 
   const loadComments = useCallback(async () => {
     try {
-      setComments(await ProjectCommentService.getComments(projectId));
+      const loaded = await ProjectCommentService.getComments(projectId);
+      setComments(loaded);
+      // Seed optimistic reaction state from server data
+      const initial: Record<string, { myReaction: 1 | -1 | null; likesCount: number; dislikesCount: number }> = {};
+      loaded.forEach((c) => {
+        initial[c.id] = { myReaction: c.myReaction ?? null, likesCount: c.likesCount, dislikesCount: c.dislikesCount };
+      });
+      setReactionState(initial);
     } catch {
       // The rest of the project detail should remain usable if comments fail.
     } finally {
@@ -123,6 +190,48 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
     await loadComments();
   }, [commentSubmitting, loadComments, projectId, replyBody, replyingTo]);
 
+  const handleToggleReaction = useCallback(async (commentId: string, reaction: 1 | -1) => {
+    if (!currentUser) {
+      onRequireAuth?.();
+      return;
+    }
+    // Optimistic update
+    setReactionState((prev) => {
+      const cur = prev[commentId] ?? { myReaction: null, likesCount: 0, dislikesCount: 0 };
+      const isSame = cur.myReaction === reaction;
+      const wasOpposite = cur.myReaction !== null && cur.myReaction !== reaction;
+      return {
+        ...prev,
+        [commentId]: {
+          myReaction: isSame ? null : reaction,
+          likesCount:
+            reaction === 1
+              ? isSame ? cur.likesCount - 1 : cur.likesCount + 1
+              : wasOpposite ? cur.likesCount - 1 : cur.likesCount,
+          dislikesCount:
+            reaction === -1
+              ? isSame ? cur.dislikesCount - 1 : cur.dislikesCount + 1
+              : wasOpposite ? cur.dislikesCount - 1 : cur.dislikesCount,
+        },
+      };
+    });
+    const result = await ProjectCommentService.toggleReaction(commentId, reaction);
+    if (result.success) {
+      setReactionState((prev) => ({
+        ...prev,
+        [commentId]: {
+          myReaction: result.myReaction ?? null,
+          likesCount: result.likesCount ?? 0,
+          dislikesCount: result.dislikesCount ?? 0,
+        },
+      }));
+    } else if (result.error) {
+      // Rollback optimistic update by reloading
+      void loadComments();
+      Alert.alert('Tepki gönderilemedi', result.error);
+    }
+  }, [currentUser, loadComments, onRequireAuth]);
+
   return (
     <View style={styles.commentsSection}>
       <View style={styles.commentsHeadingRow}>
@@ -137,100 +246,6 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
           accessibilityLabel={`${comments.length} yorum`}
         />
       </View>
-
-      {currentUser && canCreateComment ? (
-        <View style={{ marginBottom: 16 }}>
-          <MessageComposer
-            value={commentBody}
-            onChangeText={setCommentBody}
-            onSend={() => { void handleSubmitComment(); }}
-            busy={commentSubmitting}
-            placeholder="Projeyle ilgili düşünceni paylaş..."
-            label="Proje yorumu"
-            sendLabel="Yorumu yayınla"
-            leading={<ProfileAvatar avatarUrl={currentUser.avatarUrl} size={30} logoSize={26} />}
-          />
-        </View>
-      ) : currentUser ? (
-        <View style={styles.commentAccessRow}>
-          <View style={styles.commentAccessIcon}>
-            <Ionicons name="shield-checkmark-outline" size={17} color="#3269C7" />
-          </View>
-          <View style={styles.commentAccessCopy}>
-            <Text style={styles.commentAccessTitle}>Doğrulanmış üyeler yorum yapabilir</Text>
-            <Text style={styles.commentAccessText}>
-              Hesap güvenliği bölümünden doğrulamanı tamamlayabilirsin.
-            </Text>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.devDialogueChamber}>
-          <LinearGradient
-            pointerEvents="none"
-            colors={['rgba(250, 251, 253, 0.96)', 'rgba(242, 246, 254, 0.88)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.devDialogueGradient}
-          />
-          <View style={styles.devDialogueSpecular} />
-          <BorderBeam
-            size={200}
-            duration={12}
-            delay={0}
-            colorVariant="kistas"
-            borderWidth={1.5}
-            borderRadius={18}
-          />
-
-          {/* 1. GELİŞTİRİCİ DİYALOG BALONU */}
-          <View style={styles.devSpeechRow}>
-            <View style={styles.devAvatarContainer}>
-              <ProfileAvatar avatarUrl={seller?.avatarUrl} size={40} logoSize={32} />
-              <View style={styles.devOnlinePulse} />
-            </View>
-
-            <View style={styles.devSpeechBubble}>
-              <View style={styles.devSpeechTail} />
-              <View style={styles.devSpeechHeader}>
-                <Text style={styles.devSpeechName} numberOfLines={1}>
-                  {cleanMakerName}
-                </Text>
-                <View style={styles.devMakerBadge}>
-                  <Text style={styles.devMakerBadgeText}>Geliştirici</Text>
-                </View>
-              </View>
-              <Text style={styles.devSpeechMessage}>
-                {isEditorial
-                  ? '“Bu kayıt Kıstas editörleri tarafından resmi mağaza bilgileriyle hazırlandı.”'
-                  : comments.length === 0
-                  ? '“Teknik sorularınızı ve geliştirme önerilerinizi doğrudan geliştiriciye iletebilirsiniz.”'
-                  : '“Proje hakkındaki teknik değerlendirmelerinizi ve geliştirme önerilerinizi toplulukla paylaşabilirsiniz.”'}
-              </Text>
-            </View>
-          </View>
-
-          {/* 2. DİYALOG CEVAP DOKU */}
-          <TouchableOpacity
-            style={styles.devReplyDock}
-            activeOpacity={0.88}
-            onPress={onRequireAuth}
-            accessibilityRole="button"
-            accessibilityLabel="Yorum yapmak için giriş yap"
-          >
-            <View style={styles.devReplyInputRow}>
-              <Ionicons name="create-outline" size={17} color="#7A8799" />
-              <Text style={styles.devReplyPlaceholder} numberOfLines={1}>
-                {isEditorial ? 'Proje hakkında yorum yaz...' : `${cleanMakerName}'e doğrudan yanıt yaz...`}
-              </Text>
-            </View>
-
-            <View style={styles.devReplyCtaPill}>
-              <Text style={styles.devReplyCtaText}>Yorum Yap</Text>
-              <Ionicons name="arrow-forward" size={13} color="#3269C7" />
-            </View>
-          </TouchableOpacity>
-        </View>
-      )}
 
       {commentsLoading ? (
         <View style={styles.commentsLoading}>
@@ -278,20 +293,36 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
                     </Text>
                   </View>
                   <Text style={styles.commentText}>{comment.body}</Text>
-                  {isProjectOwner ? (
-                    <TouchableOpacity
-                      style={styles.replyAction}
-                      onPress={() => {
-                        setReplyingTo(comment);
-                        setReplyBody('');
-                      }}
-                      accessibilityRole="button"
-                      accessibilityLabel="Yoruma yanıt ver"
-                    >
-                      <Ionicons name="return-down-forward-outline" size={13} color="#3269C7" />
-                      <Text style={styles.replyActionText}>Yanıtla</Text>
-                    </TouchableOpacity>
-                  ) : null}
+                  <View style={styles.commentActionRow}>
+                    {isProjectOwner ? (
+                      <TouchableOpacity
+                        style={styles.replyAction}
+                        onPress={() => {
+                          setReplyingTo(comment);
+                          setReplyBody('');
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel="Yoruma yanıt ver"
+                      >
+                        <Ionicons name="return-down-forward-outline" size={13} color="#3269C7" />
+                        <Text style={styles.replyActionText}>Yanıtla</Text>
+                      </TouchableOpacity>
+                    ) : <View />}
+                    <View style={styles.reactionRow}>
+                      <ReactionButton
+                        type={1}
+                        count={reactionState[comment.id]?.likesCount ?? comment.likesCount}
+                        active={reactionState[comment.id]?.myReaction === 1}
+                        onPress={() => { void handleToggleReaction(comment.id, 1); }}
+                      />
+                      <ReactionButton
+                        type={-1}
+                        count={reactionState[comment.id]?.dislikesCount ?? comment.dislikesCount}
+                        active={reactionState[comment.id]?.myReaction === -1}
+                        onPress={() => { void handleToggleReaction(comment.id, -1); }}
+                      />
+                    </View>
+                  </View>
                 </View>
               </View>
 
@@ -334,6 +365,101 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
               ) : null}
             </View>
           ))}
+        </View>
+      )}
+
+      {/* ── COMPOSER — always at the bottom ── */}
+      {currentUser && canCreateComment ? (
+        <View style={styles.composerWrap}>
+          <MessageComposer
+            value={commentBody}
+            onChangeText={setCommentBody}
+            onSend={() => { void handleSubmitComment(); }}
+            busy={commentSubmitting}
+            placeholder="Projeyle ilgili düşünceni paylaş..."
+            label="Proje yorumu"
+            sendLabel="Yorumu yayınla"
+            leading={<ProfileAvatar avatarUrl={currentUser.avatarUrl} size={30} logoSize={26} />}
+          />
+        </View>
+      ) : currentUser ? (
+        <View style={styles.commentAccessRow}>
+          <View style={styles.commentAccessIcon}>
+            <Ionicons name="shield-checkmark-outline" size={17} color="#3269C7" />
+          </View>
+          <View style={styles.commentAccessCopy}>
+            <Text style={styles.commentAccessTitle}>Doğrulanmış üyeler yorum yapabilir</Text>
+            <Text style={styles.commentAccessText}>
+              Hesap güvenliği bölümünden doğrulamanı tamamlayabilirsin.
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.devDialogueChamber}>
+          <LinearGradient
+            pointerEvents="none"
+            colors={['rgba(250, 251, 253, 0.96)', 'rgba(242, 246, 254, 0.88)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.devDialogueGradient}
+          />
+          <View style={styles.devDialogueSpecular} />
+          <BorderBeam
+            size={200}
+            duration={12}
+            delay={0}
+            colorVariant="kistas"
+            borderWidth={1.5}
+            borderRadius={18}
+          />
+
+          {/* GELİŞTİRİCİ DİYALOG BALONU */}
+          <View style={styles.devSpeechRow}>
+            <View style={styles.devAvatarContainer}>
+              <ProfileAvatar avatarUrl={seller?.avatarUrl} size={40} logoSize={32} />
+              <View style={styles.devOnlinePulse} />
+            </View>
+
+            <View style={styles.devSpeechBubble}>
+              <View style={styles.devSpeechTail} />
+              <View style={styles.devSpeechHeader}>
+                <Text style={styles.devSpeechName} numberOfLines={1}>
+                  {cleanMakerName}
+                </Text>
+                <View style={styles.devMakerBadge}>
+                  <Text style={styles.devMakerBadgeText}>Geliştirici</Text>
+                </View>
+              </View>
+              <Text style={styles.devSpeechMessage}>
+                {isEditorial
+                  ? '"Bu kayıt Kıstas editörleri tarafından resmi mağaza bilgileriyle hazırlandı."'
+                  : comments.length === 0
+                  ? '"Teknik sorularınızı ve geliştirme önerilerinizi doğrudan geliştiriciye iletebilirsiniz."'
+                  : '"Proje hakkındaki teknik değerlendirmelerinizi ve geliştirme önerilerinizi toplulukla paylaşabilirsiniz."'}
+              </Text>
+            </View>
+          </View>
+
+          {/* DİYALOG CEVAP DOKU */}
+          <TouchableOpacity
+            style={styles.devReplyDock}
+            activeOpacity={0.88}
+            onPress={onRequireAuth}
+            accessibilityRole="button"
+            accessibilityLabel="Yorum yapmak için giriş yap"
+          >
+            <View style={styles.devReplyInputRow}>
+              <Ionicons name="create-outline" size={17} color="#7A8799" />
+              <Text style={styles.devReplyPlaceholder} numberOfLines={1}>
+                {isEditorial ? 'Proje hakkında yorum yaz...' : `${cleanMakerName}'e doğrudan yanıt yaz...`}
+              </Text>
+            </View>
+
+            <View style={styles.devReplyCtaPill}>
+              <Text style={styles.devReplyCtaText}>Yorum Yap</Text>
+              <Ionicons name="arrow-forward" size={13} color="#3269C7" />
+            </View>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -590,6 +716,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(50,105,199,0.09)',
   },
+  composerWrap: {
+    marginTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(50,105,199,0.09)',
+    paddingTop: 14,
+  },
   commentThread: {
     paddingVertical: 15,
     borderBottomWidth: 1,
@@ -607,8 +739,20 @@ const styles = StyleSheet.create({
   commentAuthor: { color: '#25364E', fontSize: 11.5, fontWeight: '700', maxWidth: '55%' },
   commentDate: { color: '#3269C7', fontSize: 9.5, marginLeft: 'auto' },
   commentText: { color: '#25364E', fontSize: 12.5, lineHeight: 18.5, marginTop: 5 },
-  replyAction: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 7, paddingVertical: 2 },
+  commentActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  replyAction: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 2 },
   replyActionText: { color: '#3269C7', fontSize: 10.5, fontWeight: '700' },
+  reactionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  // reaction button styles live in reactionBtnStyle (module-level StyleSheet)
   replyRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',

@@ -183,7 +183,7 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 | SEC-008 | Eski alan adindaki KVKK iletisim adresi ve paylasim URL'leri | 6/7 | P2 | DUZELTILDI | Codex / kullanici | Canli gizlilik metni ve blog linkleri dogrulandi; kistasdestek@gmail.com gercek teslimat testi kullanicida bekliyor (hedef 2026-09-15) |
 | SEC-009 | Expo arac zincirinde dolayli uuid guvenlik uyarisi | 6 | P2 | RISK_KABUL | Codex | `npm audit --omit=dev --audit-level=high`: 0 high/critical, 26 moderate; duzeltme yok, sonraki Expo surumunde yeniden degerlendirilecek |
 | SEC-010 | Supabase Auth e-posta teslimati ve sifre kurtarma | 6/7 | P2 | KISMI | Codex / kullanici | SMTP teslimati, Gmail SPF/DKIM/DMARC PASS ve kurtarma ekranina yonlendirme dogrulandi. Turkce Kistas sablonuyla yeni kurtarma postasi Gmail Gelen Kutusu'na ulasti; yeni sifre kaydi ve yeni kayit dogrulamasi bekliyor (hedef 2026-09-15). |
-| SEC-011 | GA4 URL token sizintisi ve izinsiz analitik | 6/7 | P1 | DOGRULANDI | Codex | 2026-09-14: Google kodu yalniz istege bagli onaydan sonra yuklenir; URL query/hash analitige gonderilmez. `node scripts/tests/analytics-consent.test.mjs` onay yok, onay, tokenli URL ve ret senaryolarindan gecti. |
+| SEC-011 | GA4 URL token sizintisi ve izinsiz analitik | 6/7 | P1 | DOGRULANDI | Sayra | 2026-09-24: Consent-first GA4 korumasi Next.js/Workers mimarisine tasindi. Google kodu yalniz istege bagli onaydan sonra yuklenir; reklam depolamasi kapali kalir, URL query/hash analitige gonderilmez ve ret sonrasi GA devre disi birakilir. Birim ve Playwright tarayici regresyonlari basarili. |
 | SEC-012 | Google OAuth teknik alan adi ve marka guveni | 1/6 | P2 | DUZELTILDI | Codex | Dogrudan Google Identity ID token, kriptografik nonce, FedCM ve CSP regresyon testi; canli hesap secici testi bekliyor |
 | SEC-013 | Anonim Profil PII Sızıntısı ve Hassas Kolon İfşası (CLS & RLS Kalkanı) | 2 | P1 | DOGRULANDI | Antigravity | `20260917000002_harden_profiles_pii_and_storage.sql`, `AuthService.ts`, `ProfileService.ts`, `User.ts`, tsc (0 hata) + core-domain (37/37) |
 | SEC-014 | Depolama Kovanı Anonim Dosya Yükleme Kısıtlaması (Storage RLS Hardening) | 4 | P1 | DOGRULANDI | Antigravity | `20260917000002_harden_profiles_pii_and_storage.sql`, `storage.objects` authenticated INSERT ve DELETE kuralı, pentest artık temizliği |
@@ -1041,3 +1041,96 @@ Production veya magazaya cikis icin:
 - Canlı Supabase testi, Cloudflare deploy ve migration CI dışında bırakıldı. Eski Pages geri dönüş yayınına ve veritabanına dokunulmadı.
 - Yerel kanıt: frozen kurulum, workflow YAML ayrıştırması, birleşik audit, vinext build ve Wrangler dry-run başarılıdır. Worker paketi 327 modül / 2,41 MiB gzip olarak doğrulandı; uzak GitHub Actions koşusu push sonrasına beklemektedir.
 
+### 2026-09-24 - Consent-first GA4 Next.js / Workers geçişi
+
+- Eski Expo `App.tsx` akışında kalan `G-2XXP5LHME9` entegrasyonu, canlıda kullanılan `apps/web` App Router köküne bağımsız Analytics sağlayıcısı olarak taşındı.
+- Google etiketi varsayılan olarak yüklenmez. Kullanıcı açıkça kabul ederse yüklenir; `ad_storage`, `ad_user_data` ve `ad_personalization` daima `denied`, Google Signals ve reklam kişiselleştirmesi kapalıdır.
+- `page_view` yalnız temiz pathname ile gönderilir; query ve hash içindeki kurtarma/OAuth tokenları Analytics payload'una alınmaz. Ret veya tercih sıfırlamada `ga-disable-G-2XXP5LHME9` etkinleşir.
+- Footer üzerinden analitik tercihi yeniden açılabilir. Yeni tablo, RPC, migration, kimlik yetkisi, secret veya kullanıcı PII alanı eklenmedi.
+- Zorunlu kontrol: PII/secret sızıntısı negatif testi ✔, onaysız istek testi ✔, ret sonrası ölçüm kesme testi ✔, tekrar script yükleme koruması ✔, CSP allowlist uyumu ✔.
+- Regresyon: web testleri 5/5, Playwright Analytics testi 1/1, TypeScript 0 hata, ESLint 0 hata/uyarı, `sayos:security`, Next production build ve Vinext Workers build başarılıdır.
+- Yayın: Cloudflare Worker sürümü `491a228f-3536-4366-aad9-d940a60e2c47`, `www.kistas.com.tr/*` production rotasına dağıtıldı.
+- Canlı kanıt: temiz tarayıcıda onay öncesi Analytics isteği 0; kabul sonrası `gtag.js?id=G-2XXP5LHME9` ve `google-analytics.com/g/collect` üzerinden `tid=G-2XXP5LHME9`, `dp=/`, `en=page_view` isteği görüldü. Test URL'sindeki query/hash tokenı payload'a girmedi ve reklam kişiselleştirmesi kapalı kaldı.
+- Geri dönüş: `AnalyticsProvider` kök layout'tan çıkarılır; Analytics istemcisi ve footer tercih aksiyonu kaldırılır. Veritabanı veya harici servis durumu değişmedi.
+
+### 2026-09-24 - Global Kıstas glass rota yükleme katmanı
+
+- Next.js App Router kök `loading.tsx` sınırı ve istemci içi link geçişlerini anında yakalayan global navigasyon katmanı eklendi. Dış bağlantılar, yeni sekme kısayolları, indirmeler ve aynı rota tıklamaları kapsam dışıdır.
+- Tam ekran katman ortak `KistasLogo` bileşenini kullanır; koyu glass zemin, 24 px backdrop blur ve reduced-motion uyumlu pulse animasyonu içerir. Gerçek yükleme süresine yapay gecikme eklenmez.
+- Başarısız navigasyonda arayüzün kilitli kalmasını önleyen 12 saniyelik fail-safe bulunur; pathname veya query değiştiğinde katman otomatik kapanır.
+- Yeni secret, dış servis, veri yazımı, migration, RPC, yetki veya PII işleme eklenmedi. Güvenlik taraması, web regresyonları 6/6, TypeScript, ESLint, Next build, Vinext Workers build ve dry-run başarılıdır.
+- Yayın: Cloudflare Worker sürümü `b25ab285-7970-4807-b38c-ee9e80c3a149`, `www.kistas.com.tr/*` production rotasına dağıtıldı.
+- Canlı kanıt: `/` → `/blog` geçişi 1,6 saniye yavaşlatılarak test edildi; loader görünür, logo mevcut ve `backdrop-filter: blur(24px)` olarak doğrulandı. Hedef rota hazır olduğunda loader otomatik kapandı.
+- Geri dönüş: `NavigationLoadingOverlay` kök layout'tan ve `app/loading.tsx` kaldırılır; veritabanı veya altyapı durumu değişmez.
+
+### 2026-09-24 - Eski Expo rota yükleyicisi görsel geri dönüşü
+
+- Global rota yakalama ve 12 saniyelik fail-safe korunurken koyu glass perde, blur ve cam kutu kaldırıldı.
+- Eski Expo `LoadingOverlay` tasarımındaki 52 px logo, 90 px radial mavi aura, 100 px merkez alanı ve 2,2 saniyelik nefes animasyonu Next.js katmanına taşındı.
+- `prefers-reduced-motion` kullanıcıları için animasyon kapatılır. Katman şeffaf ve `pointer-events: none` olduğundan yeni bir yetki, veri, girdi, dış URL, Analytics, PII veya secret yüzeyi oluşturmaz.
+- Zorunlu kontrol: RLS/RPC/migration kapsam dışı ✔, yeni credential yok ✔, dış URL/girdi yok ✔, log/PII yok ✔, geri dönüş yalnız görsel CSS ve loader bileşeninin önceki sürümüne alınmasıdır ✔.
+- Regresyon: web testleri 6/6, TypeScript, ESLint, Next production build, Vinext Workers build ve Wrangler dry-run başarılıdır.
+- Yayın: Cloudflare Worker sürümü `b45ced73-6832-4517-be2b-6e939a1da462`, `www.kistas.com.tr/*` production rotasına dağıtıldı.
+- Canlı kanıt: ana sayfa HTTP 200; yayınlanan CSS'te şeffaf zemin, 100/90 px katmanlar, 2,2 saniyelik logo/aura animasyonları ve reduced-motion kuralı doğrulandı.
+
+### 2026-09-24 - Public rota gecikme ve cache sertleştirmesi
+
+- `/browse` gibi anonim ve statik rotalar global Supabase `auth.getUser()` proxy çağrısından çıkarıldı; gereksiz dış ağ beklemesi kaldırıldı.
+- `/browse`, Vinext Worker katmanında açık `86.400` saniyelik ISR politikasına alındı; kullanıcıya özel veri içermeyen kategori kabuğu edge cache üzerinden sunulur.
+- Proxy kapsamı `/admin`, `/create-listing`, `/dashboard`, `/messages` ve `/profile` ile sınırlandı. Bu rotalar hem proxy katmanında hem sayfa seviyesindeki `requireUser` / `requireAdmin` kontrollerinde korunur.
+- Fingerprintli `/_next/static/*` dosyaları ve sürümlenmiş kategori ikonları için bir yıllık `immutable` tarayıcı cache kuralı eklendi.
+- Navigasyon loaderı 150 ms eşikten önce gösterilmez; hızlı geçişlerde görsel parlama oluşmaz ve rotaya yapay minimum bekleme eklenmez.
+- Global navigasyonun Supabase tarayıcı istemcisi statik başlangıç bağımlılığından çıkarılıp hydration sonrası dinamik parçaya ayrıldı; mevcut `getSession` ve `onAuthStateChange` davranışı korunur.
+- Global menü `/browse` RSC yükünü hydration başlar başlamaz proaktif prefetch eder; kullanıcı tıklaması ağ isteğinin tamamlanmasını beklemez.
+- Yeni secret, veri yazımı, RPC, migration veya PII işleme eklenmedi. Anonim korumalı rota testleri ve public rota performans sözleşmesi yayın kapısında çalıştırılır.
+- Regresyon: web testleri 7/7, TypeScript, ESLint, Vinext Workers build ve Wrangler dry-run başarılıdır.
+- Yayın: Cloudflare Worker sürümü `38978b64-7b6a-400e-8b1b-cac978fd9dbc`, `www.kistas.com.tr/*` production rotasına dağıtıldı.
+- Canlı kanıt: `/browse` ilk istekte `MISS`, devamında `X-Vinext-Cache: HIT` ve `CF-Cache-Status: HIT`; fingerprintli chunk `public, max-age=31556952, immutable`; ön yüklenmiş ana sayfa → Göz At geçişi 179 ms. Anonim `/admin`, `/create-listing`, `/messages` ve `/profile` isteklerinin tamamı HTTP 307 ile girişe yönlendirildi.
+
+### 2026-09-24 - Public veri ISR ve niyet tabanlı prefetch optimizasyonu
+
+- Ana sayfa, kategori, platform, yeni, popüler ve blog public okumaları cookie tabanlı sunucu istemcisinden çıkarılıp yalnız anon anahtar ve RLS kullanan `createAnonClient` akışına taşındı. Böylece `cookies()` kaynaklı dinamik render/cache bypass kaldırıldı.
+- Ana sayfa, yeni ve popüler rotaları 60 saniye; blog 300 saniye; kategori kabuğu mevcut ISR süreleriyle edge cache kullanır.
+- Göz At ekranındaki 20 kategori/platform rotasının görünür olur olmaz toplu prefetch edilmesi kapatıldı. Prefetch yalnız pointer, klavye odağı veya dokunma niyetinde başlar.
+- Curated proje sorgusu `select('*')` yerine vitrin bileşenlerinin kullandığı alanları ve sınırlı ilişkisel kolonları seçer.
+- Web arayüzündeki 1024 px / 90 KB logo kaynağı, şeffaflığı koruyan 256 px / yaklaşık 8,5 KB WebP türevine geçirildi; orijinal marka kaynağı korunurken ilk yükte yaklaşık 81 KB transfer azaltıldı.
+- Public istemci kullanıcı JWT'si taşımaz; veri görünürlüğü mevcut anonim RLS politikalarıyla sınırlıdır. Korumalı rotaların proxy ve `requireUser` / `requireAdmin` zinciri değişmedi.
+- Regresyon: public rota performans testi, web ve Supabase TypeScript kontrolleri, ESLint, web testleri 7/7, `sayos:security`, Next üretim derlemesi, Vinext Workers derlemesi ve Wrangler dry-run başarılıdır.
+- Yayın: Cloudflare Worker sürümü `1bc22f09-28b5-4b09-9089-e81e14da7ac5`, `www.kistas.com.tr/*` production rotasına dağıtıldı.
+- Canlı kanıt: ana sayfa cache durumu `MISS → HIT`, `/browse` devam isteği `HIT`; anonim `/admin`, `/create-listing`, `/messages` ve `/profile` istekleri HTTP 307 ile girişe yönlendirildi. Göz At ağ çağrıları 20'den 5'e, toplam aktarım yaklaşık 880 KB'den 534 KB'ye düştü; ana sayfa aktarımı yaklaşık 675 KB'den 409 KB'ye indi. Logo yanıtı 8.492 bayt ve bir haftalık tarayıcı cache'iyle sunuluyor.
+
+### 2026-09-24 - SEC-051 Public vitrin yetki regresyonu
+
+- Kaynak / öncelik: Kullanıcı bildirimi, P0 kullanılabilirlik regresyonu. Canlı ana sayfa aktif projeler bulunmasına rağmen boş vitrin gösterdi.
+- Kök neden: Public curated sorguya eklenen `seller:profiles(...)` ilişkisi, anonim rolün PII izolasyonu gereği doğrudan `profiles` tablosuna erişememesi nedeniyle PostgREST `42501` hatası üretti; sorgu katmanı bu hatayı boş diziye çevirdi.
+- Düzeltme: Public liste, detay ve curated sorgularından yasaklı doğrudan profil ilişkisi kaldırıldı. Proje ve görsel verileri mevcut anon RLS politikaları üzerinden okunur; profil PII izolasyonu gevşetilmez.
+- Hata yönetimi: Yetki/şema hataları artık sahte “boş vitrin” sonucuna çevrilmez; güvenli hata koduyla sunucu katmanına yükseltilir. Gerçek bulunamayan proje davranışı korunur.
+- Negatif regresyon: Public sorgu kaynağında `seller:profiles(...)` ilişkisinin bulunmaması ve curated hatalarının sessiz yutulmaması otomatik performans/güvenlik sözleşmesine eklendi.
+- Veri etkisi: Silme, güncelleme, migration, RPC, secret veya yeni public erişim yoktur. Canlı anon doğrulamada aktif projeler ve görseller başarıyla okunmuş, doğrudan `profiles` erişimi kapalı kalmıştır.
+- Regresyon ve yayın: Supabase/web TypeScript, ESLint, web testleri 7/7, `sayos:security`, Next build, Vinext Workers build ve Wrangler dry-run başarılıdır. Cloudflare Worker `18d47274-348f-4ca0-b7b8-88680bf1ed30` production rotasına dağıtıldı.
+- Canlı kanıt: Mobil viewport testinde “Vitrin Henüz Boş” görünmedi; Günün Vitrini ve Popüler Projeler gerçek proje kartlarıyla render edildi. `Notein`, `Getir` ve `Shots – Yapay Zeka Foto Video` başlıkları doğrulandı. Anonim korumalı rotaların tamamı HTTP 307 ile girişe yönlenmeye devam etti.
+
+### 2026-09-24 - Navbar aynı rota navigasyon koruması
+
+- Aktif navbar sekmesine tekrar basıldığında aynı pathname için Next.js navigasyonu başlatılmaz; gereksiz RSC isteği, loader ve ekran yenilenmesi önlenir.
+- Koruma yalnız tam pathname eşleşmesinde çalışır. Alt rotadan ana sekmeye veya farklı bir ekrana geçiş davranışı değişmez.
+- Aktif sekmeye `aria-current="page"` semantiği eklendi. Yeni veri erişimi, dış URL, girdi, secret, yetki, RPC veya migration bulunmaz.
+- Geri dönüş: `KistasGlassDock` içindeki `handleNavClick`, link `onClick` ve ilgili regresyon sözleşmesi kaldırılır.
+- Yayın: Cloudflare Worker `e7ac7c34-01a2-4560-b0e0-cf9d0ef44f83` production rotasına dağıtıldı. Canlı 390 px viewport testinde aktif Keşfet sekmesine tekrar basılması `0` ağ isteği üretti.
+
+### 2026-09-24 - iOS mesaj klavyesi viewport sabitlemesi
+
+- iOS Safari'de textarea odağı sırasında değişen `visualViewport.height` yanında `visualViewport.offsetTop` da izlenir; sabit mesaj katmanı görünür ekranın üst sınırına taşınır.
+- `visualViewport` resize ve scroll olayları birlikte takip edilir, unmount sırasında dinleyiciler ve CSS değişkenleri temizlenir.
+- Composer odaklandığında mesaj akışı yalnız kendi scroll alanında en alta alınır; dış belge scroll'u değiştirilmez.
+- Yeni veri erişimi, kullanıcı girdisi işleme kuralı, dış URL, secret, yetki, RPC veya migration eklenmedi. Değişiklik mobil görünür viewport ve sunum katmanıyla sınırlıdır.
+- Regresyon sözleşmesi iOS viewport yüksekliği/konumu, listener temizliği ve composer odak davranışını doğrular.
+- Regresyon ve yayın: Web testleri 8/8, TypeScript, ESLint, `sayos:security`, Next build, Vinext Workers build ve Wrangler dry-run başarılıdır. Cloudflare Worker `e7ac7c34-01a2-4560-b0e0-cf9d0ef44f83` production rotasına dağıtıldı.
+- Canlı paket kanıtı: Yayınlanan mesaj istemci parçasında `visualViewport.offsetTop`, `--k-messages-vtop`, resize/scroll izleme ve listener temizliği mevcuttur. Anonim `/messages` erişimi HTTP 307 ile girişe yönlenmeye devam eder. Fiziksel iOS klavye davranışı Mimar cihazında doğrulanacaktır.
+
+### 2026-09-24 - Mobil footer sloganı merkezleme düzeltmesi
+
+- `Fikirler Kıstas ile Değerlenir` sloganının harf animasyonu korunurken mobil kapsayıcı gerçek tam genişliğe alındı.
+- Eşit yatay padding, `max-w-full`, `justify-center` ve `text-center` ile italik harflerin içerik genişliği kaynaklı görsel kayması engellendi.
+- Yeni veri, girdi, dış URL, secret, yetki, RPC veya migration eklenmedi. Değişiklik yalnız sunum katmanındadır.
+- Yayın: Cloudflare Worker `e7ac7c34-01a2-4560-b0e0-cf9d0ef44f83` production rotasına dağıtıldı. Canlı 390 px viewport ölçümünde metnin ekran merkezinden sapması `0 px` olarak doğrulandı.

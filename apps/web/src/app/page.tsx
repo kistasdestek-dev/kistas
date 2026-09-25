@@ -1,13 +1,12 @@
 import React from 'react';
-import { createClient } from '@/lib/supabase/server';
 import { DiscoverExperienceClient } from '@/components/DiscoverExperienceClient';
-import { getCuratedListings, getCategories } from '@kistas/supabase';
+import { createAnonClient, getCuratedListings, getCategories } from '@kistas/supabase';
 import type { Listing, Category } from '@kistas/shared';
 
 export const revalidate = 60; // 1 minute ISR
 
 export default async function HomePage() {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   // RSC: Public read from listings and categories
   const [dbListings, dbCategories] = await Promise.all([

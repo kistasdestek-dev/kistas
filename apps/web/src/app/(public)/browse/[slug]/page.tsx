@@ -1,7 +1,7 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { getCategories, getCuratedListings } from '@kistas/supabase';
+import { createAnonClient, getCategories, getCuratedListings } from '@kistas/supabase';
 import { DiscoverExperienceClient } from '@/components/DiscoverExperienceClient';
 
 export const revalidate = 60;
@@ -10,12 +10,12 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function resolveCategory(slug: string) {
-  const supabase = await createClient();
+const resolveCategory = cache(async (slug: string) => {
+  const supabase = createAnonClient();
   const categories = await getCategories(supabase);
   const category = categories.find((item) => item.slug === slug);
   return { supabase, categories, category };
-}
+});
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;

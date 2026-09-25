@@ -22,7 +22,6 @@ import { useAuth, useAuthActions, useChatUnreadCount, useWallet } from '../../..
 import { KistasLogo } from '../../../shared/components/KistasLogo';
 import { KistasTopBrandBar } from '../../../shared/components/KistasTopBrandBar';
 import { GlassIconButton } from '../../../shared/components/GlassIconButton';
-import { SITE_ORIGIN } from '../../../core/config/siteUrls';
 import { AutoTransparentLogo } from '../../../shared/components/AutoTransparentLogo';
 import { ProfileService, isReservedBrandName } from '../application/ProfileService';
 import { Listing } from '../../listings/domain/Listing';
@@ -165,8 +164,6 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
   const { signOut, refreshProfile } = useAuthActions();
   const { credits } = useWallet();
   const unreadMessagesCount = useChatUnreadCount();
-  const [selectedBadgeType, setSelectedBadgeType] = useState<'markdown' | 'html'>('markdown');
-  const [isBadgeCodeModalOpen, setIsBadgeCodeModalOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draftName, setDraftName] = useState('');
   const [draftBio, setDraftBio] = useState('');
@@ -435,10 +432,7 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
       setEditing(false);
     } finally { setSaving(false); }
   };
-  const badgeMarkdownCode = `[![Featured on Kıstas](${SITE_ORIGIN}/badges/featured-dark.svg)](${SITE_ORIGIN})`;
-  const badgeHtmlCode = `<a href="${SITE_ORIGIN}" target="_blank" rel="noopener noreferrer"><img src="${SITE_ORIGIN}/badges/featured-dark.svg" alt="Featured on Kıstas" style="height: 54px;" /></a>`;
 
-  const selectedBadgeCode = selectedBadgeType === 'markdown' ? badgeMarkdownCode : badgeHtmlCode;
 
   const handleSignOut = () => {
     setIsSignOutModalOpen(true);
@@ -522,7 +516,6 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
       <KistasTopBrandBar style={styles.brandBar} />
       <View style={styles.pageHeader}>
         <View>
-          <Text style={styles.pageEyebrow}>SANA AİT ALAN</Text>
           <Text style={styles.pageTitle}>Profil</Text>
         </View>
         <View style={styles.headerButtonsRow}>
@@ -583,53 +576,53 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
             </View>
           </View>
         </View>
-
-        <View style={[styles.profileAside, wide && styles.profileAsideWide]}>
-          <View style={styles.walletCard}>
-            <View style={styles.walletHeader}>
-              <View style={styles.walletHeading}>
-                <GlassIconButton icon="wallet-outline" size={38} iconSize={18} />
-                <Text style={styles.walletEyebrow}>KISTAS CÜZDAN</Text>
-              </View>
-              <Text style={styles.walletCaption}>Kullanılabilir bakiye</Text>
-            </View>
-            <View style={styles.walletBalanceRow}>
-              <View style={[styles.creditRow, boostCredits.toLocaleString('tr-TR').length > 6 && styles.creditRowLarge]}>
-                <Text style={[styles.creditValue, boostCredits.toLocaleString('tr-TR').length > 6 && styles.creditValueCompact]}>{boostCredits.toLocaleString('tr-TR')}</Text>
-                <Text style={styles.creditUnit}>kredi</Text>
-              </View>
-              <View style={styles.walletActions}>
-                <TouchableOpacity activeOpacity={0.72} onPress={openCreditHistory} style={styles.creditHistoryButton} accessibilityRole="button" accessibilityLabel="Kredi hareketlerini aç">
-                  <Text style={styles.creditHistoryButtonText}>Hareketler</Text>
-                  <GlassIconButton icon="receipt-outline" size={30} iconSize={16} />
-                </TouchableOpacity>
-                <TouchableOpacity activeOpacity={0.72} onPress={onNavigateToCredits} style={styles.creditButton} accessibilityRole="button" accessibilityLabel="Kredi mağazasını aç">
-                  <Text style={styles.creditButtonText}>Kredi al</Text>
-                  <GlassIconButton icon="add" size={30} iconSize={18} />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.primaryActions}>
-            <TouchableOpacity activeOpacity={0.72} onPress={onNavigateToLaunch} style={[styles.primaryAction, styles.launchAction]} accessibilityRole="button" accessibilityLabel="Yeni lansman oluştur">
-              <GlassIconButton icon="rocket-outline" size={36} iconSize={18} />
-              <Text style={styles.primaryActionTitle}>Yeni lansman</Text>
-            </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.72} onPress={onOpenMessages} style={styles.primaryAction} accessibilityRole="button" accessibilityLabel="Mesajlar">
-              <GlassIconButton icon="chatbubble-ellipses-outline" size={36} iconSize={18} badge={unreadMessagesCount > 0 ? (unreadMessagesCount > 9 ? '9+' : unreadMessagesCount) : undefined} />
-              <Text style={styles.primaryActionTitle}>Mesajlar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.72} onPress={onOpenSupport} style={styles.primaryAction} accessibilityRole="button" accessibilityLabel="Kıstas desteğe ulaş">
-              <GlassIconButton icon="headset-outline" size={36} iconSize={18} />
-              <Text style={styles.primaryActionTitle}>Destek</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
       </View>
 
       <View style={[styles.profileColumns, styles.profileDetails, wide && styles.profileColumnsWide]}>
       <View style={styles.profileMain}>
+        {/* 1. Kıstas Cüzdan Kartı */}
+        <View style={styles.walletCard}>
+          <View style={styles.walletHeader}>
+            <View style={styles.walletHeading}>
+              <GlassIconButton icon="wallet-outline" size={38} iconSize={18} />
+              <Text style={styles.walletEyebrow}>KISTAS CÜZDAN</Text>
+            </View>
+            <Text style={styles.walletCaption}>Kullanılabilir bakiye</Text>
+          </View>
+          <View style={styles.walletBalanceRow}>
+            <View style={[styles.creditRow, boostCredits.toLocaleString('tr-TR').length > 6 && styles.creditRowLarge]}>
+              <Text style={[styles.creditValue, boostCredits.toLocaleString('tr-TR').length > 6 && styles.creditValueCompact]}>{boostCredits.toLocaleString('tr-TR')}</Text>
+              <Text style={styles.creditUnit}>kredi</Text>
+            </View>
+            <View style={styles.walletActions}>
+              <TouchableOpacity activeOpacity={0.72} onPress={openCreditHistory} style={styles.creditHistoryButton} accessibilityRole="button" accessibilityLabel="Kredi hareketlerini aç">
+                <Text style={styles.creditHistoryButtonText}>Hareketler</Text>
+                <GlassIconButton icon="receipt-outline" size={30} iconSize={16} />
+              </TouchableOpacity>
+              <TouchableOpacity activeOpacity={0.72} onPress={onNavigateToCredits} style={styles.creditButton} accessibilityRole="button" accessibilityLabel="Kredi mağazasını aç">
+                <Text style={styles.creditButtonText}>Kredi al</Text>
+                <GlassIconButton icon="add" size={30} iconSize={18} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* 2. Hızlı Aksiyonlar */}
+        <View style={[styles.primaryActions, { marginBottom: 20 }]}>
+          <TouchableOpacity activeOpacity={0.72} onPress={onNavigateToLaunch} style={[styles.primaryAction, styles.launchAction]} accessibilityRole="button" accessibilityLabel="Yeni lansman oluştur">
+            <GlassIconButton icon="rocket-outline" size={36} iconSize={18} />
+            <Text style={styles.primaryActionTitle}>Yeni lansman</Text>
+          </TouchableOpacity>
+          <TouchableOpacity activeOpacity={0.72} onPress={onOpenMessages} style={styles.primaryAction} accessibilityRole="button" accessibilityLabel="Mesajlar">
+            <GlassIconButton icon="chatbubble-ellipses-outline" size={36} iconSize={18} badge={unreadMessagesCount > 0 ? (unreadMessagesCount > 9 ? '9+' : unreadMessagesCount) : undefined} />
+            <Text style={styles.primaryActionTitle}>Mesajlar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity activeOpacity={0.72} onPress={onOpenSupport} style={styles.primaryAction} accessibilityRole="button" accessibilityLabel="Kıstas desteğe ulaş">
+            <GlassIconButton icon="headset-outline" size={36} iconSize={18} />
+            <Text style={styles.primaryActionTitle}>Destek</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Lansmanlarım & Projelerim Takip Bölümü */}
         <View style={styles.sectionHeaderRow}>
           <View>
@@ -863,118 +856,10 @@ export const ProfileAndWalletScreen: React.FC<ProfileAndWalletScreenProps> = ({
           />
         </View>
 
-      <View style={styles.badgeStudio}>
-        <View style={styles.badgeStudioHeader}>
-          <GlassIconButton icon="code-slash" size={40} iconSize={19} />
-          <View style={styles.badgeStudioCopy}>
-            <Text style={styles.badgeStudioEyebrow}>GELİŞTİRİCİ ARACI</Text>
-            <Text style={styles.badgeStudioTitle}>Featured on Kıstas</Text>
-          </View>
-        </View>
-        <Text style={styles.badgeStudioDescription}>
-          Ürün sayfanıza güven rozeti ekleyin ve topluluğunuzdan doğrudan destek alın.
-        </Text>
-
-        <View style={styles.badgePreview}>
-          <KistasLogo size={28} showWordmark={false} />
-          <View style={styles.badgePreviewDivider} />
-          <View>
-            <Text style={styles.badgePreviewTop}>Featured on</Text>
-            <Text style={styles.badgePreviewBrand}>Kıstas</Text>
-          </View>
-          <View style={styles.badgePreviewRank}>
-            <View pointerEvents="none" style={styles.badgePreviewRankAccent} />
-            <View style={styles.badgePreviewRankIcon}>
-              <Ionicons name="ribbon-outline" size={14} color="#8A6414" />
-            </View>
-            <View>
-              <Text style={styles.badgePreviewRankEyebrow}>KISTAS’IN YILDIZI</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.codeTabs}>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => setSelectedBadgeType('markdown')}
-            style={[styles.codeTab, selectedBadgeType === 'markdown' && styles.codeTabActive]}
-          >
-            <Text style={[styles.codeTabText, selectedBadgeType === 'markdown' && styles.codeTabTextActive]}>
-              Markdown
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => setSelectedBadgeType('html')}
-            style={[styles.codeTab, selectedBadgeType === 'html' && styles.codeTabActive]}
-          >
-            <Text style={[styles.codeTabText, selectedBadgeType === 'html' && styles.codeTabTextActive]}>
-              HTML
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity
-          activeOpacity={0.78}
-          onPress={() => setIsBadgeCodeModalOpen(true)}
-          style={styles.copyButton}
-          accessibilityRole="button"
-          accessibilityLabel="Rozet kodunu görüntüle"
-        >
-          <Ionicons name="copy-outline" size={16} color="#25364E" />
-          <Text style={styles.copyButtonText}>Rozet Kodunu Görüntüle</Text>
-        </TouchableOpacity>
-      </View>
-
       </View>
       </View>
 
       <View style={styles.bottomSpacer} />
-      <Modal
-        visible={isBadgeCodeModalOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setIsBadgeCodeModalOpen(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <BlurView intensity={82} tint="light" style={styles.badgeCodeModal}>
-            <LinearGradient
-              colors={['rgba(255,255,255,0.98)', 'rgba(242,247,255,0.98)']}
-              start={{ x: 0.08, y: 0 }}
-              end={{ x: 0.92, y: 1 }}
-              style={styles.badgeCodeModalSurface}
-            >
-              <View style={styles.badgeCodeModalHeader}>
-                <GlassIconButton icon="code-slash" size={44} iconSize={20} />
-                <View style={styles.badgeCodeModalCopy}>
-                  <Text style={styles.badgeCodeModalTitle}>Rozet Kodu</Text>
-                  <Text style={styles.badgeCodeModalSubtitle}>
-                    Kodu ürün sayfanıza veya GitHub deponuza ekleyin.
-                  </Text>
-                </View>
-                <GlassIconButton
-                  icon="close"
-                  size={38}
-                  iconSize={19}
-                  onPress={() => setIsBadgeCodeModalOpen(false)}
-                  accessibilityLabel="Kapat"
-                />
-              </View>
-              <View style={styles.badgeCodeBox}>
-                <Text selectable style={styles.badgeCodeText}>{selectedBadgeCode}</Text>
-              </View>
-              <Text style={styles.badgeCodeHint}>Kodu seçerek kopyalayabilirsiniz.</Text>
-              <TouchableOpacity
-                style={styles.badgeCodeCloseButton}
-                onPress={() => setIsBadgeCodeModalOpen(false)}
-                activeOpacity={0.76}
-              >
-                <Text style={styles.badgeCodeCloseButtonText}>Kapat</Text>
-              </TouchableOpacity>
-            </LinearGradient>
-          </BlurView>
-        </View>
-      </Modal>
       <Modal visible={editing} transparent animationType="fade" onRequestClose={() => { if (!saving) setEditing(false); }}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.editorOverlay}>
           <View style={styles.editor}>
