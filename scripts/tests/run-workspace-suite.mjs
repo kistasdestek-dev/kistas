@@ -26,11 +26,13 @@ const suites = {
     'chat-identity.test.mjs',
     'google-identity.test.mjs',
     'inbox-lifecycle-and-notifications.test.mjs',
+    'next-csp-environment.test.mjs',
     'profile-avatar-flow.test.mjs',
     'public-route-performance.test.mjs',
     'route-loading.test.mjs',
     'seo-output.test.mjs',
     'web-routing.test.mjs',
+    'web-visibility-management.test.mjs',
   ],
   live: [
     'pars-defender-live.test.mjs',

@@ -53,3 +53,11 @@ Yeni Worker kaynaklı kritik sorun çıkarsa Cloudflare Workers & Pages panelind
 - Anlık bildirim kartı navbar ile aynı glass CSS yüzeyini kullanır ve reduced-motion uyumlu üstten düşme animasyonuna sahiptir. Aynı proje logosu bildirim merkezinde de gösterilir.
 - Migration `20260925000003` canlıya uygulandı. Yayınlanan uygulama commit’i `f02d7d3`, Worker sürümü `0e1a2474-d584-4376-807f-e0a77a477fce` olarak `www.kistas.com.tr/*` rotasına dağıtıldı.
 - Canlı kanıt: `/`, `/browse`, `/new`, `/popular`, `/blog` ve `/login` HTTP 200; anonim `/admin`, `/messages` ve `/profile` istekleri girişe HTTP 307 ile yönlendirildi. Yayın paketinde ortak glass sınıfı, proje logo payload’ı, spring animasyonu ve kurumsal metin doğrulandı.
+
+## 2026-09-25 Web Vitrin Yönetimi, Temiz Logo ve Güvenli CSP Paketi
+
+- Profil içindeki Vitrin Yönetimi penceresi (`VisibilityManagementModal.tsx`), Kıstas liquid glass yüzeyi, `GlassIconButton`, `ShinyButton` ve çerçevesiz proje logolarıyla üç adımlı güvenli akışa yükseltildi. Satın alma işlemi doğrudan tablo güncellemesi yerine güvenli `boost_listing_scoped` RPC'si üzerinden atomik kredi düşümü, satır kilidi ve paket allowlist'iyle yürütülür.
+- `KistasTopBrandBar.tsx` üzerindeki gereksiz arka plan plaka kutusu kaldırılarak logo saf ve hafif ışıltılı şekilde doğrudan zemin üzerinde konumlandırıldı; `ProfileExperienceClient` ve `ProfileEditModal` dairesel avatar görünümleriyle hizalandı.
+- `next.config.ts` Content-Security-Policy (CSP) direktifleri çevre bazlı ayrıştırıldı (`next-csp-environment.test.mjs`); yerel geliştirmede hata ayıklama için `'unsafe-eval'` izinli kılınırken, canlı üretim derlemesinde `'unsafe-eval'` tamamen engellenerek en katı güvenlik seviyesi korundu.
+- `supabase/migrations/20260925000004_remove_admin_announcement_hourly_limit.sql` ve `supabase/manual-sql/remove_admin_announcement_hourly_limit.sql` ile topluluk yöneticisi saatlik duyuru sınırı kaldırılarak aktif proje duyuruları desteklendi.
+

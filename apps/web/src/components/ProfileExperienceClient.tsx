@@ -193,9 +193,7 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
       <div className="min-h-screen bg-transparent text-[#F8FAFC] flex flex-col justify-center items-center px-4 py-12">
         <KistasTopBrandBar className="w-full max-w-lg mb-6" />
         <div className="w-full max-w-lg overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.04] backdrop-blur-xl p-8 shadow-2xl text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5 border border-white/10 shadow-lg">
-            <KistasLogo size={58} showWordmark={false} />
-          </div>
+          <KistasLogo size={58} showWordmark={false} className="mx-auto mb-4" />
           <p className="text-[10px] font-bold tracking-widest text-blue-400 uppercase">
             KISTAS MEMBER
           </p>
@@ -263,19 +261,15 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
             {/* 1. Identity Card */}
             <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.04] backdrop-blur-md p-6 sm:p-7 shadow-xl flex flex-col justify-between gap-5">
               <div className="flex items-center gap-4">
-                {/* Avatar Frame */}
-                <div className="relative flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-[24px] border border-white/10 bg-white/5 shadow-lg overflow-hidden">
-                  {profile?.avatar_url ? (
-
-                    <img
-                      src={resolveAvatarUrl(profile.avatar_url)}
-                      alt={fullName}
-                      className="h-full w-full object-cover rounded-[23px]"
-                    />
-                  ) : (
-                    <KistasLogo size={46} showWordmark={false} />
-                  )}
-                </div>
+                {profile?.avatar_url ? (
+                  <img
+                    src={resolveAvatarUrl(profile.avatar_url)}
+                    alt={fullName}
+                    className="h-[72px] w-[72px] shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <KistasLogo size={58} showWordmark={false} className="shrink-0" />
+                )}
 
                 {/* Identity Info */}
                 <div className="flex-1 min-w-0">
@@ -807,7 +801,12 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
           setIsVisibilityModalOpen(false);
           setVisibilityListingId(null);
         }}
-        onSuccess={() => {
+        onSuccess={(newCredits) => {
+          if (typeof newCredits === 'number') {
+            setProfile((currentProfile) => (
+              currentProfile ? { ...currentProfile, boost_credits: newCredits } : currentProfile
+            ));
+          }
           router.refresh();
         }}
       />

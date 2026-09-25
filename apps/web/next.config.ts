@@ -1,12 +1,12 @@
 import type { NextConfig } from 'next';
 
-const contentSecurityPolicy = [
+export const createContentSecurityPolicy = (isDevelopment: boolean) => [
   "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-  "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.googletagmanager.com https://accounts.google.com/gsi/client",
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDevelopment ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://accounts.google.com/gsi/client`,
   "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://accounts.google.com/gsi/style",
   "img-src 'self' data: blob: https: https://www.google-analytics.com https://www.googletagmanager.com",
   "media-src 'self' data: blob: https:",
@@ -16,6 +16,8 @@ const contentSecurityPolicy = [
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://accounts.google.com/gsi/ https://prod.spline.design https://*.spline.design https://*.splinecode.com",
   'upgrade-insecure-requests',
 ].join('; ');
+
+const contentSecurityPolicy = createContentSecurityPolicy(process.env.NODE_ENV === 'development');
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

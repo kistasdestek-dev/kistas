@@ -216,17 +216,15 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               title="Profil fotoğrafını değiştir"
               aria-label="Profil fotoğrafını değiştir"
             >
-              <span className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#0C1C35] transition-transform group-hover:scale-[1.03]">
-                {draftAvatarUrl ? (
-                  <img
-                    src={resolveAvatarUrl(draftAvatarUrl)}
-                    alt="Mevcut profil fotoğrafı"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <KistasLogo size={42} showWordmark={false} />
-                )}
-              </span>
+              {draftAvatarUrl ? (
+                <img
+                  src={resolveAvatarUrl(draftAvatarUrl)}
+                  alt="Mevcut profil fotoğrafı"
+                  className="h-full w-full rounded-full object-cover transition-transform group-hover:scale-[1.03]"
+                />
+              ) : (
+                <KistasLogo size={52} showWordmark={false} className="transition-transform group-hover:scale-[1.03]" />
+              )}
               <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-[#3269C7] text-white shadow-[0_5px_14px_rgba(50,105,199,.45)]">
                 {isUploadingAvatar ? (
                   <Loader2 size={13} className="animate-spin" />

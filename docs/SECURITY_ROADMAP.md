@@ -1169,3 +1169,11 @@ Production veya magazaya cikis icin:
 - Bildirim hareketi Framer Motion spring geçişi kullanır ve `prefers-reduced-motion` tercihinde sade opacity geçişine döner. Navbar ile aynı glass CSS yüzeyi ortaklaştırılmış, eski inline kopya kaldırılmıştır.
 - Regresyon: tam `sayos:audit`, web 11/11, Supabase 5/5, çekirdek 85/85, Next/Vinext production build ve Wrangler dry-run başarılıdır. `20260925000003` migration’ı canlıya uygulanmış ve yerel/canlı geçmiş eşitlenmiştir.
 - Yayın: Git commit `f02d7d3`, Cloudflare Worker sürümü `0e1a2474-d584-4376-807f-e0a77a477fce`. Canlı public rotalar HTTP 200, anonim korumalı rotalar HTTP 307; CSP, HSTS, `nosniff` ve referrer policy başlıkları doğrulanmıştır.
+
+### 2026-09-25 - Duyuru kotası kaldırma ve web Vitrin Yönetimi güvenliği
+
+- Topluluk yetkilisinin `admin_send_announcement` RPC'sindeki saatlik beş gönderim kotası ürün kararıyla kaldırıldı. `community` yetkisi, sabit boş `search_path`, dahili rota/aktif proje doğrulaması, advisory transaction lock, idempotency anahtarı ve `admin_action_audit` kaydı korunur. Risk kabulü: ele geçirilmiş bir topluluk yönetici hesabı daha yüksek bildirim hacmi üretebilir; olay izi ve yetki iptali müdahale katmanı olarak kalır.
+- Web Vitrin Yönetimi'nin sponsor alanlarını doğrudan güncelleyen ve kredi harcamasını atlayan istemci yolu kaldırıldı. Akış yalnız sahiplik, aktif proje, paket allowlist'i, bakiye ve satır kilidini doğrulayan `boost_listing_scoped` RPC'sini çağırır; kredi düşümü, süre uzatma ve hareket kaydı tek transaction içinde kalır.
+- Web paket tutarları RPC allowlist'iyle eşitlendi. Ham SQL hataları arayüze taşınmaz; yetersiz bakiye, geçersiz paket, yetkisiz kullanıcı ve bulunamayan proje kontrollü mesajlara çevrilir.
+- Geri dönüş: duyuru kotası yeni bir ileri migration ile yeniden tanımlanır. Vitrin arayüzü önceki görsele alınabilir; doğrudan tablo güncellemesi kredi bütünlüğünü bozduğu için geri getirilmez.
+- Durum: KODLANDI — migration canlı Supabase'e uygulanmadı; push ve production deploy yapılmadı.

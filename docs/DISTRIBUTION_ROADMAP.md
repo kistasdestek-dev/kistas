@@ -66,6 +66,7 @@ Bir ürün vitrini kendi kendine trafik üretmez. Trafik, **geliştiricilerin ke
   - Topluluk yetkili yöneticisinin yeni, popüler ve keşfedilmeyi bekleyen projeleri tüm kayıtlı üyelere glass bildirimle ulaştırdığı güvenli dağıtım kanalı.
   - Duyurular izinli Kıstas rotalarına yönlenir, kullanıcı bildirim merkezinde saklanır ve gönderim denetim izi üretir.
   - Proje odaklı yayınlarda aktif proje kimliği ve logosu sunucu tarafından doğrulanır; kurumsal metin, proje logosu ve navbar ile ortak glass yüzeyiyle gösterilir.
+  - Topluluk yetkilisinin editoryal yayın temposu için saatlik adet kotası kaldırılmıştır; yetki, rota doğrulaması, idempotency ve denetim izi korunur.
 
 - [ ] **3.1. Haftalık "Kıstas Seçkisi" E-Posta Bülteni:**
   - Her Pazar günü abonelere gönderilen, haftanın en iyi 5 bağımsız projesini anlatan editoryal bülten.

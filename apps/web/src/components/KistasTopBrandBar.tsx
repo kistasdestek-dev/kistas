@@ -43,17 +43,14 @@ export const KistasTopBrandBar: React.FC<KistasTopBrandBarProps> = ({
         aria-label="Kıstas Ana Sayfası (Keşfet)"
         className="group inline-flex cursor-pointer items-center gap-4 select-none"
       >
-        {/* Logo Plate */}
-        <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl sm:rounded-3xl border border-white/20 bg-white/[0.08] p-2 shadow-[0_12px_28px_-4px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-all duration-300 group-hover:scale-105 group-hover:border-[#3B82F6]/60 group-hover:shadow-[0_14px_32px_-4px_rgba(59,130,246,0.4)]">
-          <Image
-            src="/kistas-logo-256.webp"
-            alt="Kıstas Logosu"
-            width={60}
-            height={60}
-            className="h-full w-full object-contain"
-            priority
-          />
-        </div>
+        <Image
+          src="/kistas-logo-256.webp"
+          alt="Kıstas Logosu"
+          width={80}
+          height={80}
+          className="h-16 w-16 object-contain drop-shadow-[0_0_12px_rgba(50,105,199,0.28)] transition-transform duration-300 group-hover:scale-105 sm:h-20 sm:w-20"
+          priority
+        />
 
         {/* Brand Meta Col */}
         <div className="flex flex-col justify-center">

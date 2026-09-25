@@ -5,6 +5,7 @@ const read = (relativePath) => readFileSync(new URL(`../../${relativePath}`, imp
 
 const migration = read('supabase/migrations/20260925000002_chat_presence_and_admin_announcements.sql');
 const projectAnnouncementMigration = read('supabase/migrations/20260925000003_admin_announcements_allow_listing_path.sql');
+const unlimitedAnnouncementMigration = read('supabase/migrations/20260925000004_remove_admin_announcement_hourly_limit.sql');
 const chatService = read('apps/web/src/lib/services/chat.ts');
 const chatWindow = read('apps/web/src/components/chat/ChatWindow.tsx');
 const iconButton = read('apps/web/src/components/GlassIconButton.tsx');
@@ -17,6 +18,7 @@ const notificationCard = read('apps/web/src/components/GlobalNotificationCard.ts
 const notificationsModal = read('apps/web/src/components/profile/NotificationsModal.tsx');
 const profileExperience = read('apps/web/src/components/ProfileExperienceClient.tsx');
 const notificationRules = read('apps/web/src/lib/notifications.ts');
+const globalStyles = read('apps/web/src/app/globals.css');
 
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.conversation_typing_states/);
 assert.match(migration, /ALTER TABLE public\.conversation_typing_states ENABLE ROW LEVEL SECURITY/);
@@ -62,6 +64,7 @@ assert.match(notificationCard, /AutoTransparentLogo/);
 assert.match(notificationCard, /object-contain/);
 assert.doesNotMatch(notificationCard, /actionLabel/);
 assert.match(provider, /sm:w-\[460px\]/);
+assert.match(globalStyles, /\.k-notification-glass\s*\{[\s\S]*rgba\(9, 19, 38, 0\.62\)/);
 assert.match(notificationsModal, /announcementLogoUrl/);
 assert.match(profileExperience, /isValidAnnouncementPath/);
 assert.match(notificationRules, /listingPathPattern/);
@@ -72,5 +75,14 @@ assert.match(projectAnnouncementMigration, /listing\.status = 'active'/);
 assert.match(projectAnnouncementMigration, /'logo_url', v_listing_logo_url/);
 assert.match(projectAnnouncementMigration, />= 5[\s\S]*RATE_LIMITED/);
 assert.doesNotMatch(projectAnnouncementMigration, />= 10/);
+
+assert.match(unlimitedAnnouncementMigration, /CREATE OR REPLACE FUNCTION public\.admin_send_announcement/);
+assert.match(unlimitedAnnouncementMigration, /NOT public\.has_admin_permission\('community'\)/, 'Sınırsız duyuru yalnız topluluk yetkilisine açık olmalı');
+assert.match(unlimitedAnnouncementMigration, /SET search_path = ''/);
+assert.match(unlimitedAnnouncementMigration, /pg_advisory_xact_lock/);
+assert.match(unlimitedAnnouncementMigration, /ON CONFLICT \(created_by, idempotency_key\) DO NOTHING/);
+assert.match(unlimitedAnnouncementMigration, /listing\.status = 'active'/);
+assert.match(unlimitedAnnouncementMigration, /admin_announcement_sent/);
+assert.doesNotMatch(unlimitedAnnouncementMigration, /RATE_LIMITED|INTERVAL '1 hour'|>= 5/, 'Yeni migration saatlik duyuru kotasını kaldırmalı');
 
 console.log('Chat presence, read receipts, icon motion and admin announcement contracts passed.');
