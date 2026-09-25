@@ -43,11 +43,14 @@ interface PublishedProjectItem {
   id: string;
   title: string;
   tagline: string | null;
-  slug: string | null;
   logo_url: string | null;
-  category: string | null;
+  category_id?: string | null;
   upvotes_count: number;
   created_at: string;
+}
+
+export interface AdminAnnouncementsViewProps {
+  projects?: any[];
 }
 
 const templates: AnnouncementDraft[] = [
@@ -82,7 +85,7 @@ const newIdempotencyKey = () => {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 };
 
-export const AdminAnnouncementsView: React.FC = () => {
+export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ projects: externalProjects }) => {
   const supabase = useMemo(() => createClient(), []);
   const [draft, setDraft] = useState<AnnouncementDraft>(templates[0]);
   const [history, setHistory] = useState<AnnouncementHistoryItem[]>([]);
@@ -96,23 +99,47 @@ export const AdminAnnouncementsView: React.FC = () => {
 
   // Paylaşılan tüm projeleri getir
   const loadProjects = useCallback(async () => {
+    if (externalProjects && externalProjects.length > 0) {
+      setProjects(
+        externalProjects.map((p) => ({
+          id: p.id,
+          title: p.title,
+          tagline: p.tagline || null,
+          logo_url: p.logo_url || null,
+          category_id: p.category_id || null,
+          upvotes_count: Number(p.upvote_count ?? p.upvotes_count ?? 0),
+          created_at: p.created_at || new Date().toISOString(),
+        }))
+      );
+      return;
+    }
+
     setIsLoadingProjects(true);
     try {
       const { data, error } = await supabase
         .from('listings')
-        .select('id, title, tagline, slug, logo_url, category, upvotes_count, created_at')
-        .in('status', ['active', 'approved'])
+        .select('id, title, tagline, logo_url, upvote_count, created_at, status')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        setProjects(data as PublishedProjectItem[]);
+        setProjects(
+          data.map((p: any) => ({
+            id: p.id,
+            title: p.title,
+            tagline: p.tagline || null,
+            logo_url: p.logo_url || null,
+            category_id: null,
+            upvotes_count: Number(p.upvote_count ?? p.upvotes_count ?? 0),
+            created_at: p.created_at || new Date().toISOString(),
+          }))
+        );
       }
     } catch (err) {
       console.error('Projeler yüklenirken hata:', err);
     } finally {
       setIsLoadingProjects(false);
     }
-  }, [supabase]);
+  }, [supabase, externalProjects]);
 
   const loadHistory = useCallback(async () => {
     const { data } = await supabase
@@ -124,9 +151,9 @@ export const AdminAnnouncementsView: React.FC = () => {
   }, [supabase]);
 
   useEffect(() => {
-    void loadHistory();
     void loadProjects();
-  }, [loadHistory, loadProjects]);
+    void loadHistory();
+  }, [loadProjects, loadHistory]);
 
   const applyTemplate = (template: AnnouncementDraft) => {
     setDraft({ ...template, selectedProjectId: undefined, selectedProjectTitle: undefined });
@@ -142,7 +169,7 @@ export const AdminAnnouncementsView: React.FC = () => {
 
   // Proje seçildiğinde otomatik doldurma
   const handleSelectProject = (project: PublishedProjectItem) => {
-    const targetPath = project.slug ? `/listings/${project.slug}` : `/listings/${project.id}`;
+    const targetPath = `/listings/${project.id}`;
     const autoTitle = `🚀 Yeni Keşif: ${project.title}`.slice(0, 80);
     const autoBody = (project.tagline || `${project.title} projesini inceleyin, görüşlerinizi paylaşın ve ilk desteğinizi verin.`).slice(0, 240);
 
@@ -169,8 +196,7 @@ export const AdminAnnouncementsView: React.FC = () => {
     return projects.filter(
       (p) =>
         p.title.toLowerCase().includes(q) ||
-        (p.tagline && p.tagline.toLowerCase().includes(q)) ||
-        (p.category && p.category.toLowerCase().includes(q))
+        (p.tagline && p.tagline.toLowerCase().includes(q))
     );
   }, [projects, projectSearch]);
 
@@ -232,7 +258,7 @@ export const AdminAnnouncementsView: React.FC = () => {
   return (
     <div className="space-y-8 pb-12">
       {/* 1. Bölüm: Paylaşılan Bütün Projeler Vitrini */}
-      <section className="relative rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.7)]">
+      <section className="relative rounded-[28px] border border-white/10 bg-[#0E1626]/75 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-2xl bg-[#3269C7]/20 border border-[#3269C7]/40 text-[#8DB9FF] flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
@@ -330,7 +356,7 @@ export const AdminAnnouncementsView: React.FC = () => {
 
                   <div className="mt-3 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[10px]">
                     <span className="px-2 py-0.5 rounded-full bg-white/[0.05] text-slate-400 font-medium">
-                      {project.category || 'Genel'}
+                      {(project as any).category || 'Proje'}
                     </span>
 
                     <button
@@ -473,8 +499,8 @@ export const AdminAnnouncementsView: React.FC = () => {
             <span className="text-[10px] text-slate-400">Navbardaki gerçek sıvı cam yapısıyla eşlenik</span>
           </div>
 
-          <div className="p-4 sm:p-6 rounded-[24px] bg-gradient-to-r from-blue-950/40 via-purple-950/20 to-slate-950/60 border border-white/10 flex items-center justify-center">
-            {/* Önizleme Toast Kartı */}
+          <div className="p-6 sm:p-8 rounded-[24px] border border-white/10 bg-[#0E1626]/50 backdrop-blur-xl flex items-center justify-center">
+            {/* Önizleme Toast Kartı (.kdn-dock Sıvı Cam Formülü) */}
             <div
               style={{
                 background:
@@ -488,17 +514,17 @@ export const AdminAnnouncementsView: React.FC = () => {
               className="w-full max-w-sm rounded-[22px] border p-3.5 transition-all shadow-2xl"
             >
               <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 border border-white/15 text-[#8DB9FF] shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 border border-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
                   <Megaphone size={18} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-bold text-white tracking-tight">
                     {draft.title || 'Duyuru başlığı'}
                   </p>
-                  <p className="mt-1 text-[11px] leading-relaxed text-white/70 font-medium line-clamp-2">
+                  <p className="mt-1 text-[11px] leading-relaxed text-white/80 font-medium line-clamp-2">
                     {draft.body || 'Duyuru açıklaması burada görünecektir.'}
                   </p>
-                  <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-[#79A9F4]">
+                  <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-white/90">
                     <BellRing size={10} /> {draft.actionLabel || 'Göz at'} →
                   </span>
                 </div>
@@ -522,15 +548,13 @@ export const AdminAnnouncementsView: React.FC = () => {
 
         {/* Gönderim Butonu */}
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
-          <span className="text-[11px] text-slate-400 font-medium">
-            {draft.selectedProjectTitle ? (
+          <div className="text-[11px] text-slate-400 font-medium">
+            {draft.selectedProjectTitle && (
               <span className="text-[#8DB9FF] font-bold">
                 🎯 Hedef: &quot;{draft.selectedProjectTitle}&quot; projesi
               </span>
-            ) : (
-              'Duyuru tüm kayıtlı üyelerin bildirim paneline işlenecektir.'
             )}
-          </span>
+          </div>
 
           <button
             type="button"
@@ -550,7 +574,7 @@ export const AdminAnnouncementsView: React.FC = () => {
 
       {/* 3. Bölüm: Son Duyurular Geçmişi */}
       {history.length > 0 && (
-        <section className="rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.7)]">
+        <section className="rounded-[28px] border border-white/10 bg-[#0E1626]/75 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
           <h3 className="text-sm font-black text-white tracking-tight">Geçmiş Yayınlar ve Bildirimler</h3>
           <div className="mt-4 divide-y divide-white/[0.06]">
             {history.map((item) => (

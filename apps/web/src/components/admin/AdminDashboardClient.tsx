@@ -92,13 +92,13 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
       const { data: statsData } = await supabase.rpc('get_admin_dashboard_stats');
       if (statsData) {
         setStats({
-          total_listings: Number(statsData.total_listings || 0),
-          active_listings: Number(statsData.active_listings || 0),
-          sponsored_listings: Number(statsData.sponsored_listings || 0),
-          pending_listings: Number(statsData.pending_listings || 0),
-          total_votes: Number(statsData.total_votes || 0),
-          total_users: Number(statsData.total_users || 0),
-          circulating_credits: Number(statsData.circulating_credits || 0),
+          total_listings: Number(statsData.total_projects ?? statsData.total_listings ?? 0),
+          active_listings: Number(statsData.active_projects ?? statsData.active_listings ?? 0),
+          sponsored_listings: Number(statsData.sponsored_projects ?? statsData.sponsored_listings ?? 0),
+          pending_listings: Number(statsData.pending_projects ?? statsData.pending_listings ?? 0),
+          total_votes: Number(statsData.total_upvotes ?? statsData.total_votes ?? 0),
+          total_users: Number(statsData.total_users ?? 0),
+          circulating_credits: Number(statsData.circulating_credits ?? 0),
         });
       }
 
@@ -227,9 +227,9 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
   }, [listings, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-black text-white pb-24 font-sans antialiased">
+    <div className="min-h-screen text-white pb-24 font-sans antialiased">
       {/* Üst Bar (Header) - Kıstas Tasarım Sistemi */}
-      <header className="sticky top-0 z-40 bg-black/70 backdrop-blur-2xl border-b border-white/10">
+      <header className="sticky top-0 z-40 bg-[#080C14]/75 backdrop-blur-2xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <GlassIconButton
@@ -265,21 +265,21 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
 
       {/* Ana Çalışma Alanı */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
-        {/* Operasyon Özeti - Hero Kartı (Kıstas Siber-Obsidyen Gece Degrade) */}
-        <div className="relative rounded-[28px] border border-white/10 bg-[linear-gradient(135deg,#091326_0%,#102244_50%,#091326_100%)] p-6 sm:p-8 text-white shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden">
+        {/* Operasyon Özeti - Hero Kartı (Kıstas İmzalı Mavi Geçişli Cam Kart) */}
+        <div className="relative rounded-[28px] border border-white/15 bg-gradient-to-r from-[#1746A2] via-[#1E3A8A] to-[#0E1E44] p-6 sm:p-8 text-white shadow-[0_20px_50px_rgba(23,70,162,0.25)] overflow-hidden">
           {/* Arka plan dekoratif neon parlamalar */}
-          <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-[#3269C7]/20 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
+          <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-blue-400/10 blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div className="space-y-1.5 max-w-2xl">
-              <span className="text-[11px] font-extrabold tracking-widest text-[#8DB9FF] uppercase">
+              <span className="text-[11px] font-extrabold tracking-widest text-blue-200 uppercase">
                 OPERASYON ÖZETİ
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                 Genel bakış
               </h2>
-              <p className="text-xs sm:text-sm text-white/75 font-medium leading-relaxed">
+              <p className="text-xs sm:text-sm text-white/85 font-medium leading-relaxed">
                 Platformun yayın, topluluk ve destek akışını tek merkezden yönetin.
               </p>
               <div className="pt-2">
@@ -303,7 +303,7 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
           </div>
         </div>
 
-        {/* 8'li Metrik Kartları Izgarası (Siber-Obsidyen Sıvı Cam Dizilim) */}
+        {/* 8'li Metrik Kartları Izgarası (Kıstas Sıvı Cam Dizilim) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
           {metricCards.map((card) => {
             const Icon = card.icon;
@@ -319,8 +319,8 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
                 }}
                 className={`relative text-left p-4 sm:p-5 rounded-[24px] backdrop-blur-xl transition-all duration-200 cursor-pointer group border ${
                   isSelected
-                    ? 'border-[#3269C7] border-t-2 border-t-[#3269C7] bg-[#3269C7]/15 shadow-[0_0_28px_rgba(50,105,199,0.3)] -translate-y-0.5'
-                    : 'border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06] hover:-translate-y-0.5 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'
+                    ? 'border-[#3269C7] border-t-2 border-t-[#4882E7] bg-[#1746A2]/25 shadow-[0_0_30px_rgba(50,105,199,0.35)] -translate-y-0.5'
+                    : 'border-white/10 bg-[#0E1626]/75 hover:border-white/20 hover:bg-[#131F36]/90 hover:-translate-y-0.5 shadow-[0_10px_30px_rgba(0,0,0,0.4)]'
                 }`}
               >
                 {/* Sol Üst İkon Tablası */}
@@ -359,9 +359,9 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
           })}
         </div>
 
-        {/* Arama Çubuğu (Kıstas Obsidyen İç Bükey Arama Alanı) */}
+        {/* Arama Çubuğu (Kıstas Cam Arama Alanı) */}
         {activeTab !== 'analytics' && activeTab !== 'threat_intel' && activeTab !== 'announcements' && (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 backdrop-blur-md shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)] flex items-center gap-3">
+          <div className="rounded-2xl border border-white/10 bg-[#0E1626]/70 px-4 py-3 backdrop-blur-xl shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)] flex items-center gap-3">
             <Search size={16} className="text-slate-400 shrink-0" />
             <input
               type="text"
@@ -444,7 +444,7 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
           )}
 
           {activeTab === 'announcements' && canSendAnnouncements && (
-            <AdminAnnouncementsView />
+            <AdminAnnouncementsView projects={listings} />
           )}
 
           {/* 8. Toplam Etkileşim / Analitik */}

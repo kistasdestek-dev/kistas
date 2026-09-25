@@ -234,16 +234,16 @@ export const MessageNotificationProvider: React.FC = () => {
           >
             <div className="flex items-start gap-3 p-3.5">
               <button type="button" onClick={() => void openNotification(toast)} className="flex min-w-0 flex-1 items-start gap-3 text-left cursor-pointer group">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 border border-white/15 text-[#8DB9FF] shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] transition-transform group-hover:scale-105">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 border border-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] transition-transform group-hover:scale-105">
                   <Icon size={18} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
                     <span className="truncate text-xs font-bold text-white tracking-tight">{toast.title}</span>
-                    {toast.count > 1 && <span className="rounded-full bg-[#3269C7]/30 border border-[#3269C7]/40 px-1.5 py-0.5 text-[9px] font-bold text-[#A8C8FB]">{toast.count} yeni</span>}
+                    {toast.count > 1 && <span className="rounded-full bg-white/15 border border-white/25 px-1.5 py-0.5 text-[9px] font-bold text-white">{toast.count} yeni</span>}
                   </span>
-                  <span className="mt-1 block truncate text-[11px] text-white/70 font-medium leading-relaxed">{toast.body}</span>
-                  <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold text-[#79A9F4] group-hover:text-[#A8C8FB] transition-colors">
+                  <span className="mt-1 block truncate text-[11px] text-white/80 font-medium leading-relaxed">{toast.body}</span>
+                  <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold text-white/90 group-hover:text-white transition-colors">
                     <Bell size={10} /> {toast.type === 'message' ? 'Mesajı aç' : toast.actionLabel}
                   </span>
                 </span>

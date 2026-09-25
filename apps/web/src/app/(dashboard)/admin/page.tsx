@@ -49,13 +49,13 @@ export default async function AdminPage() {
   // 3. İstatistikleri güvenli normalize et
   const rawStats = statsRes.data || {};
   const stats: AdminDashboardStats = {
-    total_listings: Number(rawStats.total_listings || 0),
-    active_listings: Number(rawStats.active_listings || 0),
-    sponsored_listings: Number(rawStats.sponsored_listings || 0),
-    pending_listings: Number(rawStats.pending_listings || 0),
-    total_votes: Number(rawStats.total_votes || 0),
-    total_users: Number(rawStats.total_users || 0),
-    circulating_credits: Number(rawStats.circulating_credits || 0),
+    total_listings: Number(rawStats.total_projects ?? rawStats.total_listings ?? 0),
+    active_listings: Number(rawStats.active_projects ?? rawStats.active_listings ?? 0),
+    sponsored_listings: Number(rawStats.sponsored_projects ?? rawStats.sponsored_listings ?? 0),
+    pending_listings: Number(rawStats.pending_projects ?? rawStats.pending_listings ?? 0),
+    total_votes: Number(rawStats.total_upvotes ?? rawStats.total_votes ?? 0),
+    total_users: Number(rawStats.total_users ?? 0),
+    circulating_credits: Number(rawStats.circulating_credits ?? 0),
   };
 
   // 4. Projeleri normalize et
