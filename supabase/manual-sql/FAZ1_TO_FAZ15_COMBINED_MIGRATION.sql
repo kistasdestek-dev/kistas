@@ -3370,4 +3370,3 @@ $$;
 REVOKE ALL ON FUNCTION public.enforce_adaptive_rate_limit(TEXT, TEXT, INT, INT, INT, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.enforce_adaptive_rate_limit(TEXT, TEXT, INT, INT, INT, TEXT) TO anon, authenticated, service_role;
 
-

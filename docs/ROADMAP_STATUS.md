@@ -135,7 +135,7 @@ Detaylı sıra: `docs/WEB_ADAPTATION_PLAN.md`.
 - [x] **Aşama 4: PostgREST Doğrudan API Kazıma & IDOR İzolasyonu**: 9 hassas tablodan `anon` ve `public` erişimi tamamen kaldırıldı (REVOKE ALL). Katı `auth.uid()` ve taraf RLS mühürlendi.
 - [x] **Aşama 5: Depolama (Storage) Polyglot Dosya & Stored XSS Kalkanı**: SVG/HTML/XML kesin engeli, `name !~ '\.\.'` path traversal koruması, dosya sahibi izolasyonu (`owner = auth.uid()`).
 - [x] **Aşama 6: WebSocket Realtime CDC Sniffing & Dinleme Kaçağı İzolasyonu**: 17 hassas tablonun `supabase_realtime` yayınından koşulsuz düşürülmesi.
-- [x] **Konsolide Canlı Göç**: `supabase/migrations/FAZ19_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql` tek tıkla canlıya uygulanabilir hale getirildi.
+- [x] **Konsolide Canlı Göç**: `supabase/manual-sql/FAZ19_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql` tek tıkla canlıya uygulanabilir hale getirildi.
 - [x] **Regresyon Testleri & Fortress Check**: 102/102 test tam başarılı, 0 TypeScript hatası, %100 / 100 [A+] kale skoru.
 - Detaylı iş akışı ve kapanış kaydı: `docs/FAZ19_DEFENSE_WORKFLOW.md` ve `docs/SECURITY_ROADMAP.md` (SEC-064 - SEC-069).
 
@@ -147,7 +147,7 @@ Detaylı sıra: `docs/WEB_ADAPTATION_PLAN.md`.
 - [x] **Aşama 3: Global Oturum Feshi & Session Invalidation Kalkanı (Zombie Session Purge)**: `signOut` varsayılan kapsamı `scope: 'global'`, `revoke_user_sessions` ve tam yerel depolama temizliği (`purgeAllAuthData`).
 - [x] **Aşama 4: İlan, Görsel ve Yorum BOLA/IDOR Savunması & Tehdit Radarı Tuzağı**: `guard_listing_ownership_and_trap_idor`, `guard_listing_image_ownership_and_trap_idor`, `guard_project_comment_ownership_and_trap_idor` DB tetikleyicileri ve `BOLA_IDOR_*_TAMPER` Tehdit Radarı tuzaklaması.
 - [x] **Aşama 5: P2P Sohbet ve Yorum Phishing / URL Filtreleme Kalkanı**: `filter_chat_message_content()` ve `filter_project_comment_content()` tetikleyicileri ile phishing kısaltıcıları (`bit.ly`, `t.me`), IP adresleri ve gizlenmiş adreslerin tespiti ve maskelenmesi.
-- [x] **Konsolide Canlı Göç**: `supabase/migrations/FAZ20_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql` tek tıkla canlıya uygulanabilir hale getirildi.
+- [x] **Konsolide Canlı Göç**: `supabase/manual-sql/FAZ20_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql` tek tıkla canlıya uygulanabilir hale getirildi.
 - [x] **Regresyon Testleri & Fortress Check**: 67/67 test tam başarılı, 0 TypeScript hatası, %100 / 100 [A+] kale skoru.
 - Detaylı iş akışı ve kapanış kaydı: `docs/FAZ20_DEFENSE_WORKFLOW.md` ve `docs/SECURITY_ROADMAP.md` (SEC-071 - SEC-075).
 
@@ -162,4 +162,3 @@ Detaylı sıra: `docs/WEB_ADAPTATION_PLAN.md`.
 - [x] **Regresyon Testleri**: `node scripts/tests/core-domain.test.mjs` (81/81 başarılı); web/shared/supabase type-check 0 hata.
 - [ ] **Canlı Göç (Bekleniyor)**: `supabase/migrations/20260922000001_comment_reactions.sql` canlı Supabase'e basılacak.
 - Detaylı kapanış kaydı: `docs/SECURITY_ROADMAP.md` (SEC-077).
-

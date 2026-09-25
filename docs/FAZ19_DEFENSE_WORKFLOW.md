@@ -19,7 +19,7 @@
 
 ## 📦 Konsolide Canlı Veritabanı Göç Dosyası
 Tüm bu 6 aşama canlı Supabase üzerinde tek tıkla çalıştırılabilmesi için:
-👉 [`supabase/migrations/FAZ19_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql`](file:///c:/Users/mehmet.ozdemir/Desktop/KISTAS/supabase/migrations/FAZ19_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql) dosyası altında konsolide edilmiştir.
+👉 `supabase/manual-sql/FAZ19_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql` dosyası altında konsolide edilmiştir.
 
 ---
 

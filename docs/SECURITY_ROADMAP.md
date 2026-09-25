@@ -1152,3 +1152,10 @@ Production veya magazaya cikis icin:
 - Toplu duyuru yalnız `has_admin_permission('community')` kontrolünden geçen yönetici tarafından gönderilebilir. Başlık/gövde/aksiyon uzunlukları, dahili rota allowlist'i, yönetici başına saatte beş gönderim kotası ve idempotency anahtarı sunucuda doğrulanır.
 - Duyuru her kullanıcı için mevcut RLS korumalı `notifications` tablosuna eklenir; işlem alıcı sayısıyla `admin_action_audit` kaydına yazılır. İstemci duyuru rotasını ikinci kez allowlist ile doğrular ve harici URL çalıştırmaz.
 - İşletim sistemi push, cihaz tokenı, dış bildirim servisi, yeni secret veya kullanıcı PII aktarımı eklenmemiştir. Geri dönüşte `admin_send_announcement` ve `set_conversation_typing` fonksiyonları, iki yeni tablo, typing publication kaydı ve ilgili UI bileşenleri kaldırılır; oluşturulmuş kullanıcı bildirimleri mevcut üç günlük saklama politikasıyla temizlenir.
+
+### 2026-09-25 - Migration geçmişi uzlaştırması
+
+- Yerelde bulunup canlı migration geçmişinde görünmeyen `20260918000004`–`20260918000018`, `20260919000001`, `20260922000001`–`20260922000002` ve `20260923000001` sürümlerinin etkileri canlı şemada salt okunur kontrollerle doğrulandı.
+- Güvenlik/vault tabloları, tehdit radarı tabloları ve indeksleri, `token_valid_after`, yorum tepki tablosu ile sayaçları ve 38 kategorilik aktif katalog kuralı canlıda mevcuttur. Bu nedenle SQL yeniden çalıştırılmadı; yalnız Supabase migration geçmişi `applied` olarak onarıldı.
+- Tarih formatı taşımadığı için Supabase CLI tarafından atlanan dört konsolide kurtarma paketi gerçek migration dizininden `supabase/manual-sql/` altına taşındı. Belgeler ve regresyon testleri yeni konuma güncellendi; paketler felaket kurtarma amacıyla korunur ancak otomatik migration zincirine katılmaz.
+- Doğrulama: `supabase migration list --linked` yerel/canlı sürümleri birebir eşler; `supabase db push --linked --include-all --dry-run` yeni migration olmadığını ve uzak veritabanının güncel olduğunu bildirir.

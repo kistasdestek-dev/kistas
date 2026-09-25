@@ -1298,7 +1298,7 @@ runTest('FAZ 20 AŞAMA 5: P2P Sohbet ve Yorum Phishing / URL Filtreleme Kalkanı
 });
 
 runTest('FAZ 20 KONSOLİDASYON: FAZ20_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql doğrulanmalı', () => {
-  const migPath = path.join(ROOT, 'supabase', 'migrations', 'FAZ20_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql');
+  const migPath = path.join(ROOT, 'supabase', 'manual-sql', 'FAZ20_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql');
   assert.strictEqual(fs.existsSync(migPath), true, 'Konsolide migration dosyası eksik!');
   const sql = fs.readFileSync(migPath, 'utf8');
 

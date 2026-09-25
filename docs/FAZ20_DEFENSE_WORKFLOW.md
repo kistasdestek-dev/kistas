@@ -18,7 +18,7 @@
 
 ## 📦 Konsolide Canlı Veritabanı Göç Dosyası
 Tüm Faz 20 veritabanı kalkanları canlı Supabase SQL Editöründe tek tıkla çalıştırılabilmesi için:
-👉 [`supabase/migrations/FAZ20_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql`](file:///c:/Users/mehmet.ozdemir/Desktop/KISTAS/supabase/migrations/FAZ20_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql) dosyası altında toplanmıştır.
+👉 `supabase/manual-sql/FAZ20_CONSOLIDATED_DEFENSE_SHIELD_MIGRATION.sql` dosyası altında toplanmıştır.
 
 ---
 

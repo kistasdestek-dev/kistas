@@ -35,7 +35,7 @@ Felaket anında sistemi sıfırdan ayağa kaldırma adımları:
 2. **Adım 2 (Bağımlılıkların Kurulumu):** `npm install` komutunu çalıştırın.
 3. **Adım 3 (Veritabanı Restorasyonu):**
    - Supabase Dashboard -> **Settings** -> **Database** -> **Backups** sekmesinden ilgili PITR zamanına geri yükleme yapın.
-   - Veya yeni bir veritabanı açıldıysa, `supabase/migrations/FAZ17_CONSOLIDATED_BANK_GRADE_MIGRATION.sql` dosyasını SQL Editor üzerinden 'Run' edin.
+   - Veya yeni bir veritabanı açıldıysa, `supabase/manual-sql/FAZ17_CONSOLIDATED_BANK_GRADE_MIGRATION.sql` dosyasını SQL Editor üzerinden 'Run' edin.
 4. **Adım 4 (Kale Kontrolü):** `node scripts/system-check.mjs` komutunu çalıştırarak tüm 8 savunma kalkanının (%100 Sağlık Puanı) yeşil olduğunu doğrulayın.
 
 ---

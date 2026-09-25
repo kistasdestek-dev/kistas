@@ -54,7 +54,7 @@ runTest('FAZ 18 Migration dosyası mevcut ve eksiksiz olmalı', () => {
 
 // Test 2: Konsolide Migration dosyası kontrolü
 runTest('FAZ17_CONSOLIDATED_BANK_GRADE_MIGRATION.sql içinde AŞAMA 9 (PARS-DEFENDER) bulunmalı', () => {
-  const consPath = path.join(ROOT, 'supabase', 'migrations', 'FAZ17_CONSOLIDATED_BANK_GRADE_MIGRATION.sql');
+  const consPath = path.join(ROOT, 'supabase', 'manual-sql', 'FAZ17_CONSOLIDATED_BANK_GRADE_MIGRATION.sql');
   const content = fs.readFileSync(consPath, 'utf8');
   if (!content.includes('AŞAMA 9: PARS-DEFENDER VERİTABANI DÜZEYİ AKTİF TEHDİT RADARI')) {
     throw new Error('AŞAMA 9 konsolide migration dosyasına eklenmemiş.');

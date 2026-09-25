@@ -1304,4 +1304,3 @@ GRANT EXECUTE ON FUNCTION public.admin_get_threat_events(INT, INT, TEXT) TO auth
 
 
 
-
