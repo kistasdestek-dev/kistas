@@ -1,8 +1,22 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BellRing, CheckCircle2, Loader2, Megaphone, Send, Sparkles } from 'lucide-react';
+import {
+  BellRing,
+  CheckCircle2,
+  Loader2,
+  Megaphone,
+  Send,
+  Sparkles,
+  Search,
+  ChevronRight,
+  Flame,
+  Globe,
+  Radio,
+  X,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/browser';
+import { AutoTransparentLogo } from '../AutoTransparentLogo';
 
 type TemplateKey = 'new_projects' | 'popular_projects' | 'discover' | 'custom';
 
@@ -12,7 +26,9 @@ interface AnnouncementDraft {
   title: string;
   body: string;
   actionLabel: string;
-  actionPath: '/' | '/browse' | '/new' | '/popular' | '/blog';
+  actionPath: string;
+  selectedProjectId?: string;
+  selectedProjectTitle?: string;
 }
 
 interface AnnouncementHistoryItem {
@@ -20,6 +36,17 @@ interface AnnouncementHistoryItem {
   title: string;
   action_path: string;
   recipient_count: number;
+  created_at: string;
+}
+
+interface PublishedProjectItem {
+  id: string;
+  title: string;
+  tagline: string | null;
+  slug: string | null;
+  logo_url: string | null;
+  category: string | null;
+  upvotes_count: number;
   created_at: string;
 }
 
@@ -59,25 +86,50 @@ export const AdminAnnouncementsView: React.FC = () => {
   const supabase = useMemo(() => createClient(), []);
   const [draft, setDraft] = useState<AnnouncementDraft>(templates[0]);
   const [history, setHistory] = useState<AnnouncementHistoryItem[]>([]);
+  const [projects, setProjects] = useState<PublishedProjectItem[]>([]);
+  const [projectSearch, setProjectSearch] = useState('');
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const idempotencyKeyRef = useRef(newIdempotencyKey());
+  const draftSectionRef = useRef<HTMLDivElement>(null);
+
+  // Paylaşılan tüm projeleri getir
+  const loadProjects = useCallback(async () => {
+    setIsLoadingProjects(true);
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select('id, title, tagline, slug, logo_url, category, upvotes_count, created_at')
+        .in('status', ['active', 'approved'])
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        setProjects(data as PublishedProjectItem[]);
+      }
+    } catch (err) {
+      console.error('Projeler yüklenirken hata:', err);
+    } finally {
+      setIsLoadingProjects(false);
+    }
+  }, [supabase]);
 
   const loadHistory = useCallback(async () => {
     const { data } = await supabase
       .from('admin_announcements')
       .select('id, title, action_path, recipient_count, created_at')
       .order('created_at', { ascending: false })
-      .limit(5);
+      .limit(6);
     if (data) setHistory(data as AnnouncementHistoryItem[]);
   }, [supabase]);
 
   useEffect(() => {
     void loadHistory();
-  }, [loadHistory]);
+    void loadProjects();
+  }, [loadHistory, loadProjects]);
 
   const applyTemplate = (template: AnnouncementDraft) => {
-    setDraft(template);
+    setDraft({ ...template, selectedProjectId: undefined, selectedProjectTitle: undefined });
     setFeedback(null);
     idempotencyKeyRef.current = newIdempotencyKey();
   };
@@ -88,141 +140,434 @@ export const AdminAnnouncementsView: React.FC = () => {
     idempotencyKeyRef.current = newIdempotencyKey();
   };
 
-  const isValid = draft.title.trim().length >= 3
-    && draft.title.trim().length <= 80
-    && draft.body.trim().length >= 5
-    && draft.body.trim().length <= 240
-    && draft.actionLabel.trim().length >= 2
-    && draft.actionLabel.trim().length <= 32;
+  // Proje seçildiğinde otomatik doldurma
+  const handleSelectProject = (project: PublishedProjectItem) => {
+    const targetPath = project.slug ? `/listings/${project.slug}` : `/listings/${project.id}`;
+    const autoTitle = `🚀 Yeni Keşif: ${project.title}`.slice(0, 80);
+    const autoBody = (project.tagline || `${project.title} projesini inceleyin, görüşlerinizi paylaşın ve ilk desteğinizi verin.`).slice(0, 240);
+
+    setDraft({
+      key: 'custom',
+      label: project.title,
+      title: autoTitle,
+      body: autoBody,
+      actionLabel: 'Projeyi İncele',
+      actionPath: targetPath,
+      selectedProjectId: project.id,
+      selectedProjectTitle: project.title,
+    });
+    setFeedback(null);
+    idempotencyKeyRef.current = newIdempotencyKey();
+
+    // Form alanına yumuşak kaydır
+    draftSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const filteredProjects = useMemo(() => {
+    if (!projectSearch.trim()) return projects;
+    const q = projectSearch.toLowerCase();
+    return projects.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        (p.tagline && p.tagline.toLowerCase().includes(q)) ||
+        (p.category && p.category.toLowerCase().includes(q))
+    );
+  }, [projects, projectSearch]);
+
+  const isValid =
+    draft.title.trim().length >= 3 &&
+    draft.title.trim().length <= 80 &&
+    draft.body.trim().length >= 5 &&
+    draft.body.trim().length <= 240 &&
+    draft.actionLabel.trim().length >= 2 &&
+    draft.actionLabel.trim().length <= 32;
 
   const handleSend = async () => {
     if (!isValid || isSending) return;
-    if (!window.confirm('Bu duyuru tüm kayıtlı kullanıcılara gönderilecek. Devam edilsin mi?')) return;
+    const confirmMsg = draft.selectedProjectTitle
+      ? `"${draft.selectedProjectTitle}" projesiyle ilgili bildirim tüm kayıtlı kullanıcılara gönderilecek. Onaylıyor musunuz?`
+      : 'Bu duyuru tüm kayıtlı kullanıcılara bildirim olarak gönderilecek. Devam edilsin mi?';
+
+    if (!window.confirm(confirmMsg)) return;
 
     setIsSending(true);
     setFeedback(null);
-    const { data, error } = await supabase.rpc('admin_send_announcement', {
-      p_title: draft.title.trim(),
-      p_body: draft.body.trim(),
-      p_action_label: draft.actionLabel.trim(),
-      p_action_path: draft.actionPath,
-      p_template_key: draft.key,
-      p_idempotency_key: idempotencyKeyRef.current,
-    });
 
-    if (error) {
-      setFeedback({ type: 'error', message: error.message || 'Duyuru gönderilemedi.' });
-    } else {
-      const result = data as { recipient_count?: number } | null;
-      setFeedback({
-        type: 'success',
-        message: `Duyuru ${Number(result?.recipient_count || 0)} kullanıcıya gönderildi.`,
+    try {
+      const { data, error } = await supabase.rpc('admin_send_announcement', {
+        p_title: draft.title.trim(),
+        p_body: draft.body.trim(),
+        p_action_label: draft.actionLabel.trim(),
+        p_action_path: draft.actionPath,
+        p_template_key: draft.key,
+        p_idempotency_key: idempotencyKeyRef.current,
       });
-      idempotencyKeyRef.current = newIdempotencyKey();
-      await loadHistory();
+
+      if (error) {
+        // Eğer veritabanı kuralı rota izin hatası verirse kullanıcıyı net bilgilendir
+        if (error.message?.includes('INVALID_ACTION_PATH')) {
+          setFeedback({
+            type: 'error',
+            message: 'Hedef rota kısıtlaması nedeniyle duyuru gönderilemedi. Lütfen sistem migrationlarını kontrol edin.',
+          });
+        } else {
+          setFeedback({ type: 'error', message: error.message || 'Duyuru gönderilemedi.' });
+        }
+      } else {
+        const result = data as { recipient_count?: number } | null;
+        setFeedback({
+          type: 'success',
+          message: `Duyuru ${Number(result?.recipient_count || 0)} aktif kullanıcıya başarıyla iletildi!`,
+        });
+        idempotencyKeyRef.current = newIdempotencyKey();
+        await loadHistory();
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err?.message || 'Bir hata oluştu.' });
+    } finally {
+      setIsSending(false);
     }
-    setIsSending(false);
   };
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-[26px] border border-white/90 bg-white p-5 shadow-[4px_8px_24px_rgba(130,146,168,0.14)] sm:p-6">
-        <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[#3269C7]">
-            <Megaphone size={21} />
+    <div className="space-y-8 pb-12">
+      {/* 1. Bölüm: Paylaşılan Bütün Projeler Vitrini */}
+      <section className="relative rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.7)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#3269C7]/20 border border-[#3269C7]/40 text-[#8DB9FF] flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
+              <Radio size={22} className="animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-black text-white tracking-tight">
+                  Paylaşılan Bütün Projeler
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full bg-[#3269C7]/20 border border-[#3269C7]/30 text-[10px] font-bold text-[#8DB9FF]">
+                  {projects.length} Proje
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-[#94A3B8] font-medium">
+                Bir projeye tıklayarak tüm platform kullanıcılarına o projeyle alakalı anlık bildirim gönderin.
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg font-black text-[#25364E]">Topluluk duyurusu</h2>
-            <p className="mt-1 max-w-2xl text-xs leading-5 text-[#64748B]">
-              Seçtiğiniz duyuru tüm kayıtlı kullanıcılara bildirim merkezinde ve site açıkken glass kart olarak ulaşır.
-            </p>
+
+          {/* Proje Arama Çubuğu */}
+          <div className="relative w-full sm:w-72">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={projectSearch}
+              onChange={(e) => setProjectSearch(e.target.value)}
+              placeholder="Proje veya kategori ara..."
+              className="w-full h-10 pl-9 pr-8 rounded-xl border border-white/10 bg-white/[0.04] text-xs font-medium text-white placeholder-slate-500 focus:outline-none focus:border-[#3269C7] focus:bg-white/[0.07] transition-all"
+            />
+            {projectSearch && (
+              <button
+                type="button"
+                onClick={() => setProjectSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="mt-5 grid gap-2 sm:grid-cols-3">
+        {/* Projeler Kart Grid'i */}
+        {isLoadingProjects ? (
+          <div className="py-16 flex flex-col items-center justify-center gap-3 text-slate-400">
+            <Loader2 size={28} className="animate-spin text-[#3269C7]" />
+            <span className="text-xs font-semibold">Yayındaki projeler getiriliyor...</span>
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="py-12 text-center text-slate-400 text-xs">
+            Arama kriterine uygun proje bulunamadı.
+          </div>
+        ) : (
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[460px] overflow-y-auto pr-1 scrollbar-thin">
+            {filteredProjects.map((project) => {
+              const isSelected = draft.selectedProjectId === project.id;
+
+              return (
+                <div
+                  key={project.id}
+                  onClick={() => handleSelectProject(project)}
+                  className={`group relative p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between ${
+                    isSelected
+                      ? 'border-[#3269C7] bg-[#3269C7]/15 shadow-[0_0_20px_rgba(50,105,199,0.35)] -translate-y-0.5'
+                      : 'border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06] hover:-translate-y-0.5'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                      {project.logo_url ? (
+                        <AutoTransparentLogo
+                          src={project.logo_url}
+                          alt={project.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Globe size={20} className="text-slate-400" />
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <h3 className="text-xs font-bold text-white truncate group-hover:text-[#8DB9FF] transition-colors">
+                          {project.title}
+                        </h3>
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-amber-400 shrink-0">
+                          <Flame size={11} /> {project.upvotes_count || 0}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[11px] text-[#94A3B8] line-clamp-2 leading-relaxed">
+                        {project.tagline || 'Açıklama belirtilmemiş'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[10px]">
+                    <span className="px-2 py-0.5 rounded-full bg-white/[0.05] text-slate-400 font-medium">
+                      {project.category || 'Genel'}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectProject(project);
+                      }}
+                      className={`inline-flex items-center gap-1 font-bold transition-all px-2.5 py-1 rounded-lg ${
+                        isSelected
+                          ? 'bg-[#3269C7] text-white shadow-xs'
+                          : 'text-[#8DB9FF] hover:bg-[#3269C7]/20'
+                      }`}
+                    >
+                      {isSelected ? 'Seçildi' : 'Bildirime Ekle'}
+                      <ChevronRight size={12} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* 2. Bölüm: Bildirim Taslağı & Canlı Sıvı Cam Önizlemesi */}
+      <section
+        ref={draftSectionRef}
+        className="rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.7)]"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5">
+          <div className="flex items-start gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-white/10 border border-white/15 text-[#8DB9FF] flex items-center justify-center shrink-0">
+              <Megaphone size={22} />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-white tracking-tight">Topluluk Duyurusu & Bildirim</h2>
+              <p className="mt-0.5 text-xs text-[#94A3B8] font-medium leading-relaxed">
+                Seçtiğiniz duyuru tüm kayıtlı kullanıcılara bildirim merkezinde ve sitede açıkken canlı cam kart olarak ulaşır.
+              </p>
+            </div>
+          </div>
+
+          {draft.selectedProjectTitle && (
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3269C7]/20 border border-[#3269C7]/40 text-xs font-bold text-[#8DB9FF]">
+              <span>Seçili Proje: {draft.selectedProjectTitle}</span>
+              <button
+                type="button"
+                onClick={() => applyTemplate(templates[0])}
+                className="hover:text-white"
+                title="Projeyi kaldır"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Hızlı Şablon Butonları */}
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           {templates.map((template) => (
             <button
               key={template.key}
               type="button"
               onClick={() => applyTemplate(template)}
-              className={`rounded-2xl border p-3 text-left transition-all ${draft.key === template.key ? 'border-[#3269C7] bg-blue-50 shadow-sm' : 'border-[#DCE6F2] bg-[#F8FAFD] hover:border-[#9DB8DD]'}`}
+              className={`rounded-2xl border p-3.5 text-left transition-all cursor-pointer ${
+                draft.key === template.key && !draft.selectedProjectId
+                  ? 'border-[#3269C7] bg-[#3269C7]/20 shadow-[0_0_15px_rgba(50,105,199,0.3)]'
+                  : 'border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]'
+              }`}
             >
-              <span className="flex items-center gap-2 text-xs font-bold text-[#25364E]"><Sparkles size={14} className="text-[#3269C7]" />{template.label}</span>
-              <span className="mt-1.5 block text-[11px] leading-4 text-[#64748B]">{template.title}</span>
+              <span className="flex items-center gap-2 text-xs font-bold text-white">
+                <Sparkles size={14} className="text-[#8DB9FF]" />
+                {template.label}
+              </span>
+              <span className="mt-1 block text-[11px] leading-relaxed text-[#94A3B8]">
+                {template.title}
+              </span>
             </button>
           ))}
         </div>
 
-        <div className="mt-5 grid gap-4">
-          <label className="grid gap-1.5 text-xs font-bold text-[#41536C]">
-            Başlık
-            <input value={draft.title} maxLength={80} onChange={(event) => updateDraft('title', event.target.value)} className="h-11 rounded-xl border border-[#D7E2EF] bg-[#F7F9FC] px-3.5 text-sm text-[#25364E] outline-none focus:border-[#3269C7]" />
-            <span className="text-right text-[10px] font-medium text-[#8290A5]">{draft.title.length}/80</span>
+        {/* Form Alanları */}
+        <div className="mt-6 grid gap-4">
+          <label className="grid gap-1.5 text-xs font-bold text-white/90">
+            Bildirim Başlığı
+            <input
+              value={draft.title}
+              maxLength={80}
+              onChange={(event) => updateDraft('title', event.target.value)}
+              className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 text-sm text-white placeholder-slate-500 outline-none focus:border-[#3269C7] focus:ring-1 focus:ring-[#3269C7] transition-all"
+              placeholder="Örn: 🚀 Yeni Keşif: Nova SaaS"
+            />
+            <span className="text-right text-[10px] font-medium text-slate-400">{draft.title.length}/80</span>
           </label>
 
-          <label className="grid gap-1.5 text-xs font-bold text-[#41536C]">
-            Açıklama
-            <textarea value={draft.body} maxLength={240} rows={4} onChange={(event) => updateDraft('body', event.target.value)} className="resize-none rounded-xl border border-[#D7E2EF] bg-[#F7F9FC] px-3.5 py-3 text-sm leading-5 text-[#25364E] outline-none focus:border-[#3269C7]" />
-            <span className="text-right text-[10px] font-medium text-[#8290A5]">{draft.body.length}/240</span>
+          <label className="grid gap-1.5 text-xs font-bold text-white/90">
+            Açıklama Metni
+            <textarea
+              value={draft.body}
+              maxLength={240}
+              rows={3}
+              onChange={(event) => updateDraft('body', event.target.value)}
+              className="resize-none rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-3 text-sm leading-relaxed text-white placeholder-slate-500 outline-none focus:border-[#3269C7] focus:ring-1 focus:ring-[#3269C7] transition-all"
+              placeholder="Kullanıcıların göreceği açıklama veya proje sloganı..."
+            />
+            <span className="text-right text-[10px] font-medium text-slate-400">{draft.body.length}/240</span>
           </label>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="grid gap-1.5 text-xs font-bold text-[#41536C]">
-              Buton metni
-              <input value={draft.actionLabel} maxLength={32} onChange={(event) => updateDraft('actionLabel', event.target.value)} className="h-11 rounded-xl border border-[#D7E2EF] bg-[#F7F9FC] px-3.5 text-sm text-[#25364E] outline-none focus:border-[#3269C7]" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="grid gap-1.5 text-xs font-bold text-white/90">
+              Buton Metni
+              <input
+                value={draft.actionLabel}
+                maxLength={32}
+                onChange={(event) => updateDraft('actionLabel', event.target.value)}
+                className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 text-sm text-white placeholder-slate-500 outline-none focus:border-[#3269C7] transition-all"
+                placeholder="Örn: Projeyi İncele"
+              />
             </label>
-            <label className="grid gap-1.5 text-xs font-bold text-[#41536C]">
-              Hedef sayfa
-              <select value={draft.actionPath} onChange={(event) => updateDraft('actionPath', event.target.value as AnnouncementDraft['actionPath'])} className="h-11 rounded-xl border border-[#D7E2EF] bg-[#F7F9FC] px-3.5 text-sm text-[#25364E] outline-none focus:border-[#3269C7]">
-                <option value="/browse">Göz At</option>
-                <option value="/new">Yeni Çıkanlar</option>
-                <option value="/popular">Popüler</option>
-                <option value="/blog">Blog</option>
-                <option value="/">Ana sayfa</option>
-              </select>
+
+            <label className="grid gap-1.5 text-xs font-bold text-white/90">
+              Hedef Sayfa (Rota)
+              <input
+                value={draft.actionPath}
+                onChange={(event) => updateDraft('actionPath', event.target.value)}
+                className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 text-sm text-white placeholder-slate-500 outline-none focus:border-[#3269C7] transition-all"
+                placeholder="/listings/... veya /browse"
+              />
             </label>
           </div>
         </div>
 
-        <div className="mt-5 rounded-[22px] border border-white/15 bg-[linear-gradient(145deg,#18304F,#091326)] p-4 text-white shadow-[0_18px_42px_rgba(9,19,38,.22)]">
-          <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-400/15 text-[#8DB9FF]"><BellRing size={18} /></span>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-black">{draft.title || 'Duyuru başlığı'}</p>
-              <p className="mt-1 text-[11px] leading-4 text-[#B8C7DC]">{draft.body || 'Duyuru açıklaması'}</p>
-              <span className="mt-2 inline-flex text-[10px] font-bold text-[#79A9F4]">{draft.actionLabel || 'Göz at'} →</span>
+        {/* Canlı Bildirim Önizlemesi (Kıstas Sıvı Cam Formülü) */}
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-xs font-extrabold text-[#8DB9FF] tracking-wider uppercase flex items-center gap-1.5">
+              <BellRing size={13} /> Canlı Kullanıcı Bildirim Önizlemesi
+            </span>
+            <span className="text-[10px] text-slate-400">Navbardaki gerçek sıvı cam yapısıyla eşlenik</span>
+          </div>
+
+          <div className="p-4 sm:p-6 rounded-[24px] bg-gradient-to-r from-blue-950/40 via-purple-950/20 to-slate-950/60 border border-white/10 flex items-center justify-center">
+            {/* Önizleme Toast Kartı */}
+            <div
+              style={{
+                background:
+                  'linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.07) 100%), rgba(255, 255, 255, 0.04)',
+                WebkitBackdropFilter: 'blur(28px) saturate(210%) brightness(115%)',
+                backdropFilter: 'blur(28px) saturate(210%) brightness(115%)',
+                boxShadow:
+                  '0 20px 50px -10px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.06), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.42), inset 0 -1px 1px 0 rgba(255, 255, 255, 0.06)',
+                borderColor: 'rgba(255, 255, 255, 0.20)',
+              }}
+              className="w-full max-w-sm rounded-[22px] border p-3.5 transition-all shadow-2xl"
+            >
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 border border-white/15 text-[#8DB9FF] shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]">
+                  <Megaphone size={18} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-bold text-white tracking-tight">
+                    {draft.title || 'Duyuru başlığı'}
+                  </p>
+                  <p className="mt-1 text-[11px] leading-relaxed text-white/70 font-medium line-clamp-2">
+                    {draft.body || 'Duyuru açıklaması burada görünecektir.'}
+                  </p>
+                  <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-[#79A9F4]">
+                    <BellRing size={10} /> {draft.actionLabel || 'Göz at'} →
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
+        {/* Bildirim Geri Bildirimi */}
         {feedback && (
-          <div className={`mt-4 flex items-center gap-2 rounded-xl px-3.5 py-3 text-xs font-semibold ${feedback.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-            <CheckCircle2 size={15} /> {feedback.message}
+          <div
+            className={`mt-5 flex items-center gap-2.5 rounded-xl px-4 py-3 text-xs font-semibold ${
+              feedback.type === 'success'
+                ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
+                : 'bg-rose-500/15 border border-rose-500/30 text-rose-300'
+            }`}
+          >
+            <CheckCircle2 size={16} /> {feedback.message}
           </div>
         )}
 
-        <div className="mt-5 flex justify-end">
-          <button type="button" onClick={() => void handleSend()} disabled={!isValid || isSending} className="shiny-cta min-w-44 disabled:pointer-events-none disabled:opacity-45">
-            <span className="flex items-center justify-center gap-2 px-5 py-3 text-xs font-black text-white">
-              {isSending ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-              Tüm kullanıcılara gönder
+        {/* Gönderim Butonu */}
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
+          <span className="text-[11px] text-slate-400 font-medium">
+            {draft.selectedProjectTitle ? (
+              <span className="text-[#8DB9FF] font-bold">
+                🎯 Hedef: &quot;{draft.selectedProjectTitle}&quot; projesi
+              </span>
+            ) : (
+              'Duyuru tüm kayıtlı üyelerin bildirim paneline işlenecektir.'
+            )}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => void handleSend()}
+            disabled={!isValid || isSending}
+            className="shiny-cta min-w-56 cursor-pointer disabled:pointer-events-none disabled:opacity-40"
+          >
+            <span className="flex items-center justify-center gap-2 px-6 py-3.5 text-xs font-black text-white">
+              {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+              {draft.selectedProjectTitle
+                ? 'Projeyi Tüm Kullanıcılara Bildir'
+                : 'Tüm Kullanıcılara Yayınla'}
             </span>
           </button>
         </div>
-      </div>
+      </section>
 
+      {/* 3. Bölüm: Son Duyurular Geçmişi */}
       {history.length > 0 && (
-        <div className="rounded-[24px] border border-white/90 bg-white p-5 shadow-[4px_8px_22px_rgba(130,146,168,0.12)]">
-          <h3 className="text-sm font-black text-[#25364E]">Son duyurular</h3>
-          <div className="mt-3 divide-y divide-[#E5ECF4]">
+        <section className="rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl p-6 sm:p-8 shadow-[0_24px_60px_rgba(0,0,0,0.7)]">
+          <h3 className="text-sm font-black text-white tracking-tight">Geçmiş Yayınlar ve Bildirimler</h3>
+          <div className="mt-4 divide-y divide-white/[0.06]">
             {history.map((item) => (
-              <div key={item.id} className="flex items-center justify-between gap-3 py-3 text-xs">
-                <div className="min-w-0"><p className="truncate font-bold text-[#33465F]">{item.title}</p><p className="mt-0.5 text-[10px] text-[#8290A5]">{new Date(item.created_at).toLocaleString('tr-TR')} · {item.action_path}</p></div>
-                <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-[#3269C7]">{item.recipient_count} alıcı</span>
+              <div key={item.id} className="flex items-center justify-between gap-4 py-3.5 text-xs">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-bold text-white/90">{item.title}</p>
+                  <p className="mt-0.5 text-[11px] text-slate-400">
+                    {new Date(item.created_at).toLocaleString('tr-TR')} · {item.action_path}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-[#3269C7]/20 border border-[#3269C7]/30 px-3 py-1 text-[10px] font-bold text-[#8DB9FF]">
+                  {item.recipient_count} Alıcı
+                </span>
               </div>
             ))}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

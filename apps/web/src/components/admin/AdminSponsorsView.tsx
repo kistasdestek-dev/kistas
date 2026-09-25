@@ -91,48 +91,48 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 1. Başlık Alanı (Fotoğraf ile birebir) */}
+      {/* 1. Başlık Alanı (Kıstas Stili) */}
       <div className="flex items-start gap-4">
         <div className="shrink-0 mt-0.5">
           <GlassIconButton icon={Eye} size={44} iconSize={22} iconColor="#3269C7" />
         </div>
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-[#25364E] tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
             Vitrin Desteği
           </h2>
-          <p className="text-xs sm:text-sm text-[#64748B] mt-0.5 font-medium">
+          <p className="text-xs sm:text-sm text-[#94A3B8] mt-0.5 font-medium">
             Seçtiğiniz projeye süreli editoryal erişim sağlayın. Gerçek görüntülenme sayısı ayrı tutulur.
           </p>
         </div>
       </div>
 
-      {/* 2. Canlı Önizleme Kutusu (Fotoğraf ile birebir) */}
-      <div className="rounded-[24px] border border-white/90 bg-white/90 p-5 sm:p-6 shadow-[-4px_-4px_12px_rgba(255,255,255,0.9),4px_6px_16px_rgba(130,146,168,0.12)]">
+      {/* 2. Canlı Önizleme Kutusu (Sıvı Cam Kart) */}
+      <div className="rounded-[24px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl p-5 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-[10px] font-extrabold text-[#187657] uppercase tracking-wider">
+            <span className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider">
               CANLI ÖNİZLEME
             </span>
-            <h4 className="text-sm sm:text-base font-black text-[#25364E] mt-0.5">
+            <h4 className="text-sm sm:text-base font-black text-white mt-0.5">
               {activeSponsors.length} aktif Vitrin Desteği
             </h4>
           </div>
 
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#187657]/10 border border-[#187657]/20 text-[11px] font-bold text-[#187657]">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-bold text-emerald-300">
             <RotateCw size={12} className="animate-spin" />
             <span>Otomatik akış</span>
           </div>
         </div>
 
         {/* Liste Başlığı */}
-        <div className="mt-4 pt-3 border-t border-slate-100">
-          <div className="text-[11px] font-extrabold text-[#3269C7] tracking-wider uppercase mb-3 flex items-center gap-2">
+        <div className="mt-4 pt-3 border-t border-white/10">
+          <div className="text-[11px] font-extrabold text-[#8DB9FF] tracking-wider uppercase mb-3 flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-[#3269C7]" />
             <span>VİTRİN DESTEĞİ ALAN PROJELER</span>
           </div>
 
           {activeSponsors.length === 0 ? (
-            <p className="text-xs text-[#64748B] italic py-2">
+            <p className="text-xs text-[#94A3B8] italic py-2">
               Aktif Vitrin Desteği yok. Aşağıdan bir projeye süre tanımlayın.
             </p>
           ) : (
@@ -140,19 +140,19 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
               {activeSponsors.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50/60 text-xs font-bold text-[#25364E]"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/10 bg-white/[0.05] text-xs font-bold text-white"
                 >
-                  <div className="w-5 h-5 rounded-md overflow-hidden bg-white shrink-0">
+                  <div className="w-5 h-5 rounded-md overflow-hidden bg-white/10 shrink-0">
                     {p.logo_url ? (
                       <AutoTransparentLogo src={p.logo_url} alt={p.title} className="w-full h-full object-contain" />
                     ) : (
-                      <span className="text-[9px] font-black text-blue-600 flex items-center justify-center h-full">
+                      <span className="text-[9px] font-black text-[#8DB9FF] flex items-center justify-center h-full">
                         {p.title.slice(0, 2).toUpperCase()}
                       </span>
                     )}
                   </div>
                   <span>{p.title}</span>
-                  <span className="text-[10px] text-[#8A6414] bg-[#FFF8E7] px-1.5 py-0.5 rounded font-semibold">
+                  <span className="text-[10px] text-amber-300 bg-amber-500/15 px-1.5 py-0.5 rounded font-semibold border border-amber-500/25">
                     {formatExpiry(p.boosted_until)}
                   </span>
                 </div>
@@ -170,7 +170,7 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
           className={`h-9 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
             sponsorView === 'active'
               ? 'border-[#3269C7] bg-[#3269C7] text-white shadow-xs'
-              : 'border-white/80 bg-white text-[#64748B] hover:text-[#25364E]'
+              : 'border-white/10 bg-white/[0.04] text-[#94A3B8] hover:text-white hover:bg-white/[0.08]'
           }`}
         >
           <Sparkles size={13} />
@@ -183,7 +183,7 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
           className={`h-9 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
             sponsorView === 'all'
               ? 'border-[#3269C7] bg-[#3269C7] text-white shadow-xs'
-              : 'border-white/80 bg-white text-[#64748B] hover:text-[#25364E]'
+              : 'border-white/10 bg-white/[0.04] text-[#94A3B8] hover:text-white hover:bg-white/[0.08]'
           }`}
         >
           <span>Tüm uygun projeler ({listings.length})</span>
@@ -191,24 +191,24 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
       </div>
 
       {errorMsg && (
-        <div className="p-3.5 rounded-2xl border border-[#ba0816]/20 bg-[#ba0816]/10 text-xs text-[#ba0816] font-medium flex items-center gap-2">
+        <div className="p-3.5 rounded-2xl border border-rose-500/30 bg-rose-500/15 text-xs text-rose-300 font-medium flex items-center gap-2">
           <AlertCircle size={16} className="shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
 
-      {/* 4. Proje Listesi (Kıstas Neumorphic DataCard Stili) */}
+      {/* 4. Proje Listesi (Kıstas Obsidyen Kart Stili) */}
       {displayList.length === 0 ? (
-        <div className="rounded-[28px] border border-white/90 bg-white/80 p-12 text-center shadow-[-4px_-4px_12px_rgba(255,255,255,0.9),4px_6px_16px_rgba(130,146,168,0.12)]">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EFF5FF] text-[#3269C7]">
+        <div className="rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl p-12 text-center shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#3269C7]/20 border border-[#3269C7]/30 text-[#8DB9FF]">
             <Eye size={22} />
           </div>
-          <h4 className="text-base font-bold text-[#25364E]">
+          <h4 className="text-base font-bold text-white">
             {sponsorView === 'active'
               ? 'Aktif Vitrin Desteği bulunmuyor.'
               : 'Aramanıza uygun bir proje bulunamadı.'}
           </h4>
-          <p className="mt-1 text-xs text-[#64748B]">
+          <p className="mt-1 text-xs text-[#94A3B8]">
             Uygun projelerden birine aşağıdaki süre butonlarını kullanarak vitrin tanımlayabilirsiniz.
           </p>
         </div>
@@ -217,42 +217,42 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
           {displayList.map((project) => {
             const sponsored = isSponsored(project);
             const isBusy = actionBusyId === project.id;
-            const safeProjectUrl = `/project/${project.id}`;
+            const safeProjectUrl = `/listings/${(project as any).slug || project.id}`;
 
             return (
               <div
                 key={project.id}
-                className="rounded-[24px] border border-white/90 bg-white p-5 shadow-[-4px_-4px_12px_rgba(255,255,255,0.9),4px_6px_16px_rgba(130,146,168,0.12)] transition-all hover:shadow-[-2px_-2px_8px_rgba(255,255,255,0.8),2px_4px_12px_rgba(130,146,168,0.15)]"
+                className="rounded-[24px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 shadow-[0_12px_32px_rgba(0,0,0,0.5)] transition-all hover:border-white/20 hover:bg-white/[0.05]"
               >
                 {/* Proje Kimlik Bilgisi */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3.5">
-                    <div className="h-11 w-11 shrink-0 rounded-xl bg-[#F7FAFF] border border-[#CBD9EC]/70 flex items-center justify-center overflow-hidden">
+                    <div className="h-11 w-11 shrink-0 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center overflow-hidden">
                       {project.logo_url ? (
                         <AutoTransparentLogo src={project.logo_url} alt={project.title} className="h-8 w-8 object-contain" />
                       ) : (
-                        <span className="text-xs font-black text-[#3269C7]">
+                        <span className="text-xs font-black text-[#8DB9FF]">
                           {project.title.slice(0, 2).toUpperCase()}
                         </span>
                       )}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-[#25364E] tracking-tight">
+                        <h4 className="text-sm font-bold text-white tracking-tight">
                           {project.title}
                         </h4>
                         {sponsored ? (
-                          <span className="rounded-full bg-[#EFF5FF] border border-[#3269C7]/20 px-2 py-0.5 text-[10px] font-bold text-[#3269C7] flex items-center gap-1">
+                          <span className="rounded-full bg-[#3269C7]/20 border border-[#3269C7]/30 px-2 py-0.5 text-[10px] font-bold text-[#8DB9FF] flex items-center gap-1">
                             <Eye size={10} />
                             <span>Vitrin Desteği aktif</span>
                           </span>
                         ) : (
-                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                          <span className="rounded-full bg-white/[0.05] border border-white/10 px-2 py-0.5 text-[10px] font-semibold text-slate-400">
                             Desteğe uygun
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-[#64748B] mt-0.5 line-clamp-1">
+                      <p className="text-xs text-[#94A3B8] mt-0.5 line-clamp-1">
                         {project.tagline || 'Dijital proje'}
                       </p>
                     </div>
@@ -262,7 +262,7 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
                     href={safeProjectUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-[#3269C7] transition-colors shrink-0"
+                    className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.05] text-slate-300 hover:text-white hover:bg-white/10 transition-colors shrink-0"
                     title="Vitrinde Gör"
                   >
                     <ExternalLink size={13} />
@@ -270,12 +270,12 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
                 </div>
 
                 {/* Alt Meta Bilgileri */}
-                <div className="flex flex-wrap items-center gap-3 text-xs text-[#64748B] mt-3 pt-3 border-t border-slate-100">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-[#94A3B8] mt-3 pt-3 border-t border-white/10">
                   <span>{project.view_count || 0} görüntülenme</span>
-                  <span className="w-1 h-1 rounded-full bg-slate-300" />
+                  <span className="w-1 h-1 rounded-full bg-white/20" />
                   <span>{project.upvote_count || 0} destek</span>
-                  <span className="w-1 h-1 rounded-full bg-slate-300" />
-                  <span className={sponsored ? 'text-[#8A6414] font-semibold' : ''}>
+                  <span className="w-1 h-1 rounded-full bg-white/20" />
+                  <span className={sponsored ? 'text-amber-300 font-semibold' : ''}>
                     {formatExpiry(project.boosted_until)}
                   </span>
                 </div>
@@ -285,7 +285,7 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setViewModalTarget({ id: project.id, title: project.title })}
-                    className="h-8 px-3 rounded-lg border border-[#3269C7]/30 bg-[#EFF5FF] text-xs font-bold text-[#3269C7] hover:bg-[#E3EFFF] transition-all cursor-pointer flex items-center gap-1.5"
+                    className="h-8 px-3 rounded-lg border border-[#3269C7]/40 bg-[#3269C7]/20 text-xs font-bold text-[#8DB9FF] hover:bg-[#3269C7]/30 transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <Eye size={12} />
                     <span>Görünürlük Ekle</span>
@@ -295,9 +295,9 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
                     type="button"
                     disabled={isBusy}
                     onClick={() => handleSetSponsorship(project.id, 24)}
-                    className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    className="h-8 px-3 rounded-lg border border-white/10 bg-white/[0.05] text-xs font-bold text-white hover:bg-white/10 transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
-                    <Clock size={12} className="text-blue-600" />
+                    <Clock size={12} className="text-[#8DB9FF]" />
                     <span>{sponsored ? '+24 saat' : '24 saat destek ver'}</span>
                   </button>
 
@@ -305,9 +305,9 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
                     type="button"
                     disabled={isBusy}
                     onClick={() => handleSetSponsorship(project.id, 72)}
-                    className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    className="h-8 px-3 rounded-lg border border-white/10 bg-white/[0.05] text-xs font-bold text-white hover:bg-white/10 transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
-                    <Calendar size={12} className="text-blue-600" />
+                    <Calendar size={12} className="text-[#8DB9FF]" />
                     <span>+3 gün</span>
                   </button>
 
@@ -315,9 +315,9 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
                     type="button"
                     disabled={isBusy}
                     onClick={() => handleSetSponsorship(project.id, 168)}
-                    className="h-8 px-3 rounded-lg border border-amber-200 bg-[#FFFDF5] text-xs font-bold text-[#8A6414] hover:bg-[#FFF8E7] transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    className="h-8 px-3 rounded-lg border border-amber-500/30 bg-amber-500/15 text-xs font-bold text-amber-300 hover:bg-amber-500/25 transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
-                    <Calendar size={12} className="text-[#8A6414]" />
+                    <Calendar size={12} className="text-amber-400" />
                     <span>+7 gün</span>
                   </button>
 
@@ -326,7 +326,7 @@ export const AdminSponsorsView: React.FC<AdminSponsorsViewProps> = ({
                       type="button"
                       disabled={isBusy}
                       onClick={() => handleSetSponsorship(project.id, 0)}
-                      className="h-8 px-3 rounded-lg border border-red-200 bg-red-50/70 text-xs font-bold text-red-600 hover:bg-red-100 transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 ml-auto"
+                      className="h-8 px-3 rounded-lg border border-rose-500/30 bg-rose-500/15 text-xs font-bold text-rose-300 hover:bg-rose-500/25 transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50 ml-auto"
                     >
                       {isBusy ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />}
                       <span>Desteği sonlandır</span>

@@ -139,88 +139,79 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
     }
   };
 
-  // 8'li Metrik Kartları Konfigürasyonu (Fotoğraf ile birebir eşleşme)
+  // 8'li Metrik Kartları Konfigürasyonu (Kıstas Siber-Obsidyen Cam Sistemi)
   const metricCards = useMemo(() => [
     {
       id: 'moderation' as AdminTab,
       label: 'Onay bekleyen',
       value: stats.pending_listings,
       icon: Clock,
-      color: '#936413',
-      bgGradient: 'from-[#FFF9EE] to-white',
-      accentBg: 'rgba(147,100,19,0.12)',
+      color: '#FBBF24',
+      accentBg: 'rgba(251,191,36,0.15)',
     },
     {
       id: 'support' as AdminTab,
       label: 'Açık destek',
       value: 5,
       icon: MessageSquare,
-      color: '#3269C7',
-      bgGradient: 'from-[#EFF7FF] to-white',
-      accentBg: 'rgba(50,105,199,0.1)',
+      color: '#60A5FA',
+      accentBg: 'rgba(96,165,250,0.15)',
     },
     {
       id: 'sponsors' as AdminTab,
       label: 'Aktif Vitrin Desteği',
       value: stats.sponsored_listings,
       icon: Eye,
-      color: '#3269C7',
-      bgGradient: 'from-[#EFF5FF] to-white',
-      accentBg: 'rgba(50,105,199,0.12)',
+      color: '#38BDF8',
+      accentBg: 'rgba(56,189,248,0.15)',
     },
     {
       id: 'listings' as AdminTab,
       label: 'Toplam proje',
       value: stats.total_listings,
       icon: LayoutGrid,
-      color: '#3269C7',
-      bgGradient: 'from-[#EFF7FF] to-white',
-      accentBg: 'rgba(50,105,199,0.1)',
+      color: '#60A5FA',
+      accentBg: 'rgba(96,165,250,0.15)',
     },
     {
       id: 'users' as AdminTab,
       label: 'Topluluk',
       value: stats.total_users,
       icon: Users,
-      color: '#187657',
-      bgGradient: 'from-[#EFFAF6] to-white',
-      accentBg: 'rgba(24,118,87,0.1)',
+      color: '#34D399',
+      accentBg: 'rgba(52,211,153,0.15)',
     },
     {
       id: 'blog' as AdminTab,
       label: 'Blog yazıları',
       value: 3,
       icon: FileText,
-      color: '#3269C7',
-      bgGradient: 'from-[#F6F1FF] to-white',
-      accentBg: 'rgba(50,105,199,0.1)',
+      color: '#A78BFA',
+      accentBg: 'rgba(167,139,250,0.15)',
     },
     {
       id: 'analytics' as AdminTab,
       label: 'Toplam etkileşim',
       value: stats.total_votes,
       icon: TrendingUp,
-      color: '#5c576b',
-      bgGradient: 'from-[#F4F5F8] to-white',
-      accentBg: 'rgba(92,87,107,0.1)',
+      color: '#CBD5E1',
+      accentBg: 'rgba(203,213,225,0.15)',
     },
     {
       id: 'threat_intel' as AdminTab,
       label: 'Siber Tehdit Radarı',
       value: 1,
       icon: ShieldAlert,
-      color: '#BD354C',
-      bgGradient: 'from-[#FFF2F4] to-white',
-      accentBg: 'rgba(189,53,76,0.12)',
+      color: '#F43F5E',
+      accentBg: 'rgba(244,63,94,0.15)',
     },
     ...(canSendAnnouncements ? [{
       id: 'announcements' as AdminTab,
       label: 'Topluluk duyurusu',
       value: 'Yayınla',
       icon: Megaphone,
-      color: '#3269C7',
-      bgGradient: 'from-[#EFF7FF] to-white',
-      accentBg: 'rgba(50,105,199,0.12)',
+      color: '#60A5FA',
+      accentBg: 'rgba(96,165,250,0.15)',
     }] : []),
   ], [canSendAnnouncements, stats]);
 
@@ -236,9 +227,9 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
   }, [listings, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-[#F5F8FC] text-[#25364E] pb-24 font-sans antialiased">
+    <div className="min-h-screen bg-black text-white pb-24 font-sans antialiased">
       {/* Üst Bar (Header) - Kıstas Tasarım Sistemi */}
-      <header className="sticky top-0 z-40 bg-[#F5F8FC]/90 backdrop-blur-md border-b border-[#CBD9EC]/40">
+      <header className="sticky top-0 z-40 bg-black/70 backdrop-blur-2xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <GlassIconButton
@@ -250,9 +241,9 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
             />
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 flex items-center justify-center">
-                <KistasLogo size={28} showWordmark={false} />
+                <KistasLogo size={28} showWordmark={false} glow />
               </div>
-              <h1 className="text-xl sm:text-2xl font-black text-[#25364E] tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                 Yönetim Merkezi
               </h1>
             </div>
@@ -274,21 +265,21 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
 
       {/* Ana Çalışma Alanı */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
-        {/* Operasyon Özeti - Hero Kartı (Kıstas Mavi Degrade) */}
-        <div className="relative rounded-[28px] bg-gradient-to-r from-[#173866] via-[#285EA5] to-[#347FC3] p-6 sm:p-8 text-white shadow-[0_12px_32px_rgba(23,56,102,0.18)] overflow-hidden">
-          {/* Arka plan dekoratif hafif parlamalar */}
-          <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-white/5 blur-2xl pointer-events-none" />
+        {/* Operasyon Özeti - Hero Kartı (Kıstas Siber-Obsidyen Gece Degrade) */}
+        <div className="relative rounded-[28px] border border-white/10 bg-[linear-gradient(135deg,#091326_0%,#102244_50%,#091326_100%)] p-6 sm:p-8 text-white shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden">
+          {/* Arka plan dekoratif neon parlamalar */}
+          <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-[#3269C7]/20 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div className="space-y-1.5 max-w-2xl">
-              <span className="text-[11px] font-extrabold tracking-widest text-blue-200 uppercase">
+              <span className="text-[11px] font-extrabold tracking-widest text-[#8DB9FF] uppercase">
                 OPERASYON ÖZETİ
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                 Genel bakış
               </h2>
-              <p className="text-xs sm:text-sm text-white/85 font-medium leading-relaxed">
+              <p className="text-xs sm:text-sm text-white/75 font-medium leading-relaxed">
                 Platformun yayın, topluluk ve destek akışını tek merkezden yönetin.
               </p>
               <div className="pt-2">
@@ -312,7 +303,7 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
           </div>
         </div>
 
-        {/* 8'li Metrik Kartları Izgarası (Fotoğraf ile Birebir 4x2 Dizilim) */}
+        {/* 8'li Metrik Kartları Izgarası (Siber-Obsidyen Sıvı Cam Dizilim) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
           {metricCards.map((card) => {
             const Icon = card.icon;
@@ -326,38 +317,38 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
                   setActiveTab(card.id);
                   setSearchQuery('');
                 }}
-                className={`relative text-left p-4 sm:p-5 rounded-[24px] bg-gradient-to-b ${card.bgGradient} transition-all duration-200 cursor-pointer group border ${
+                className={`relative text-left p-4 sm:p-5 rounded-[24px] backdrop-blur-xl transition-all duration-200 cursor-pointer group border ${
                   isSelected
-                    ? 'border-[#3269C7] border-t-[3px] border-t-[#3269C7] shadow-[0_10px_24px_rgba(50,105,199,0.16)] -translate-y-0.5'
-                    : 'border-white/90 shadow-[-4px_-4px_12px_rgba(255,255,255,0.9),4px_6px_16px_rgba(130,146,168,0.12)] hover:shadow-[-2px_-2px_8px_rgba(255,255,255,0.8),2px_4px_12px_rgba(130,146,168,0.16)] hover:-translate-y-0.5'
+                    ? 'border-[#3269C7] border-t-2 border-t-[#3269C7] bg-[#3269C7]/15 shadow-[0_0_28px_rgba(50,105,199,0.3)] -translate-y-0.5'
+                    : 'border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06] hover:-translate-y-0.5 shadow-[0_10px_30px_rgba(0,0,0,0.5)]'
                 }`}
               >
                 {/* Sol Üst İkon Tablası */}
                 <div className="flex items-center justify-between mb-3">
                   <div
                     style={{ backgroundColor: card.accentBg }}
-                    className="w-9 h-9 rounded-full flex items-center justify-center shadow-xs"
+                    className="w-9 h-9 rounded-full flex items-center justify-center border border-white/10 shadow-xs"
                   >
                     <Icon size={18} color={card.color} />
                   </div>
                 </div>
 
                 {/* Büyük Kalın Değer */}
-                <div className="text-2xl sm:text-3xl font-black text-[#25364E] tracking-tight">
+                <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                   {card.value}
                 </div>
 
                 {/* Alt Başlık & Yön Oku */}
                 <div className="flex items-center justify-between mt-1">
-                  <span className="text-xs font-semibold text-[#64748B]">
+                  <span className="text-xs font-semibold text-[#94A3B8]">
                     {card.label}
                   </span>
 
                   <div
                     className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
                       isSelected
-                        ? 'bg-[#1746A2] text-white shadow-xs'
-                        : 'bg-[#F0F4FA] text-[#69758A] group-hover:bg-[#E3EFFF] group-hover:text-[#3269C7]'
+                        ? 'bg-[#3269C7] text-white shadow-xs'
+                        : 'bg-white/[0.06] text-slate-400 group-hover:bg-white/15 group-hover:text-white'
                     }`}
                   >
                     <ArrowRight size={12} />
@@ -368,10 +359,10 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
           })}
         </div>
 
-        {/* Arama Çubuğu (Kıstas Neumorphic İç Bükey Arama Alanı) */}
+        {/* Arama Çubuğu (Kıstas Obsidyen İç Bükey Arama Alanı) */}
         {activeTab !== 'analytics' && activeTab !== 'threat_intel' && activeTab !== 'announcements' && (
-          <div className="rounded-2xl border border-white/90 bg-[#EAF0F7]/80 px-4 py-3 shadow-[inset_2px_2px_4px_rgba(130,146,168,0.14)] flex items-center gap-3">
-            <Search size={16} className="text-[#64748B] shrink-0" />
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 backdrop-blur-md shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)] flex items-center gap-3">
+            <Search size={16} className="text-slate-400 shrink-0" />
             <input
               type="text"
               value={searchQuery}
@@ -381,15 +372,15 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
                   ? 'İsim veya e-posta ara...'
                   : activeTab === 'blog'
                   ? 'Blog yazısı veya kategori ara...'
-                  : 'Proje veya geliştirici ara'
+                  : 'Proje veya geliştirici ara...'
               }
-              className="w-full bg-transparent text-xs sm:text-sm font-semibold text-[#25364E] placeholder:text-[#64748B] focus:outline-none"
+              className="w-full bg-transparent text-xs sm:text-sm font-semibold text-white placeholder-slate-500 focus:outline-none"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="text-[#64748B] hover:text-[#25364E]"
+                className="text-slate-400 hover:text-white"
               >
                 <X size={15} />
               </button>
@@ -458,14 +449,14 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
 
           {/* 8. Toplam Etkileşim / Analitik */}
           {activeTab === 'analytics' && (
-            <div className="rounded-[24px] border border-white/90 bg-white p-8 shadow-[-4px_-4px_12px_rgba(255,255,255,0.9),4px_6px_16px_rgba(130,146,168,0.12)] text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-slate-100 text-[#5c576b] flex items-center justify-center mx-auto shadow-xs">
+            <div className="rounded-[24px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-[#3269C7]/20 border border-[#3269C7]/30 text-[#8DB9FF] flex items-center justify-center mx-auto shadow-xs">
                 <TrendingUp size={24} />
               </div>
-              <h3 className="text-base font-bold text-[#25364E]">
+              <h3 className="text-base font-bold text-white">
                 Platform Etkileşim & Destek İstatistikleri
               </h3>
-              <p className="text-xs text-[#64748B] max-w-md mx-auto">
+              <p className="text-xs text-[#94A3B8] max-w-md mx-auto">
                 Toplam {stats.total_votes} destek oyu ve {stats.circulating_credits} dolaşımdaki kredi verisiyle platform büyümesini izleyin.
               </p>
             </div>

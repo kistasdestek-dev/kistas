@@ -93,10 +93,10 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
           <GlassIconButton icon={LayoutGrid} size={44} iconSize={22} iconColor="#3269C7" />
         </div>
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-[#25364E] tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
             Proje Moderasyonu
           </h2>
-          <p className="text-xs sm:text-sm text-[#64748B] mt-0.5 font-medium">
+          <p className="text-xs sm:text-sm text-[#94A3B8] mt-0.5 font-medium">
             Yayın durumlarını denetleyin, destek tanımlayın ve içerikleri inceleyin.
           </p>
         </div>
@@ -112,7 +112,7 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Proje adı veya slogan ara..."
-            className="w-full h-11 pl-10 pr-4 rounded-2xl border border-white/90 bg-[#EAF0F7]/70 text-xs font-semibold text-[#25364E] shadow-[inset_2px_2px_6px_rgba(130,146,168,0.12)] focus:outline-none focus:border-[#3269C7]"
+            className="w-full h-11 pl-10 pr-4 rounded-2xl border border-white/10 bg-white/[0.04] text-xs font-semibold text-white placeholder-slate-500 focus:outline-none focus:border-[#3269C7] transition-all"
           />
         </div>
 
@@ -132,7 +132,7 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
               className={`h-9 px-3.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer border ${
                 filter === key
                   ? 'border-[#3269C7] bg-[#3269C7] text-white shadow-xs'
-                  : 'border-white/80 bg-white/80 text-[#64748B] hover:text-[#25364E] hover:bg-white'
+                  : 'border-white/10 bg-white/[0.04] text-[#94A3B8] hover:text-white hover:bg-white/[0.08]'
               }`}
             >
               {label}
@@ -142,11 +142,11 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
       </div>
 
       {/* Projects Table / Card List */}
-      <div className="rounded-[28px] border border-white/90 bg-white/90 shadow-[-6px_-6px_16px_rgba(255,255,255,0.9),6px_6px_20px_rgba(130,146,168,0.14)] overflow-hidden">
+      <div className="rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl shadow-[0_24px_60px_rgba(0,0,0,0.7)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#3269C7]/12 bg-[#F7FAFE] text-[10px] font-bold text-[#627590] uppercase tracking-wider">
+              <tr className="border-b border-white/10 bg-white/[0.02] text-[10px] font-bold text-[#8DB9FF] uppercase tracking-wider">
                 <th className="py-4 px-6">Proje Bilgisi</th>
                 <th className="py-4 px-4">Durum</th>
                 <th className="py-4 px-4">Destek</th>
@@ -154,10 +154,10 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
                 <th className="py-4 px-6 text-right">Yönetim Aksiyonları</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#3269C7]/8 text-xs">
+            <tbody className="divide-y divide-white/[0.06] text-xs">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-xs text-[#686474]">
+                  <td colSpan={5} className="py-12 text-center text-xs text-slate-400">
                     Filtreye uygun proje bulunamadı.
                   </td>
                 </tr>
@@ -169,24 +169,24 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
                   const views = (item as any).view_count || 0;
 
                   return (
-                    <tr key={item.id} className="hover:bg-[#F9FBFE] transition-colors">
+                    <tr key={item.id} className="hover:bg-white/[0.03] transition-colors">
                       {/* Title & Logo */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 shrink-0 rounded-xl bg-[#F7FAFF] border border-[#CBD9EC]/60 flex items-center justify-center overflow-hidden">
+                          <div className="h-10 w-10 shrink-0 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center overflow-hidden">
                             {item.logo_url ? (
                               <AutoTransparentLogo src={item.logo_url} alt={item.title} className="h-7 w-7 object-contain" />
                             ) : (
-                              <span className="text-xs font-black text-[#3269C7]">
+                              <span className="text-xs font-black text-[#8DB9FF]">
                                 {item.title.slice(0, 2).toUpperCase()}
                               </span>
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-bold text-[#25364E] truncate max-w-[200px]">
+                            <p className="font-bold text-white truncate max-w-[200px]">
                               {item.title}
                             </p>
-                            <p className="text-[10px] text-[#8C9AA9] truncate max-w-[200px]">
+                            <p className="text-[10px] text-[#94A3B8] truncate max-w-[200px]">
                               {item.tagline || 'Dijital proje'}
                             </p>
                           </div>
@@ -198,17 +198,23 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
                             active
-                              ? 'bg-[#EBF7F0] text-[#187657] border-[#187657]/20'
+                              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                               : isPending(item.status as string)
-                                ? 'bg-[#FFF8E7] text-[#936413] border-[#936413]/20'
+                                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
                                 : isRevision(item.status as string)
-                                  ? 'bg-[#FFF3D6] text-[#B98916] border-[#B98916]/25'
-                                  : 'bg-[#FFF0F0] text-[#ba0816] border-[#ba0816]/20'
+                                  ? 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30'
+                                  : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
                           }`}
                         >
                           <span
                             className={`h-1.5 w-1.5 rounded-full ${
-                              active ? 'bg-[#187657]' : isPending(item.status as string) ? 'bg-[#936413]' : isRevision(item.status as string) ? 'bg-[#B98916]' : 'bg-[#ba0816]'
+                              active
+                                ? 'bg-emerald-400'
+                                : isPending(item.status as string)
+                                  ? 'bg-amber-400'
+                                  : isRevision(item.status as string)
+                                    ? 'bg-yellow-400'
+                                    : 'bg-rose-400'
                             }`}
                           />
                           <span>
@@ -218,15 +224,15 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
                       </td>
 
                       {/* Upvotes */}
-                      <td className="py-4 px-4 font-bold text-[#25364E]">
-                        <span className="inline-flex items-center gap-1 text-[#3269C7]">
+                      <td className="py-4 px-4 font-bold text-white">
+                        <span className="inline-flex items-center gap-1 text-[#8DB9FF]">
                           <Heart size={12} />
                           <span>{upvotes}</span>
                         </span>
                       </td>
 
                       {/* Views */}
-                      <td className="py-4 px-4 text-[#63758E] font-medium">
+                      <td className="py-4 px-4 text-[#94A3B8] font-medium">
                         <span className="inline-flex items-center gap-1">
                           <Eye size={12} />
                           <span>{views}</span>
@@ -240,7 +246,7 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
                           <button
                             type="button"
                             onClick={() => setSupportModalTarget({ id: item.id, title: item.title, type: 'support' })}
-                            className="h-8 px-2.5 rounded-lg border border-[#3269C7]/20 bg-[#3269C7]/8 text-[#3269C7] text-[11px] font-bold hover:bg-[#3269C7]/15 transition-all cursor-pointer"
+                            className="h-8 px-2.5 rounded-lg border border-[#3269C7]/40 bg-[#3269C7]/20 text-[#8DB9FF] text-[11px] font-bold hover:bg-[#3269C7]/30 transition-all cursor-pointer"
                             title="Yönetim Desteği Ver"
                           >
                             +Destek
@@ -250,7 +256,7 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
                           <button
                             type="button"
                             onClick={() => setSupportModalTarget({ id: item.id, title: item.title, type: 'views' })}
-                            className="h-8 px-2.5 rounded-lg border border-[#187657]/20 bg-[#187657]/8 text-[#187657] text-[11px] font-bold hover:bg-[#187657]/15 transition-all cursor-pointer"
+                            className="h-8 px-2.5 rounded-lg border border-emerald-500/40 bg-emerald-500/20 text-emerald-300 text-[11px] font-bold hover:bg-emerald-500/30 transition-all cursor-pointer"
                             title="Görünürlük Tanımla"
                           >
                             +İzlenme
@@ -263,8 +269,8 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
                             onClick={() => handleToggleStatus(item.id, item.status as string)}
                             className={`h-8 px-2.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer disabled:opacity-50 ${
                               active
-                                ? 'border-[#ba0816]/20 bg-[#ba0816]/8 text-[#ba0816] hover:bg-[#ba0816]/15'
-                                : 'border-[#187657]/20 bg-[#187657]/8 text-[#187657] hover:bg-[#187657]/15'
+                                ? 'border-rose-500/40 bg-rose-500/20 text-rose-300 hover:bg-rose-500/30'
+                                : 'border-emerald-500/40 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
                             }`}
                             title={active ? 'Askıya Al' : 'Yayınla'}
                           >
@@ -273,13 +279,13 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
 
                           {/* Preview */}
                           {(() => {
-                            const safeProjectUrl = `/project/${item.id}`;
+                            const safeProjectUrl = `/listings/${(item as any).slug || item.id}`;
                             return (
                               <Link
                                 href={safeProjectUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-[#3269C7] transition-colors"
+                                className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.05] text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
                                 title="Vitrinde Gör"
                               >
                                 <ExternalLink size={13} />
@@ -292,7 +298,7 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
                             type="button"
                             disabled={isBusy}
                             onClick={() => setDeleteTarget(item)}
-                            className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 cursor-pointer"
+                            className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/15 text-rose-300 hover:bg-rose-500/25 transition-colors disabled:opacity-50 cursor-pointer"
                             title="Projeyi Sil"
                           >
                             <Trash2 size={13} />

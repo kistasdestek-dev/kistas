@@ -35,6 +35,13 @@ interface NotificationRow {
 
 const allowedAnnouncementPaths = new Set(['/', '/browse', '/new', '/popular', '/blog']);
 
+const isValidAnnouncementPath = (path?: string): boolean => {
+  if (!path) return false;
+  if (allowedAnnouncementPaths.has(path)) return true;
+  if (/^\/listings\/[a-zA-Z0-9_-]+$/.test(path)) return true;
+  return false;
+};
+
 export const MessageNotificationProvider: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
@@ -155,7 +162,7 @@ export const MessageNotificationProvider: React.FC = () => {
 
             if (row.type === 'admin_announcement') {
               const requestedPath = row.data?.action_path;
-              const actionPath = requestedPath && allowedAnnouncementPaths.has(requestedPath) ? requestedPath : '/';
+              const actionPath = requestedPath && isValidAnnouncementPath(requestedPath) ? requestedPath : '/';
               window.dispatchEvent(new CustomEvent('kistas:notification-received', { detail: row }));
               queueToast({
                 key: `announcement:${row.data?.announcement_id || row.id}`,
@@ -214,25 +221,40 @@ export const MessageNotificationProvider: React.FC = () => {
       {visibleToasts.map((toast) => {
         const Icon = toast.type === 'admin_announcement' ? Megaphone : MessageSquare;
         return (
-          <div key={toast.key} className="overflow-hidden rounded-[22px] border border-white/20 bg-[linear-gradient(135deg,rgba(25,46,76,.94),rgba(7,17,34,.96))] shadow-[0_18px_55px_rgba(0,0,0,.55),inset_0_1px_0_rgba(255,255,255,.14)] backdrop-blur-2xl animate-in slide-in-from-top-3 fade-in duration-200">
+          <div
+            key={toast.key}
+            style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.07) 100%), rgba(255, 255, 255, 0.04)',
+              WebkitBackdropFilter: 'blur(28px) saturate(210%) brightness(115%)',
+              backdropFilter: 'blur(28px) saturate(210%) brightness(115%)',
+              boxShadow: '0 20px 50px -10px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.06), inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.42), inset 0 -1px 1px 0 rgba(255, 255, 255, 0.06)',
+              borderColor: 'rgba(255, 255, 255, 0.20)',
+            }}
+            className="overflow-hidden rounded-[22px] border transition-all duration-300 animate-in slide-in-from-top-3 fade-in"
+          >
             <div className="flex items-start gap-3 p-3.5">
-              <button type="button" onClick={() => void openNotification(toast)} className="flex min-w-0 flex-1 items-start gap-3 text-left cursor-pointer">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#3269C7]/25 text-[#8DB9FF] shadow-[inset_0_1px_0_rgba(255,255,255,.12)]">
+              <button type="button" onClick={() => void openNotification(toast)} className="flex min-w-0 flex-1 items-start gap-3 text-left cursor-pointer group">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 border border-white/15 text-[#8DB9FF] shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] transition-transform group-hover:scale-105">
                   <Icon size={18} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
-                    <span className="truncate text-xs font-bold text-white">{toast.title}</span>
-                    {toast.count > 1 && <span className="rounded-full bg-[#3269C7]/25 px-1.5 py-0.5 text-[9px] font-bold text-[#A8C8FB]">{toast.count} yeni</span>}
+                    <span className="truncate text-xs font-bold text-white tracking-tight">{toast.title}</span>
+                    {toast.count > 1 && <span className="rounded-full bg-[#3269C7]/30 border border-[#3269C7]/40 px-1.5 py-0.5 text-[9px] font-bold text-[#A8C8FB]">{toast.count} yeni</span>}
                   </span>
-                  <span className="mt-1 block truncate text-[11px] text-[#B8C7DC]">{toast.body}</span>
-                  <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold text-[#79A9F4]">
+                  <span className="mt-1 block truncate text-[11px] text-white/70 font-medium leading-relaxed">{toast.body}</span>
+                  <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold text-[#79A9F4] group-hover:text-[#A8C8FB] transition-colors">
                     <Bell size={10} /> {toast.type === 'message' ? 'Mesajı aç' : toast.actionLabel}
                   </span>
                 </span>
               </button>
-              <button type="button" onClick={() => dismiss(toast.key)} className="mt-0.5 text-[#8FA4C1] hover:text-white cursor-pointer" aria-label="Bildirimi kapat">
-                <X size={15} />
+              <button
+                type="button"
+                onClick={() => dismiss(toast.key)}
+                className="mt-0.5 p-1 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                aria-label="Bildirimi kapat"
+              >
+                <X size={14} />
               </button>
             </div>
           </div>
