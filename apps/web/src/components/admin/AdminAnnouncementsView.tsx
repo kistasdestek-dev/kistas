@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/browser';
 import { AutoTransparentLogo } from '../AutoTransparentLogo';
+import { AnnouncementConfirmModal } from './AnnouncementConfirmModal';
 
 type TemplateKey = 'new_projects' | 'popular_projects' | 'discover' | 'custom';
 
@@ -93,6 +94,7 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
   const [projectSearch, setProjectSearch] = useState('');
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const idempotencyKeyRef = useRef(newIdempotencyKey());
   const draftSectionRef = useRef<HTMLDivElement>(null);
@@ -208,14 +210,13 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
     draft.actionLabel.trim().length >= 2 &&
     draft.actionLabel.trim().length <= 32;
 
-  const handleSend = async () => {
+  const handleInitiateSend = () => {
     if (!isValid || isSending) return;
-    const confirmMsg = draft.selectedProjectTitle
-      ? `"${draft.selectedProjectTitle}" projesiyle ilgili bildirim tüm kayıtlı kullanıcılara gönderilecek. Onaylıyor musunuz?`
-      : 'Bu duyuru tüm kayıtlı kullanıcılara bildirim olarak gönderilecek. Devam edilsin mi?';
+    setIsConfirmModalOpen(true);
+  };
 
-    if (!window.confirm(confirmMsg)) return;
-
+  const handleConfirmSend = async () => {
+    if (!isValid || isSending) return;
     setIsSending(true);
     setFeedback(null);
 
@@ -224,7 +225,7 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
         p_title: draft.title.trim(),
         p_body: draft.body.trim(),
         p_action_label: draft.actionLabel.trim(),
-        p_action_path: draft.actionPath,
+        p_action_path: draft.actionPath.trim(),
         p_template_key: draft.key,
         p_idempotency_key: idempotencyKeyRef.current,
       });
@@ -234,7 +235,7 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
         if (error.message?.includes('INVALID_ACTION_PATH')) {
           setFeedback({
             type: 'error',
-            message: 'Hedef rota kısıtlaması nedeniyle duyuru gönderilemedi. Lütfen sistem migrationlarını kontrol edin.',
+            message: 'Hedef rota kısıtlaması nedeniyle duyuru gönderilemedi. Lütfen veritabanı migrationlarını kontrol edin.',
           });
         } else {
           setFeedback({ type: 'error', message: error.message || 'Duyuru gönderilemedi.' });
@@ -252,6 +253,7 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
       setFeedback({ type: 'error', message: err?.message || 'Bir hata oluştu.' });
     } finally {
       setIsSending(false);
+      setIsConfirmModalOpen(false);
     }
   };
 
@@ -547,18 +549,10 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
         )}
 
         {/* Gönderim Butonu */}
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
-          <div className="text-[11px] text-slate-400 font-medium">
-            {draft.selectedProjectTitle && (
-              <span className="text-[#8DB9FF] font-bold">
-                🎯 Hedef: &quot;{draft.selectedProjectTitle}&quot; projesi
-              </span>
-            )}
-          </div>
-
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-end gap-4 pt-4 border-t border-white/10">
           <button
             type="button"
-            onClick={() => void handleSend()}
+            onClick={handleInitiateSend}
             disabled={!isValid || isSending}
             className="shiny-cta min-w-56 cursor-pointer disabled:pointer-events-none disabled:opacity-40"
           >
@@ -593,6 +587,16 @@ export const AdminAnnouncementsView: React.FC<AdminAnnouncementsViewProps> = ({ 
           </div>
         </section>
       )}
+
+      {/* Kıstas Sıvı Cam Onay Modalı (SignOutConfirmModal Standartı) */}
+      <AnnouncementConfirmModal
+        isOpen={isConfirmModalOpen}
+        isSending={isSending}
+        projectTitle={draft.selectedProjectTitle}
+        announcementTitle={draft.title}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={() => void handleConfirmSend()}
+      />
     </div>
   );
 };

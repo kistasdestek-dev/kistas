@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState, useTransition, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ChevronLeft,
-  RotateCw,
   Clock,
   MessageSquare,
   Eye,
@@ -79,15 +78,12 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
   const [listings, setListings] = useState<Listing[]>(initialListings);
   const [users, setUsers] = useState<AdminUserItem[]>(initialUsers);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isPending, startTransition] = useTransition();
 
   const supabase = createClient();
   const canSendAnnouncements = adminAccess.is_owner || adminAccess.permissions?.includes('community');
 
   // Verileri canlı tazeleme
   const handleRefresh = async () => {
-    setIsRefreshing(true);
     try {
       const { data: statsData } = await supabase.rpc('get_admin_dashboard_stats');
       if (statsData) {
@@ -129,13 +125,9 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
         setUsers(mappedUsers);
       }
 
-      startTransition(() => {
-        router.refresh();
-      });
+      router.refresh();
     } catch (err) {
       console.error('Yönetim verileri tazelenirken hata:', err);
-    } finally {
-      setIsRefreshing(false);
     }
   };
 
@@ -248,18 +240,6 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
               </h1>
             </div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <GlassIconButton
-              icon={RotateCw}
-              size={42}
-              iconSize={19}
-              onClick={handleRefresh}
-              disabled={isRefreshing || isPending}
-              title="Verileri yenile"
-              className={isRefreshing || isPending ? 'animate-spin' : ''}
-            />
-          </div>
         </div>
       </header>
 
@@ -273,9 +253,6 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
 
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div className="space-y-1.5 max-w-2xl">
-              <span className="text-[11px] font-extrabold tracking-widest text-blue-200 uppercase">
-                OPERASYON ÖZETİ
-              </span>
               <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                 Genel bakış
               </h2>
