@@ -21,12 +21,12 @@ import { GlassIconButton } from './GlassIconButton';
 import { ShinyButton } from './ui/shiny-button';
 import { DescriptionRichText } from './DescriptionRichText';
 import { ProjectScreenshotsGallery } from './ProjectScreenshotsGallery';
-import { ProjectCommentsSection } from './ProjectCommentsSection';
+import { ProjectCommentsLazySection } from './ProjectCommentsLazySection';
 import { toggleProjectUpvoteAction, recordProjectViewAction } from '@/app/actions/listings';
 import { isKistasDefaultAvatar, resolveAvatarUrl } from '@/lib/avatar';
 import { InstagramVerifiedBadge } from './InstagramVerifiedBadge';
 import { type KistasFeedbackType } from './KistasFeedbackModal';
-import type { Listing, ProjectComment } from '@kistas/shared';
+import type { Listing } from '@kistas/shared';
 
 const BadgeCodeModal = dynamic(
   () => import('./profile/BadgeCodeModal').then((m) => m.BadgeCodeModal),
@@ -45,9 +45,7 @@ const KistasFeedbackModal = dynamic(
 
 interface ProjectDetailExperienceClientProps {
   project: Listing;
-  comments: ProjectComment[];
   categoryName?: string | null;
-  currentUser?: { id: string; email?: string; full_name?: string } | null;
 }
 
 const PRICING_LABELS: Record<string, string> = {
@@ -78,9 +76,7 @@ function toSafeHttpsUrl(value?: string | null): string | null {
 
 export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClientProps> = ({
   project,
-  comments,
   categoryName,
-  currentUser,
 }) => {
   const [upvotesCount, setUpvotesCount] = useState<number>(project.upvote_count || 0);
   const [viewCount, setViewCount] = useState<number>(project.view_count || 0);
@@ -391,12 +387,9 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
         </section>
 
         {/* 7. Proje Yorumları ve Geliştirici Yanıtları */}
-        <ProjectCommentsSection
+        <ProjectCommentsLazySection
           projectId={project.id}
-          comments={comments}
           sellerId={project.seller_id}
-          seller={project.seller}
-          currentUser={currentUser}
         />
 
         {/* 8. Platformlar ve Model */}
@@ -563,11 +556,13 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                 title="App Store'da Aç"
               >
                 { }
-                <img
-                  src="/store-badges/app-store.png?v=2"
-                  alt="Download on the App Store"
-                  className="h-full w-auto object-contain"
-                />
+                  <img
+                    src="/store-badges/app-store.png?v=2"
+                    alt="Download on the App Store"
+                    className="h-full w-auto object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
               </a>
             ) : (
               <button
@@ -577,11 +572,13 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                 title="App Store bağlantısı henüz eklenmedi"
               >
                 { }
-                <img
-                  src="/store-badges/app-store.png?v=2"
-                  alt="Download on the App Store"
-                  className="h-full w-auto object-contain"
-                />
+                  <img
+                    src="/store-badges/app-store.png?v=2"
+                    alt="Download on the App Store"
+                    className="h-full w-auto object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
               </button>
             )}
 
@@ -599,6 +596,8 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                   src="/store-badges/google-play.png?v=2"
                   alt="GET IT ON Google Play"
                   className="h-full w-auto object-contain"
+                  loading="lazy"
+                  decoding="async"
                 />
               </a>
             ) : (
@@ -613,6 +612,8 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                   src="/store-badges/google-play.png?v=2"
                   alt="GET IT ON Google Play"
                   className="h-full w-auto object-contain"
+                  loading="lazy"
+                  decoding="async"
                 />
               </button>
             )}
@@ -661,34 +662,40 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
       </main>
 
       {/* 13. Kıstas Obsidian Feedback & Auth Modal */}
-      <KistasFeedbackModal
-        isOpen={feedbackModal.isOpen}
-        onClose={() => setFeedbackModal((prev) => ({ ...prev, isOpen: false }))}
-        type={feedbackModal.type}
-        title={feedbackModal.title}
-        message={feedbackModal.message}
-        confirmLabel={feedbackModal.confirmLabel}
-        cancelLabel={feedbackModal.cancelLabel}
-        redirectUrl={feedbackModal.redirectUrl}
-        highlight={feedbackModal.highlight}
-      />
+      {feedbackModal.isOpen && (
+        <KistasFeedbackModal
+          isOpen
+          onClose={() => setFeedbackModal((prev) => ({ ...prev, isOpen: false }))}
+          type={feedbackModal.type}
+          title={feedbackModal.title}
+          message={feedbackModal.message}
+          confirmLabel={feedbackModal.confirmLabel}
+          cancelLabel={feedbackModal.cancelLabel}
+          redirectUrl={feedbackModal.redirectUrl}
+          highlight={feedbackModal.highlight}
+        />
+      )}
 
       {/* 14. Embed Badge Code Studio Modal */}
-      <BadgeCodeModal
-        isOpen={isBadgeModalOpen}
-        listingId={project.id}
-        listingTitle={project.title}
-        onClose={() => setIsBadgeModalOpen(false)}
-      />
+      {isBadgeModalOpen && (
+        <BadgeCodeModal
+          isOpen
+          listingId={project.id}
+          listingTitle={project.title}
+          onClose={() => setIsBadgeModalOpen(false)}
+        />
+      )}
 
       {/* 15. One-Click Launch Kit Modal */}
-      <ShareLaunchKitModal
-        isOpen={isShareModalOpen}
-        listingId={project.id}
-        listingTitle={project.title}
-        listingTagline={project.tagline}
-        onClose={() => setIsShareModalOpen(false)}
-      />
+      {isShareModalOpen && (
+        <ShareLaunchKitModal
+          isOpen
+          listingId={project.id}
+          listingTitle={project.title}
+          listingTagline={project.tagline}
+          onClose={() => setIsShareModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

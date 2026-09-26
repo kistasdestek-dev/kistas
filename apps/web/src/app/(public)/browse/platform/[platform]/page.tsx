@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { createAnonClient, getCategories, getCuratedListings } from '@kistas/supabase';
 import { DiscoverExperienceClient } from '@/components/DiscoverExperienceClient';
@@ -20,6 +21,16 @@ const PLATFORM_BY_PATH: Record<string, Exclude<DiscoverPlatform, 'all'>> = {
 
 const resolvePlatform = (value: string) => PLATFORM_BY_PATH[value.toLocaleLowerCase('en-US')];
 
+const getPlatformDiscoveryData = unstable_cache(async (platform: Exclude<DiscoverPlatform, 'all'>) => {
+  const supabase = createAnonClient();
+  const [categories, listings] = await Promise.all([
+    getCategories(supabase),
+    getCuratedListings(supabase, 'popular', 60, { platform }),
+  ]);
+
+  return { categories, listings };
+}, ['public-platform-discovery'], { revalidate: 60 });
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { platform: pathValue } = await params;
   const platform = resolvePlatform(pathValue);
@@ -40,11 +51,7 @@ export default async function PlatformDiscoveryPage({ params }: PageProps) {
   const platform = resolvePlatform(pathValue);
   if (!platform) notFound();
 
-  const supabase = createAnonClient();
-  const [categories, listings] = await Promise.all([
-    getCategories(supabase),
-    getCuratedListings(supabase, 'popular', 100),
-  ]);
+  const { categories, listings } = await getPlatformDiscoveryData(platform);
 
   return (
     <DiscoverExperienceClient

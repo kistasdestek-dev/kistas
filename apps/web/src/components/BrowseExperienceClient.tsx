@@ -111,7 +111,7 @@ export const BrowseExperienceClient: React.FC = () => {
 
         {/* 5. 3D Kategori Kartları Izgarası (Grid) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {categories.map((cat) => {
+          {categories.map((cat, index) => {
             const tints = CATEGORY_CARD_TINTS[cat.tintKey] ?? CATEGORY_CARD_TINTS.fallback;
             const categoryHref = `/browse/${cat.slug}`;
             const gradientStyle = {
@@ -122,9 +122,10 @@ export const BrowseExperienceClient: React.FC = () => {
               <Link
                 key={cat.id}
                 href={categoryHref}
-                prefetch={false}
+                prefetch={index < 4 ? null : false}
                 onPointerEnter={() => router.prefetch(categoryHref)}
                 onFocus={() => router.prefetch(categoryHref)}
+                onPointerDown={() => router.prefetch(categoryHref)}
                 onTouchStart={() => router.prefetch(categoryHref)}
                 className="group relative h-28 sm:h-32 w-full overflow-hidden rounded-[20px] border border-white/15 shadow-[0_12px_28px_rgba(0,0,0,0.6)] transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl active:scale-[0.985]"
               >

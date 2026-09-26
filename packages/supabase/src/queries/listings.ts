@@ -9,6 +9,11 @@ export interface ListingFilterOptions {
   searchQuery?: string;
 }
 
+export interface CuratedListingFilterOptions {
+  categoryId?: string;
+  platform?: string;
+}
+
 /**
  * Map raw database row to strongly-typed client Listing model
  */
@@ -96,7 +101,8 @@ export async function getListingById(
 export async function getCuratedListings(
   client: SupabaseClient,
   type: 'popular' | 'new',
-  limit = 20
+  limit = 20,
+  filters: CuratedListingFilterOptions = {},
 ): Promise<Listing[]> {
   let query = client
     .from('listings')
@@ -122,8 +128,17 @@ export async function getCuratedListings(
       updated_at,
       images:listing_images(id, listing_id, image_url, display_order, is_cover, created_at)
     `)
-    .eq('status', 'active')
-    .limit(limit);
+    .eq('status', 'active');
+
+  if (filters.categoryId) {
+    query = query.eq('category_id', filters.categoryId);
+  }
+
+  if (filters.platform) {
+    query = query.contains('platforms', [filters.platform]);
+  }
+
+  query = query.limit(limit);
 
   if (type === 'popular') {
     query = query.order('upvotes_count', { ascending: false });

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
+import Link, { useLinkStatus } from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { KistasLogo } from './KistasLogo';
 import { NavAnimatedIcon, NavTabKey } from './NavAnimatedIcon';
@@ -10,6 +10,19 @@ interface NavItem {
   key: NavTabKey;
   label: string;
   href: string;
+}
+
+function NavPendingIndicator() {
+  const { pending } = useLinkStatus();
+
+  return (
+    <span
+      aria-hidden="true"
+      className={`pointer-events-none absolute inset-x-3 -bottom-0.5 h-0.5 origin-left rounded-full bg-[#60A5FA] shadow-[0_0_10px_rgba(96,165,250,0.85)] transition-all duration-150 ${
+        pending ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'
+      }`}
+    />
+  );
 }
 
 export const KistasGlassDock: React.FC = () => {
@@ -164,6 +177,7 @@ export const KistasGlassDock: React.FC = () => {
                         )}
                       </span>
                     </span>
+                    <NavPendingIndicator />
                   </Link>
                 );
               })}

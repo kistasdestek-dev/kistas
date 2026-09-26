@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/supabase/server';
-import { getListingById, getListingComments, getCategories } from '@kistas/supabase';
+import { createAnonClient, getListingById, getCategories } from '@kistas/supabase';
 import { notFound } from 'next/navigation';
+import { unstable_cache } from 'next/cache';
 import { ProjectDetailExperienceClient } from '@/components/ProjectDetailExperienceClient';
 import type { Metadata } from 'next';
 
@@ -10,10 +10,19 @@ interface PageProps {
   }>;
 }
 
+const getPublicListing = unstable_cache(async (id: string) => {
+  const supabase = createAnonClient();
+  return getListingById(supabase, id);
+}, ['public-listing-detail'], { revalidate: 60 });
+
+const getPublicCategories = unstable_cache(async () => {
+  const supabase = createAnonClient();
+  return getCategories(supabase);
+}, ['public-listing-categories'], { revalidate: 3_600 });
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const supabase = await createClient();
-  const listing = await getListingById(supabase, id);
+  const listing = await getPublicListing(id);
 
   if (!listing) {
     return {
@@ -58,13 +67,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ListingDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const supabase = await createClient();
 
-  const [listing, dbComments, dbCategories, { data: { user } }] = await Promise.all([
-    getListingById(supabase, id),
-    getListingComments(supabase, id),
-    getCategories(supabase),
-    supabase.auth.getUser(),
+  const [listing, dbCategories] = await Promise.all([
+    getPublicListing(id),
+    getPublicCategories(),
   ]);
 
   if (!listing) {
@@ -115,9 +121,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
       </script>
       <ProjectDetailExperienceClient
         project={listing}
-        comments={dbComments || []}
         categoryName={category?.name || null}
-        currentUser={user ? { id: user.id, email: user.email, full_name: user.user_metadata?.full_name } : null}
       />
     </>
   );

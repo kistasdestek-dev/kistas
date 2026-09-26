@@ -4,12 +4,10 @@ import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
-  MessageSquare,
   Send,
   CornerDownRight,
   X,
   Loader2,
-  PenLine,
   Heart,
   HeartOff,
 } from 'lucide-react';
@@ -20,14 +18,15 @@ import { getViewerCommentReactions } from '@kistas/supabase';
 import { resolveCommentReactionTransition } from '@kistas/shared';
 import { isKistasDefaultAvatar, resolveAvatarUrl } from '@/lib/avatar';
 import { InstagramVerifiedBadge } from './InstagramVerifiedBadge';
-import type { CommentReaction, ProjectComment, ProfilePublic } from '@kistas/shared';
+import styles from './ProjectCommentsSection.module.css';
+import type { CommentReaction, ProjectComment } from '@kistas/shared';
 
 interface ProjectCommentsSectionProps {
   projectId: string;
   comments: ProjectComment[];
   sellerId: string;
-  seller?: ProfilePublic;
-  currentUser?: { id: string; email?: string; full_name?: string } | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 interface CommentReactionRowProps {
@@ -111,24 +110,18 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
   projectId,
   comments: initialComments,
   sellerId,
-  currentUser: initialUser,
+  open: isOpen,
+  onOpenChange,
 }) => {
   const [commentList, setCommentList] = useState<ProjectComment[]>(initialComments || []);
   const [content, setContent] = useState('');
   const [replyingTo, setReplyingTo] = useState<ProjectComment | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeUser, setActiveUser] = useState<{ id: string; email?: string; full_name?: string } | null>(
-    initialUser ?? null
-  );
-  const [isOpen, setIsOpen] = useState(false);
+  const [activeUser, setActiveUser] = useState<{ id: string; email?: string; full_name?: string } | null>(null);
   const [reactingCommentId, setReactingCommentId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (initialUser !== undefined) {
-      setActiveUser(initialUser);
-      return;
-    }
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
@@ -141,7 +134,7 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
         setActiveUser(null);
       }
     });
-  }, [initialUser]);
+  }, []);
 
   // Modal: lock page scroll + close on Escape while open
   useLayoutEffect(() => {
@@ -163,7 +156,7 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
     document.body.style.right = '0';
     document.body.style.width = '100%';
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false);
+      if (e.key === 'Escape') onOpenChange(false);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => {
@@ -180,7 +173,7 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
       });
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, onOpenChange]);
 
   // Görüntüleyen üyenin kendi tepkilerini yükle (ikon dolgusu için; sonsuz döngü kalkanı ref ile)
   const reactionsLoadedForRef = useRef<string | null>(null);
@@ -306,7 +299,7 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
       setIsSheetExpanded(true);
       setSheetExpansionProgress(1);
     } else if (dragDeltaY > 120 || velocityY > 0.75) {
-      setIsOpen(false);
+      onOpenChange(false);
     } else {
       setSheetExpansionProgress(0);
     }
@@ -345,46 +338,6 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
 
   return (
     <>
-      {/* Compact Trigger Card */}
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        aria-haspopup="dialog"
-        aria-expanded={isOpen}
-        className="group my-8 flex w-full items-center justify-between gap-4 rounded-3xl border border-white/10 bg-white/[0.04] p-5 text-left shadow-[0_16px_36px_-8px_rgba(0,0,0,0.7)] backdrop-blur-xl transition-all duration-200 hover:border-white/20 hover:bg-white/[0.06] active:scale-[0.995] cursor-pointer sm:p-6"
-      >
-        <span className="flex min-w-0 items-center gap-3.5">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#3269C7]/25 bg-gradient-to-b from-white to-[#EEF5FF] shadow-[0_4px_18px_rgba(50,105,199,0.20)]">
-            <MessageSquare size={19} color="#3269C7" />
-          </span>
-          <span className="min-w-0">
-            <span className="flex items-center gap-2">
-              <span className="text-lg font-bold tracking-tight text-white">Yorumlar</span>
-              {commentList.length > 0 && (
-                <span className="rounded-full border border-[#3269C7]/30 bg-[#3269C7]/15 px-2 py-0.5 text-[11px] font-bold text-[#60A5FA]">
-                  {commentList.length}
-                </span>
-              )}
-              {/* Mobile-only "Yorum Yap" — inline, on the title row */}
-              <span className="ml-4 flex shrink-0 items-center gap-1.5 rounded-full border border-[#3269C7]/25 bg-[#3269C7]/10 px-2.5 py-1 text-[11px] font-semibold text-white sm:hidden">
-                <PenLine size={13} color="#60A5FA" />
-                Yorum Yap
-              </span>
-            </span>
-            <span className="mt-0.5 block truncate text-xs text-[#94A3B8]">
-              {commentList.length > 0
-                ? 'Yorumları oku ve sen de katıl'
-                : 'İlk yorumu sen yaz, geliştiriciye geri bildirim ver'}
-            </span>
-          </span>
-        </span>
-
-        <span className="hidden shrink-0 items-center gap-2 rounded-full border border-[#3269C7]/25 bg-[#3269C7]/10 px-3.5 py-1.5 text-xs font-semibold text-white transition-colors group-hover:bg-[#3269C7]/20 sm:flex">
-          <PenLine size={14} color="#60A5FA" />
-          Yorum Yap
-        </span>
-      </button>
-
       {/* Comments Modal (Kıstas Glass) */}
       {isOpen && (
         <div
@@ -396,13 +349,13 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/75 backdrop-blur-xl"
-            onClick={() => setIsOpen(false)}
+            onClick={() => onOpenChange(false)}
             aria-hidden="true"
           />
 
           {/* Glass Panel — iOS-style bottom sheet (mobile) / centered card (desktop) */}
           <div
-            className="k-comments-feed-panel k-sheet-enter relative z-10 flex h-[var(--comments-sheet-height)] min-h-0 w-full flex-col overflow-hidden rounded-t-[28px] pt-2.5 sm:h-[72vh] sm:max-w-2xl sm:rounded-[28px] sm:pt-0"
+            className={`${styles.panel} ${styles.sheetEnter} relative z-10 flex h-[var(--comments-sheet-height)] min-h-0 w-full flex-col overflow-hidden rounded-t-[28px] pt-2.5 sm:h-[72vh] sm:max-w-2xl sm:rounded-[28px] sm:pt-0`}
             style={{
               '--comments-sheet-height': `${72 + sheetExpansionProgress * 28}dvh`,
               transform: `translateY(${dragOffsetY}px)`,
@@ -436,7 +389,7 @@ export const ProjectCommentsSection: React.FC<ProjectCommentsSectionProps> = ({
             </div>
 
             {/* Scrollable Comments Body */}
-            <div className="k-comments-scroll min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 [-webkit-overflow-scrolling:touch] sm:px-5">
+            <div className={`${styles.scroll} min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 [-webkit-overflow-scrolling:touch] sm:px-5`}>
 
               {/* Comments List */}
               <div>

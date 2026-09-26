@@ -1,5 +1,5 @@
-import { cache } from 'react';
 import type { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
 import { createAnonClient, getCategories, getCuratedListings } from '@kistas/supabase';
 import { DiscoverExperienceClient } from '@/components/DiscoverExperienceClient';
@@ -10,16 +10,20 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-const resolveCategory = cache(async (slug: string) => {
+const getCategoryDiscoveryData = unstable_cache(async (slug: string) => {
   const supabase = createAnonClient();
   const categories = await getCategories(supabase);
   const category = categories.find((item) => item.slug === slug);
-  return { supabase, categories, category };
-});
+  const listings = category
+    ? await getCuratedListings(supabase, 'popular', 60, { categoryId: category.id })
+    : [];
+
+  return { categories, category, listings };
+}, ['public-category-discovery'], { revalidate: 60 });
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const { category } = await resolveCategory(slug);
+  const { category } = await getCategoryDiscoveryData(slug);
   if (!category) return {};
 
   const title = `${category.name} Projeleri | Kıstas`;
@@ -34,10 +38,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CategoryDiscoveryPage({ params }: PageProps) {
   const { slug } = await params;
-  const { supabase, categories, category } = await resolveCategory(slug);
+  const { categories, category, listings } = await getCategoryDiscoveryData(slug);
   if (!category) notFound();
-
-  const listings = await getCuratedListings(supabase, 'popular', 100);
 
   return (
     <DiscoverExperienceClient

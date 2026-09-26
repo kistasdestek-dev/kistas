@@ -29,6 +29,18 @@ const browseClientSource = readFileSync(
   new URL('../../apps/web/src/components/BrowseExperienceClient.tsx', import.meta.url),
   'utf8',
 );
+const categoryPageSource = readFileSync(
+  new URL('../../apps/web/src/app/(public)/browse/[slug]/page.tsx', import.meta.url),
+  'utf8',
+);
+const platformPageSource = readFileSync(
+  new URL('../../apps/web/src/app/(public)/browse/platform/[platform]/page.tsx', import.meta.url),
+  'utf8',
+);
+const listingDetailSource = readFileSync(
+  new URL('../../apps/web/src/app/(public)/listings/[id]/page.tsx', import.meta.url),
+  'utf8',
+);
 const logoSource = readFileSync(
   new URL('../../apps/web/src/components/KistasLogo.tsx', import.meta.url),
   'utf8',
@@ -78,8 +90,18 @@ for (const route of publicRouteSources) {
   assert.doesNotMatch(route.source, /@\/lib\/supabase\/server/, `${route.path} cookie tabanlı Supabase istemcisi kullanmamalı`);
   assert.match(route.source, /createAnonClient/, `${route.path} RLS korumalı anonim istemci kullanmalı`);
 }
-assert.match(browseClientSource, /prefetch=\{false\}/, 'Kategori kartları görünür olur olmaz topluca yüklenmemeli');
+assert.match(browseClientSource, /index < 4 \? null : false/, 'Kategori ön yüklemesi ilk dört görünür kartla sınırlanmalı');
 assert.match(browseClientSource, /onPointerEnter=\{\(\) => router\.prefetch/, 'Kategori rotaları kullanıcı niyetinde ön yüklenmeli');
+assert.match(browseClientSource, /onPointerDown=\{\(\) => router\.prefetch/, 'Dokunmatik ve kalem etkileşiminde rota erken ön yüklenmeli');
+assert.match(categoryPageSource, /categoryId:\s*category\.id/, 'Kategori rotası yalnız seçili kategorinin verisini istemeli');
+assert.match(platformPageSource, /\{ platform \}/, 'Platform rotası yalnız seçili platformun verisini istemeli');
+assert.doesNotMatch(categoryPageSource, /getCuratedListings\(supabase, 'popular', 100\)/, 'Kategori rotası 100 genel projeyi taşımamalı');
+assert.doesNotMatch(platformPageSource, /getCuratedListings\(supabase, 'popular', 100\)/, 'Platform rotası 100 genel projeyi taşımamalı');
+assert.doesNotMatch(listingDetailSource, /@\/lib\/supabase\/server/, 'Public proje detayı cookie tabanlı sunucu istemcisini beklememeli');
+assert.doesNotMatch(listingDetailSource, /auth\.getUser/, 'Public proje gövdesi kullanıcı doğrulamasını bloklamamalı');
+assert.match(listingDetailSource, /const getPublicListing = unstable_cache/, 'Metadata ve sayfa public proje cache kaydını paylaşmalı');
+assert.match(categoryPageSource, /unstable_cache[\s\S]*revalidate:\s*60/, 'Kategori public verisi 60 saniye cache kullanmalı');
+assert.match(platformPageSource, /unstable_cache[\s\S]*revalidate:\s*60/, 'Platform public verisi 60 saniye cache kullanmalı');
 assert.match(logoSource, /kistas-logo-256\.webp/, 'Global Kıstas logosu küçültülmüş WebP varlığını kullanmalı');
 assert.doesNotMatch(
   listingsQuerySource,

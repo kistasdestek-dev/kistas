@@ -330,7 +330,9 @@ export const ProjectScreenshotsGallery: React.FC<ProjectScreenshotsGalleryProps>
                   src={item.url}
                   alt={`${projectTitle} önizleme ${index + 1}`}
                   className="h-full w-auto max-w-none object-contain select-none rounded-[20px] sm:rounded-[26px]"
-                  loading="eager"
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  fetchPriority={index === 0 ? 'high' : 'auto'}
                   onLoad={(e) => {
                     const img = e.currentTarget;
                     if (img.naturalWidth && img.naturalHeight) {
@@ -467,6 +469,8 @@ export const ProjectScreenshotsGallery: React.FC<ProjectScreenshotsGalleryProps>
                         src={item.url}
                         alt={`${projectTitle} ekran görüntüsü ${index + 1}`}
                         className="h-full w-full object-contain select-none"
+                        loading={isCenter ? 'eager' : 'lazy'}
+                        decoding="async"
                       />
                     </div>
                   );

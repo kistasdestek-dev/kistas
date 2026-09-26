@@ -1177,3 +1177,23 @@ Production veya magazaya cikis icin:
 - Web paket tutarları RPC allowlist'iyle eşitlendi. Ham SQL hataları arayüze taşınmaz; yetersiz bakiye, geçersiz paket, yetkisiz kullanıcı ve bulunamayan proje kontrollü mesajlara çevrilir.
 - Geri dönüş: duyuru kotası yeni bir ileri migration ile yeniden tanımlanır. Vitrin arayüzü önceki görsele alınabilir; doğrudan tablo güncellemesi kredi bütünlüğünü bozduğu için geri getirilmez.
 - Durum: KODLANDI — migration canlı Supabase'e uygulanmadı; push ve production deploy yapılmadı.
+
+### 2026-09-26 - Public rota geçiş ve istemci başlangıç performansı
+
+- Belge seviyesinde bütün iç link tıklamalarını yakalayan tam ekran navigasyon loaderı kaldırıldı. Dinamik kategori, platform ve proje detay rotaları erişilebilir, yerleşimi koruyan kendi `loading.tsx` skeleton sınırlarını kullanır; navbar yalnız tıklanan link üzerinde `useLinkStatus` ile bloke etmeyen geri bildirim gösterir.
+- Kategori ve platform sayfalarının 100 genel projeyi indirip istemcide elemesi kaldırıldı. Anon RLS istemcisi sorguyu `category_id` veya izinli platform değeriyle sunucuda daraltır ve en fazla 60 public kayıt taşır.
+- Proje detayının public gövdesi cookie tabanlı kullanıcı doğrulamasını beklemez. Metadata ve sayfa aynı public proje okumasını React `cache` ile tekilleştirir; yorum bileşeni oturum durumunu hydration sonrasında mevcut Supabase Auth akışıyla çözer.
+- Global uygulama içi bildirim sağlayıcısı dinamik istemci parçasına ayrıldı. Bildirim yetkisi, kullanıcı filtresi ve mevcut RLS/Realtime kontrolleri değişmedi; yalnız başlangıç JS yolundan çıkarıldı.
+- Güvenlik etkisi: Yeni tablo, migration, RPC, girdi, dış URL, analytics, PII veya secret yüzeyi yoktur. Public okumalar anon anahtar ve mevcut RLS sınırında kalır; korumalı rotaların proxy/`requireUser` zinciri değişmez.
+- Geri dönüş: Route skeleton dosyaları ve `GlobalClientRuntime` kaldırılıp önceki kök loader geri alınabilir; filtre parametreleri kaldırılırsa kategori/platform sorguları önceki genel sorguya döner. Veri şeması değişmediği için veri geri kazanımı gerekmez.
+- Doğrulama: Web TypeScript, ESLint ve regresyonlar 13/13; Supabase TypeScript; repo secret, XSS ve SQLi taramaları; Next production build ve Chromium keşif E2E testleri 3/3 başarılıdır. Ana sayfa istemci JS yükü yaklaşık 573,5 KB'den 321,3 KB'ye düşmüştür. Production deploy yapılmamıştır.
+
+### 2026-09-26 - Proje detay kritik yol ve etkileşim temelli yükleme
+
+- Public proje detay rotası yorum listesini ilk sunucu renderında okumaz. Yorum panelinin istemci kodu ve public yorum sorgusu yalnız kullanıcının yorum düğmesine basmasıyla paralel başlar; yükleme hatası proje gövdesini etkilemez ve kontrollü tekrar deneme sunar.
+- Yeni `loadProjectCommentsAction`, yalnız biçimi doğrulanmış UUID kabul eder ve mevcut anon Supabase istemcisi/RLS sınırında okuma yapar. Ham veritabanı hatası, kullanıcı PII'si veya credential istemciye taşınmaz; yorum yazma ve tepki işlemleri mevcut authenticated RPC zincirinde kalır.
+- Rozet, paylaşım ve geri bildirim modalları kapalıyken mount edilmez. Yorum paneli stilleri global CSS'ten çıkarılıp yalnız lazy yorum parçasıyla yüklenen CSS modülüne taşındı; eski selector kopyaları silindi.
+- Galeride yalnız ilk görünür ekran görüntüsü eager/high-priority yüklenir. Diğer ekran görüntüleri, lightbox komşuları ve alt bölüm mağaza rozetleri lazy/async decoding kullanır; URL doğrulama ve harici bağlantı güvenlik kuralları değişmez.
+- Güvenlik etkisi: Yeni migration, RPC, tablo, dış servis, secret veya yetki genişlemesi yoktur. Yeni public okuma, daha önce rota açılışında yapılan aynı RLS korumalı sorgunun kullanıcı niyetine ertelenmiş biçimidir.
+- Geri dönüş: `ProjectCommentsLazySection` kaldırılıp yorum sorgusu tekrar sayfa renderına alınabilir; CSS modülü global selectorlara geri taşınabilir. Veri şeması ve kalıcı kayıtlar değişmediği için veri geri kazanımı gerekmez.
+- Doğrulama: Web TypeScript ve ESLint, web regresyonları 14/14, Supabase TypeScript, repo secret/XSS/SQLi taramaları ve Next production build başarılıdır. Yerel Chromium testinde proje gövdesi 468 ms'de görünmüş, yorum dialogu ilk istekte 951 ms'de açılmış ve görsel öncelikleri `1 eager/high + 3 lazy/auto` olarak doğrulanmıştır. Proje detay başlangıç JS'i yaklaşık 556,1 KB'den 231,6 KB'ye düşmüştür. Production deploy yapılmamıştır.

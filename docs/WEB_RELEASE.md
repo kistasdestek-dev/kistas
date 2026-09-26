@@ -60,4 +60,9 @@ Yeni Worker kaynaklı kritik sorun çıkarsa Cloudflare Workers & Pages panelind
 - `KistasTopBrandBar.tsx` üzerindeki gereksiz arka plan plaka kutusu kaldırılarak logo saf ve hafif ışıltılı şekilde doğrudan zemin üzerinde konumlandırıldı; `ProfileExperienceClient` ve `ProfileEditModal` dairesel avatar görünümleriyle hizalandı.
 - `next.config.ts` Content-Security-Policy (CSP) direktifleri çevre bazlı ayrıştırıldı (`next-csp-environment.test.mjs`); yerel geliştirmede hata ayıklama için `'unsafe-eval'` izinli kılınırken, canlı üretim derlemesinde `'unsafe-eval'` tamamen engellenerek en katı güvenlik seviyesi korundu.
 - `supabase/migrations/20260925000004_remove_admin_announcement_hourly_limit.sql` ve `supabase/manual-sql/remove_admin_announcement_hourly_limit.sql` ile topluluk yöneticisi saatlik duyuru sınırı kaldırılarak aktif proje duyuruları desteklendi.
+## 2026-09-26 Rota İskeletleri, Akıcı Gezinme ve Yorum Lazy-Loading Paketi
 
+- Genel ekranı kilitleyen `NavigationLoadingOverlay` ve `KistasRouteLoader` bileşenleri kaldırıldı; yerlerine rota özelinde yerel iskeletler (`RouteSkeletons.tsx`) ve rota `loading.tsx` sınırları (`/browse/[slug]`, `/browse/platform/[platform]`, `/listings/[id]`) entegre edildi.
+- `ProjectDetailExperienceClient.tsx` optimize edildi; yorumlar bölümü `ProjectCommentsLazySection.tsx` ve modüler `ProjectCommentsSection.module.css` ile kritik render yolundan ayrılarak lazy-loading mimarisine geçirildi.
+- `packages/supabase/src/queries/listings.ts` ve `apps/web/src/app/actions/listings.ts` sorguları hafifletildi; `KistasGlassDock` mobil dokunma ve gezinme gecikmeleri minimize edildi.
+- 14/14 test (`project-detail-performance.test.mjs`, `route-loading.test.mjs`), %100 Kale Sağlık Puanı ve 0 tip hatası doğrulandı.

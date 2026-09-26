@@ -1,10 +1,13 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAnonClient, getListingComments } from '@kistas/supabase';
 import { createListingSchema } from '@kistas/shared';
 import type { CommentReaction, ProfilePublic, ProjectComment } from '@kistas/shared';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
  * Server Action to create a new project listing
@@ -129,8 +132,7 @@ export async function updateListingAction(formData: FormData) {
   if (authError || !user) redirect('/login');
 
   const listingId = String(formData.get('listingId') || '');
-  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  if (!uuidPattern.test(listingId)) throw new Error('Geçersiz proje kimliği.');
+  if (!UUID_PATTERN.test(listingId)) throw new Error('Geçersiz proje kimliği.');
 
   const platforms = formData.getAll('platforms').map(String);
   const screenshots = formData.getAll('screenshots').map(String);
@@ -330,6 +332,23 @@ function mapProjectCommentRow(row: ProjectCommentRow): ProjectComment {
     my_reaction: null,
     user: row.user,
   };
+}
+
+/**
+ * Public comment reader used only after explicit user intent. The anonymous
+ * client keeps the response inside the existing public RLS boundary.
+ */
+export async function loadProjectCommentsAction(projectId: string) {
+  if (!UUID_PATTERN.test(projectId)) {
+    return { success: false as const, error: 'Geçersiz proje kimliği.', comments: [] as ProjectComment[] };
+  }
+
+  try {
+    const comments = await getListingComments(createAnonClient(), projectId);
+    return { success: true as const, comments };
+  } catch {
+    return { success: false as const, error: 'Yorumlar şu anda yüklenemiyor.', comments: [] as ProjectComment[] };
+  }
 }
 
 /**
