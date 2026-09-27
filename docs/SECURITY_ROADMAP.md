@@ -1249,3 +1249,11 @@ Production veya magazaya cikis icin:
 - Kredi al ve görünürlük satın alma eylemleri ortak Citrus glass renk değişkenini kullanır; kredi düşümü ve görünürlük süresi hâlâ atomik `boost_listing_scoped` RPC'sinde doğrulanır.
 - Geri dönüş: web yönlendirmesi önceki public detaya alınmamalıdır; yalnız profil bildirim arayüzü geri alınabilir. Metrik fonksiyonu önceki imzaya ileri migration ile döndürülür. Kalıcı proje, bildirim veya kredi kaydı silinmez.
 - Durum: CANLI — `20260927000004` migration'ı canlı Supabase'e uygulandı ve yerel/uzak geçmiş eşleşti. GitHub `main` commit'i `81a2326`, Cloudflare Worker sürümü `93fc1b6b-af7f-4ed8-9b4d-114677d4cb29` olarak `www.kistas.com.tr/*` rotasına dağıtıldı. `/`, `/login`, `/browse`, `/new`, `/popular` ve `/blog` HTTP 200; anonim `/profile` ve `/admin` istekleri güvenli biçimde girişe HTTP 307 yönlendirildi. CSP, HSTS, `nosniff` ve referrer policy başlıkları doğrulandı. Web 19/19, Supabase 5/5, çekirdek 85/85, TypeScript, ESLint, bağımlılık/secret/XSS/SQLi taramaları, Next/Vinext üretim derlemeleri ve Wrangler dry-run başarılıdır.
+
+### 2026-09-27 - Yönetim sayaçları ve lansman onay yetkisi onarımı
+
+- `20260927000004` içindeki canlı `listing_status` enumunda bulunmayan durum sabitleri yönetim istatistiğini tamamen düşürüyordu. Yeni migration sayaçları yalnız gerçek `active`, `draft` ve `inactive` durum sözleşmesine bağlar; hata halinde gösterilen sıfırların gerçek veri sanılması önlenir.
+- `admin_update_listing_status()` launches yetkisini kabul ederken `handle_listing_status_protection()` yalnız platform sahibini geçiriyordu. Onarım, doğrudan tablo yükseltmesini açmadan yalnız yetkili RPC'nin proje kimliği ve hedef durumuyla eşleşen transaction-sınırlı moderasyon işaretine izin verir.
+- Eski migration'lardan biriken listing SELECT politikaları kaldırılıp iki kanonik politikaya indirgenir: anonim kullanıcı yalnız aktif projeyi; authenticated kullanıcı aktif, kendi veya launches yetkisiyle incelemesi gereken projeyi görebilir.
+- RPC yalnız `active` ve `banned` hedeflerini kabul eder, satırı kilitler, önceki durumu denetim kaydına ekler ve mevcut onay bildirim zincirini korur. Proje, kredi veya kullanıcı verisi silinmez.
+- Durum: KODLANDI — migration canlıya uygulanmadı; production deploy yapılmadı.
