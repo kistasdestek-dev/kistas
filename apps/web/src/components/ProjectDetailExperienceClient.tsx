@@ -351,12 +351,12 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
           <ShinyButton
             onClick={handleToggleUpvote}
             disabled={isVoting || hasUpvoted}
-            className="w-full h-14 sm:h-16 text-sm sm:text-base font-bold shadow-[0_10px_30px_rgba(59,130,246,0.35)]"
+            className="shiny-cta--citrus w-full h-14 sm:h-16 text-sm sm:text-base font-bold"
           >
             <div className="flex items-center justify-center gap-3">
-              <ChevronUp size={22} className="text-[#60A5FA] transition-transform group-hover:-translate-y-0.5 shrink-0" />
+              <ChevronUp size={22} className="text-[#E4FD97] transition-transform group-hover:-translate-y-0.5 shrink-0" />
               <span className="tracking-tight">{hasUpvoted ? 'Desteklendi' : 'Bu Projeyi Destekle'}</span>
-              <b className="inline-flex items-center justify-center rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-black text-white backdrop-blur-md border border-white/15 tracking-normal">
+              <b className="inline-flex items-center justify-center rounded-full bg-[#E4FD97]/10 px-2.5 py-0.5 text-xs font-black text-[#E4FD97] backdrop-blur-md border border-[#E4FD97]/25 tracking-normal">
                 {upvotesCount}
               </b>
             </div>
