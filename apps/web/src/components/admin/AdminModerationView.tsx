@@ -153,7 +153,7 @@ export const AdminModerationView: React.FC<AdminModerationViewProps> = ({
         <div className="space-y-4">
           {currentList.map((item) => {
             const isBusyThis = actionId === item.id;
-            const safeProjectUrl = `/listings/${(item as any).slug || item.id}`;
+            const safeProjectUrl = `/admin/listings/${item.id}/preview`;
 
             return (
               <div

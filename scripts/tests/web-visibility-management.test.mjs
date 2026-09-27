@@ -19,7 +19,10 @@ assert.match(modal, /window\.scrollTo\(0, scrollY\)/, 'Modal kapanınca sayfanı
 assert.match(modal, /overscroll-contain/, 'Kaydırma modal sınırları içinde tutulmalı');
 assert.match(profileExperience, /href=\{`\/listings\/\$\{item\.id\}`\}/, 'Vitrinde Gör gerçek proje detay rotasına gitmeli');
 assert.doesNotMatch(profileExperience, /href=\{`\/project\/\$\{item\.id\}`\}/, 'Eski ve 404 üreten proje rotası geri gelmemeli');
-assert.match(profileExperience, /<ShinyButton[\s\S]{0,900}Vitrinde Gör/, 'Vitrinde Gör Kıstas Glass Buton kullanmalı');
+assert.match(profileExperience, /<Link[\s\S]{0,250}href=\{`\/listings\/\$\{item\.id\}`\}[\s\S]{0,800}Vitrinde Gör/, 'Vitrinde Gör sade dahili bağlantı kullanmalı');
+assert.doesNotMatch(profileExperience, /<ShinyButton[\s\S]{0,500}Vitrinde Gör/, 'Vitrinde Gör animasyonlu ShinyButton kullanmamalı');
+assert.match(modal, /shiny-cta--citrus[\s\S]{0,350}Projeyi Öne Çıkar/, 'Projeyi Öne Çıkar Citrus glass kullanmalı');
+assert.doesNotMatch(modal, /:\s*<Sparkles size=\{16\}/, 'Projeyi Öne Çıkar dekoratif ikonu kaldırılmalı');
 assert.match(profileExperience, /aria-label="Proje işlemleri"/, 'Proje aksiyonları ortak glass dock içinde gruplanmalı');
 assert.match(profileExperience, /grid grid-cols-2[\s\S]{0,300}sm:grid-cols-4/, 'Aktif proje aksiyonları mobilde 2x2, geniş ekranda dört eşit sütun olmalı');
 assert.match(profileExperience, /group flex min-h-\[72px\] flex-col items-center justify-center/, 'Aksiyonlar ikon üstte, etiket altta ortak düzende kalmalı');

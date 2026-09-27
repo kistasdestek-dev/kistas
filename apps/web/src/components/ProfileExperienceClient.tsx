@@ -54,6 +54,7 @@ export interface ProfileExperienceClientProps {
   initialNotifications?: NotificationItem[];
   initialSupportedCount?: number;
   initialCreditTransactions?: CreditTransactionItem[];
+  submissionNotice?: 'created' | 'updated' | null;
 }
 
 export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = ({
@@ -64,6 +65,7 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
   initialNotifications = [],
   initialSupportedCount = 0,
   initialCreditTransactions = [],
+  submissionNotice = null,
 }) => {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
@@ -271,6 +273,15 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
           </div>
         </div>
 
+        {submissionNotice && (
+          <div role="status" className="mb-6 rounded-[22px] border border-[#E4FD97]/25 bg-[linear-gradient(145deg,rgba(228,253,151,.12),rgba(9,19,38,.82))] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,.16),0_10px_30px_rgba(228,253,151,.08)] backdrop-blur-xl">
+            <p className="text-xs font-black text-[#E4FD97]">
+              {submissionNotice === 'created' ? 'Projen onaya gönderildi.' : 'Değişikliklerin onaya gönderildi.'}
+            </p>
+            <p className="mt-1 text-[11px] leading-5 text-slate-300">Yönetici incelemesi tamamlandığında durum burada ve bildirimlerinde güncellenecek.</p>
+          </div>
+        )}
+
         {/* 2-Column Responsive Layout */}
         <div className="flex flex-col lg:flex-row items-start gap-7">
           {/* ========================================================= */}
@@ -375,7 +386,7 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                   <span>Hareketler</span>
                 </button>
 
-                <ShinyButton href="/credits" className="flex-1 !h-11 !rounded-xl !px-4 !py-0 !text-xs">
+                <ShinyButton href="/credits" className="shiny-cta--citrus flex-1 !h-11 !rounded-xl !px-4 !py-0 !text-xs">
                   <span className="inline-flex items-center justify-center gap-2">
                     <Plus size={15} aria-hidden="true" />
                     Kredi al
@@ -495,6 +506,17 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                     const isRevision = isItemRevision(item.status as string);
                     const isActive = isItemActive(item.status as string);
                     const isBanned = isItemBanned(item.status as string);
+                    const reviewSteps = [
+                      { label: 'Onaya gönderildi', state: 'complete' as const },
+                      {
+                        label: isRevision ? 'Düzeltme istendi' : 'Yönetici inceliyor',
+                        state: isActive ? 'complete' as const : 'current' as const,
+                      },
+                      {
+                        label: isActive ? 'Onaylandı · Yayında' : 'Onaylandı',
+                        state: isActive ? 'complete' as const : 'upcoming' as const,
+                      },
+                    ];
 
                     return (
                       <div
@@ -574,6 +596,29 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                           </div>
                         </div>
 
+                        {!isBanned && (
+                          <div aria-label="Proje onay süreci" className="mt-4 grid grid-cols-3 overflow-hidden rounded-2xl border border-white/10 bg-black/15 p-1.5">
+                            {reviewSteps.map((step) => (
+                              <div key={step.label} className="flex min-w-0 flex-col items-center gap-1.5 px-1.5 py-2 text-center">
+                                <span
+                                  className={`h-2 w-2 rounded-full ${
+                                    step.state === 'complete'
+                                      ? 'bg-[#E4FD97] shadow-[0_0_10px_rgba(228,253,151,.45)]'
+                                      : step.state === 'current'
+                                        ? isRevision
+                                          ? 'bg-amber-300'
+                                          : 'bg-blue-300'
+                                        : 'bg-slate-700'
+                                  }`}
+                                />
+                                <span className={`truncate text-[9px] font-bold sm:text-[10px] ${step.state === 'upcoming' ? 'text-slate-500' : 'text-slate-200'}`}>
+                                  {step.label}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
                         {/* Revision Notice Banner */}
                         {isRevision && (item as any).review_feedback && (
                           <div className="mt-3.5 flex items-start gap-2.5 p-3 rounded-xl border border-amber-500/30 bg-amber-950/30">
@@ -605,17 +650,17 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                           </Link>
 
                           {isActive && (
-                            <ShinyButton
+                            <Link
                               href={`/listings/${item.id}`}
-                              className="group !min-h-[72px] !w-full !rounded-[18px] !px-2 !py-3 !text-[10px] sm:!text-xs"
+                              className="flex min-h-[72px] items-center justify-center px-2 py-3 text-center text-[10px] font-bold text-slate-300 sm:text-xs"
                             >
-                              <span className="inline-flex flex-col items-center justify-center gap-2 text-center">
-                                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,.1)]">
-                                  <Eye size={15} className="transition-transform duration-200 group-hover:scale-110" />
+                              <span className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-3.5 py-2">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/[0.055] text-slate-300">
+                                  <Eye size={13} />
                                 </span>
                                 Vitrinde Gör
                               </span>
-                            </ShinyButton>
+                            </Link>
                           )}
 
                           {isActive && (

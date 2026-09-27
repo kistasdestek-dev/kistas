@@ -53,6 +53,9 @@ export default async function AdminPage() {
     active_listings: Number(rawStats.active_projects ?? rawStats.active_listings ?? 0),
     sponsored_listings: Number(rawStats.sponsored_projects ?? rawStats.sponsored_listings ?? 0),
     pending_listings: Number(rawStats.pending_projects ?? rawStats.pending_listings ?? 0),
+    open_support_conversations: Number(rawStats.open_support_conversations ?? 0),
+    total_blog_posts: Number(rawStats.total_blog_posts ?? 0),
+    active_security_quarantines: Number(rawStats.active_security_quarantines ?? 0),
     total_votes: Number(rawStats.total_upvotes ?? rawStats.total_votes ?? 0),
     total_comments: Number(rawStats.total_comments ?? 0),
     total_views: Number(rawStats.total_project_views ?? 0),
@@ -81,12 +84,17 @@ export default async function AdminPage() {
     createdAt: u.created_at || new Date().toISOString(),
   }));
 
+  const initialDataWarning = statsRes.error || listingsRes.error || usersRes.error
+    ? 'Yönetim verilerinin bir bölümü şu anda doğrulanamıyor. Lütfen yeniden deneyin.'
+    : null;
+
   return (
     <AdminDashboardClient
       initialStats={stats}
       initialListings={listings}
       initialUsers={users}
       adminAccess={adminAccessInfo}
+      initialDataWarning={initialDataWarning}
     />
   );
 }

@@ -9,8 +9,15 @@ export const metadata: Metadata = {
   description: 'Kıstas profilinizi, projelerinizi ve cüzdan bakiyenizi yönetin.',
 };
 
-export default async function ProfilePage() {
+interface ProfilePageProps {
+  searchParams: Promise<{ submission?: string | string[] }>;
+}
+
+export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const { user, supabase } = await requireUser();
+  const params = await searchParams;
+  const submission = typeof params.submission === 'string' ? params.submission : null;
+  const submissionNotice = submission === 'created' || submission === 'updated' ? submission : null;
   const [
     profile,
     adminCheck,
@@ -63,6 +70,7 @@ export default async function ProfilePage() {
       initialNotifications={initialNotifications}
       initialSupportedCount={supportedCount}
       initialCreditTransactions={initialCreditTransactions}
+      submissionNotice={submissionNotice}
     />
   );
 }

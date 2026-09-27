@@ -327,14 +327,14 @@ export const VisibilityManagementModal: React.FC<VisibilityManagementModalProps>
           {!hasEnoughCredits && activeListings.length > 0 ? (
             <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
               <p className="text-center text-xs text-slate-300 sm:text-left">Bu paket için <strong className="text-white">{Math.abs(remainingCredits)} kredi</strong> daha gerekiyor.</p>
-              <ShinyButton href="/credits" onClick={onClose} className="min-h-11 w-full px-6 text-xs font-bold sm:w-auto">Kredi Al</ShinyButton>
+              <ShinyButton href="/credits" onClick={onClose} className="shiny-cta--citrus min-h-11 w-full px-6 text-xs font-bold sm:w-auto">Kredi Al</ShinyButton>
             </div>
           ) : successMsg ? (
             <ShinyButton onClick={onClose} className="min-h-11 w-full text-xs font-bold">Tamam</ShinyButton>
           ) : (
-            <ShinyButton onClick={handleApplyBoost} disabled={busy || !selectedListing} className="min-h-12 w-full text-xs font-extrabold">
+            <ShinyButton onClick={handleApplyBoost} disabled={busy || !selectedListing} className="shiny-cta--citrus min-h-12 w-full text-xs font-extrabold">
               <span className="inline-flex items-center justify-center gap-2">
-                {busy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                {busy && <Loader2 size={16} className="animate-spin" />}
                 {busy ? 'Güvenli işlem tamamlanıyor...' : `${isAlreadyActive ? 'Görünürlüğü Uzat' : 'Projeyi Öne Çıkar'} · ${selectedPackage.creditCost} Kredi`}
               </span>
             </ShinyButton>

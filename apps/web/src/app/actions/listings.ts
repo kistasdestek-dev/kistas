@@ -56,12 +56,6 @@ export async function createListingAction(formData: FormData) {
   const valid = validation.data;
 
   // 3. Database Insert via Server Supabase Client (RLS enforces user_id)
-  const { data: adminCheck } = await supabase.rpc('is_platform_admin');
-  const isAdmin = Boolean(adminCheck) ||
-    user.email === 'kistasdestek@gmail.com' ||
-    user.email === 'visionprefabrik@gmail.com';
-  const initialStatus = isAdmin ? 'active' : 'draft';
-
   const { data, error } = await supabase
     .from('listings')
     .insert({
@@ -78,7 +72,7 @@ export async function createListingAction(formData: FormData) {
       app_store_url: valid.appStoreUrl,
       play_store_url: valid.playStoreUrl,
       promo_code: valid.promoCode,
-      status: initialStatus,
+      status: 'draft',
     })
     .select('id')
     .single();
@@ -115,7 +109,7 @@ export async function createListingAction(formData: FormData) {
 
   revalidatePath('/browse', 'layout');
   revalidatePath('/profile');
-  redirect(`/listings/${data.id}`);
+  return { success: true as const, listingId: data.id, status: 'draft' as const };
 }
 
 /**
@@ -238,7 +232,7 @@ export async function updateListingAction(formData: FormData) {
   revalidatePath('/browse', 'layout');
   revalidatePath('/profile');
   revalidatePath(`/listings/${listingId}`);
-  redirect(`/listings/${listingId}`);
+  return { success: true as const, listingId, status: 'draft' as const };
 }
 
 /**

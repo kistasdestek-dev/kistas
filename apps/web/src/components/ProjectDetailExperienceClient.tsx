@@ -46,6 +46,7 @@ const KistasFeedbackModal = dynamic(
 interface ProjectDetailExperienceClientProps {
   project: Listing;
   categoryName?: string | null;
+  reviewPreview?: boolean;
 }
 
 const PRICING_LABELS: Record<string, string> = {
@@ -77,6 +78,7 @@ function toSafeHttpsUrl(value?: string | null): string | null {
 export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClientProps> = ({
   project,
   categoryName,
+  reviewPreview = false,
 }) => {
   const [upvotesCount, setUpvotesCount] = useState<number>(project.upvote_count || 0);
   const [viewCount, setViewCount] = useState<number>(project.view_count || 0);
@@ -140,12 +142,13 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
 
   // Silent view recording
   useEffect(() => {
+    if (reviewPreview) return;
     void recordProjectViewAction(project.id).then((res) => {
       if (res.success) {
         setViewCount((prev) => prev + 1);
       }
     });
-  }, [project.id]);
+  }, [project.id, reviewPreview]);
 
   const cleanMakerName = getCleanDeveloperName(
     project.developer_name ||
@@ -346,8 +349,14 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
           </div>
         </section>
 
+        {reviewPreview && (
+          <div role="status" className="my-6 rounded-2xl border border-amber-300/25 bg-amber-300/[0.08] px-4 py-3 text-xs font-semibold text-amber-100 backdrop-blur-xl">
+            Yönetici önizlemesi · Bu proje henüz public vitrinde yayınlanmıyor.
+          </div>
+        )}
+
         {/* 4. Kıstas Destekleme Butonu (Kıstas Glass Buton) */}
-        <section className="my-6">
+        {!reviewPreview && <section className="my-6">
           <ShinyButton
             onClick={handleToggleUpvote}
             disabled={isVoting || hasUpvoted}
@@ -361,7 +370,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
               </b>
             </div>
           </ShinyButton>
-        </section>
+        </section>}
 
         {/* 5. App Store Style Ekran Görüntüleri Galerisi & Lightbox */}
         <ProjectScreenshotsGallery
@@ -388,10 +397,10 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
         </section>
 
         {/* 7. Proje Yorumları ve Geliştirici Yanıtları */}
-        <ProjectCommentsLazySection
+        {!reviewPreview && <ProjectCommentsLazySection
           projectId={project.id}
           sellerId={project.seller_id}
-        />
+        />}
 
         {/* 8. Platformlar ve Model */}
         <section className="my-8 rounded-3xl border border-white/10 bg-white/[0.04] p-5 sm:p-7 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.7)] backdrop-blur-xl">

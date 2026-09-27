@@ -1239,3 +1239,13 @@ Production veya magazaya cikis icin:
 - Proje logoları ortak `AutoTransparentLogo` sözleşmesinde yüzde 22 yumuşak köşe standardına geçirildi. Dairesel proje detayı ve kullanıcı avatarları açık shape seçimiyle korunur; Yeni ve Popüler sayfalarındaki ham logo görselleri ortak bileşene taşındı.
 - Keşfet Popüler/Yeni destek sayaçları `#E4FD97` Citrus glass yüzeye geçirildi; renk, sınır, gölge ve azaltılmış hareket davranışı regresyon testiyle sabitlendi.
 - Durum: CANLI — `20260927000003` Supabase migration geçmişi eşleşiyor; GitHub `main` commit'i `109662a`, Cloudflare Worker sürümü `a20debcf-2490-46e1-a8c2-fc8094202bdf`. Ana sayfa, Popüler, Yeni ve Blog HTTP 200; anonim Credits/Admin erişimi güvenli biçimde login'e 307 yönleniyor. CSP, HSTS, `nosniff` ve referrer policy başlıkları doğrulandı. Web 18/18, Supabase 5/5, UI 4/4, çekirdek 85/85, TypeScript, ESLint, bağımlılık/secret/XSS/SQLi taramaları ve Next/Vinext production build başarılıdır.
+
+### 2026-09-27 - Lansman inceleme yönlendirmesi ve gerçek yönetim metrikleri
+
+- Yeni proje ve proje düzenleme işlemleri public detay rotasına yönlenmez; sunucu işlemi `draft` sonucunu döndürür ve istemci kullanıcıyı kontrollü başarı bildirimiyle profile taşır. Böylece public RLS nedeniyle oluşan 404 kaldırılırken yönetici onayı atlanmaz.
+- Normal lansman formu, platform yöneticisi tarafından kullanılsa bile projeyi doğrudan aktif yapmaz. Aktif proje düzenlemesi mevcut durum koruma tetikleyicisiyle inceleme kuyruğuna döner; kullanıcı profilinde gönderim, inceleme ve yayın aşamaları görünürdür.
+- Bekleyen projelerin yönetici önizlemesi yalnız `requireAdmin()` korumalı `/admin/listings/[id]/preview` rotasından çalışır. Önizleme görüntülenme, destek veya yorum etkileşimi üretmez; public taslak erişimi açılmaz.
+- `20260927000004_real_admin_metrics.sql`, yönetim panelindeki sabit destek/blog/tehdit değerlerini kaldırır. Açık destek görüşmeleri, blog kayıtları ve aktif WAF karantinaları yetki kontrollü `get_admin_dashboard_stats()` RPC'sinden hesaplanır.
+- Kredi al ve görünürlük satın alma eylemleri ortak Citrus glass renk değişkenini kullanır; kredi düşümü ve görünürlük süresi hâlâ atomik `boost_listing_scoped` RPC'sinde doğrulanır.
+- Geri dönüş: web yönlendirmesi önceki public detaya alınmamalıdır; yalnız profil bildirim arayüzü geri alınabilir. Metrik fonksiyonu önceki imzaya ileri migration ile döndürülür. Kalıcı proje, bildirim veya kredi kaydı silinmez.
+- Durum: KODLANDI — migration ve production deploy henüz uygulanmadı.

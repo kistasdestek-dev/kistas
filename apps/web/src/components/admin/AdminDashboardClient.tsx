@@ -34,6 +34,9 @@ export interface AdminDashboardStats {
   active_listings: number;
   sponsored_listings: number;
   pending_listings: number;
+  open_support_conversations: number;
+  total_blog_posts: number;
+  active_security_quarantines: number;
   total_votes: number;
   total_comments: number;
   total_views: number;
@@ -55,6 +58,7 @@ interface AdminDashboardClientProps {
   initialListings: Listing[];
   initialUsers: AdminUserItem[];
   adminAccess: AdminAccessInfo;
+  initialDataWarning?: string | null;
 }
 
 export type AdminTab =
@@ -73,13 +77,15 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
   initialListings,
   initialUsers,
   adminAccess,
+  initialDataWarning = null,
 }) => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<AdminTab>('sponsors');
+  const [activeTab, setActiveTab] = useState<AdminTab>(initialStats.pending_listings > 0 ? 'moderation' : 'sponsors');
   const [stats, setStats] = useState<AdminDashboardStats>(initialStats);
   const [listings, setListings] = useState<Listing[]>(initialListings);
   const [users, setUsers] = useState<AdminUserItem[]>(initialUsers);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dataWarning, setDataWarning] = useState(initialDataWarning);
 
   const supabase = createClient();
   const canSendAnnouncements = adminAccess.is_owner || adminAccess.permissions?.includes('community');
@@ -87,13 +93,17 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
   // Verileri canlı tazeleme
   const handleRefresh = async () => {
     try {
-      const { data: statsData } = await supabase.rpc('get_admin_dashboard_stats');
+      const { data: statsData, error: statsError } = await supabase.rpc('get_admin_dashboard_stats');
+      if (statsError || !statsData) throw new Error('Yönetim istatistikleri alınamadı.');
       if (statsData) {
         setStats({
           total_listings: Number(statsData.total_projects ?? statsData.total_listings ?? 0),
           active_listings: Number(statsData.active_projects ?? statsData.active_listings ?? 0),
           sponsored_listings: Number(statsData.sponsored_projects ?? statsData.sponsored_listings ?? 0),
           pending_listings: Number(statsData.pending_projects ?? statsData.pending_listings ?? 0),
+          open_support_conversations: Number(statsData.open_support_conversations ?? 0),
+          total_blog_posts: Number(statsData.total_blog_posts ?? 0),
+          active_security_quarantines: Number(statsData.active_security_quarantines ?? 0),
           total_votes: Number(statsData.total_upvotes ?? statsData.total_votes ?? 0),
           total_comments: Number(statsData.total_comments ?? 0),
           total_views: Number(statsData.total_project_views ?? 0),
@@ -103,15 +113,17 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
         });
       }
 
-      const { data: listingsData } = await supabase
+      const { data: listingsData, error: listingsError } = await supabase
         .from('listings')
         .select('*')
         .order('created_at', { ascending: false });
+      if (listingsError) throw new Error('Proje kayıtları alınamadı.');
       if (listingsData) {
         setListings(listingsData as Listing[]);
       }
 
-      const { data: usersData } = await supabase.rpc('get_admin_users');
+      const { data: usersData, error: usersError } = await supabase.rpc('get_admin_users');
+      if (usersError) throw new Error('Topluluk kayıtları alınamadı.');
       if (usersData && Array.isArray(usersData)) {
         const mappedUsers: AdminUserItem[] = usersData.map((u: any) => ({
           id: u.user_id || u.id,
@@ -130,9 +142,11 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
         setUsers(mappedUsers);
       }
 
+      setDataWarning(null);
       router.refresh();
     } catch (err) {
       console.error('Yönetim verileri tazelenirken hata:', err);
+      setDataWarning('Yönetim verilerinin bir bölümü şu anda doğrulanamıyor. Lütfen yeniden deneyin.');
     }
   };
 
@@ -149,7 +163,7 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
     {
       id: 'support' as AdminTab,
       label: 'Açık destek',
-      value: 5,
+      value: stats.open_support_conversations,
       icon: MessageSquare,
       color: '#60A5FA',
       accentBg: 'rgba(96,165,250,0.15)',
@@ -181,7 +195,7 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
     {
       id: 'blog' as AdminTab,
       label: 'Blog yazıları',
-      value: 3,
+      value: stats.total_blog_posts,
       icon: FileText,
       color: '#A78BFA',
       accentBg: 'rgba(167,139,250,0.15)',
@@ -197,7 +211,7 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
     {
       id: 'threat_intel' as AdminTab,
       label: 'Siber Tehdit Radarı',
-      value: 1,
+      value: stats.active_security_quarantines,
       icon: ShieldAlert,
       color: '#F43F5E',
       accentBg: 'rgba(244,63,94,0.15)',
@@ -277,6 +291,12 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
             </div>
           </div>
         </div>
+
+        {dataWarning && (
+          <div role="alert" className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.08] px-4 py-3 text-xs font-semibold text-amber-200">
+            {dataWarning}
+          </div>
+        )}
 
         {/* 8'li Metrik Kartları Izgarası (Kıstas Sıvı Cam Dizilim) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">

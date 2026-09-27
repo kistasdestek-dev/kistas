@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   AlertCircle,
@@ -90,6 +91,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
   categories,
   initialListing,
 }) => {
+  const router = useRouter();
   const isEditing = Boolean(initialListing);
   const initialPlatforms = initialListing?.platforms.filter((platform): platform is PlatformType =>
     AVAILABLE_PLATFORMS.some((available) => available.id === platform)
@@ -377,8 +379,10 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
 
       if (initialListing) {
         await updateListingAction(formData);
+        router.push('/profile?submission=updated');
       } else {
         await createListingAction(formData);
+        router.push('/profile?submission=created');
       }
     } catch (err: unknown) {
       setLoading(false);
