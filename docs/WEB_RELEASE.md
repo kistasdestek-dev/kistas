@@ -73,3 +73,9 @@ Yeni Worker kaynaklı kritik sorun çıkarsa Cloudflare Workers & Pages panelind
 - Shopier ürün kimlikleri `50900373 / 50900401 / 50900419` üzerinden canlı fiyat kontrolü yapıldı. Migration `20260927000002_reprice_credit_store.sql` Supabase'e uygulandı ve `shopier-credit-webhook` Edge Function yeniden dağıtıldı.
 - `/credits` proxy matcher kapsamına alınarak anonim isteğin sunucu yönlendirme döngüsüne girmesi engellendi. Regresyon testi hem korumalı rota allowlist'ini hem proxy matcher'ını doğrular.
 - Yayın: Cloudflare Worker sürümü `76c1df73-0aef-4527-8c52-447fb1135ab9`. Canlı `/` ve `/login` HTTP 200; anonim `/credits` HTTP 307 ile `/login?redirect=%2Fcredits` hedefine yönlenir. Public yanıtlarda CSP, HSTS, `nosniff` ve referrer policy doğrulanmıştır.
+
+## 2026-09-27 Proje İnceleme Akışı ve Gerçek Yönetim Metrikleri
+
+- Yeni ve düzenlenen projeler `draft` inceleme kuyruğuna alınır; kullanıcı profilinde gönderim, yönetici incelemesi ve yayın aşamaları görünür. Taslak önizlemesi yalnız yönetici yetkili rotada açılır ve görüntülenme, destek veya yorum yan etkisi üretmez.
+- `20260927000004_real_admin_metrics.sql` canlı Supabase'e uygulandı; yönetim panelindeki açık destek, blog ve aktif güvenlik karantinası değerleri gerçek tablolardan hesaplanır.
+- GitHub `main` commit'i `81a2326`, Cloudflare Worker sürümü `93fc1b6b-af7f-4ed8-9b4d-114677d4cb29` olarak dağıtıldı. Public rotalar HTTP 200, anonim `/profile` ve `/admin` erişimleri girişe HTTP 307 yönlendirildi; production güvenlik başlıkları doğrulandı.
