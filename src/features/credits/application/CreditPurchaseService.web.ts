@@ -44,8 +44,8 @@ export class CreditPurchaseService {
       },
       [CREDIT_PRODUCT_IDS.unicorn]: {
         identifier: CREDIT_PRODUCT_IDS.unicorn,
-        price: 1699,
-        priceString: '₺1.699',
+        price: 1499,
+        priceString: '₺1.499',
         currencyCode: 'TRY',
       },
     };

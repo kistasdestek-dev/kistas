@@ -4,15 +4,23 @@ import { readFileSync } from 'node:fs';
 const read = (relativePath) => readFileSync(new URL(`../../${relativePath}`, import.meta.url), 'utf8');
 
 const modal = read('apps/web/src/components/profile/VisibilityManagementModal.tsx');
+const profileExperience = read('apps/web/src/components/ProfileExperienceClient.tsx');
 const visibility = read('apps/web/src/lib/visibility.ts');
 const rpcMigration = read('supabase/migrations/20260916000006_credit_ledger_details.sql');
 
 assert.match(modal, /supabase\.rpc\('boost_listing_scoped'/, 'Vitrin işlemi güvenli RPC üzerinden yürümeli');
 assert.doesNotMatch(modal, /\.from\('listings'\)[\s\S]{0,120}\.update\(/, 'İstemci sponsor alanlarını doğrudan güncellememeli');
 assert.match(modal, /ShinyButton/, 'Ana eylem Kıstas Glass Buton kullanmalı');
-assert.match(modal, /GlassIconButton/, 'Başlık Kıstas ikon sistemini kullanmalı');
+assert.doesNotMatch(modal, /GlassIconButton|Kıstas görünürlük motoru|\{activeListings\.length\} yayındaki proje/, 'Kaldırılan başlık ikon ve metinleri geri gelmemeli');
 assert.match(modal, /k-modal-glass-card/, 'Modal ortak Kıstas glass yüzeyini kullanmalı');
 assert.match(modal, /AutoTransparentLogo[\s\S]*drop-shadow/, 'Proje logosu arka çerçevesiz gösterilmeli');
+assert.match(modal, /document\.body\.style\.position = 'fixed'/, 'Mobilde arka sayfa konumu kilitlenmeli');
+assert.match(modal, /window\.scrollTo\(0, scrollY\)/, 'Modal kapanınca sayfanın kaydırma konumu geri yüklenmeli');
+assert.match(modal, /overscroll-contain/, 'Kaydırma modal sınırları içinde tutulmalı');
+assert.match(profileExperience, /href=\{`\/listings\/\$\{item\.id\}`\}/, 'Vitrinde Gör gerçek proje detay rotasına gitmeli');
+assert.doesNotMatch(profileExperience, /href=\{`\/project\/\$\{item\.id\}`\}/, 'Eski ve 404 üreten proje rotası geri gelmemeli');
+assert.match(profileExperience, /<ShinyButton[\s\S]{0,500}Vitrinde Gör/, 'Vitrinde Gör Kıstas Glass Buton kullanmalı');
+assert.doesNotMatch(profileExperience, /h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-white\/5 border border-white\/10/, 'Lansman logosunun eski arka çerçevesi geri gelmemeli');
 
 for (const [hours, credits] of [[24, 50], [72, 120], [168, 250], [24, 200], [72, 450], [168, 900]]) {
   assert.match(visibility, new RegExp(`durationHours: ${hours},\\s+creditCost: ${credits}`));

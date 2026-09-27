@@ -56,5 +56,7 @@ assert.match(notificationProvider, /slice\(0, 2\)/, 'Glass bildirim sayısı sı
 assert.match(notificationProvider, /onAuthStateChange/, 'Oturum sonradan açıldığında realtime aboneliği kurulmalı');
 assert.match(notificationSettings, /set_message_notification_preference/);
 assert.match(notificationSettings, /Bildirimleri kapat/);
+assert.doesNotMatch(notificationSettings, />Mesaj bildirimleri</, 'Bildirim ayarı gereksiz başlığı göstermemeli');
+assert.doesNotMatch(notificationSettings, /Site açıkken yeni mesajları/, 'Bildirim ayarı gereksiz açıklamayı göstermemeli');
 
 console.log('Inbox lifecycle, admin support and in-app notification contracts passed.');

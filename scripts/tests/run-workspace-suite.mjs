@@ -33,6 +33,7 @@ const suites = {
     'route-loading.test.mjs',
     'seo-output.test.mjs',
     'web-routing.test.mjs',
+    'web-credit-store.test.mjs',
     'web-visibility-management.test.mjs',
   ],
   live: [

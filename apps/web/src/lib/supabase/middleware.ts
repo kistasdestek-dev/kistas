@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 const PROTECTED_ROUTE_PREFIXES = [
   '/admin',
   '/create-listing',
+  '/credits',
   '/dashboard',
   '/messages',
   '/profile',

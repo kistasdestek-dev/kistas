@@ -1,7 +1,7 @@
 export const CREDIT_PRODUCT_IDS = {
-  starter: 'kistas_credits_100',
-  pro_launch: 'kistas_credits_350',
-  unicorn: 'kistas_credits_1000',
+  starter: 'kistas_credits_250',
+  pro_launch: 'kistas_credits_750',
+  unicorn: 'kistas_credits_2000',
 } as const;
 
 export const SHOPIER_CHECKOUT_URLS: Record<string, string> = {

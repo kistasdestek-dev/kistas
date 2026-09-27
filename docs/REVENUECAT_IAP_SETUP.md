@@ -6,14 +6,14 @@ iki mağazanın doğrulama katmanıdır; kredi bakiyesinin doğruluk kaynağı S
 
 ## 1. Mağaza ürünleri
 
-İlk uçtan uca test için yalnız `kistas_credits_100` ürününü oluşturmak yeterlidir. Akış
+İlk uçtan uca test için yalnız `kistas_credits_250` ürününü oluşturmak yeterlidir. Akış
 doğrulandıktan sonra aynı türde diğer iki ürün açılır.
 
 | Product ID | Tür | Kredi |
 | --- | --- | ---: |
-| `kistas_credits_100` | Consumable / one-time in-app product | 100 |
-| `kistas_credits_350` | Consumable / one-time in-app product | 350 |
-| `kistas_credits_1000` | Consumable / one-time in-app product | 1000 |
+| `kistas_credits_250` | Consumable / one-time in-app product | 250 |
+| `kistas_credits_750` | Consumable / one-time in-app product | 750 |
+| `kistas_credits_2000` | Consumable / one-time in-app product | 2000 |
 
 - Apple bundle ID ve Google package name: `com.kistas.mobile`
 - Ürünlerin fiyatı uygulamada sabitlenmez; App Store/Play Store yerel fiyatı gösterilir.
@@ -71,7 +71,7 @@ kabul eder. Aynı RevenueCat event ID ikinci kez bakiye değiştiremez.
 1. Migration ve Edge Function deploy edilir; webhook test isteği `200` dönmelidir.
 2. iOS Sandbox / Google internal testing hesabı hazırlanır.
 3. IAP native modül gerektirdiği için Expo Go yerine EAS development build kullanılır.
-4. 100 kredi satın alınır; `credit_purchase_events`, `credit_transactions` ve
+4. 250 kredi satın alınır; `credit_purchase_events`, `credit_transactions` ve
    `profiles.boost_credits` tek işlem olarak kontrol edilir.
 5. Aynı webhook yeniden gönderilir; bakiye değişmemelidir.
 6. Kullanıcı iptali ve pending purchase kredi üretmemelidir.

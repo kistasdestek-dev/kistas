@@ -52,18 +52,18 @@ assert.equal(normalizeShopierCurrency(1), 'USD');
 assert.equal(normalizeShopierCurrency(2), 'EUR');
 assert.equal(extractEmail('Hesap: USER@EXAMPLE.COM'), 'user@example.com');
 assert.deepEqual(SHOPIER_CREDIT_PACKAGES['50900401'], {
-  credits: 350,
+  credits: 750,
   priceMinor: 69_900,
   currency: 'TRY',
 });
 assert.deepEqual(resolveShopierCreditPackage('50900401', 69_900, 'TRY'), {
-  credits: 350,
+  credits: 750,
   priceMinor: 69_900,
   currency: 'TRY',
 });
-assert.equal(resolveShopierCreditPackage('50900373', 1_000, 'TRY'), null);
-assert.equal(resolveShopierCreditPackage('50900373', 1_001, 'TRY'), null);
-assert.equal(resolveShopierCreditPackage('50900373', 1_000, 'USD'), null);
+assert.equal(resolveShopierCreditPackage('50900373', 30_000, 'TRY'), null);
+assert.equal(resolveShopierCreditPackage('50900419', 169_900, 'TRY'), null);
+assert.equal(resolveShopierCreditPackage('50900373', 29_900, 'USD'), null);
 
 const webhookSource = await readFile(
   new URL('../../supabase/functions/shopier-credit-webhook/index.ts', import.meta.url),
@@ -119,5 +119,25 @@ assert.match(creditLedgerMigration, /'amount_minor', p_amount_minor/);
 assert.match(creditLedgerMigration, /'currency', p_currency/);
 assert.match(creditLedgerMigration, /SET search_path = ''/);
 assert.match(creditLedgerMigration, /REVOKE ALL ON FUNCTION public\.apply_shopier_credit_event[\s\S]*FROM PUBLIC, anon, authenticated/);
+
+const repricingMigration = await readFile(
+  new URL(
+    '../../supabase/migrations/20260927000002_reprice_credit_store.sql',
+    import.meta.url
+  ),
+  'utf8'
+);
+assert.match(repricingMigration, /\('50900373'::TEXT, 250, 29900\)/);
+assert.match(repricingMigration, /\('50900401'::TEXT, 750, 69900\)/);
+assert.match(repricingMigration, /\('50900419'::TEXT, 2000, 149900\)/);
+assert.match(repricingMigration, /SET search_path = ''/);
+assert.match(repricingMigration, /ON CONFLICT \(provider_order_id\) DO NOTHING/);
+assert.match(repricingMigration, /ORDER_REPLAY_MISMATCH/);
+assert.match(repricingMigration, /REVOKE ALL ON FUNCTION public\.apply_shopier_credit_event[\s\S]*FROM PUBLIC, anon, authenticated/);
+assert.match(repricingMigration, /WHEN 'kistas_credits_250' THEN 250/);
+assert.match(repricingMigration, /WHEN 'kistas_credits_750' THEN 750/);
+assert.match(repricingMigration, /WHEN 'kistas_credits_2000' THEN 2000/);
+assert.match(repricingMigration, /EVENT_REPLAY_MISMATCH/);
+assert.match(repricingMigration, /REVOKE ALL ON FUNCTION public\.apply_revenuecat_credit_event[\s\S]*FROM PUBLIC, anon, authenticated/);
 
 console.log('Shopier webhook signature, strict product and atomic RPC checks passed.');

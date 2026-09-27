@@ -96,7 +96,7 @@ export const KistasGlassDock: React.FC = () => {
     return [
       { key: 'discover', label: 'Keşfet', href: '/' },
       { key: 'browse', label: 'Göz At', href: '/browse' },
-      { key: 'credits', label: 'Krediler', href: '/popular' },
+      { key: 'credits', label: 'Krediler', href: '/credits' },
       { key: 'create', label: 'Lansman Yap', href: '/create-listing' },
       { key: 'profile', label: 'Profil', href: '/profile' },
     ];

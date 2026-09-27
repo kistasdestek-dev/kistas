@@ -23,7 +23,6 @@ import {
   type VisibilityScope,
 } from '@/lib/visibility';
 import { AutoTransparentLogo } from '../AutoTransparentLogo';
-import { GlassIconButton } from '../GlassIconButton';
 import { ShinyButton } from '../ui/shiny-button';
 
 type VisibilityListing = Listing & {
@@ -95,6 +94,34 @@ export const VisibilityManagementModal: React.FC<VisibilityManagementModalProps>
     return () => window.removeEventListener('keydown', handleEscape);
   }, [busy, isOpen, onClose]);
 
+  useEffect(() => {
+    if (!isOpen || typeof document === 'undefined') return;
+
+    const scrollY = window.scrollY;
+    const previousBody = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+    };
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBody.overflow;
+      document.body.style.position = previousBody.position;
+      document.body.style.top = previousBody.top;
+      document.body.style.width = previousBody.width;
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const packages = VISIBILITY_PACKAGES[scope];
@@ -146,26 +173,22 @@ export const VisibilityManagementModal: React.FC<VisibilityManagementModalProps>
 
   return (
     <div
-      className="fixed inset-0 z-[1000000] flex items-end justify-center bg-[#020712]/80 p-0 backdrop-blur-xl sm:items-center sm:p-4"
+      className="fixed inset-0 z-[1000000] flex items-end justify-center overscroll-none bg-[#020712]/80 p-0 backdrop-blur-xl sm:items-center sm:p-4"
       onMouseDown={busy ? undefined : onClose}
     >
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="visibility-modal-title"
-        className="k-modal-glass-card relative max-h-[94dvh] w-full max-w-2xl overflow-y-auto rounded-b-none border-b-0 p-5 sm:rounded-[28px] sm:border-b sm:p-7"
+        className="k-modal-glass-card relative max-h-[94dvh] w-full max-w-2xl touch-pan-y overflow-y-auto overscroll-contain rounded-b-none border-b-0 p-5 sm:rounded-[28px] sm:border-b sm:p-7"
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="pointer-events-none absolute inset-x-12 -top-24 h-52 rounded-full bg-blue-500/20 blur-[72px]" />
 
         <header className="relative flex items-start justify-between gap-4 border-b border-white/10 pb-5">
-          <div className="flex min-w-0 items-center gap-3">
-            <GlassIconButton icon={Sparkles} size={44} iconSize={20} ariaLabel="Vitrin Yönetimi" />
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7DB7FF]">Kıstas görünürlük motoru</p>
-              <h2 id="visibility-modal-title" className="mt-0.5 text-xl font-black tracking-tight text-white">Vitrin Yönetimi</h2>
-              <p className="mt-1 text-xs leading-5 text-slate-300">Projeni doğru vitrinde, doğru süreyle daha fazla kullanıcıya ulaştır.</p>
-            </div>
+          <div className="min-w-0">
+            <h2 id="visibility-modal-title" className="text-xl font-black tracking-tight text-white">Vitrin Yönetimi</h2>
+            <p className="mt-1 text-xs leading-5 text-slate-300">Projeni doğru vitrinde, doğru süreyle daha fazla kullanıcıya ulaştır.</p>
           </div>
           <button
             type="button"
@@ -203,10 +226,7 @@ export const VisibilityManagementModal: React.FC<VisibilityManagementModalProps>
         ) : (
           <>
             <div className="relative mt-6">
-              <div className="mb-2.5 flex items-center justify-between">
-                <h3 className="text-xs font-bold text-white">1. Projeni seç</h3>
-                <span className="text-[10px] font-medium text-slate-400">{activeListings.length} yayındaki proje</span>
-              </div>
+              <h3 className="mb-2.5 text-xs font-bold text-white">1. Projeni seç</h3>
               <div className="grid max-h-44 grid-cols-1 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
                 {activeListings.map((listing) => {
                   const isSelected = listing.id === selectedListingId;

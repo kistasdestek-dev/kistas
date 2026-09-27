@@ -5,9 +5,9 @@ export interface ShopierCreditPackage {
 }
 
 export const SHOPIER_CREDIT_PACKAGES: Readonly<Record<string, ShopierCreditPackage>> = {
-  '50900373': { credits: 100, priceMinor: 29_900, currency: 'TRY' },
-  '50900401': { credits: 350, priceMinor: 69_900, currency: 'TRY' },
-  '50900419': { credits: 1000, priceMinor: 169_900, currency: 'TRY' },
+  '50900373': { credits: 250, priceMinor: 29_900, currency: 'TRY' },
+  '50900401': { credits: 750, priceMinor: 69_900, currency: 'TRY' },
+  '50900419': { credits: 2000, priceMinor: 149_900, currency: 'TRY' },
 };
 
 export function resolveShopierCreditPackage(

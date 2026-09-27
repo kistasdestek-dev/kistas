@@ -503,15 +503,15 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                       >
                         {/* Header: Logo, Title, Date, Status Pill */}
                         <div className="flex items-center gap-3.5">
-                          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-xs">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center">
                             {item.logo_url ? (
                               <AutoTransparentLogo
                                 src={item.logo_url}
                                 alt={`${item.title} logosu`}
-                                className="h-9 w-9 object-contain"
+                                className="h-11 w-11 object-contain drop-shadow-[0_7px_14px_rgba(0,0,0,0.34)]"
                               />
                             ) : (
-                              <span className="text-sm font-black text-blue-400">
+                              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.05] text-sm font-black text-blue-400">
                                 {item.title.slice(0, 2).toUpperCase()}
                               </span>
                             )}
@@ -592,20 +592,22 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                         <div className="mt-4 pt-3.5 border-t border-white/10 flex flex-wrap items-center justify-end gap-2">
                           <Link
                             href={`/create-listing?edit=${item.id}`}
-                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-white/10 bg-white/5 text-xs font-bold text-white hover:bg-white/10 hover:border-blue-500/30 transition-all cursor-pointer"
+                            className="group inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/15 bg-[linear-gradient(145deg,rgba(255,255,255,.11),rgba(255,255,255,.045))] px-3.5 text-xs font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,.1),0_8px_22px_rgba(0,0,0,.18)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-[#6EA8FF]/35 hover:bg-white/[0.13] hover:shadow-[0_10px_26px_rgba(50,105,199,.16)] active:translate-y-0 active:scale-[0.97] cursor-pointer"
                           >
-                            <Pencil size={13} className="text-blue-400" />
+                            <Pencil size={13} className="text-[#78ADFF] transition-transform duration-200 group-hover:-rotate-6" />
                             <span>{isRevision ? 'Düzelt ve Gönder' : 'Düzenle'}</span>
                           </Link>
 
                           {isActive && (
-                            <Link
-                              href={`/project/${item.id}`}
-                              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-blue-500/30 bg-blue-500/10 text-xs font-bold text-blue-400 shadow-xs hover:bg-blue-500/20 transition-all cursor-pointer"
+                            <ShinyButton
+                              href={`/listings/${item.id}`}
+                              className="group !h-9 !w-auto !rounded-xl !px-3.5 !py-0 !text-xs"
                             >
-                              <Eye size={13} />
-                              <span>Vitrinde Gör</span>
-                            </Link>
+                              <span className="inline-flex items-center gap-1.5">
+                                <Eye size={13} className="transition-transform duration-200 group-hover:scale-110" />
+                                Vitrinde Gör
+                              </span>
+                            </ShinyButton>
                           )}
 
                           {isActive && (

@@ -57,7 +57,6 @@ export interface BoostPackage {
   title: string;
   durationHours: number;
   creditCost: number;
-  priceTRY: number;
   badge: string;
   description?: string;
 }
@@ -92,7 +91,6 @@ export class CreditService {
         title: '24 Saat Keşfet Vitrini',
         durationHours: 24,
         creditCost: 200,
-        priceTRY: 149,
         badge: '⚡ 24 Saat Görünürlük',
         description: 'Tüm platformun ana sayfası olan Keşfet vitrininde saatlik rotasyona girin.',
       },
@@ -102,7 +100,6 @@ export class CreditService {
         title: '3 Gün Keşfet Vitrini',
         durationHours: 72,
         creditCost: 450,
-        priceTRY: 299,
         badge: '🔥 3 Gün Görünürlük',
         description: '3 gün boyunca amiral gemisi Keşfet ana sayfasında maksimum kitleye ulaşın.',
       },
@@ -112,7 +109,6 @@ export class CreditService {
         title: '7 Gün Keşfet Vitrini (Amiral Gemisi)',
         durationHours: 168,
         creditCost: 900,
-        priceTRY: 549,
         badge: '👑 7 Gün Prestij',
         description: 'Hafta boyunca Keşfet tepe vitrininde yer alarak kalıcı organik kitle kazanın.',
       },
@@ -130,7 +126,6 @@ export class CreditService {
         title: '24 Saat Kategori Vitrini',
         durationHours: 24,
         creditCost: 50,
-        priceTRY: 39,
         badge: '⚡ 1 Gün Kategori',
         description: 'Sadece projenizin ait olduğu kategorinin bağımsız vitrininde öne çıkın.',
       },
@@ -140,7 +135,6 @@ export class CreditService {
         title: '3 Gün Kategori Vitrini',
         durationHours: 72,
         creditCost: 120,
-        priceTRY: 79,
         badge: '🎯 3 Gün Kategori',
         description: 'Doğrudan kategori arayan hedef kullanıcıların dikkatini çekin.',
       },
@@ -150,7 +144,6 @@ export class CreditService {
         title: '7 Gün Kategori Vitrini',
         durationHours: 168,
         creditCost: 250,
-        priceTRY: 139,
         badge: '◈ 7 Gün Kategori',
         description: 'Kategorinizde bir hafta boyunca tepe vitrinde yerinizi koruyun.',
       },

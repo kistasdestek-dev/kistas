@@ -66,3 +66,10 @@ Yeni Worker kaynaklı kritik sorun çıkarsa Cloudflare Workers & Pages panelind
 - `ProjectDetailExperienceClient.tsx` optimize edildi; yorumlar bölümü `ProjectCommentsLazySection.tsx` ve modüler `ProjectCommentsSection.module.css` ile kritik render yolundan ayrılarak lazy-loading mimarisine geçirildi.
 - `packages/supabase/src/queries/listings.ts` ve `apps/web/src/app/actions/listings.ts` sorguları hafifletildi; `KistasGlassDock` mobil dokunma ve gezinme gecikmeleri minimize edildi.
 - 14/14 test (`project-detail-performance.test.mjs`, `route-loading.test.mjs`), %100 Kale Sağlık Puanı ve 0 tip hatası doğrulandı.
+
+## 2026-09-27 Kredi Mağazası ve Shopier Paket Yayını
+
+- Korumalı `/credits` Kıstas Glass mağazası `250 / 750 / 2000` kredi paketleri ve canlı Shopier fiyatları `299 / 699 / 1499 TRY` ile yayınlandı. Dock ve profil kredi aksiyonları mağazaya bağlandı; ödeme sonucu yalnız RLS korumalı kredi hareketi doğrulandıktan sonra gösterilir.
+- Shopier ürün kimlikleri `50900373 / 50900401 / 50900419` üzerinden canlı fiyat kontrolü yapıldı. Migration `20260927000002_reprice_credit_store.sql` Supabase'e uygulandı ve `shopier-credit-webhook` Edge Function yeniden dağıtıldı.
+- `/credits` proxy matcher kapsamına alınarak anonim isteğin sunucu yönlendirme döngüsüne girmesi engellendi. Regresyon testi hem korumalı rota allowlist'ini hem proxy matcher'ını doğrular.
+- Yayın: Cloudflare Worker sürümü `76c1df73-0aef-4527-8c52-447fb1135ab9`. Canlı `/` ve `/login` HTTP 200; anonim `/credits` HTTP 307 ile `/login?redirect=%2Fcredits` hedefine yönlenir. Public yanıtlarda CSP, HSTS, `nosniff` ve referrer policy doğrulanmıştır.
