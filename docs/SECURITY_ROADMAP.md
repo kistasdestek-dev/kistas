@@ -1226,7 +1226,7 @@ Production veya magazaya cikis icin:
 - Kapatma kontrolü erişilebilir etiketi korunarak düşük opaklıklı glass yüzeye geçirildi. `/credits` rotasında genel footer render edilmez; mağaza rozeti kaldırılıp dağıtım değerini anlatan yeni slogan kullanılır.
 - Profil proje kartlarının dört aksiyonu tek glass action dock içinde dengelendi; mobilde 2x2, geniş ekranda dört eşit sütun kullanılır. Silme onayı, proje detay rotası ve güvenli sponsorluk modalı davranışları değişmeden korunur.
 - Güvenlik etkisi: Ödeme URL'si, paket allowlist'i, kullanıcı doğrulaması, webhook, RPC, RLS ve kredi hareketi doğrulaması değişmedi. Yeni veri, secret, dış servis, yetki veya kullanıcı girdisi eklenmedi.
-- Durum: KODLANDI — production deploy yapılmadı.
+- Durum: CANLI — Cloudflare Worker sürümü `a20debcf-2490-46e1-a8c2-fc8094202bdf` ile production'a alındı.
 
 ### 2026-09-27 - Yönetim merkezi kredi, analitik ve blog sertleştirmesi
 
@@ -1236,4 +1236,6 @@ Production veya magazaya cikis icin:
 - Public blog kapakları artık liste ve detay sayfasında render edilir. Makale metadata'sı canonical, Open Graph, Twitter ve JSON-LD Article verisi üretir; içerik ham HTML çalıştırmayan semantik renderer kullanır.
 - Admin rotasında genel footer ve global mobil dock gösterilmez. Kredi ve makale modalları belge scroll'unu kilitler, `100dvh`, overscroll containment ve safe-area alt dolgusu kullanır.
 - Geri dönüş: `20260927000003_admin_community_blog_and_analytics.sql` fonksiyonları önceki imzalarına yalnız ileri migration ile döndürülür; istemci yeni RPC imzalarıyla atomik olarak birlikte geri alınır. Kalıcı kredi hareketleri ve denetim kayıtları silinmez.
-- Durum: VERİTABANI CANLI — `20260927000003` migration'ı Supabase'e uygulandı ve yerel/uzak geçmiş eşleşmesi doğrulandı; production web deploy'u bekliyor.
+- Proje logoları ortak `AutoTransparentLogo` sözleşmesinde yüzde 22 yumuşak köşe standardına geçirildi. Dairesel proje detayı ve kullanıcı avatarları açık shape seçimiyle korunur; Yeni ve Popüler sayfalarındaki ham logo görselleri ortak bileşene taşındı.
+- Keşfet Popüler/Yeni destek sayaçları `#E4FD97` Citrus glass yüzeye geçirildi; renk, sınır, gölge ve azaltılmış hareket davranışı regresyon testiyle sabitlendi.
+- Durum: CANLI — `20260927000003` Supabase migration geçmişi eşleşiyor; GitHub `main` commit'i `109662a`, Cloudflare Worker sürümü `a20debcf-2490-46e1-a8c2-fc8094202bdf`. Ana sayfa, Popüler, Yeni ve Blog HTTP 200; anonim Credits/Admin erişimi güvenli biçimde login'e 307 yönleniyor. CSP, HSTS, `nosniff` ve referrer policy başlıkları doğrulandı. Web 18/18, Supabase 5/5, UI 4/4, çekirdek 85/85, TypeScript, ESLint, bağımlılık/secret/XSS/SQLi taramaları ve Next/Vinext production build başarılıdır.
