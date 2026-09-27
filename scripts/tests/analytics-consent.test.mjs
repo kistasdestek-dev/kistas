@@ -4,6 +4,8 @@ import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 
 const source = readFileSync(new URL('../../apps/web/src/lib/analytics.ts', import.meta.url), 'utf8');
+const providerSource = readFileSync(new URL('../../apps/web/src/components/AnalyticsProvider.tsx', import.meta.url), 'utf8');
+const footerSource = readFileSync(new URL('../../apps/web/src/components/CinematicFooter.tsx', import.meta.url), 'utf8');
 const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
@@ -32,6 +34,9 @@ runInNewContext(compiled, {
 });
 
 assert.equal(exports.readAnalyticsConsent(), null);
+assert.match(providerSource, /consent !== null[\s\S]*return null/, 'İlk ziyaretçi tercih vermeden analitik sorusu görünmeli');
+assert.doesNotMatch(footerSource, /Analitik Tercihi|ANALYTICS_PREFERENCES_EVENT/, 'Footer analitik tercihi bağlantısı taşımamalı');
+assert.doesNotMatch(source, /ANALYTICS_PREFERENCES_EVENT/, 'Kullanılmayan analitik tercih event sözleşmesi kalmamalı');
 exports.trackPageView('/browse', 'Kıstas');
 assert.equal(scripts.length, 0, 'Consent olmadan Google kodu yuklenmemeli');
 

@@ -177,7 +177,7 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 | SEC-002 | XSS | 4 | P1 | DOGRULANDI | Codex | `npm run security:xss`; 14 URL testi; Pages yerel emulasyonunda CSP/HTTP basliklari, 2 URL yansitma testi ve tarayici blog acilisi |
 | SEC-003 | Marka ve Kimlik Taklidi Koruması (Kıstas İsmi Kilidi) | 1 | P1 | DOGRULANDI | Antigravity | UI doğrulama, ProfileService kontrolü, DB tetikleyicisi ve core-domain testi (19/19) |
 | SEC-004 | Proje Destek Bütünlüğü ve Kalıcılık Kalkanı (Destek Geri Alınamaz) | 3 | P1 | DOGRULANDI | Antigravity | DB RPC'de DELETE kaldırıldı, UI'da buton kilitlendi, core-domain testi (21/21) |
-| SEC-005 | Canlı Destek Görüşme Yaşam Döngüsü ve Yönetici Silme Yetkisi | 4/5 | P1 | DOGRULANDI | Codex | Sunucu RPC, kapalı görüşme RLS politikası, denetim kaydı ve core-domain testi (24/24) |
+| SEC-005 | Canlı Destek Görüşme Yaşam Döngüsü ve Yönetici Silme Yetkisi | 4/5 | P1 | DOGRULANDI | Sayra | `20260927000001_repair_support_conversation_close.sql` canlıya uygulandı; migration geçmişi eşleşti, anonim RPC 401/forbidden, web 14/14 ve core-domain 85/85 temiz |
 | SEC-006 | Yönetim Ekibi Görev Bazlı Yetkilendirme | 2/5 | P1 | DOGRULANDI | Codex | Sabit süper yönetici, izin allowlisti, kapsam bazlı RPC/RLS ve core-domain testi (26/26) |
 | SEC-007 | Proje Düzeltmesini Güvenli Yeniden Gönderme | 2/3 | P1 | DOGRULANDI | Codex | Sahiplik ve durum doğrulamalı RPC, anonim erişim reddi, denetim kaydı ve core-domain testi (32/32) |
 | SEC-008 | Eski alan adindaki KVKK iletisim adresi ve paylasim URL'leri | 6/7 | P2 | DUZELTILDI | Codex / kullanici | Canli gizlilik metni ve blog linkleri dogrulandi; kistasdestek@gmail.com gercek teslimat testi kullanicida bekliyor (hedef 2026-09-15) |
@@ -299,6 +299,7 @@ Kullanici tarafindan iletilecek 50 guvenlik maddesi asagidaki sabit ID'lerle kay
 - Veri yaşam döngüsü: Sonlandırılan görüşme arşivde korunur. Kullanıcı yeniden destek istediğinde yeni ve ayrı bir açık görüşme oluşturulur. Mesaj geçmişi yalnızca sonlandırılmış görüşmelerde yönetici tarafından silinebilir.
 - Denetim izi: Sonlandırma ve mesaj temizleme işlemleri aktör, hedef ve silinen mesaj sayısıyla `admin_action_audit` tablosuna kaydedilir.
 - Doğrulama kanıtı: Migration uzak veritabanına uygulandı; TypeScript kontrolü ve `node scripts/tests/core-domain.test.mjs` paketi 24/24 başarılı tamamlandı.
+- 2026-09-27 regresyonu: `20260918000009_faz18_pars_defender_db_level_threat_radar.sql`, güvenli kapanış RPC'sini sonradan ezerek var olmayan `conversations.is_archived` kolonuna yazdı; `community` yetkisini, destek görüşmesi kapsam kontrolünü, sistem mesajını ve denetim kaydını kaybettirdi. Yeni ileri migration bu davranışları geri getirir. Canlı migration ve pozitif yönetici testi tamamlanana kadar bulgu yeniden açık tutulur.
 
 ### SEC-006 - Yönetim Ekibi Görev Bazlı Yetkilendirme
 
@@ -1197,3 +1198,12 @@ Production veya magazaya cikis icin:
 - Güvenlik etkisi: Yeni migration, RPC, tablo, dış servis, secret veya yetki genişlemesi yoktur. Yeni public okuma, daha önce rota açılışında yapılan aynı RLS korumalı sorgunun kullanıcı niyetine ertelenmiş biçimidir.
 - Geri dönüş: `ProjectCommentsLazySection` kaldırılıp yorum sorgusu tekrar sayfa renderına alınabilir; CSS modülü global selectorlara geri taşınabilir. Veri şeması ve kalıcı kayıtlar değişmediği için veri geri kazanımı gerekmez.
 - Doğrulama: Web TypeScript ve ESLint, web regresyonları 14/14, Supabase TypeScript, repo secret/XSS/SQLi taramaları ve Next production build başarılıdır. Yerel Chromium testinde proje gövdesi 468 ms'de görünmüş, yorum dialogu ilk istekte 951 ms'de açılmış ve görsel öncelikleri `1 eager/high + 3 lazy/auto` olarak doğrulanmıştır. Proje detay başlangıç JS'i yaklaşık 556,1 KB'den 231,6 KB'ye düşmüştür. Production deploy yapılmamıştır.
+
+### 2026-09-27 - Profil destek yönlendirmesi ve görüşme kapanış regresyonu
+
+- Profildeki Destek e-posta bağlantısı kaldırılır; oturum sahibi mevcut `get_or_create_support_conversation()` RPC'siyle resmî Kıstas Destek hesabına bağlı açık görüşmeyi alır veya güvenli biçimde oluşturur. İstemci yalnız dönen görüşme kimliğini dahili `/messages` rotasına taşır.
+- `20260927000001_repair_support_conversation_close.sql`, Faz 18'in var olmayan `is_archived` alanına yazan RPC sürümünü ileri yönlü olarak değiştirir. `community` yetkisi, satır kilidi, yalnız `listing_id IS NULL` kapsamı, idempotent kapanış, `closed_by`, sistem mesajı ve append-only denetim kaydı tek transaction içinde korunur.
+- Footer'daki Analitik Tercihi tekrar-açma bağlantısı ve kullanılmayan istemci event sözleşmesi kaldırılır. İlk ziyarette yerel tercih bulunmadığında soru gösteren consent-first sağlayıcı ve onay verilmeden Google etiketini yüklememe davranışı korunur.
+- Doğrulama: Web TypeScript ve ESLint, web regresyonları 14/14, core-domain 85/85, Supabase TypeScript, repository secret/XSS/SQLi taramaları ve Next production build başarılıdır.
+- Canlı Supabase migration geçmişi `20260927000001` ile eşleşir. Anonim doğrudan RPC çağrısı HTTP 401/forbidden ile reddedildi; yerel yetki, kapsam, idempotency ve denetim regresyonları temizdir. SEC-005 `DOGRULANDI` durumuna alınmıştır.
+- Worker deploy'u bu kayıt anında henüz yapılmamıştır; arayüz değişiklikleri uygulama yayınıyla etkinleşecektir.

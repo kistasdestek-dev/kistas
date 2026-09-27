@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ArrowUp } from 'lucide-react';
 import { KistasLogo } from './KistasLogo';
-import { ANALYTICS_PREFERENCES_EVENT } from '@/lib/analytics';
 
 export const CinematicFooter: React.FC = () => {
   const pathname = usePathname();
@@ -28,10 +27,6 @@ export const CinematicFooter: React.FC = () => {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  };
-
-  const openAnalyticsPreferences = () => {
-    window.dispatchEvent(new Event(ANALYTICS_PREFERENCES_EVENT));
   };
 
   return (
@@ -62,7 +57,6 @@ export const CinematicFooter: React.FC = () => {
               <li><Link href="/nasil-calisir" className="kcf-link">Nasıl Çalışır?</Link></li>
               <li><Link href="/blog" className="kcf-link">Kıstas Blog</Link></li>
               <li><Link href="/guvenlik" className="kcf-link">Güvenlik & Şeffaflık</Link></li>
-              <li><button type="button" onClick={openAnalyticsPreferences} className="kcf-link">Analitik Tercihi</button></li>
             </ul>
           </div>
 

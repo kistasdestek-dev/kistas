@@ -1,6 +1,5 @@
 export const GA_MEASUREMENT_ID = 'G-2XXP5LHME9';
 export const ANALYTICS_CONSENT_KEY = 'kistas_analytics_consent_v1';
-export const ANALYTICS_PREFERENCES_EVENT = 'kistas:analytics-preferences';
 
 const GA_SCRIPT_ID = 'kistas-ga4-script';
 

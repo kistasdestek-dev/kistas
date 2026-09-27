@@ -5,6 +5,7 @@ const read = (relativePath) => readFileSync(new URL(`../../${relativePath}`, imp
 
 const migration = read('supabase/migrations/20260925000001_inbox_lifecycle_and_message_notifications.sql');
 const supportLifecycle = read('supabase/migrations/20260912000002_support_conversation_lifecycle.sql');
+const supportCloseRepair = read('supabase/migrations/20260927000001_repair_support_conversation_close.sql');
 const conversationCard = read('apps/web/src/components/chat/ConversationCard.tsx');
 const messagesExperience = read('apps/web/src/components/chat/MessagesExperienceClient.tsx');
 const chatWindow = read('apps/web/src/components/chat/ChatWindow.tsx');
@@ -41,6 +42,13 @@ assert.match(messagesPage, /permissions\?\.includes\('community'\)/);
 assert.match(chatWindow, /canManageSupport && isSupport && !isClosed/);
 assert.match(messagesExperience, /ChatService\.closeSupportConversation/);
 assert.match(supportLifecycle, /closed_at IS NULL[\s\S]*INSERT INTO public\.conversations/, 'Kapalı destekten sonra yeni görüşme oluşturulmalı');
+assert.match(supportCloseRepair, /has_admin_permission\('community'\)/, 'Destek kapanışı görev bazlı community yetkisini doğrulamalı');
+assert.match(supportCloseRepair, /FOR UPDATE/, 'Eşzamanlı kapanışlar hedef görüşmeyi kilitlemeli');
+assert.match(supportCloseRepair, /listing_id IS NOT NULL[\s\S]*SUPPORT_CONVERSATION_NOT_FOUND/, 'Özel proje görüşmeleri destek RPC kapsamı dışında kalmalı');
+assert.match(supportCloseRepair, /closed_at IS NOT NULL[\s\S]*already_closed/, 'Tekrarlanan kapanış idempotent olmalı');
+assert.match(supportCloseRepair, /INSERT INTO public\.messages[\s\S]*'system'/, 'Kapanış kullanıcıya sistem mesajı bırakmalı');
+assert.match(supportCloseRepair, /support_conversation_closed/, 'Kapanış append-only denetim kaydı üretmeli');
+assert.doesNotMatch(supportCloseRepair, /SET[\s\S]{0,200}\bis_archived\s*=/i, 'Var olmayan legacy is_archived kolonu kullanılmamalı');
 
 assert.match(notificationProvider, /table: 'notifications'/);
 assert.match(notificationProvider, /pathname\.startsWith\('\/messages'\)/, 'Mesaj ekranında çift bildirim gösterilmemeli');

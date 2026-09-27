@@ -453,6 +453,17 @@ runTest('Canlı Destek: yalnızca yönetici sonlandırabilmeli ve kapalı görü
   assert.match(sql, /support_conversation_closed/i, 'Sohbet sonlandırma denetim kaydı eksik!');
   assert.match(sql, /support_messages_cleared/i, 'Mesaj temizleme denetim kaydı eksik!');
   assert.match(sql, /closed_at IS NULL[\s\S]*CREATE POLICY "Platform admins reply to support messages"/i, 'RLS kapalı destek görüşmelerini yazmaya karşı korumuyor!');
+
+  const repairSql = fs.readFileSync(path.join(
+    ROOT,
+    'supabase',
+    'migrations',
+    '20260927000001_repair_support_conversation_close.sql'
+  ), 'utf8');
+  assert.match(repairSql, /admin_close_support_conversation[\s\S]*has_admin_permission\('community'\)/i, 'En son destek kapanış RPC’si community yetkisini korumuyor!');
+  assert.match(repairSql, /listing_id IS NOT NULL[\s\S]*SUPPORT_CONVERSATION_NOT_FOUND/i, 'Destek RPC’si özel görüşmeleri kapsam dışı bırakmıyor!');
+  assert.match(repairSql, /support_conversation_closed/i, 'Onarım migration’ında denetim kaydı eksik!');
+  assert.doesNotMatch(repairSql, /SET[\s\S]{0,200}\bis_archived\s*=/i, 'Onarım migration’ı var olmayan is_archived kolonunu kullanıyor!');
 });
 
 // -------------------------------------------------------------

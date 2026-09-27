@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import {
-  ANALYTICS_PREFERENCES_EVENT,
   type AnalyticsConsent,
   readAnalyticsConsent,
   saveAnalyticsConsent,
@@ -20,15 +19,6 @@ export function AnalyticsProvider() {
   useEffect(() => {
     setConsent(readAnalyticsConsent());
     setIsReady(true);
-
-    const openPreferences = () => {
-      saveAnalyticsConsent(null);
-      lastTrackedPath.current = null;
-      setConsent(null);
-    };
-
-    window.addEventListener(ANALYTICS_PREFERENCES_EVENT, openPreferences);
-    return () => window.removeEventListener(ANALYTICS_PREFERENCES_EVENT, openPreferences);
   }, []);
 
   useEffect(() => {

@@ -109,3 +109,52 @@ Next.js 16, Cloudflare Workers ve Supabase tabanlı KISTAS web uygulamasını; g
 Faz 1 yalnız depo hijyeni ve belgeleri değiştirir. Sorun halinde bu fazda değiştirilen `.gitignore` ve dokümantasyon satırları geri alınır; canlı Worker, Supabase ve eski Pages yayınına dokunulmaz.
 
 Faz 4 geri dönüşünde kalite workflow’u ve `sayos:security` zincirindeki ek kontroller geri alınır. CI’nın deploy yetkisi olmadığı için bu geri dönüş canlı Worker, veritabanı veya Pages yayını üzerinde işlem gerektirmez.
+
+## 2026-09-27 — Destek ve Analitik Onarım Fazı
+
+### Hedef
+
+- Profildeki Destek eylemini e-posta yerine resmî Kıstas Destek görüşmesine bağlamak.
+- Faz 18 savunma migration’ının bozduğu destek görüşmesi sonlandırma yaşam döngüsünü ileri yönlü bir migration ile onarmak.
+- Footer’daki Analitik Tercihi bağlantısını kaldırırken ilk ziyarette çalışan consent-first analitik sorusunu korumak.
+
+### Mimari ve veri akışı
+
+1. Profil istemcisi `get_or_create_support_conversation()` RPC’sini çağırır.
+2. Başarılı sonuç yalnız güvenli `conversationId` query parametresiyle `/messages` rotasına taşınır.
+3. Sonlandırma RPC’si `community` iznini sunucuda doğrular, hedef satırı kilitler ve yalnız `listing_id IS NULL` destek görüşmesini kapatır.
+4. Kapanış; `closed_at`, `closed_by`, sistem mesajı ve append-only yönetici denetim kaydını aynı transaction içinde üretir.
+5. Analitik sağlayıcı yalnız yerel tercih bulunmadığında ilk ziyaret sorusunu göstermeyi sürdürür; footer tekrar-açma bağlantısı ve kullanılmayan event sözleşmesi kaldırılır.
+
+### Etkilenecek alanlar
+
+- `apps/web/src/components/ProfileExperienceClient.tsx`
+- `apps/web/src/components/CinematicFooter.tsx`
+- `apps/web/src/components/AnalyticsProvider.tsx`
+- `apps/web/src/lib/analytics.ts`
+- yeni Supabase onarım migration’ı ve konsolide manuel SQL
+- destek/analitik regresyon testleri ve güvenlik yol haritası kanıtı
+
+### Edge case, hata ve güvenlik kontrolleri
+
+- Çift tıklama tek istemci isteğine indirgenecek; hata halinde kullanıcı profil ekranında erişilebilir geri bildirim görecek.
+- Kapanmış görüşmenin tekrar kapatılması idempotent başarı döndürecek.
+- Proje/özel görüşmesi destek RPC’siyle kapatılamayacak.
+- Anonim veya `community` izni olmayan hesap sunucuda reddedilecek.
+- Var olmayan görüşme başarı gibi gösterilmeyecek; istemci boş/bozuk RPC yanıtını hata kabul edecek.
+- Yeni secret, istemci tarafı rol kararı veya doğrudan tablo yazımı eklenmeyecek.
+
+### Çıkış ölçütü
+
+- Hedefli TypeScript, lint, destek yaşam döngüsü, analitik consent ve güvenlik testleri başarılı.
+- Değiştirilen alanda `is_archived`, footer analitik event’i ve `mailto:` destek aksiyonu kalmamış.
+- Production migration/deploy ayrıca uygulanıp doğrulanmadan bu faz canlıda tamamlandı sayılmaz.
+
+### Yerel doğrulama kaydı — 2026-09-27
+
+- Profil Destek eylemi resmî RPC akışına bağlandı; e-posta bağlantısı ve çift tıklama riski kaldırıldı.
+- Destek kapanış onarım migration’ı ile `community` yetkisi, satır kilidi, destek kapsamı, idempotency, sistem mesajı ve denetim izi geri getirildi.
+- Footer analitik bağlantısı ve kullanılmayan event sözleşmesi kaldırıldı; ilk ziyaret consent sorusu ve fail-closed GA davranışı korundu.
+- Web TypeScript ve ESLint, web testleri 14/14, core-domain 85/85, Supabase TypeScript, secret/XSS/SQLi taramaları ve Next production build başarılıdır.
+- `20260925000004` ve `20260927000001` canlı Supabase'e başarıyla uygulandı; yerel/canlı migration geçmişi eşleşti ve anonim destek kapanış RPC çağrısı HTTP 401/forbidden ile reddedildi.
+- Worker deploy beklemektedir.

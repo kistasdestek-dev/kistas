@@ -28,6 +28,7 @@ import { KistasTopBrandBar } from './KistasTopBrandBar';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 import { InstagramVerifiedBadge } from './InstagramVerifiedBadge';
 import { createClient } from '@/lib/supabase/browser';
+import { ChatService } from '@/lib/services/chat';
 import { isValidAnnouncementPath } from '@/lib/notifications';
 import { resolveAvatarUrl } from '@/lib/avatar';
 
@@ -65,7 +66,7 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
   initialCreditTransactions = [],
 }) => {
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   // Local State
   const [profile, setProfile] = useState<Profile | null>(initialProfile || null);
@@ -88,6 +89,8 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isVisibilityModalOpen, setIsVisibilityModalOpen] = useState(false);
   const [visibilityListingId, setVisibilityListingId] = useState<string | null>(null);
+  const [isStartingSupport, setIsStartingSupport] = useState(false);
+  const [supportError, setSupportError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleNotification = (event: Event) => {
@@ -137,7 +140,23 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
     });
   }, [myListings, listingFilter]);
 
+  const handleOpenSupport = async () => {
+    if (isStartingSupport) return;
 
+    setIsStartingSupport(true);
+    setSupportError(null);
+    try {
+      const result = await ChatService.getOrCreateSupportConversation(supabase);
+      if (!result.success || !result.conversationId) {
+        setSupportError(result.error || 'Destek görüşmesi açılamadı. Lütfen tekrar deneyin.');
+        return;
+      }
+
+      router.push(`/messages?conversationId=${encodeURIComponent(result.conversationId)}`);
+    } finally {
+      setIsStartingSupport(false);
+    }
+  };
 
   // Sign out handler
   const handleConfirmSignOut = async () => {
@@ -383,14 +402,24 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                 <span className="text-[11px] font-bold text-center leading-tight">Mesajlar</span>
               </Link>
 
-              <a
-                href="mailto:kistasdestek@gmail.com"
-                className="flex-1 min-h-[88px] flex flex-col items-center justify-center gap-2 rounded-[22px] border border-white/10 bg-white/[0.04] backdrop-blur-md text-white shadow-lg hover:border-blue-500/40 hover:bg-white/[0.08] active:scale-98 transition-all"
+              <button
+                type="button"
+                onClick={() => void handleOpenSupport()}
+                disabled={isStartingSupport}
+                aria-busy={isStartingSupport}
+                className="flex-1 min-h-[88px] flex flex-col items-center justify-center gap-2 rounded-[22px] border border-white/10 bg-white/[0.04] backdrop-blur-md text-white shadow-lg hover:border-blue-500/40 hover:bg-white/[0.08] active:scale-98 transition-all disabled:cursor-wait disabled:opacity-65"
               >
                 <GlassIconButton icon={Headphones} size={36} iconSize={17} />
-                <span className="text-[11px] font-bold text-center leading-tight">Destek</span>
-              </a>
+                <span className="text-[11px] font-bold text-center leading-tight">
+                  {isStartingSupport ? 'Bağlanıyor…' : 'Destek'}
+                </span>
+              </button>
             </div>
+            {supportError && (
+              <p role="alert" className="mt-2 text-center text-xs font-medium text-rose-300">
+                {supportError}
+              </p>
+            )}
 
             {/* 4. Lansmanlarım Takip Bölümü */}
             <section className="space-y-4">

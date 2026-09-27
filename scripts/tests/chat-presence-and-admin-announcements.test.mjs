@@ -67,6 +67,9 @@ assert.match(provider, /sm:w-\[460px\]/);
 assert.match(globalStyles, /\.k-notification-glass\s*\{[\s\S]*rgba\(9, 19, 38, 0\.62\)/);
 assert.match(notificationsModal, /announcementLogoUrl/);
 assert.match(profileExperience, /isValidAnnouncementPath/);
+assert.match(profileExperience, /ChatService\.getOrCreateSupportConversation\(supabase\)/, 'Profil Destek eylemi resmi destek RPC akışını kullanmalı');
+assert.match(profileExperience, /\/messages\?conversationId=/, 'Profil Destek eylemi oluşturulan görüşmeyi açmalı');
+assert.doesNotMatch(profileExperience, /mailto:kistasdestek@gmail\.com/, 'Profil Destek eylemi e-posta uygulamasına düşmemeli');
 assert.match(notificationRules, /listingPathPattern/);
 assert.match(notificationRules, /\{36\}/);
 
