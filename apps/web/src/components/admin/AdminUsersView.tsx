@@ -40,7 +40,7 @@ export const AdminUsersView: React.FC<AdminUsersViewProps> = ({
   onRefresh,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [creditModalTarget, setCreditModalTarget] = useState<{ id: string; name: string } | null>(null);
+  const [creditModalTarget, setCreditModalTarget] = useState<{ id: string; name: string; credits: number } | null>(null);
   const [actionBusyId, setActionBusyId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -118,141 +118,77 @@ export const AdminUsersView: React.FC<AdminUsersViewProps> = ({
         </div>
       )}
 
-      {/* Users Table */}
-      <div className="rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl shadow-[0_24px_60px_rgba(0,0,0,0.7)] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] text-[10px] font-bold text-[#8DB9FF] uppercase tracking-wider">
-                <th className="py-4 px-6">Kullanıcı</th>
-                <th className="py-4 px-4">Rol & Yetki</th>
-                <th className="py-4 px-4">Vitrin Kredisi</th>
-                <th className="py-4 px-4">Lansmanlar</th>
-                <th className="py-4 px-4">Durum</th>
-                <th className="py-4 px-6 text-right">Aksiyonlar</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.06] text-xs">
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-xs text-slate-400">
-                    Aramanıza uygun kullanıcı bulunamadı.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((u) => {
-                  const isBusy = actionBusyId === u.id;
-                  const isMuted = Boolean(u.commentMutedUntil && new Date(u.commentMutedUntil).getTime() > Date.now());
-
-                  return (
-                    <tr key={u.id} className="hover:bg-white/[0.03] transition-colors">
-                      {/* Name & Email */}
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#3269C7] to-[#1e4a94] text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                            {u.fullName.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <p className="font-bold text-white">{u.fullName}</p>
-                              {u.isVerified && (
-                                <span title="Doğrulanmış">
-                                  <CheckCircle2 size={13} className="text-[#8DB9FF]" />
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[11px] text-[#94A3B8]">{u.email || 'E-posta gizli'}</p>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Role & Permissions */}
-                      <td className="py-4 px-4">
-                        {u.isAdminOwner ? (
-                          <span className="rounded-md bg-amber-500/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 text-[10px] font-black tracking-wide">
-                            KURUCU ADMİN
-                          </span>
-                        ) : u.role === 'admin' ? (
-                          <span className="rounded-md bg-[#3269C7]/20 text-[#8DB9FF] border border-[#3269C7]/30 px-2 py-0.5 text-[10px] font-bold">
-                            YÖNETİCİ
-                          </span>
-                        ) : (
-                          <span className="rounded-md bg-white/[0.05] border border-white/10 text-slate-400 px-2 py-0.5 text-[10px] font-semibold">
-                            ÜYE
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Boost Credits */}
-                      <td className="py-4 px-4 font-bold text-amber-300">
-                        <span className="inline-flex items-center gap-1">
-                          <Sparkles size={13} />
-                          <span>{u.boostCredits.toLocaleString('tr-TR')} kredi</span>
-                        </span>
-                      </td>
-
-                      {/* Projects count */}
-                      <td className="py-4 px-4 text-white font-semibold">
-                        {u.projectsCount} proje
-                      </td>
-
-                      {/* Comment Mute Status */}
-                      <td className="py-4 px-4">
-                        {isMuted ? (
-                          <span className="rounded-md bg-rose-500/15 border border-rose-500/30 text-rose-300 px-2 py-0.5 text-[10px] font-bold">
-                            Yorum Susturuldu
-                          </span>
-                        ) : (
-                          <span className="rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 px-2 py-0.5 text-[10px] font-semibold">
-                            Aktif
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-4 px-6 text-right">
-                        <div className="inline-flex items-center justify-end gap-2">
-                          {/* Grant Credits */}
-                          <button
-                            type="button"
-                            onClick={() => setCreditModalTarget({ id: u.id, name: u.fullName })}
-                            className="h-8 px-3 rounded-lg border border-amber-500/40 bg-amber-500/15 text-xs font-bold text-amber-300 hover:bg-amber-500/25 transition-all cursor-pointer"
-                          >
-                            +Kredi Ver
-                          </button>
-
-                          {/* Mute / Unmute Comments */}
-                          {!u.isAdminOwner && (
-                            <button
-                              type="button"
-                              disabled={isBusy}
-                              onClick={() => handleToggleMute(u.id, isMuted)}
-                              className={`h-8 px-2.5 rounded-lg border text-xs font-bold transition-all cursor-pointer disabled:opacity-50 ${
-                                isMuted
-                                  ? 'border-emerald-500/40 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
-                                  : 'border-rose-500/40 bg-rose-500/15 text-rose-300 hover:bg-rose-500/25'
-                              }`}
-                              title={isMuted ? 'Yorum Engelini Kaldır' : 'Yorum Yazmasını Engelle'}
-                            >
-                              {isBusy ? (
-                                <Loader2 size={13} className="animate-spin" />
-                              ) : isMuted ? (
-                                <Volume2 size={13} />
-                              ) : (
-                                <VolumeX size={13} />
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+      {filtered.length === 0 ? (
+        <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-12 text-center text-xs text-slate-400 backdrop-blur-2xl">
+          Aramanıza uygun kullanıcı bulunamadı.
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          {filtered.map((u) => {
+            const isBusy = actionBusyId === u.id;
+            const isMuted = Boolean(u.commentMutedUntil && new Date(u.commentMutedUntil).getTime() > Date.now());
+            const roleLabel = u.isAdminOwner ? 'Kurucu Admin' : u.role === 'admin' || u.role === 'staff' ? 'Yönetim Ekibi' : 'Topluluk Üyesi';
+
+            return (
+              <article key={u.id} className="relative overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br from-white/[0.065] to-white/[0.025] p-4 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-2xl sm:p-5">
+                <div className="pointer-events-none absolute -right-12 -top-16 h-36 w-36 rounded-full bg-blue-500/10 blur-3xl" />
+                <div className="relative flex min-w-0 items-start gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#3B74D8] to-[#163B7A] text-sm font-black text-white shadow-[0_8px_20px_rgba(50,105,199,0.3)]">
+                    {u.fullName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="truncate text-sm font-black text-white">{u.fullName}</h3>
+                      {u.isVerified && <CheckCircle2 size={14} className="shrink-0 text-[#8DB9FF]" aria-label="Doğrulanmış" />}
+                    </div>
+                    <p className="truncate text-[11px] text-[#94A3B8]">{u.email || 'E-posta yalnız süper yöneticiye görünür'}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full border border-white/10 bg-white/[0.055] px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-[#B9CCE9]">
+                    {roleLabel}
+                  </span>
+                </div>
+
+                <div className="relative mt-4 grid grid-cols-3 gap-2">
+                  <div className="rounded-2xl border border-white/[0.08] bg-black/15 p-3">
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-[#64748B]">Kredi</p>
+                    <p className="mt-1 truncate text-sm font-black text-amber-300">{u.boostCredits.toLocaleString('tr-TR')}</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/[0.08] bg-black/15 p-3">
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-[#64748B]">Projeler</p>
+                    <p className="mt-1 text-sm font-black text-white">{u.projectsCount}</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/[0.08] bg-black/15 p-3">
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-[#64748B]">Yorum</p>
+                    <p className={`mt-1 text-xs font-black ${isMuted ? 'text-rose-300' : 'text-emerald-300'}`}>{isMuted ? 'Kapalı' : 'Aktif'}</p>
+                  </div>
+                </div>
+
+                <div className="relative mt-3 grid grid-cols-[1fr_auto] gap-2 rounded-2xl border border-white/10 bg-[#091326]/75 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                  <button
+                    type="button"
+                    onClick={() => setCreditModalTarget({ id: u.id, name: u.fullName, credits: u.boostCredits })}
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-blue-400/25 bg-blue-500/10 px-3 text-xs font-black text-[#A9CAFF] transition hover:bg-blue-500/20"
+                  >
+                    <Sparkles size={15} /> Kredi Ver
+                  </button>
+                  {!u.isAdminOwner && (
+                    <button
+                      type="button"
+                      disabled={isBusy}
+                      onClick={() => handleToggleMute(u.id, isMuted)}
+                      className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border transition disabled:opacity-50 ${isMuted ? 'border-emerald-400/25 bg-emerald-500/10 text-emerald-300' : 'border-rose-400/20 bg-rose-500/[0.08] text-rose-300'}`}
+                      title={isMuted ? 'Yorum engelini kaldır' : 'Yorum yazmasını engelle'}
+                      aria-label={isMuted ? 'Yorum engelini kaldır' : 'Yorum yazmasını engelle'}
+                    >
+                      {isBusy ? <Loader2 size={15} className="animate-spin" /> : isMuted ? <Volume2 size={15} /> : <VolumeX size={15} />}
+                    </button>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
 
       {/* Grant Credits Modal */}
       {creditModalTarget && (
@@ -260,6 +196,7 @@ export const AdminUsersView: React.FC<AdminUsersViewProps> = ({
           isOpen={Boolean(creditModalTarget)}
           userId={creditModalTarget.id}
           userName={creditModalTarget.name}
+          currentCredits={creditModalTarget.credits}
           onClose={() => setCreditModalTarget(null)}
           onSuccess={() => onRefresh()}
         />

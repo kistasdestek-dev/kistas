@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
+const dashboard = read('apps/web/src/components/admin/AdminDashboardClient.tsx');
+const adminPage = read('apps/web/src/app/(dashboard)/admin/page.tsx');
+const users = read('apps/web/src/components/admin/AdminUsersView.tsx');
+const credits = read('apps/web/src/components/admin/GrantCreditsModal.tsx');
+const blog = read('apps/web/src/components/admin/AdminBlogView.tsx');
+const blogIndex = read('apps/web/src/app/(public)/blog/page.tsx');
+const blogArticle = read('apps/web/src/app/(public)/blog/[slug]/page.tsx');
+const listings = read('apps/web/src/components/admin/AdminListingsView.tsx');
+const footer = read('apps/web/src/components/RouteAwareFooter.tsx');
+const dock = read('apps/web/src/components/KistasGlassDock.tsx');
+const migration = read('supabase/migrations/20260927000003_admin_community_blog_and_analytics.sql');
+
+assert.match(footer, /pathname\.startsWith\('\/admin'\)/, 'Admin rotasında footer gizlenmeli');
+assert.match(dock, /pathname\.startsWith\('\/admin'\)/, 'Admin rotasında global dock gizlenmeli');
+assert.match(dashboard, /Kıstas Operasyon[\s\S]*Yönetim Merkezi/, 'Yönetim başlığı sayfa akışına katılmalı');
+assert.match(dashboard, /stats\.total_interactions/, 'Toplam etkileşim gerçek toplamı kullanmalı');
+assert.match(adminPage, /u\.user_id \|\| u\.id/, 'Kredi hedefi RPC kullanıcı kimliğinden eşlenmeli');
+assert.match(dashboard, /u\.user_id \|\| u\.id/, 'Canlı yenileme RPC kullanıcı kimliğini korumalı');
+assert.match(listings, /h-9 w-9 object-contain/, 'Proje logosu çerçevesiz ve görünür olmalı');
+assert.doesNotMatch(users, /<table/, 'Topluluk mobilde taşan tablo kullanmamalı');
+assert.match(users, /grid grid-cols-1[\s\S]*lg:grid-cols-2/, 'Topluluk responsive kart düzeni kullanmalı');
+assert.match(credits, /p_reason: normalizedReason/);
+assert.match(credits, /p_request_id: crypto\.randomUUID\(\)/);
+assert.match(credits, /max="10000"/);
+assert.match(credits, /document\.body\.style\.position|position: 'fixed'/, 'Kredi modalı arka plan scrollunu kilitlemeli');
+assert.match(migration, /has_admin_permission\('community'\)/);
+assert.match(migration, /pg_advisory_xact_lock/);
+assert.match(migration, /total_interactions/);
+assert.match(migration, /admin_create_blog_post/);
+assert.match(blog, /SEO ve Yayın/);
+assert.match(blog, /admin_create_blog_post/);
+assert.match(blog, /pb-\[max\(0\.75rem,env\(safe-area-inset-bottom\)\)\]/);
+assert.match(blogIndex, /post\.cover_image_url/);
+assert.match(blogArticle, /application\/ld\+json/);
+assert.match(blogArticle, /openGraph/);
+assert.match(blogArticle, /BlogArticleContent/);
+
+console.log('Admin center, community credits, analytics and SEO blog contracts passed.');

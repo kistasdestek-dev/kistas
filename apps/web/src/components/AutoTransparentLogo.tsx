@@ -11,6 +11,7 @@ export interface AutoTransparentLogoProps {
   className?: string;
   style?: React.CSSProperties;
   draggable?: boolean;
+  shape?: 'soft' | 'circle' | 'none';
 }
 
 /**
@@ -25,6 +26,7 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
   className = '',
   style,
   draggable = false,
+  shape = 'soft',
 }) => {
   const imageRef = useRef<HTMLImageElement>(null);
   const isSupabaseHosted = typeof src === 'string' && src.includes('supabase.co');
@@ -228,6 +230,7 @@ export const AutoTransparentLogo: React.FC<AutoTransparentLogoProps> = ({
       style={{
         background: 'transparent',
         border: 'none',
+        borderRadius: shape === 'circle' ? '9999px' : shape === 'soft' ? '22%' : 0,
         objectFit: 'contain',
         ...style,
       }}

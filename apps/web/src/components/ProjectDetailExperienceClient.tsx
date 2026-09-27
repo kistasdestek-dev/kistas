@@ -239,6 +239,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
                 <AutoTransparentLogo
                   src={project.logo_url}
                   alt={`${project.title} logosu`}
+                  shape="circle"
                   className="h-full w-full object-cover rounded-full"
                 />
               ) : (

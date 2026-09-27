@@ -1219,3 +1219,21 @@ Production veya magazaya cikis icin:
 - Shopier ürün sayfalarında `50900373 / 50900401 / 50900419` fiyatları sırasıyla `299 / 699 / 1499 TRY` olarak canlı doğrulandı. Migration `20260927000002` canlı veritabanına uygulandı; yerel ve uzak migration geçmişi eşleşir. `shopier-credit-webhook` Edge Function yeniden dağıtıldı ve eksik payload isteğini HTTP 400 ile fail-closed reddetti.
 - `/credits` hem proxy matcher hem korumalı rota allowlist'ine eklendi. İlk yayındaki anonim yönlendirme döngüsü canlı kontrolde tespit edilip kalıcı regresyon testiyle kapatıldı; anonim erişim artık HTTP 307 ile `/login?redirect=%2Fcredits` hedefine gider.
 - Durum: CANLI — Cloudflare Worker sürümü `76c1df73-0aef-4527-8c52-447fb1135ab9`. Ana sayfa ve giriş HTTP 200; CSP, HSTS, `nosniff` ve referrer policy başlıkları doğrulandı. Web 15/15, Supabase 5/5, UI 4/4, çekirdek 85/85, TypeScript, ESLint, bağımlılık denetimi, Next/Vinext üretim derlemeleri ve Wrangler dry-run başarılıdır.
+
+### 2026-09-27 - Kredi mağazası mobil ödeme erişilebilirliği
+
+- Checkout açıkken sabit mobil dock gizlenir ve kapanışta body sınıfı kesin olarak temizlenir; ödeme aksiyonu dock altında kalmaz. Modalın alt dolgusu cihaz safe-area değerini kapsar.
+- Kapatma kontrolü erişilebilir etiketi korunarak düşük opaklıklı glass yüzeye geçirildi. `/credits` rotasında genel footer render edilmez; mağaza rozeti kaldırılıp dağıtım değerini anlatan yeni slogan kullanılır.
+- Profil proje kartlarının dört aksiyonu tek glass action dock içinde dengelendi; mobilde 2x2, geniş ekranda dört eşit sütun kullanılır. Silme onayı, proje detay rotası ve güvenli sponsorluk modalı davranışları değişmeden korunur.
+- Güvenlik etkisi: Ödeme URL'si, paket allowlist'i, kullanıcı doğrulaması, webhook, RPC, RLS ve kredi hareketi doğrulaması değişmedi. Yeni veri, secret, dış servis, yetki veya kullanıcı girdisi eklenmedi.
+- Durum: KODLANDI — production deploy yapılmadı.
+
+### 2026-09-27 - Yönetim merkezi kredi, analitik ve blog sertleştirmesi
+
+- Topluluk yönetimi ekranını görebilen fakat eski sahip-only RPC nedeniyle kredi veremeyen ekip üyelerinin yetki uyuşmazlığı giderildi. Yeni kredi RPC'si `community` kapsamını sunucuda doğrular; 1-10.000 kredi sınırı, zorunlu yönetici notu, UUID işlem anahtarı, transaction advisory lock, kredi hareketi, kullanıcı bildirimi ve append-only yönetim denetimi tek transaction içinde çalışır.
+- Yönetim istatistiği eski proje sayaç alanına güvenmez. Oy ve yorum kayıtları gerçek tablolardan, görüntülenmeler proje kayıtlarından toplanır; birleşik toplam etkileşim değeri sunucuda üretilir.
+- Blog yazımı doğrudan istemci insert'i yerine `blog` yetkili, sabit boş `search_path` kullanan RPC üzerinden yapılır. Başlık, slug, özet, içerik, HTTPS kapak adresi ve SEO alanları uzunluk/biçim allowlist'iyle doğrulanır; slug çakışması kontrollü hata üretir.
+- Public blog kapakları artık liste ve detay sayfasında render edilir. Makale metadata'sı canonical, Open Graph, Twitter ve JSON-LD Article verisi üretir; içerik ham HTML çalıştırmayan semantik renderer kullanır.
+- Admin rotasında genel footer ve global mobil dock gösterilmez. Kredi ve makale modalları belge scroll'unu kilitler, `100dvh`, overscroll containment ve safe-area alt dolgusu kullanır.
+- Geri dönüş: `20260927000003_admin_community_blog_and_analytics.sql` fonksiyonları önceki imzalarına yalnız ileri migration ile döndürülür; istemci yeni RPC imzalarıyla atomik olarak birlikte geri alınır. Kalıcı kredi hareketleri ve denetim kayıtları silinmez.
+- Durum: VERİTABANI CANLI — `20260927000003` migration'ı Supabase'e uygulandı ve yerel/uzak geçmiş eşleşmesi doğrulandı; production web deploy'u bekliyor.

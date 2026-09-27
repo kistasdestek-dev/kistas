@@ -54,6 +54,9 @@ export default async function AdminPage() {
     sponsored_listings: Number(rawStats.sponsored_projects ?? rawStats.sponsored_listings ?? 0),
     pending_listings: Number(rawStats.pending_projects ?? rawStats.pending_listings ?? 0),
     total_votes: Number(rawStats.total_upvotes ?? rawStats.total_votes ?? 0),
+    total_comments: Number(rawStats.total_comments ?? 0),
+    total_views: Number(rawStats.total_project_views ?? 0),
+    total_interactions: Number(rawStats.total_interactions ?? rawStats.total_upvotes ?? 0),
     total_users: Number(rawStats.total_users ?? 0),
     circulating_credits: Number(rawStats.circulating_credits ?? 0),
   };
@@ -64,14 +67,14 @@ export default async function AdminPage() {
   // 5. Kullanıcıları normalize et
   const rawUsers = (usersRes.data as any[]) || [];
   const users: AdminUserItem[] = rawUsers.map((u: any) => ({
-    id: u.id,
+    id: u.user_id || u.id,
     fullName: u.full_name || u.fullName || 'İsimsiz Üye',
     email: u.email,
-    role: u.role || 'user',
+    role: u.user_role || u.role || 'user',
     adminPermissions: u.admin_permissions || [],
     isAdminOwner: Boolean(u.is_admin_owner),
     boostCredits: Number(u.boost_credits || 0),
-    balance: Number(u.balance || 0),
+    balance: Number(u.available_balance ?? u.balance ?? 0),
     isVerified: Boolean(u.is_verified),
     projectsCount: Number(u.projects_count || 0),
     commentMutedUntil: u.comment_muted_until || null,

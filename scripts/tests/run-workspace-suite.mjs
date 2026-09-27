@@ -20,6 +20,9 @@ const suites = {
     'typography-system.test.mjs',
   ],
   web: [
+    'web-admin-center.test.mjs',
+    'web-discovery-citrus-glass.test.mjs',
+    'web-project-logo-shape.test.mjs',
     'analytics-consent.test.mjs',
     'chat-keyboard-viewport.test.mjs',
     'chat-presence-and-admin-announcements.test.mjs',

@@ -19,7 +19,11 @@ assert.match(modal, /window\.scrollTo\(0, scrollY\)/, 'Modal kapanınca sayfanı
 assert.match(modal, /overscroll-contain/, 'Kaydırma modal sınırları içinde tutulmalı');
 assert.match(profileExperience, /href=\{`\/listings\/\$\{item\.id\}`\}/, 'Vitrinde Gör gerçek proje detay rotasına gitmeli');
 assert.doesNotMatch(profileExperience, /href=\{`\/project\/\$\{item\.id\}`\}/, 'Eski ve 404 üreten proje rotası geri gelmemeli');
-assert.match(profileExperience, /<ShinyButton[\s\S]{0,500}Vitrinde Gör/, 'Vitrinde Gör Kıstas Glass Buton kullanmalı');
+assert.match(profileExperience, /<ShinyButton[\s\S]{0,900}Vitrinde Gör/, 'Vitrinde Gör Kıstas Glass Buton kullanmalı');
+assert.match(profileExperience, /aria-label="Proje işlemleri"/, 'Proje aksiyonları ortak glass dock içinde gruplanmalı');
+assert.match(profileExperience, /grid grid-cols-2[\s\S]{0,300}sm:grid-cols-4/, 'Aktif proje aksiyonları mobilde 2x2, geniş ekranda dört eşit sütun olmalı');
+assert.match(profileExperience, /group flex min-h-\[72px\] flex-col items-center justify-center/, 'Aksiyonlar ikon üstte, etiket altta ortak düzende kalmalı');
+assert.doesNotMatch(profileExperience, /flex flex-wrap items-center justify-end gap-2/, 'Eski dağınık aksiyon satırı geri gelmemeli');
 assert.doesNotMatch(profileExperience, /h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-white\/5 border border-white\/10/, 'Lansman logosunun eski arka çerçevesi geri gelmemeli');
 
 for (const [hours, credits] of [[24, 50], [72, 120], [168, 250], [24, 200], [72, 450], [168, 900]]) {

@@ -116,7 +116,12 @@ export const KistasGlassDock: React.FC = () => {
   };
 
   // Auth pages (login & signup) have a dedicated focused layout (EARLY RETURN AFTER ALL HOOKS)
-  if (pathname === '/login' || pathname === '/signup' || pathname.startsWith('/messages')) {
+  if (
+    pathname === '/login' ||
+    pathname === '/signup' ||
+    pathname.startsWith('/messages') ||
+    pathname.startsWith('/admin')
+  ) {
     return null;
   }
 

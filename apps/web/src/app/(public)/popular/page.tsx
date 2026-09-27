@@ -1,6 +1,7 @@
 import { createAnonClient, getCuratedListings } from '@kistas/supabase';
 import Link from 'next/link';
 import { ChevronUp, Flame, Sparkles } from 'lucide-react';
+import { AutoTransparentLogo } from '@/components/AutoTransparentLogo';
 
 export const revalidate = 60;
 
@@ -67,7 +68,7 @@ export default async function PopularPage() {
 
                   <div className="flex h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/5">
                     {cover ? (
-                      <img src={cover} alt={item.title} className="h-full w-full object-cover" />
+                      <AutoTransparentLogo src={cover} alt={item.title} className="h-full w-full object-cover" />
                     ) : (
                       <span className="text-xs font-bold text-blue-400">{initials}</span>
                     )}

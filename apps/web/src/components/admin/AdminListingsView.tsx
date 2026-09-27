@@ -173,9 +173,9 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
                       {/* Title & Logo */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 shrink-0 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center overflow-hidden">
+                          <div className="h-10 w-10 shrink-0 flex items-center justify-center">
                             {item.logo_url ? (
-                              <AutoTransparentLogo src={item.logo_url} alt={item.title} className="h-7 w-7 object-contain" />
+                              <AutoTransparentLogo src={item.logo_url} alt={item.title} className="h-9 w-9 object-contain drop-shadow-[0_5px_12px_rgba(0,0,0,0.35)]" />
                             ) : (
                               <span className="text-xs font-black text-[#8DB9FF]">
                                 {item.title.slice(0, 2).toUpperCase()}

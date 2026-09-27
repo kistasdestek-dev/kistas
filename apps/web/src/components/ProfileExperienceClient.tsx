@@ -588,23 +588,31 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                           </div>
                         )}
 
-                        {/* Controls / Actions Row */}
-                        <div className="mt-4 pt-3.5 border-t border-white/10 flex flex-wrap items-center justify-end gap-2">
+                        {/* Project Action Dock */}
+                        <div className="mt-4 border-t border-white/10 pt-3.5">
+                          <div
+                            aria-label="Proje işlemleri"
+                            className={`grid grid-cols-2 gap-1.5 rounded-[22px] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.018))] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_16px_36px_rgba(0,0,0,.16)] backdrop-blur-2xl ${isActive ? 'sm:grid-cols-4' : 'sm:grid-cols-2'}`}
+                          >
                           <Link
                             href={`/create-listing?edit=${item.id}`}
-                            className="group inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/15 bg-[linear-gradient(145deg,rgba(255,255,255,.11),rgba(255,255,255,.045))] px-3.5 text-xs font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,.1),0_8px_22px_rgba(0,0,0,.18)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-[#6EA8FF]/35 hover:bg-white/[0.13] hover:shadow-[0_10px_26px_rgba(50,105,199,.16)] active:translate-y-0 active:scale-[0.97] cursor-pointer"
+                            className="group flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-[18px] border border-transparent px-2 py-3 text-center text-[10px] font-bold text-[#DCE8F8] transition-all duration-200 hover:border-white/10 hover:bg-white/[0.07] hover:text-white active:scale-[0.97] sm:text-xs"
                           >
-                            <Pencil size={13} className="text-[#78ADFF] transition-transform duration-200 group-hover:-rotate-6" />
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#78ADFF]/20 bg-[#3269C7]/10 text-[#78ADFF] shadow-[inset_0_1px_0_rgba(255,255,255,.08)] transition-transform duration-200 group-hover:-rotate-6 group-hover:scale-105">
+                              <Pencil size={15} />
+                            </span>
                             <span>{isRevision ? 'Düzelt ve Gönder' : 'Düzenle'}</span>
                           </Link>
 
                           {isActive && (
                             <ShinyButton
                               href={`/listings/${item.id}`}
-                              className="group !h-9 !w-auto !rounded-xl !px-3.5 !py-0 !text-xs"
+                              className="group !min-h-[72px] !w-full !rounded-[18px] !px-2 !py-3 !text-[10px] sm:!text-xs"
                             >
-                              <span className="inline-flex items-center gap-1.5">
-                                <Eye size={13} className="transition-transform duration-200 group-hover:scale-110" />
+                              <span className="inline-flex flex-col items-center justify-center gap-2 text-center">
+                                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,.1)]">
+                                  <Eye size={15} className="transition-transform duration-200 group-hover:scale-110" />
+                                </span>
                                 Vitrinde Gör
                               </span>
                             </ShinyButton>
@@ -617,9 +625,11 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                                 setVisibilityListingId(item.id);
                                 setIsVisibilityModalOpen(true);
                               }}
-                              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-xs font-bold text-amber-400 shadow-xs hover:bg-amber-500/20 transition-all cursor-pointer"
+                              className="group flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-[18px] border border-transparent px-2 py-3 text-center text-[10px] font-bold text-[#E9C875] transition-all duration-200 hover:border-amber-300/15 hover:bg-amber-400/[0.07] hover:text-[#FFD873] active:scale-[0.97] sm:text-xs"
                             >
-                              <Sparkles size={13} className="text-amber-400" />
+                              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-amber-300/20 bg-amber-400/[0.08] text-amber-300 shadow-[inset_0_1px_0_rgba(255,255,255,.07)] transition-transform duration-200 group-hover:scale-105 group-hover:rotate-6">
+                                <Sparkles size={15} />
+                              </span>
                               <span>Sponsor Yap</span>
                             </button>
                           )}
@@ -627,11 +637,14 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                           <button
                             type="button"
                             onClick={() => setDeleteTarget(item)}
-                            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-rose-500/30 bg-rose-500/10 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer"
+                            className="group flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-[18px] border border-transparent px-2 py-3 text-center text-[10px] font-bold text-[#D99AA9] transition-all duration-200 hover:border-rose-400/15 hover:bg-rose-400/[0.07] hover:text-rose-300 active:scale-[0.97] sm:text-xs"
                           >
-                            <Trash2 size={13} />
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-rose-400/15 bg-rose-400/[0.06] text-rose-300/90 shadow-[inset_0_1px_0_rgba(255,255,255,.06)] transition-transform duration-200 group-hover:scale-105">
+                              <Trash2 size={15} />
+                            </span>
                             <span>Sil</span>
                           </button>
+                          </div>
                         </div>
                       </div>
                     );

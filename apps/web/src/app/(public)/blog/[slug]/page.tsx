@@ -3,6 +3,8 @@ import { createAnonClient, getBlogPostBySlug } from '@kistas/supabase';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import Image from 'next/image';
+import { BlogArticleContent } from '@/components/blog/BlogArticleContent';
 
 interface PageProps {
   params: Promise<{
@@ -26,8 +28,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `${post.title} — Kıstas Blog`,
-    description: post.excerpt,
+    title: post.meta_title || `${post.title} — Kıstas Blog`,
+    description: post.meta_description || post.excerpt,
+    alternates: { canonical: post.canonical_url || `https://kistas.com.tr/blog/${post.slug}` },
+    openGraph: {
+      type: 'article',
+      title: post.meta_title || post.title,
+      description: post.meta_description || post.excerpt,
+      url: post.canonical_url || `https://kistas.com.tr/blog/${post.slug}`,
+      publishedTime: post.published_at || undefined,
+      authors: [post.author_name],
+      images: post.cover_image_url?.startsWith('https://') ? [{ url: post.cover_image_url, alt: post.title }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.meta_title || post.title,
+      description: post.meta_description || post.excerpt,
+      images: post.cover_image_url?.startsWith('https://') ? [post.cover_image_url] : [],
+    },
   };
 }
 
@@ -39,8 +57,25 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound();
   }
 
+  const canonicalUrl = post.canonical_url || `https://kistas.com.tr/blog/${post.slug}`;
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.meta_description || post.excerpt,
+    image: post.cover_image_url?.startsWith('https://') ? [post.cover_image_url] : undefined,
+    datePublished: post.published_at,
+    dateModified: post.created_at,
+    author: { '@type': 'Organization', name: post.author_name },
+    publisher: { '@type': 'Organization', name: 'Kıstas', url: 'https://kistas.com.tr' },
+    mainEntityOfPage: canonicalUrl,
+  };
+
   return (
     <article className="container mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+      <script type="application/ld+json">
+        {JSON.stringify(articleJsonLd).replace(/</g, '\\u003c')}
+      </script>
       <div className="mb-6">
         <Link href="/blog" className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">
           ← Blog’a Geri Dön
@@ -60,8 +95,14 @@ export default async function BlogPostPage({ params }: PageProps) {
         </div>
       </header>
 
-      <div className="mt-8 prose prose-invert max-w-none text-slate-300 text-base leading-relaxed whitespace-pre-line">
-        {post.content}
+      {post.cover_image_url?.startsWith('https://') && (
+        <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-[28px] border border-white/10 bg-[#0B1424] shadow-[0_24px_70px_rgba(0,0,0,0.35)]">
+          <Image src={post.cover_image_url} alt={`${post.title} kapak görseli`} fill priority unoptimized className="object-cover" />
+        </div>
+      )}
+
+      <div className="mt-8 max-w-none">
+        <BlogArticleContent content={post.content} />
       </div>
     </article>
   );

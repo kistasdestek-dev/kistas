@@ -16,6 +16,8 @@ import {
   AlertCircle,
   X,
   BookOpen,
+  SearchCheck,
+  ImageIcon,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/browser';
 
@@ -58,7 +60,9 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
-  const [readingTime, setReadingTime] = useState(4);
+  const [tags, setTags] = useState('');
+  const [metaTitle, setMetaTitle] = useState('');
+  const [metaDescription, setMetaDescription] = useState('');
   const [isPublished, setIsPublished] = useState(true);
 
   const supabase = useMemo(() => createClient(), []);
@@ -76,6 +80,25 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
         });
     }
   }, [posts, supabase]);
+
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const scrollY = window.scrollY;
+    const previous = {
+      position: document.body.style.position,
+      top: document.body.style.top,
+      left: document.body.style.left,
+      right: document.body.style.right,
+      overflow: document.body.style.overflow,
+    };
+    Object.assign(document.body.style, {
+      position: 'fixed', top: `-${scrollY}px`, left: '0', right: '0', overflow: 'hidden',
+    });
+    return () => {
+      Object.assign(document.body.style, previous);
+      window.scrollTo(0, scrollY);
+    };
+  }, [isModalOpen]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -96,6 +119,7 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
   // Slug otomatik türetme
   const handleTitleChange = (val: string) => {
     setTitle(val);
+    setMetaTitle(val.slice(0, 70));
     const generatedSlug = val
       .toLowerCase()
       .trim()
@@ -158,28 +182,25 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
   // Yeni Makale Kaydet
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim()) {
-      showToast('Başlık ve içerik alanları zorunludur.');
+    if (title.trim().length < 10 || content.trim().length < 200 || excerpt.trim().length < 50) {
+      showToast('Başlık, en az 50 karakter özet ve en az 200 karakter içerik gereklidir.');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('blog_posts').insert({
-        title: title.trim(),
-        slug: slug.trim() || `post-${Date.now()}`,
-        category: category.trim() || 'Girişimcilik',
-        excerpt: excerpt.trim() || title.trim(),
-        content: content.trim(),
-        cover_image_url:
-          coverImageUrl.trim() ||
-          'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80',
-        reading_time_minutes: Number(readingTime) || 4,
-        is_published: isPublished,
-        author_name: 'Kıstas Editoryal',
-        author_title: 'Teknoloji & İnovasyon Ekibi',
-        view_count: 0,
-        published_at: isPublished ? new Date().toISOString() : null,
+      const safeCoverUrl = coverImageUrl.trim();
+      const { error } = await supabase.rpc('admin_create_blog_post', {
+        p_title: title.trim(),
+        p_slug: slug.trim(),
+        p_category: category.trim() || 'Girişimcilik',
+        p_excerpt: excerpt.trim(),
+        p_content: content.trim(),
+        p_cover_image_url: safeCoverUrl,
+        p_tags: tags.split(',').map((tag) => tag.trim()).filter(Boolean).slice(0, 8),
+        p_meta_title: metaTitle.trim(),
+        p_meta_description: metaDescription.trim(),
+        p_is_published: isPublished,
       });
 
       if (error) throw error;
@@ -191,6 +212,11 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
       setExcerpt('');
       setContent('');
       setCoverImageUrl('');
+      setTags('');
+      setMetaTitle('');
+      setMetaDescription('');
+      const { data } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false });
+      if (data) setLocalPosts(data as AdminBlogPost[]);
       onRefresh?.();
     } catch (err: any) {
       console.error('handleCreatePost error:', err);
@@ -225,7 +251,7 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="h-9 px-4 rounded-xl border border-purple-500/35 bg-purple-500/15 hover:bg-purple-500/25 hover:border-purple-400 text-purple-200 hover:text-white text-xs font-semibold inline-flex items-center gap-2 transition-all duration-200 shadow-xs cursor-pointer self-start sm:self-auto"
+          className="shiny-cta min-h-11 text-xs font-semibold self-start sm:self-auto"
         >
           <Plus size={15} />
           <span>Yeni Makale Ekle</span>
@@ -381,14 +407,14 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
       {/* Yeni Makale Oluşturma Modalı */}
       {isModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-150"
+          className="fixed inset-0 z-[1000001] flex items-stretch justify-center overflow-hidden bg-black/80 backdrop-blur-xl animate-in fade-in duration-150 sm:p-4"
           onClick={() => setIsModalOpen(false)}
         >
           <div
-            className="k-modal-glass-card w-full max-w-2xl p-6 sm:p-7 max-h-[90vh] overflow-y-auto"
+            className="k-modal-glass-card flex h-[100dvh] w-full max-w-5xl flex-col overflow-hidden rounded-none sm:h-[calc(100dvh-2rem)] sm:rounded-[28px]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
+            <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-4 py-4 sm:px-6">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 flex items-center justify-center">
                   <FileText size={18} />
@@ -398,13 +424,15 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="text-[#94A3B8] hover:text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-[#94A3B8] backdrop-blur-xl transition hover:bg-white/10 hover:text-white"
+                aria-label="Editörü kapat"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleCreatePost} className="space-y-4">
+            <form onSubmit={handleCreatePost} className="grid min-h-0 flex-1 grid-cols-1 overflow-y-auto overscroll-contain lg:grid-cols-[1.45fr_0.75fr]">
+              <div className="space-y-4 p-4 sm:p-6">
               <div>
                 <label className="block text-xs font-bold text-white mb-1.5">Makale Başlığı *</label>
                 <input
@@ -417,7 +445,7 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-xs font-bold text-white mb-1.5">URL Slug *</label>
                   <input
@@ -445,17 +473,6 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-white mb-1.5">Okuma Süresi (Dk)</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={60}
-                    value={readingTime}
-                    onChange={(e) => setReadingTime(Number(e.target.value))}
-                    className="w-full h-10 px-3.5 rounded-xl border border-blue-500/25 bg-black/50 text-xs text-white focus:border-blue-400 focus:outline-none"
-                  />
-                </div>
               </div>
 
               <div>
@@ -467,6 +484,11 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
                   placeholder="https://images.unsplash.com/..."
                   className="w-full h-10 px-3.5 rounded-xl border border-blue-500/25 bg-black/50 text-xs text-white placeholder:text-[#64748B] focus:border-blue-400 focus:outline-none"
                 />
+                {coverImageUrl.startsWith('https://') && (
+                  <div className="relative mt-3 aspect-[16/7] overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+                    <Image src={coverImageUrl} alt="Kapak görseli önizlemesi" fill unoptimized className="object-cover" />
+                  </div>
+                )}
               </div>
 
               <div>
@@ -481,6 +503,12 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
               </div>
 
               <div>
+                <label className="block text-xs font-bold text-white mb-1.5">Etiketler</label>
+                <input value={tags} onChange={(event) => setTags(event.target.value)} placeholder="SaaS, Lansman, Büyüme" className="w-full h-10 px-3.5 rounded-xl border border-blue-500/25 bg-black/50 text-xs text-white placeholder:text-[#64748B] focus:border-blue-400 focus:outline-none" />
+                <p className="mt-1 text-[9px] text-slate-500">Virgülle ayırın, en fazla 8 etiket.</p>
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold text-white mb-1.5">İçerik (Markdown veya Metin) *</label>
                 <textarea
                   rows={7}
@@ -492,7 +520,32 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-between pt-2">
+              </div>
+
+              <aside className="space-y-4 border-t border-white/10 bg-black/15 p-4 sm:p-6 lg:border-l lg:border-t-0">
+                <div className="flex items-center gap-2 text-sm font-black text-white"><SearchCheck size={18} className="text-blue-400" /> SEO ve Yayın</div>
+                <div>
+                  <label className="block text-xs font-bold text-white mb-1.5">SEO Başlığı</label>
+                  <input value={metaTitle} onChange={(event) => setMetaTitle(event.target.value.slice(0, 70))} maxLength={70} className="w-full h-10 px-3.5 rounded-xl border border-blue-500/25 bg-black/50 text-xs text-white focus:border-blue-400 focus:outline-none" />
+                  <p className={`mt-1 text-right text-[9px] ${metaTitle.length >= 45 && metaTitle.length <= 65 ? 'text-emerald-400' : 'text-slate-500'}`}>{metaTitle.length}/70</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white mb-1.5">Meta Açıklaması</label>
+                  <textarea value={metaDescription} onChange={(event) => setMetaDescription(event.target.value.slice(0, 180))} maxLength={180} rows={4} className="w-full resize-none rounded-xl border border-blue-500/25 bg-black/50 p-3 text-xs text-white focus:border-blue-400 focus:outline-none" />
+                  <p className={`mt-1 text-right text-[9px] ${metaDescription.length >= 120 && metaDescription.length <= 165 ? 'text-emerald-400' : 'text-slate-500'}`}>{metaDescription.length}/180</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-[11px] text-slate-400">
+                  <p className="mb-2 flex items-center gap-2 font-black text-white"><ImageIcon size={14} /> Yayın kontrolü</p>
+                  <ul className="space-y-1.5">
+                    <li className={coverImageUrl.startsWith('https://') ? 'text-emerald-300' : ''}>• Güvenli kapak görseli</li>
+                    <li className={excerpt.length >= 50 ? 'text-emerald-300' : ''}>• En az 50 karakter özet</li>
+                    <li className={content.length >= 200 ? 'text-emerald-300' : ''}>• En az 200 karakter içerik</li>
+                    <li className={metaTitle.length >= 20 && metaDescription.length >= 50 ? 'text-emerald-300' : ''}>• SEO alanları tamamlandı</li>
+                  </ul>
+                </div>
+              </aside>
+
+              <div className="sticky bottom-0 col-span-full flex flex-col gap-3 border-t border-white/10 bg-[#09101D]/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-2xl sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-white">
                   <input
                     type="checkbox"
@@ -503,7 +556,7 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
                   <span>Hemen Yayına Al</span>
                 </label>
 
-                <div className="flex items-center gap-2.5">
+                <div className="grid grid-cols-2 gap-2.5 sm:flex">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
@@ -514,10 +567,10 @@ export const AdminBlogView: React.FC<AdminBlogViewProps> = ({
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="h-9 px-5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-lg shadow-purple-500/25 cursor-pointer disabled:opacity-50"
+                    className="shiny-cta min-h-10 px-5 text-xs font-bold disabled:opacity-50"
                   >
                     {isSubmitting && <Loader2 size={13} className="animate-spin" />}
-                    <span>Makaleyi Yayınla</span>
+                    <span>{isPublished ? 'Makaleyi Yayınla' : 'Taslağı Kaydet'}</span>
                   </button>
                 </div>
               </div>

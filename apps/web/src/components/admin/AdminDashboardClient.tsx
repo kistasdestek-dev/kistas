@@ -18,7 +18,6 @@ import {
   Megaphone,
 } from 'lucide-react';
 import { GlassIconButton } from '../GlassIconButton';
-import { KistasLogo } from '../KistasLogo';
 import { AdminModerationView } from './AdminModerationView';
 import { AdminListingsView } from './AdminListingsView';
 import { AdminSponsorsView } from './AdminSponsorsView';
@@ -36,6 +35,9 @@ export interface AdminDashboardStats {
   sponsored_listings: number;
   pending_listings: number;
   total_votes: number;
+  total_comments: number;
+  total_views: number;
+  total_interactions: number;
   total_users: number;
   circulating_credits: number;
 }
@@ -93,6 +95,9 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
           sponsored_listings: Number(statsData.sponsored_projects ?? statsData.sponsored_listings ?? 0),
           pending_listings: Number(statsData.pending_projects ?? statsData.pending_listings ?? 0),
           total_votes: Number(statsData.total_upvotes ?? statsData.total_votes ?? 0),
+          total_comments: Number(statsData.total_comments ?? 0),
+          total_views: Number(statsData.total_project_views ?? 0),
+          total_interactions: Number(statsData.total_interactions ?? statsData.total_upvotes ?? 0),
           total_users: Number(statsData.total_users ?? 0),
           circulating_credits: Number(statsData.circulating_credits ?? 0),
         });
@@ -109,14 +114,14 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
       const { data: usersData } = await supabase.rpc('get_admin_users');
       if (usersData && Array.isArray(usersData)) {
         const mappedUsers: AdminUserItem[] = usersData.map((u: any) => ({
-          id: u.id,
+          id: u.user_id || u.id,
           fullName: u.full_name || u.fullName || 'İsimsiz Üye',
           email: u.email,
-          role: u.role || 'user',
+          role: u.user_role || u.role || 'user',
           adminPermissions: u.admin_permissions || [],
           isAdminOwner: Boolean(u.is_admin_owner),
           boostCredits: Number(u.boost_credits || 0),
-          balance: Number(u.balance || 0),
+          balance: Number(u.available_balance ?? u.balance ?? 0),
           isVerified: Boolean(u.is_verified),
           projectsCount: Number(u.projects_count || 0),
           commentMutedUntil: u.comment_muted_until || null,
@@ -184,7 +189,7 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
     {
       id: 'analytics' as AdminTab,
       label: 'Toplam etkileşim',
-      value: stats.total_votes,
+      value: stats.total_interactions,
       icon: TrendingUp,
       color: '#CBD5E1',
       accentBg: 'rgba(203,213,225,0.15)',
@@ -219,32 +224,25 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
   }, [listings, searchQuery]);
 
   return (
-    <div className="min-h-screen text-white pb-24 font-sans antialiased">
-      {/* Üst Bar (Header) - Kıstas Tasarım Sistemi */}
-      <header className="sticky top-0 z-40 bg-[#080C14]/75 backdrop-blur-2xl border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <GlassIconButton
-              icon={ChevronLeft}
-              size={42}
-              iconSize={20}
-              onClick={() => router.back()}
-              title="Geri dön"
-            />
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <KistasLogo size={28} showWordmark={false} glow />
-              </div>
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                Yönetim Merkezi
-              </h1>
-            </div>
+    <div className="min-h-screen text-white pb-12 font-sans antialiased overflow-x-clip">
+      {/* Ana Çalışma Alanı */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-8 space-y-6">
+        <div className="flex items-center gap-3">
+          <GlassIconButton
+            icon={ChevronLeft}
+            variant="bare"
+            size={44}
+            iconSize={21}
+            iconColor="#DCEAFF"
+            className="border-white/12 bg-white/[0.055] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_28px_rgba(0,0,0,0.25)] hover:bg-white/[0.1]"
+            onClick={() => router.back()}
+            title="Geri dön"
+          />
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#76A9FF]">Kıstas Operasyon</p>
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Yönetim Merkezi</h1>
           </div>
         </div>
-      </header>
-
-      {/* Ana Çalışma Alanı */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
         {/* Operasyon Özeti - Hero Kartı (Kıstas İmzalı Mavi Geçişli Cam Kart) */}
         <div className="relative rounded-[28px] border border-white/15 bg-gradient-to-r from-[#1746A2] via-[#1E3A8A] to-[#0E1E44] p-6 sm:p-8 text-white shadow-[0_20px_50px_rgba(23,70,162,0.25)] overflow-hidden">
           {/* Arka plan dekoratif neon parlamalar */}
@@ -434,7 +432,7 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
                 Platform Etkileşim & Destek İstatistikleri
               </h3>
               <p className="text-xs text-[#94A3B8] max-w-md mx-auto">
-                Toplam {stats.total_votes} destek oyu ve {stats.circulating_credits} dolaşımdaki kredi verisiyle platform büyümesini izleyin.
+                {stats.total_views.toLocaleString('tr-TR')} görüntülenme, {stats.total_votes.toLocaleString('tr-TR')} destek ve {stats.total_comments.toLocaleString('tr-TR')} yorumdan oluşan toplam {stats.total_interactions.toLocaleString('tr-TR')} etkileşimi izleyin. Dolaşımda {stats.circulating_credits.toLocaleString('tr-TR')} kredi bulunuyor.
               </p>
             </div>
           )}

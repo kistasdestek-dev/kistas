@@ -11,6 +11,8 @@ const profile = read('apps/web/src/components/ProfileExperienceClient.tsx');
 const contracts = read('src/features/credits/application/CreditPurchaseContracts.ts');
 const middleware = read('apps/web/src/lib/supabase/middleware.ts');
 const proxy = read('apps/web/src/proxy.ts');
+const globalStyles = read('apps/web/src/app/globals.css');
+const routeFooter = read('apps/web/src/components/RouteAwareFooter.tsx');
 
 assert.deepEqual(
   CREDIT_STORE_PLANS.map(({ credits, priceTRY, amountMinor }) => ({ credits, priceTRY, amountMinor })),
@@ -39,6 +41,13 @@ assert.match(store, /Number\(transaction\.metadata\?\.amount_minor\) === selecte
 assert.match(store, /window\.setInterval[\s\S]*5_000/, 'Ödeme kontrolü beş saniyelik sınırlı polling kullanmalı');
 assert.match(store, /attempts >= 24/, 'Polling iki dakika sonra sonlanmalı');
 assert.match(store, /document\.body\.style\.position|body\.style\.position = 'fixed'/, 'Mobil checkout arka planı kilitlemeli');
+assert.match(store, /body\.classList\.add\('k-credit-checkout-open'\)/, 'Checkout açıldığında mobil dock gizlenmeli');
+assert.match(store, /body\.classList\.remove\('k-credit-checkout-open'\)/, 'Checkout kapanırken dock durumu temizlenmeli');
+assert.match(globalStyles, /body\.k-credit-checkout-open \.kdn-shell[\s\S]*?display: none !important;/);
+assert.match(store, /Projeni doğru zamanda, doğru kitleyle buluştur\./);
+assert.doesNotMatch(store, /Kıstas Kredi Mağazası|Görünürlüğünü krediyle büyüt\./);
+assert.match(store, /variant="bare"[\s\S]*?ariaLabel="Ödeme penceresini kapat"/);
+assert.match(routeFooter, /pathname === '\/credits'/, 'Kredi mağazasında footer gösterilmemeli');
 assert.match(dock, /key: 'credits', label: 'Krediler', href: '\/credits'/);
 assert.match(profile, /<ShinyButton href="\/credits"/);
 assert.match(contracts, /kistas_credits_250/);

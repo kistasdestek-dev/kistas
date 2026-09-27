@@ -12,7 +12,6 @@ import {
   Loader2,
   LockKeyhole,
   ShieldCheck,
-  Sparkles,
   WalletCards,
   X,
   Zap,
@@ -75,6 +74,7 @@ export const CreditStoreExperienceClient: React.FC<CreditStoreExperienceClientPr
       right: body.style.right,
       overflow: body.style.overflow,
     };
+    body.classList.add('k-credit-checkout-open');
     body.style.position = 'fixed';
     body.style.top = `-${scrollY}px`;
     body.style.left = '0';
@@ -87,6 +87,7 @@ export const CreditStoreExperienceClient: React.FC<CreditStoreExperienceClientPr
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      body.classList.remove('k-credit-checkout-open');
       body.style.position = previous.position;
       body.style.top = previous.top;
       body.style.left = previous.left;
@@ -202,11 +203,8 @@ export const CreditStoreExperienceClient: React.FC<CreditStoreExperienceClientPr
           <div className="pointer-events-none absolute -right-20 top-4 h-56 w-56 rounded-full bg-[#60A5FA]/15 blur-[82px]" />
           <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#6EA8FF]/20 bg-[#3269C7]/10 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9BC2FF]">
-                <Sparkles size={13} /> Kıstas Kredi Mağazası
-              </div>
-              <h1 className="mt-5 text-3xl font-black tracking-[-0.04em] text-white sm:text-5xl">
-                Görünürlüğünü krediyle büyüt.
+              <h1 className="text-3xl font-black tracking-[-0.04em] text-white sm:text-5xl">
+                Projeni doğru zamanda, doğru kitleyle buluştur.
               </h1>
               <p className="mt-3 max-w-xl text-sm leading-6 text-[#AFC0D8] sm:text-base">
                 Projeni Keşfet ve kategori vitrinlerinde öne çıkar. Abonelik yok; aldığın krediler süresiz bakiyende kalır.
@@ -313,7 +311,7 @@ export const CreditStoreExperienceClient: React.FC<CreditStoreExperienceClientPr
             role="dialog"
             aria-modal="true"
             aria-labelledby="credit-checkout-title"
-            className="k-modal-glass-card relative max-h-[94dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-b-none border-b-0 bg-[linear-gradient(155deg,rgba(18,38,70,.99),rgba(5,13,28,.99)_62%)] p-5 sm:rounded-[28px] sm:border-b sm:p-7"
+            className="k-modal-glass-card relative max-h-[94dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-b-none border-b-0 bg-[linear-gradient(155deg,rgba(18,38,70,.99),rgba(5,13,28,.99)_62%)] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:rounded-[28px] sm:border-b sm:p-7"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="pointer-events-none absolute -left-16 -top-24 h-52 w-52 rounded-full bg-[#3269C7]/30 blur-[72px]" />
@@ -325,7 +323,16 @@ export const CreditStoreExperienceClient: React.FC<CreditStoreExperienceClientPr
                   <h2 id="credit-checkout-title" className="text-lg font-black text-white">{selectedPlan.name} paketi</h2>
                 </div>
               </div>
-              <GlassIconButton icon={X} onClick={closeCheckout} size={34} iconSize={16} iconColor="#DCE8F8" ariaLabel="Ödeme penceresini kapat" className="!border-white/15 !bg-white/[0.08]" />
+              <GlassIconButton
+                icon={X}
+                onClick={closeCheckout}
+                variant="bare"
+                size={34}
+                iconSize={16}
+                iconColor="#9FB5D1"
+                ariaLabel="Ödeme penceresini kapat"
+                className="!border-white/10 !bg-white/[0.035] !shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_8px_24px_rgba(0,0,0,.16)] !backdrop-blur-xl hover:!border-white/18 hover:!bg-white/[0.07]"
+              />
             </div>
 
             <div className="relative mt-5 rounded-[22px] border border-[#6EA8FF]/25 bg-[#3269C7]/10 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,.08)]">
