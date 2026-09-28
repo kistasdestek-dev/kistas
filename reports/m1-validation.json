@@ -1,0 +1,79 @@
+{
+  "phase": "M1",
+  "status": "locally-validated",
+  "capturedAt": "2026-09-28T11:58:17.174Z",
+  "sourceCommit": "8c3637c676a3fea3a75df6062ed8d26d6508fdfd",
+  "workingTreeChangesPreserved": true,
+  "checks": {
+    "workspace": {
+      "command": "pnpm exec turbo run type-check lint test --force",
+      "exitCode": 0,
+      "tasksPassed": 15,
+      "tasksTotal": 15,
+      "regressionFiles": 32,
+      "domainTests": 84
+    },
+    "nextBuild": {
+      "command": "pnpm build:web",
+      "exitCode": 0
+    },
+    "workersBuild": {
+      "command": "pnpm --filter @kistas/web build:vinext",
+      "exitCode": 0
+    },
+    "workersE2E": {
+      "command": "pnpm test:e2e",
+      "exitCode": 0,
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0
+    },
+    "workersDryRun": {
+      "command": "pnpm --filter @kistas/web exec wrangler deploy --dry-run",
+      "exitCode": 0,
+      "actualDeploy": false
+    },
+    "security": {
+      "dependencyAudit": "passed",
+      "trackedAndStagedSecretScan": "passed",
+      "xssScan": "passed",
+      "sqlPatternScan": "passed-existing-legacy-scope-only"
+    },
+    "performance": {
+      "command": "pnpm measure:performance m1",
+      "exitCode": 0,
+      "report": "m1-performance-baseline.json"
+    },
+    "postgrest": {
+      "report": "m1-query-conformance.json",
+      "method": "anonymous-read-only-GET-HEAD",
+      "allHttp200": true
+    },
+    "whitespace": {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  },
+  "workerEntrySha256": "60b0380f1189e2cc88ba36dfee14c0a873a8606c7f29b352653e3ff04e9787d7",
+  "artifacts": [
+    "m1-card-payload.json",
+    "m1-query-conformance.json",
+    "m1-performance-baseline.json"
+  ],
+  "deployment": {
+    "commitCreated": false,
+    "productionDeployed": false,
+    "migrationApplied": false,
+    "newBackupCreated": false
+  },
+  "limitations": [
+    "Fixture tests do not prove authenticated RLS isolation or PostgreSQL capacity/query plans.",
+    "Popular keyset pagination is not a transaction snapshot when existing vote counts change.",
+    "Runtime production cache and invalidation remain unmeasured; 60-second revalidation is not a strict freshness guarantee.",
+    "Lab LCP and estimated Brotli are not field INP or actual CDN transfer.",
+    "M0 and M1 datasets differ; no percentage speedup is asserted.",
+    "SQL scanner coverage of web/packages is reserved for M3.",
+    "Remote CI execution was not observed."
+  ]
+}

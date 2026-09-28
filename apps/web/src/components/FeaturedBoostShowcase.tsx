@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { KistasLogo } from './KistasLogo';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 import { CategoryStarsBanner } from './CategoryStarsBanner';
-import { type Listing } from '@kistas/shared';
+import { type DiscoveryCard } from '@kistas/shared';
 import { ShinyButton } from './ui/shiny-button';
 
 export interface FeaturedBoostShowcaseProps {
-  projects?: Listing[];
+  projects?: DiscoveryCard[];
   selectedCategoryName?: string;
   onOpenCreditStore?: () => void;
 }
@@ -54,8 +54,6 @@ export const FeaturedBoostShowcase: React.FC<FeaturedBoostShowcaseProps> = ({
             'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800';
           const developerName = getCleanDeveloperName(
             project.developer_name ||
-            (project as any).developerName ||
-            project.seller?.full_name ||
             'Kıstas Projesi'
           );
           const initials = project.title ? project.title.slice(0, 2).toUpperCase() : 'KT';

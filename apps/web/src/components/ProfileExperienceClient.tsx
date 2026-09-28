@@ -282,6 +282,8 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
           </div>
         )}
 
+        <Link href="/launch-archive" className="mb-6 block rounded-2xl border border-blue-400/20 bg-white/5 px-4 py-3 text-sm font-semibold text-blue-300">Lansman Arşivim · Yarım kalan lansmanlara devam et</Link>
+
         {/* 2-Column Responsive Layout */}
         <div className="flex flex-col lg:flex-row items-start gap-7">
           {/* ========================================================= */}

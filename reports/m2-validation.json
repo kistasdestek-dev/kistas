@@ -1,0 +1,89 @@
+{
+  "phase": "M2",
+  "status": "local-package-validated-production-pending",
+  "capturedAt": "2026-09-28T13:31:18.326Z",
+  "sourceCommit": "8c3637c676a3fea3a75df6062ed8d26d6508fdfd",
+  "workingTreeChangesPreserved": true,
+  "checks": {
+    "workspace": {
+      "command": "pnpm exec turbo run type-check lint test --force",
+      "exitCode": 0,
+      "tasksPassed": 15,
+      "tasksTotal": 15,
+      "regressionFiles": 33,
+      "domainTests": 84,
+      "note": "After final editor changes, Next TypeScript build/web lint and web/shared/supabase suites rerun successfully."
+    },
+    "nextBuild": {
+      "exitCode": 0
+    },
+    "workersBuild": {
+      "exitCode": 0
+    },
+    "workersE2E": {
+      "command": "pnpm test:e2e",
+      "exitCode": 0,
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0
+    },
+    "postgres": {
+      "report": "m2-postgres-validation.json",
+      "passed": 11,
+      "failed": 0
+    },
+    "workersDryRun": {
+      "exitCode": 0,
+      "actualDeploy": false
+    },
+    "security": {
+      "dependencyAudit": "passed-no-known-vulnerabilities",
+      "trackedAndStagedSecretScan": "passed",
+      "xssScan": "passed",
+      "sqlPatternScan": "passed-existing-legacy-scope-only",
+      "newRpcVerification": "actual-PostgreSQL-scenarios-and-source-review"
+    },
+    "performance": {
+      "command": "pnpm measure:performance m2",
+      "exitCode": 0,
+      "report": "m2-performance-baseline.json",
+      "median": {
+        "lcpMs": 1360,
+        "cls": 0,
+        "ttfbMs": 61.89999997615814
+      }
+    },
+    "whitespace": {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  },
+  "workerEntrySha256": "5fcfc878b13efdf48d4f11b0569367b3034b92ecaba4290c8436c36a1f4336af",
+  "migration": {
+    "path": "supabase/migrations/20260928000002_atomic_launch_and_private_archive.sql",
+    "sha256": "28ff8d7edef63d70efcbcdffcb7aab0a4fda831a039ab02723c8671b175188dc",
+    "appliedToProduction": false
+  },
+  "artifacts": [
+    "m2-postgres-validation.json",
+    "m2-performance-baseline.json",
+    "supabase/tests/m2-preflight.sql",
+    "docs/M2_VALIDATION.md"
+  ],
+  "deployment": {
+    "commitCreated": false,
+    "productionDeployed": false,
+    "migrationApplied": false,
+    "newBackupCreated": false
+  },
+  "limitations": [
+    "Only production exists; live schema/Auth/Storage/RLS and acceptance remain pending.",
+    "PGlite PostgreSQL 18.3 uses synthetic claims, minimal schema and one connection; independent-connection races are unverified.",
+    "Archive metadata is private; uploaded images in existing public bucket are accessible by known URL.",
+    "Browser storage clearing/quota/power loss are outside absolute recovery guarantees; unsynced images remain on the originating device.",
+    "No submit idempotency or launch quota; an explicit repeat may create another listing.",
+    "Public lab JavaScript median increased versus M1; prefetch/observation variance means no overall speed improvement is claimed.",
+    "Existing Edge Runtime and large client chunk warnings remain; Storage orphan cleanup is not implemented."
+  ]
+}

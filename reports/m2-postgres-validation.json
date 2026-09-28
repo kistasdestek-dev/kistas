@@ -1,0 +1,17 @@
+{
+  "capturedAt": "2026-09-28T14:08:16.905Z",
+  "engine": "PGlite 0.5.8",
+  "serverVersion": "18.3",
+  "passed": 13,
+  "failed": 0,
+  "migrationSha256": "28ff8d7edef63d70efcbcdffcb7aab0a4fda831a039ab02723c8671b175188dc",
+  "retentionMigrationSha256": "1f0121752e3d0e4232571d484278b990a66d8cc1b92ca0b2052bda0f889f253f",
+  "productionDataWritten": false,
+  "auth": "synthetic claims/roles",
+  "connections": 1,
+  "limitations": [
+    "Minimal schema is not the full production Supabase schema/policy/trigger set.",
+    "Synthetic auth claims do not verify actual Supabase Auth or Storage APIs.",
+    "Queued concurrent calls on one connection do not prove independent-connection races."
+  ]
+}

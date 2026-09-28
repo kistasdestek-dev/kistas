@@ -1,0 +1,350 @@
+{
+  "capturedAt": "2026-09-28T11:12:16.005Z",
+  "options": [
+    "--e2e",
+    "--live",
+    "--report"
+  ],
+  "summary": {
+    "passed": 7,
+    "warning": 4,
+    "failed": 0,
+    "unmeasured": 2,
+    "total": 13,
+    "coveragePercent": 85,
+    "healthScore": 69
+  },
+  "checks": [
+    {
+      "name": "1 Disk inventory",
+      "status": "warning",
+      "evidence": {
+        "temporary": [
+          ".tmp-remote-preview",
+          "scratch"
+        ],
+        "action": "No files deleted. Review candidates individually; active tools may own these directories."
+      }
+    },
+    {
+      "name": "2 Source coverage",
+      "status": "passed",
+      "evidence": {
+        "files": 146,
+        "roots": [
+          "apps/*/src",
+          "packages/*/src"
+        ],
+        "limitation": "Inventory does not prove absence of dead code. Unused checks depend on workspace TypeScript/ESLint configuration."
+      }
+    },
+    {
+      "name": "3 Build inventory",
+      "status": "warning",
+      "evidence": {
+        "builds": [
+          {
+            "target": "workers",
+            "directory": "apps/web/dist/client/_next/static",
+            "files": 199,
+            "rawBytes": 5588148,
+            "brotliBytes": 1578264,
+            "chunks": [
+              {
+                "relPath": "apps\\web\\dist\\client\\_next\\static\\chunks\\runtime-chunk-TN7SLRFX-evHIr0EW.js",
+                "rawBytes": 646459,
+                "brotliBytes": 179127,
+                "gzipBytes": 181827
+              },
+              {
+                "relPath": "apps\\web\\dist\\client\\_next\\static\\chunks\\runtime-classicRuntime-NLCUPLCP-pSajMltx.js",
+                "rawBytes": 624767,
+                "brotliBytes": 146173,
+                "gzipBytes": 146256
+              },
+              {
+                "relPath": "apps\\web\\dist\\client\\_next\\static\\chunks\\runtime-webgpu-IGBYLILS-DnSNu0AI.js",
+                "rawBytes": 427208,
+                "brotliBytes": 126539,
+                "gzipBytes": 125835
+              },
+              {
+                "relPath": "apps\\web\\dist\\client\\_next\\static\\chunks\\runtime-chunk-BVVSZMXD-BODvsKaU.js",
+                "rawBytes": 283785,
+                "brotliBytes": 74822,
+                "gzipBytes": 74715
+              },
+              {
+                "relPath": "apps\\web\\dist\\client\\_next\\static\\chunks\\runtime-BXEN2k5V.js",
+                "rawBytes": 267682,
+                "brotliBytes": 74843,
+                "gzipBytes": 74453
+              }
+            ]
+          },
+          {
+            "target": "next",
+            "directory": "apps/web/.next/static",
+            "files": 112,
+            "rawBytes": 6179653,
+            "brotliBytes": 1752658,
+            "chunks": [
+              {
+                "relPath": "apps\\web\\.next\\static\\chunks\\25tbq157yvknt.js",
+                "rawBytes": 650738,
+                "brotliBytes": 179340,
+                "gzipBytes": 182403
+              },
+              {
+                "relPath": "apps\\web\\.next\\static\\chunks\\3dqfhfmxemg16.js",
+                "rawBytes": 629631,
+                "brotliBytes": 145706,
+                "gzipBytes": 145944
+              },
+              {
+                "relPath": "apps\\web\\.next\\static\\chunks\\1qkznucharl-s.js",
+                "rawBytes": 447528,
+                "brotliBytes": 127519,
+                "gzipBytes": 126560
+              },
+              {
+                "relPath": "apps\\web\\.next\\static\\chunks\\3mdz4oed-k19t.js",
+                "rawBytes": 284781,
+                "brotliBytes": 74583,
+                "gzipBytes": 74641
+              },
+              {
+                "relPath": "apps\\web\\.next\\static\\chunks\\41gwcaiy9j_gq.js",
+                "rawBytes": 231441,
+                "brotliBytes": 58857,
+                "gzipBytes": 59489
+              }
+            ]
+          }
+        ],
+        "routeBudget": "unmeasured — all chunks include lazy routes",
+        "explanation": "Tum client chunk envanteri; lazy chunklar dahil. Rota ilk yuk boyutu ve ag transferi degildir. Brotli quality=4 yerel tahminidir.",
+        "assets": [
+          {
+            "relPath": "apps\\web\\public\\kistas-app-icon-concept.png",
+            "bytes": 1876499,
+            "sizeKB": "1832.5"
+          },
+          {
+            "relPath": "apps\\web\\public\\fonts\\MaterialCommunityIcons.ttf",
+            "bytes": 1307660,
+            "sizeKB": "1277.0"
+          },
+          {
+            "relPath": "apps\\web\\public\\social\\kistas-profile-framed.png",
+            "bytes": 938267,
+            "sizeKB": "916.3"
+          },
+          {
+            "relPath": "apps\\web\\public\\fonts\\Ionicons.ttf",
+            "bytes": 389724,
+            "sizeKB": "380.6"
+          },
+          {
+            "relPath": "apps\\web\\public\\fonts\\MaterialIcons.ttf",
+            "bytes": 356840,
+            "sizeKB": "348.5"
+          }
+        ]
+      }
+    },
+    {
+      "name": "4 Architecture",
+      "status": "warning",
+      "evidence": {
+        "oversized": [
+          {
+            "file": "apps\\web\\src\\components\\admin\\AdminAnnouncementsView.tsx",
+            "lines": 572,
+            "hooks": 15,
+            "anyTypes": 1
+          },
+          {
+            "file": "apps\\web\\src\\components\\admin\\AdminBlogView.tsx",
+            "lines": 584,
+            "hooks": 18,
+            "anyTypes": 3
+          },
+          {
+            "file": "apps\\web\\src\\components\\admin\\AdminThreatIntelView.tsx",
+            "lines": 481,
+            "hooks": 13,
+            "anyTypes": 2
+          },
+          {
+            "file": "apps\\web\\src\\components\\AuthExperienceClient.tsx",
+            "lines": 615,
+            "hooks": 20,
+            "anyTypes": 0
+          },
+          {
+            "file": "apps\\web\\src\\components\\chat\\ChatWindow.tsx",
+            "lines": 619,
+            "hooks": 22,
+            "anyTypes": 0
+          },
+          {
+            "file": "apps\\web\\src\\components\\chat\\MessagesExperienceClient.tsx",
+            "lines": 563,
+            "hooks": 23,
+            "anyTypes": 0
+          },
+          {
+            "file": "apps\\web\\src\\components\\CreateListingExperienceClient.tsx",
+            "lines": 974,
+            "hooks": 27,
+            "anyTypes": 0
+          },
+          {
+            "file": "apps\\web\\src\\components\\credits\\CreditStoreExperienceClient.tsx",
+            "lines": 399,
+            "hooks": 13,
+            "anyTypes": 0
+          },
+          {
+            "file": "apps\\web\\src\\components\\DiscoverExperienceClient.tsx",
+            "lines": 247,
+            "hooks": 13,
+            "anyTypes": 1
+          },
+          {
+            "file": "apps\\web\\src\\components\\ProfileExperienceClient.tsx",
+            "lines": 896,
+            "hooks": 26,
+            "anyTypes": 3
+          },
+          {
+            "file": "apps\\web\\src\\components\\ProjectCommentsSection.tsx",
+            "lines": 627,
+            "hooks": 20,
+            "anyTypes": 0
+          },
+          {
+            "file": "apps\\web\\src\\components\\ProjectDetailExperienceClient.tsx",
+            "lines": 712,
+            "hooks": 13,
+            "anyTypes": 7
+          },
+          {
+            "file": "apps\\web\\src\\components\\ProjectScreenshotsGallery.tsx",
+            "lines": 531,
+            "hooks": 21,
+            "anyTypes": 6
+          }
+        ],
+        "explicitAnyTypes": 66,
+        "limitation": "AST counts are maintainability indicators, not performance or security proof."
+      }
+    },
+    {
+      "name": "5 TypeScript and lint",
+      "status": "passed",
+      "evidence": {
+        "command": "pnpm exec turbo run type-check lint --force",
+        "exitCode": 0
+      }
+    },
+    {
+      "name": "6 Deterministic regressions",
+      "status": "passed",
+      "evidence": {
+        "command": "pnpm exec turbo run test --force",
+        "exitCode": 0
+      }
+    },
+    {
+      "name": "7 Security scanners",
+      "status": "passed",
+      "evidence": {
+        "command": "pnpm sayos:security",
+        "exitCode": 0
+      }
+    },
+    {
+      "name": "Web/package SQL pattern coverage",
+      "status": "unmeasured",
+      "evidence": "Existing SQL scanner covers legacy src and Edge Functions/migrations. Expand and triage web/package rules during M3. Pattern scans are not pentest/RLS proof; repo secret scanner covers staged/tracked files."
+    },
+    {
+      "name": "8 Workers browser integration",
+      "status": "passed",
+      "evidence": {
+        "command": "pnpm test:e2e",
+        "exitCode": 0
+      }
+    },
+    {
+      "name": "CDN /",
+      "status": "warning",
+      "evidence": {
+        "observations": [
+          {
+            "httpStatus": 200,
+            "edgeCache": "UPDATING",
+            "browserPolicy": "private, max-age=0, must-revalidate",
+            "bytes": 116430
+          },
+          {
+            "httpStatus": 200,
+            "edgeCache": "UPDATING",
+            "browserPolicy": "private, max-age=0, must-revalidate",
+            "bytes": 116430
+          }
+        ],
+        "limitation": "Two reads; no invalidation or user-isolation proof."
+      }
+    },
+    {
+      "name": "CDN /api/og?id=default",
+      "status": "passed",
+      "evidence": {
+        "observations": [
+          {
+            "httpStatus": 200,
+            "edgeCache": "HIT",
+            "browserPolicy": "private, max-age=0, must-revalidate",
+            "bytes": 267009
+          },
+          {
+            "httpStatus": 200,
+            "edgeCache": "HIT",
+            "browserPolicy": "private, max-age=0, must-revalidate",
+            "bytes": 267009
+          }
+        ],
+        "limitation": "Two reads; no invalidation or user-isolation proof."
+      }
+    },
+    {
+      "name": "CDN /api/badge/demo-project-id?theme=dark",
+      "status": "passed",
+      "evidence": {
+        "observations": [
+          {
+            "httpStatus": 200,
+            "edgeCache": "HIT",
+            "browserPolicy": "private, max-age=0, must-revalidate",
+            "bytes": 3796
+          },
+          {
+            "httpStatus": 200,
+            "edgeCache": "HIT",
+            "browserPolicy": "private, max-age=0, must-revalidate",
+            "bytes": 3796
+          }
+        ],
+        "limitation": "Two reads; no invalidation or user-isolation proof."
+      }
+    },
+    {
+      "name": "RUM INP and slow DB queries",
+      "status": "unmeasured",
+      "evidence": "Requires field telemetry and database query statistics. Local lab results are separate."
+    }
+  ]
+}

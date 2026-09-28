@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Listing } from '@kistas/shared';
+import type { DiscoveryCard } from '@kistas/shared';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 
 export interface ActionSearchBarProps {
   query?: string;
   onQueryChange?: (q: string) => void;
-  projects?: Listing[];
+  projects?: DiscoveryCard[];
   placeholder?: string;
-  onSelectProject?: (project: Listing) => void;
+  onSelectProject?: (project: DiscoveryCard) => void;
   className?: string;
 }
 
@@ -27,7 +27,7 @@ const normalizeSearchText = (value?: string | null): string => {
     .trim();
 };
 
-const calculateSearchRelevance = (project: Listing, rawQuery: string): number => {
+const calculateSearchRelevance = (project: DiscoveryCard, rawQuery: string): number => {
   const q = normalizeSearchText(rawQuery);
   if (!q) return 0;
 
@@ -55,6 +55,8 @@ const calculateSearchRelevance = (project: Listing, rawQuery: string): number =>
   if (desc && q.length >= 3 && desc.includes(q)) {
     score += 80;
   }
+
+  if (normalizeSearchText(project.developer_name).includes(q)) score += 100;
 
   if (score > 0 && project.is_boosted) {
     score += 10;
@@ -117,7 +119,7 @@ export const ActionSearchBar: React.FC<ActionSearchBarProps> = ({
       .map((item) => item.project);
   }, [projects, query, isFocused]);
 
-  const handleSelect = (project: Listing) => {
+  const handleSelect = (project: DiscoveryCard) => {
     setIsFocused(false);
     if (onSelectProject) {
       onSelectProject(project);
@@ -145,6 +147,7 @@ export const ActionSearchBar: React.FC<ActionSearchBarProps> = ({
 
         {/* Text Input */}
         <input
+          maxLength={100}
           ref={inputRef}
           type="text"
           className="asb-input"

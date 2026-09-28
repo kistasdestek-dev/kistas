@@ -49,6 +49,8 @@ const listingsQuerySource = readFileSync(
   new URL('../../packages/supabase/src/queries/listings.ts', import.meta.url),
   'utf8',
 );
+const discoveryLoaderSource = readFileSync(new URL('../../apps/web/src/lib/discovery.ts', import.meta.url), 'utf8');
+const discoveryQuerySource = readFileSync(new URL('../../packages/supabase/src/queries/discovery.ts', import.meta.url), 'utf8');
 const publicRouteSources = [
   '../../apps/web/src/app/page.tsx',
   '../../apps/web/src/app/(public)/browse/[slug]/page.tsx',
@@ -88,7 +90,7 @@ assert.match(dockSource, /router\.prefetch\(['"]\/browse['"]\)/, 'Göz At rotas�
 assert.match(homePageSource, /revalidate\s*=\s*60/, 'Ana sayfa kısa süreli ISR cache kullanmalı');
 for (const route of publicRouteSources) {
   assert.doesNotMatch(route.source, /@\/lib\/supabase\/server/, `${route.path} cookie tabanlı Supabase istemcisi kullanmamalı`);
-  assert.match(route.source, /createAnonClient/, `${route.path} RLS korumalı anonim istemci kullanmalı`);
+  assert.match(route.source, /createAnonClient|loadDiscovery/, `${route.path} anonim keşif yükleyicisi kullanmalı`);
 }
 assert.match(browseClientSource, /index < 4 \? null : false/, 'Kategori ön yüklemesi ilk dört görünür kartla sınırlanmalı');
 assert.match(browseClientSource, /onPointerEnter=\{\(\) => router\.prefetch/, 'Kategori rotaları kullanıcı niyetinde ön yüklenmeli');
@@ -101,7 +103,8 @@ assert.doesNotMatch(listingDetailSource, /@\/lib\/supabase\/server/, 'Public pro
 assert.doesNotMatch(listingDetailSource, /auth\.getUser/, 'Public proje gövdesi kullanıcı doğrulamasını bloklamamalı');
 assert.match(listingDetailSource, /const getPublicListing = unstable_cache/, 'Metadata ve sayfa public proje cache kaydını paylaşmalı');
 assert.match(categoryPageSource, /unstable_cache[\s\S]*revalidate:\s*60/, 'Kategori public verisi 60 saniye cache kullanmalı');
-assert.match(platformPageSource, /unstable_cache[\s\S]*revalidate:\s*60/, 'Platform public verisi 60 saniye cache kullanmalı');
+assert.match(discoveryLoaderSource, /unstable_cache[\s\S]*revalidate:\s*60/, 'Public keşif verisi 60 saniye cache kullanmalı');
+assert.match(discoveryLoaderSource, /createAnonClient/);
 assert.match(logoSource, /kistas-logo-256\.webp/, 'Global Kıstas logosu küçültülmüş WebP varlığını kullanmalı');
 assert.doesNotMatch(
   listingsQuerySource,
@@ -109,8 +112,8 @@ assert.doesNotMatch(
   'Public proje sorguları anon rolüne kapalı profiles tablosuna doğrudan ilişki kurmamalı',
 );
 assert.match(
-  listingsQuerySource,
-  /Public curated listings query failed/,
+  discoveryQuerySource,
+  /Public discovery query failed/,
   'Vitrin sorgusu yetki veya şema hatasını sessizce boş vitrine çevirmemeli',
 );
 

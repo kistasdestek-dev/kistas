@@ -61,6 +61,12 @@ jobs:
       - name: Validate Cloudflare deployment bundle
         run: pnpm --filter @kistas/web exec wrangler deploy --dry-run --outdir .wrangler/dry-run
 
+      - name: Install Chromium for Workers E2E
+        run: pnpm --filter @kistas/web exec playwright install --with-deps chromium
+
+      - name: Test built Workers with isolated public data
+        run: pnpm test:e2e
+
       - name: Save Turbo cache
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.turbo-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4

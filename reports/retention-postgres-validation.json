@@ -1,0 +1,15 @@
+{
+  "capturedAt": "2026-09-28T14:08:09.687Z",
+  "passed": 15,
+  "failed": 0,
+  "engine": "PGlite 0.5.8",
+  "serverVersion": "18.3",
+  "migrationSha256": "1f0121752e3d0e4232571d484278b990a66d8cc1b92ca0b2052bda0f889f253f",
+  "scheduleSha256": "bb3bf3378ccd94f42b086581832ad99e6477c102ae9fdf7ab378e4dfac3a3496",
+  "productionDataWritten": false,
+  "limitations": [
+    "Minimal schema and synthetic auth roles; not live Supabase policies/triggers.",
+    "One PostgreSQL connection verifies send-before-cleanup and cleanup-before-send ordering; independent-connection lock races remain unverified.",
+    "Cron SQL registration API is simulated; actual pg_cron extension/timer execution requires production acceptance."
+  ]
+}

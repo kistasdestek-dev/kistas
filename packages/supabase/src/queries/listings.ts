@@ -9,11 +9,6 @@ export interface ListingFilterOptions {
   searchQuery?: string;
 }
 
-export interface CuratedListingFilterOptions {
-  categoryId?: string;
-  platform?: string;
-}
-
 /**
  * Map raw database row to strongly-typed client Listing model
  */
@@ -93,65 +88,4 @@ export async function getListingById(
     return null;
   }
   return mapListing(data);
-}
-
-/**
- * Get curated listings: popular (by upvotes_count) or new (last 7 days)
- */
-export async function getCuratedListings(
-  client: SupabaseClient,
-  type: 'popular' | 'new',
-  limit = 20,
-  filters: CuratedListingFilterOptions = {},
-): Promise<Listing[]> {
-  let query = client
-    .from('listings')
-    .select(`
-      id,
-      seller_id,
-      category_id,
-      title,
-      tagline,
-      description,
-      price,
-      status,
-      boosted_until,
-      upvotes_count,
-      platforms,
-      web_url,
-      app_store_url,
-      play_store_url,
-      logo_url,
-      pricing_model,
-      developer_name,
-      created_at,
-      updated_at,
-      images:listing_images(id, listing_id, image_url, display_order, is_cover, created_at)
-    `)
-    .eq('status', 'active');
-
-  if (filters.categoryId) {
-    query = query.eq('category_id', filters.categoryId);
-  }
-
-  if (filters.platform) {
-    query = query.contains('platforms', [filters.platform]);
-  }
-
-  query = query.limit(limit);
-
-  if (type === 'popular') {
-    query = query.order('upvotes_count', { ascending: false });
-  } else {
-    query = query.order('created_at', { ascending: false });
-  }
-
-  const { data, error } = await query;
-  if (error) {
-    throw new Error(`Public curated listings query failed (${error.code})`);
-  }
-  if (!data) {
-    return [];
-  }
-  return (data as any[]).map(mapListing);
 }

@@ -6,3 +6,4 @@ export * from './queries/categories';
 export * from './queries/profiles';
 export * from './queries/comments';
 export * from './queries/blog';
+export * from './queries/discovery';

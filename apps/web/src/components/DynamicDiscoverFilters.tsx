@@ -2,10 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, ChevronUpCircle, Clock, Layers, Globe, Smartphone, Laptop, Cloud, ChevronDown, Check } from 'lucide-react';
-import type { Category } from '@kistas/shared';
+import type { Category, DiscoverySort as DiscoverSort, DiscoveryPlatform as DiscoverPlatform } from '@kistas/shared';
 
-export type DiscoverSort = 'trending' | 'top_voted' | 'newest';
-export type DiscoverPlatform = 'all' | 'iOS' | 'Android' | 'Web' | 'macOS' | 'SaaS';
+export type { DiscoverySort as DiscoverSort, DiscoveryPlatform as DiscoverPlatform } from '@kistas/shared';
 
 export interface DynamicDiscoverFiltersProps {
   categories?: Category[];

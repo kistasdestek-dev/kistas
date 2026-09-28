@@ -554,6 +554,8 @@ Production veya magazaya cikis icin:
 - Kanıt: Canlı telemetri HTTP 200, 37/37 test başarılı.
 
 ### SEC-026 - Faz 7: listing_images Ayrıştırılmış RLS, URL & Sahiplik Bütünlüğü
+
+M2 ek kapsam (2026-09-28): eski web create/update zincirinde görsel hatası yarım kayıt/görsel kaybı bırakabiliyordu; yeni `submit_launch` transaction'ı yerel PostgreSQL hata enjeksiyonunda geri alıyor. Başka kullanıcı/anon, yeni medyanın Storage nesne sahipliği ve izinli origin'i, edit sürümü ve özel arşiv erişimi ayrıca test ediliyor. Bu kapsamın durumu **DUZELTILDI (yerel)**; migration ve gerçek Auth/Storage/RLS kabul testi yapılmadan production **DOGRULANDI** değildir. SEC-026'nın önceki kanıtı yeni M2 kapsamının doğrulaması olarak kullanılmaz. Ayrıntı: `docs/M2_VALIDATION.md`.
 - Tarih: 2026-09-17
 - Kapsam: `listing_images` tablosu RLS politikaları ve tetikleyicileri.
 - Bulgu: Tek bir FOR ALL politikasında zayıf denetim riski ve `listing_id` transferi ile başkasının projesine görsel bağlama riski mevcuttu.
@@ -1265,3 +1267,29 @@ Production veya magazaya cikis icin:
 - Bildirim metni React tarafından düz metin render edilir; sunucudaki 140 karakterlik, satır sonu arındırılmış önizleme sözleşmesi korunur. Eksik veya yüklenemeyen avatar yerel Kıstas görseline düşer.
 - Geri dönüş yalnız yeni bir ileri migration ile tetikleyicinin önceki JSON payload'ına alınmasıdır; mevcut bildirimler veya mesajlar silinmez.
 - Doğrulama: Web TypeScript, ESLint ve 20/20 regresyon; Supabase TypeScript; bağımlılık, repository secret, XSS ve SQL enjeksiyonu taramaları; Next.js production build başarılıdır. Migration ve Worker production ortamına uygulanmamıştır.
+
+## M0 mimari hazırlık doğrulaması — 2026-09-28
+
+Bu faz test/CI ve ölçüm altyapısını değiştirdi; tablo/RLS/RPC/Edge Function/upload/ödeme iş mantığı değişmedi. Her kod değişikliği kontrolü bu kapsamda değerlendirildi: yeni secret/credential veya kullanıcı verisi eklenmedi; fixture yalnız public GET karşılıyor, bilinmeyen hedef ve tüm yazmaları reddediyor. Misafir kullanıcı için altı gerçek korumalı rota HTTP 307 ve doğru dönüş adresiyle doğrulandı. Bu kanıt admin/farklı kullanıcı RLS veya gerçek ödeme/OAuth testi değildir.
+
+Workspace tip/lint/regresyon, dependency audit ve mevcut secret/XSS/SQL taramaları başarılı; detaylar `docs/M0_VALIDATION.md` ve `reports/system-health.json` içinde. Mevcut SQL taramasının web/packages kapsamı eksikliği radarda `unmeasured`; kapsam genişletme ve gerçek veri katmanı incelemesi M3'te yapılacak. Testlerin geçmesiyle mevcut SEC kayıtlarının durumları topluca değiştirilmedi. Yeni doğrulanmış istismar bulgusu kaydedilmedi. Faz geri dönüşü yalnız ilgili test/CI/radar diff'i üzerinden yapılır, DB geri dönüşü yoktur.
+
+## M1 keşif motoru güvenlik kontrolü — 2026-09-28
+
+Public okuma akışları değişti; yeni tablo, migration, RPC, upload, ödeme, admin veya kimlik akışı eklenmedi. Zorunlu kontrol kapsamında: query builder sabit listings tablosu + active filtresi kullanır; kategori UUID/üyelik ve platform/sıralama allowlist ile doğrulanır. Serbest arama 100, cursor 1000 karakterle sınırlıdır. Arama regex operatörleri kaçışlanır, PostgREST değerleri tırnaklanır; cursor scope/id/tarih/oy değerleri doğrulanır. Geçersiz girdi ve sorgu hatası boş başarıya çevrilmez. İstemci kart modelinde özel profil/seller_id verisi yoktur, yeni credential eklenmedi.
+
+Serbest arama/cursor kalıcı data cache'e alınmaz; kullanıcı kontrollü cache anahtarı birikmesi azaltılır. Ancak anonim aramanın DB scan maliyeti, rate-limit ve kapasite kanıtı bu fazda ölçülmedi; M3/M5 takibidir. 74 kayıt fixture'ında pending_review kaydı dışarıda, yanlış cursor kapsamı ve operatör enjeksiyonu reddediliyor. Bunlar gerçek hesaplarla RLS/IDOR testi değildir. Canlı anonim GET/HEAD sorgu uyumu `reports/m1-query-conformance.json` içinde; veri yazılmadı ve satır içerikleri kaydedilmedi.
+
+Mevcut secret/XSS/SQL taramaları başarılı; SQL scanner'ın web/packages kapsamı eksikliği M0 notunda hâlâ açıktır. Yeni discovery sorguları ayrıca davranış testleri ve kaynak incelemesiyle kontrol edildi. SEC kayıtları topluca doğrulandı sayılmadı; yeni doğrulanmış istismar bulgusu yok. Kanıt/geri dönüş/devir teslim: `docs/M1_VALIDATION.md`.
+
+## M2 atomik lansman ve özel arşiv kontrolü — 2026-09-28
+
+Saklama süresi devamı: Mimar arşiv son düzenleme +72h, bildirim oluşturulma +72h, son gerçek mesaj +30 gün seçti. Global cleanup authenticated/anon/PUBLIC execute alamaz. Archive owner RLS süre filtresi ve expired UPDATE trigger uygular; expired submit tüm proje/görsel transaction'ını geri alır. Yeni mesaj parent'ı BEFORE INSERT kilitler ve server zamanını kullanır; cleanup parent kilidi sonrası gerçek mesajı tekrar kontrol eder. Cascade FK ön koşulu doğrulanır. Read/typing/system hareketi süre yenilemez. Yeni yetki/secret/grant genişlemesi yok. Yerel PostgreSQL/UI kanıtı ve production bekleyen kontroller `docs/RETENTION_VALIDATION.md` içinde; silme canlıda çalıştırılmadı. SEC kayıtları production doğrulandı sayılmaz.
+
+Görsel gizlilik sınırı: mevcut `kistas` bucket public; özel arşiv RLS yalnız metadata erişimini sınırlar. Upload edilmiş taslak görselinin URL'sini bilen kişi medyaya erişebilir. Private bucket/signed URL geçişi bu fazda uygulanmadı; arşiv görselleri için gizlilik garantisi verilmez.
+
+Mimar'ın kapsam düzeltmesiyle lansman kotası, içerik tekilleştirme veya submit idempotency eklenmedi. Otomatik submit yok; aynı RPC'nin tekrar çağrılması yeni lansman yaratabilir. Taslak/edit sürüm kontrolü yalnız veri kaybını önler. Yeni launch_drafts SELECT owner RLS ile özel; doğrudan yazma/grant yok, save RPC auth.uid() ve sahiplik kontrolü kullanıyor. Server route getUser, aynı origin POST, 64 KiB body/payload doğrulaması ve private/no-store yanıt uygular. Submit RPC sabit search_path ve authenticated grant, server belirlenen seller/status, enum/uzunluk/medya/bağlantı ve satır kilidi kullanır. Yeni Storage referansları seçilmiş origin ve nesne sahibine bağlanır; eski referans yalnız kendi projesinde korunabilir. Upload UUID kullanıcı yolu ve upsert:false; yeni secret/service role yok.
+
+LocalStorage metadata ve IndexedDB dosyaları hesap kimliğiyle ayrılır; cihaz depolaması uygulama tarafından şifrelenmez. Ani güç kaybı, tarayıcı silme/kota ve upload edilmemiş dosyanın başka cihazdan erişimi için mutlak saklama garantisi verilmez. Başarı kesinleşmeden dosya silinmez; Storage orphan temizliği production'da çalıştırılmadı. MIME ve byte/piksel doğrulaması için mevcut Storage politikaları geçerlidir; yeni magic-byte güvence iddiası yok. Raw payload/credential loglanmaz.
+
+PGlite gerçek PostgreSQL transaction/functions testidir; test JWT/rol bağlamı gerçek Supabase oturumu değildir. Tek bağlantıda sıraya alınan stale edit doğrulaması bağımsız bağlantı yarış testi değildir. Workers/UI fixture testleri dış servise gitmez. Yalnız production ortamı var; migration/deploy ve production hata enjeksiyonu yapılmadı. Mevcut SQL scanner'ın web/packages kapsamı M3 takibinde kalır. SEC kayıtları topluca production doğrulandı sayılmaz.

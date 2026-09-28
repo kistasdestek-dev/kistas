@@ -1,13 +1,15 @@
-import { createAnonClient, getCuratedListings } from '@kistas/supabase';
+import { loadDiscoveryCollection } from '@/lib/discovery';
+import { DiscoveryPagination } from '@/components/DiscoveryPagination';
+import type { DiscoveryParams } from '@kistas/shared';
 import { Rocket, Sparkles } from 'lucide-react';
 import { AppStoreProjectList } from '@/components/AppStoreProjectList';
 import { ShinyButton } from '@/components/ui/shiny-button';
 
 export const revalidate = 60;
 
-export default async function NewListingsPage() {
-  const supabase = createAnonClient();
-  const items = await getCuratedListings(supabase, 'new', 30);
+export default async function NewListingsPage({ searchParams }: { searchParams: Promise<DiscoveryParams> }) {
+  const params = await searchParams;
+  const { items, state, nextCursor } = await loadDiscoveryCollection(params, 'newest');
 
   return (
     <main className="mx-auto w-full max-w-[1320px] px-4 py-8 sm:px-6 sm:py-10">
@@ -45,6 +47,7 @@ export default async function NewListingsPage() {
           fullPage
         />
       )}
+      <DiscoveryPagination pathname="/new" state={state} nextCursor={nextCursor} hasCursor={Boolean(params.cursor)} />
     </main>
   );
 }

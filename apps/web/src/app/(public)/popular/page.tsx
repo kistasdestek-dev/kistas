@@ -1,13 +1,15 @@
-import { createAnonClient, getCuratedListings } from '@kistas/supabase';
+import { loadDiscoveryCollection } from '@/lib/discovery';
+import { DiscoveryPagination } from '@/components/DiscoveryPagination';
+import type { DiscoveryParams } from '@kistas/shared';
 import { Flame, Sparkles } from 'lucide-react';
 import { AppStoreProjectList } from '@/components/AppStoreProjectList';
 import { ShinyButton } from '@/components/ui/shiny-button';
 
 export const revalidate = 60;
 
-export default async function PopularPage() {
-  const supabase = createAnonClient();
-  const items = await getCuratedListings(supabase, 'popular', 30);
+export default async function PopularPage({ searchParams }: { searchParams: Promise<DiscoveryParams> }) {
+  const params = await searchParams;
+  const { items, state, nextCursor } = await loadDiscoveryCollection(params, 'top_voted');
 
   return (
     <main className="mx-auto w-full max-w-[1320px] px-4 py-8 sm:px-6 sm:py-10">
@@ -45,6 +47,7 @@ export default async function PopularPage() {
           fullPage
         />
       )}
+      <DiscoveryPagination pathname="/popular" state={state} nextCursor={nextCursor} hasCursor={Boolean(params.cursor)} />
     </main>
   );
 }

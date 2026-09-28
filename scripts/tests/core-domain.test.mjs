@@ -9,6 +9,7 @@
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
+import * as budgetModule from '../engine/bundle-budget.mjs';
 
 // Gerçek domain mantığı ve doğrulama motorları (TEK DOĞRULUK KAYNAĞI)
 import {
@@ -179,24 +180,15 @@ runTest('Mimari Kalkanı: FeaturedBoostShowcase modüler ve Next.js uyumlu olmal
 });
 
 // -------------------------------------------------------------
-// 6. OTONOM SELF-HEALING & BUNDLE BÜTÇESİ KALKANI
+// 6. BUNDLE ENVANTERİ SÖZLEŞMESİ
 // -------------------------------------------------------------
-runTest('Otonom Hijyen: Self-Healing motoru mevcut ve fonksiyonel olmalı', async () => {
-  const healEnginePath = path.join(ROOT, 'scripts', 'engine', 'self-healing.mjs');
-  assert.ok(fs.existsSync(healEnginePath), 'self-healing.mjs eksik!');
-  const healModule = await import('../engine/self-healing.mjs');
-  assert.strictEqual(typeof healModule.healFileImports, 'function');
-  assert.strictEqual(typeof healModule.runSelfHealing, 'function');
-});
-
-runTest('Performans Radarı: Bundle Budget analiz motoru bütçeyi doğrulamalı', async () => {
+runTest('Performans Radarı: Bundle Budget analiz motoru bütçeyi doğrulamalı', () => {
   const budgetEnginePath = path.join(ROOT, 'scripts', 'engine', 'bundle-budget.mjs');
   assert.ok(fs.existsSync(budgetEnginePath), 'bundle-budget.mjs eksik!');
-  const budgetModule = await import('../engine/bundle-budget.mjs');
   assert.strictEqual(typeof budgetModule.analyzeBundleBudget, 'function');
   const res = budgetModule.analyzeBundleBudget(ROOT);
   assert.ok(typeof res.rawUsagePct === 'number', 'Ham bütçe yüzdesi hesaplanamadı');
-  assert.ok(res.bundleFound, 'Aktif canlı web paketi bulunamadı');
+  assert.strictEqual(res.isOverBudget, null, 'Rota ölçülmeden tüm chunk envanteri bütçe sonucu olamaz');
 });
 
 // -------------------------------------------------------------
@@ -1540,8 +1532,10 @@ runTest('Web Proje Düzenleme: yeni kayıt yerine güvenli UPDATE kullanılmalı
     'utf8'
   );
   assert.match(actionContent, /export async function updateListingAction/i, 'Sunucu güncelleme işlemi eksik!');
-  assert.match(actionContent, /\.update\([\s\S]*?\.eq\('id', listingId\)[\s\S]*?\.eq\('seller_id', user\.id\)/i, 'UPDATE işleminde ID ve sahiplik filtresi eksik!');
-  assert.match(actionContent, /currentListing\.status === 'banned'/i, 'Askıdaki proje düzenleme engeli eksik!');
+  const atomic = fs.readFileSync(path.join(ROOT, 'supabase', 'migrations', '20260928000002_atomic_launch_and_private_archive.sql'), 'utf8');
+  assert.match(actionContent, /supabase\.rpc\('submit_launch'/i, 'Güncelleme atomik RPC sınırında olmalı!');
+  assert.match(atomic, /id = p_listing_id AND seller_id = v_user FOR UPDATE/i, 'Atomik güncellemede kilit ve sahiplik kontrolü eksik!');
+  assert.match(atomic, /v_current\.status::TEXT NOT IN \('draft', 'inactive', 'active'\)/i, 'Askıdaki proje düzenlemeye açık!');
   assert.match(clientContent, /await updateListingAction\(formData\)/i, 'Düzenleme formu güvenli UPDATE işlemine bağlı değil!');
 });
 

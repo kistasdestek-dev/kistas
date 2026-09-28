@@ -17,32 +17,24 @@ import {
   Loader2,
   Check,
 } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 import { GlassIconButton } from './GlassIconButton';
 import { DiscoveryRevealStatement } from './DiscoveryRevealStatement';
 import { DescriptionRichText } from './DescriptionRichText';
 import { HoneypotDecoyField } from './HoneypotDecoyField';
-import { type KistasFeedbackType } from './KistasFeedbackModal';
-import { uploadToStorage, pickImageFiles } from '@/lib/storage';
+import { KistasFeedbackModal, type KistasFeedbackType } from './KistasFeedbackModal';
+import { CategoryPickerModal } from './CategoryPickerModal';
+import { pickImageFiles } from '@/lib/storage';
+import { archiveImage, previewArchiveImage } from '@/lib/launch-archive';
 import { createListingAction, updateListingAction } from '@/app/actions/listings';
-import type { Category } from '@kistas/shared';
-
-const CategoryPickerModal = dynamic(
-  () => import('./CategoryPickerModal').then((m) => m.CategoryPickerModal),
-  { ssr: false }
-);
-
-const KistasFeedbackModal = dynamic(
-  () => import('./KistasFeedbackModal').then((m) => m.KistasFeedbackModal),
-  { ssr: false }
-);
+import type { Category, LaunchDraftPayload } from '@kistas/shared';
 
 type PlatformType = 'iOS' | 'Android' | 'Web' | 'macOS';
 type PricingModel = 'free' | 'freemium' | 'subscription' | 'paid';
 
 export interface EditableListing {
   id: string;
+  revision: number;
   categoryId: string;
   title: string;
   tagline: string;
@@ -60,6 +52,11 @@ export interface EditableListing {
 export interface CreateListingExperienceClientProps {
   categories: Category[];
   initialListing?: EditableListing | null;
+  initialValues: LaunchDraftPayload;
+  userId: string; archiveId: string; archiveStatus: string; expectedRevision: number | null;
+  onDraftChange: (payload: LaunchDraftPayload) => void;
+  prepareSubmission: (payload: LaunchDraftPayload) => Promise<LaunchDraftPayload>;
+  onSubmitted: () => void;
 }
 
 const AVAILABLE_PLATFORMS: { id: PlatformType; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
@@ -89,42 +86,65 @@ interface FormErrors {
 
 export const CreateListingExperienceClient: React.FC<CreateListingExperienceClientProps> = ({
   categories,
-  initialListing,
+  initialListing, initialValues, userId, archiveId, archiveStatus, expectedRevision, onDraftChange, prepareSubmission, onSubmitted,
 }) => {
   const router = useRouter();
   const isEditing = Boolean(initialListing);
-  const initialPlatforms = initialListing?.platforms.filter((platform): platform is PlatformType =>
+  const initialPlatforms = initialValues.platforms.filter((platform): platform is PlatformType =>
     AVAILABLE_PLATFORMS.some((available) => available.id === platform)
   );
-  const initialPricingModel = PRICING_MODELS.some((model) => model.id === initialListing?.pricingModel)
-    ? (initialListing?.pricingModel as PricingModel)
+  const initialPricingModel = PRICING_MODELS.some((model) => model.id === initialValues.pricingModel)
+    ? (initialValues.pricingModel as PricingModel)
     : 'freemium';
 
-  const [title, setTitle] = useState(initialListing?.title || '');
-  const [tagline, setTagline] = useState(initialListing?.tagline || '');
-  const [description, setDescription] = useState(initialListing?.description || '');
+  const [title, setTitle] = useState(initialValues.title || '');
+  const [tagline, setTagline] = useState(initialValues.tagline || '');
+  const [description, setDescription] = useState(initialValues.description || '');
   const [descriptionTab, setDescriptionTab] = useState<'write' | 'preview'>('write');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [categoryId, setCategoryId] = useState<string | null>(
-    initialListing?.categoryId || categories[0]?.id || null
+    initialValues.categoryId || categories[0]?.id || null
   );
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformType[]>(
     initialPlatforms?.length ? initialPlatforms : ['iOS']
   );
   const [pricingModel, setPricingModel] = useState<PricingModel>(initialPricingModel);
 
-  const [appStoreUrl, setAppStoreUrl] = useState(initialListing?.appStoreUrl || '');
-  const [playStoreUrl, setPlayStoreUrl] = useState(initialListing?.playStoreUrl || '');
-  const [webUrl, setWebUrl] = useState(initialListing?.webUrl || '');
+  const [appStoreUrl, setAppStoreUrl] = useState(initialValues.appStoreUrl || '');
+  const [playStoreUrl, setPlayStoreUrl] = useState(initialValues.playStoreUrl || '');
+  const [webUrl, setWebUrl] = useState(initialValues.webUrl || '');
 
-  const [logoUrl, setLogoUrl] = useState(initialListing?.logoUrl || '');
+  const [logoUrl, setLogoUrl] = useState(initialValues.logoUrl || '');
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
-  const [screenshots, setScreenshots] = useState<string[]>(initialListing?.screenshots || []);
-  const [showcaseCover, setShowcaseCover] = useState(initialListing?.coverUrl || '');
+  const [screenshots, setScreenshots] = useState<string[]>(initialValues.screenshots || []);
+  const [showcaseCover, setShowcaseCover] = useState(initialValues.coverUrl || '');
   const [isUploadingScreenshots, setIsUploadingScreenshots] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
+
+  const payload = useMemo<LaunchDraftPayload>(() => ({ title, tagline, description, categoryId: categoryId || '',
+    pricingModel, platforms: selectedPlatforms, logoUrl, coverUrl: showcaseCover, screenshots,
+    appStoreUrl, playStoreUrl, webUrl }), [title, tagline, description, categoryId, pricingModel, selectedPlatforms,
+    logoUrl, showcaseCover, screenshots, appStoreUrl, playStoreUrl, webUrl]);
+  React.useEffect(() => onDraftChange(payload), [onDraftChange, payload]);
+  const [previews, setPreviews] = useState<Record<string, string>>({});
+  React.useEffect(() => {
+    let cancelled = false; const urls: string[] = [];
+    void (async () => {
+      const next: Record<string, string> = {};
+      for (const ref of new Set([logoUrl, showcaseCover, ...screenshots])) {
+        if (!ref.startsWith('draft-asset:')) continue;
+        try {
+          const preview = await previewArchiveImage(userId, archiveId, ref);
+          if (preview) { if (cancelled) URL.revokeObjectURL(preview); else { urls.push(preview); next[ref] = preview; } }
+        } catch { /* Missing local images are reported before submission. */ }
+      }
+      if (!cancelled) setPreviews(next);
+    })();
+    return () => { cancelled = true; urls.forEach(url => URL.revokeObjectURL(url)); };
+  }, [logoUrl, showcaseCover, screenshots, userId, archiveId]);
+  const previewUrl = (ref: string) => ref.startsWith('draft-asset:') ? previews[ref] || '' : ref;
 
   const [feedbackModal, setFeedbackModal] = useState<{
     isOpen: boolean;
@@ -225,7 +245,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
       const file = files[0];
 
       setIsUploadingLogo(true);
-      const res = await uploadToStorage(file, 'logos');
+      const res = await archiveImage(file, 'logos', userId, archiveId);
       setIsUploadingLogo(false);
 
       if (res.success && res.url) {
@@ -249,7 +269,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
       const file = files[0];
 
       setIsUploadingCover(true);
-      const res = await uploadToStorage(file, 'vitrin');
+      const res = await archiveImage(file, 'vitrin', userId, archiveId);
       setIsUploadingCover(false);
 
       if (res.success && res.url) {
@@ -280,7 +300,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
       let lastError = '';
 
       for (const file of toUpload) {
-        const res = await uploadToStorage(file, 'vitrin');
+        const res = await archiveImage(file, 'vitrin', userId, archiveId);
         if (res.success && res.url) {
           setScreenshots((prev) => [...prev, res.url!]);
           setErrors((prev) => ({ ...prev, screenshots: undefined }));
@@ -339,7 +359,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return;
+    if (loading || isUploadingLogo || isUploadingCover || isUploadingScreenshots) return;
 
     // Pars DevState Honeypot verification
     const fillTime = Date.now() - formArmedAtRef.current;
@@ -360,28 +380,33 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
     setErrors({});
 
     try {
+      const ready = await prepareSubmission(payload);
       const formData = new FormData();
+      formData.set('archiveId', archiveId);
+      if (expectedRevision !== null) formData.set('expectedRevision', String(expectedRevision));
       formData.set('title', title.trim());
       formData.set('tagline', tagline.trim());
       formData.set('categoryId', categoryId || '');
       formData.set('description', description.trim());
       formData.set('pricingModel', pricingModel);
       formData.set('price', '0');
-      formData.set('logoUrl', logoUrl);
-      formData.set('coverUrl', showcaseCover || screenshots[0] || '');
+      formData.set('logoUrl', ready.logoUrl);
+      formData.set('coverUrl', ready.coverUrl || ready.screenshots[0] || '');
       formData.set('appStoreUrl', appStoreUrl.trim());
       formData.set('playStoreUrl', playStoreUrl.trim());
       formData.set('webUrl', webUrl.trim());
       if (initialListing) formData.set('listingId', initialListing.id);
 
       selectedPlatforms.forEach((p) => formData.append('platforms', p));
-      screenshots.forEach((s) => formData.append('screenshots', s));
+      ready.screenshots.forEach((s) => formData.append('screenshots', s));
 
       if (initialListing) {
         await updateListingAction(formData);
+        onSubmitted();
         router.push('/profile?submission=updated');
       } else {
         await createListingAction(formData);
+        onSubmitted();
         router.push('/profile?submission=created');
       }
     } catch (err: unknown) {
@@ -419,6 +444,9 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
             <span>{isEditing ? 'PROJE BİLGİLERİNİ DÜZENLE' : 'PROJE BİLGİLERİ'}</span>
           </div>
 
+          <p role="status" className="mt-3 text-xs text-slate-300">{archiveStatus}</p>
+          <Link href="/launch-archive" className="mt-2 inline-block text-xs font-semibold text-blue-300">Lansman Arşivim</Link>
+
           {/* Error Banner */}
           {Object.keys(errors).length > 0 && (
             <div className="mt-4 flex items-center gap-2.5 rounded-2xl border border-rose-500/30 bg-rose-950/40 p-4 text-xs font-bold text-rose-300 shadow-sm animate-in fade-in duration-200">
@@ -434,6 +462,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
         {/* Centered Launch Form */}
         <div className="mx-auto max-w-4xl">
           <form onSubmit={handleSubmit} className="space-y-6">
+            <fieldset disabled={loading} className="space-y-6">
             {/* 01: Projenin Kimliği */}
             <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.7)] backdrop-blur-xl sm:p-7">
               <div className="flex items-center gap-3.5 pb-5 border-b border-white/10">
@@ -459,7 +488,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
                   <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(50,105,199,0.32),transparent_62%)]" />
                   {logoUrl ? (
                     <AutoTransparentLogo
-                      src={logoUrl}
+                      src={previewUrl(logoUrl)}
                       alt="Logo Önizleme"
                       className="relative z-10 h-[82%] w-[82%] object-contain"
                     />
@@ -715,7 +744,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
                     <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-slate-950 shadow-sm">
                       { }
                       <img
-                        src={showcaseCover || screenshots[0]}
+                        src={previewUrl(showcaseCover || screenshots[0])}
                         alt="Vitrin Kapağı"
                         className="h-full w-full object-cover"
                       />
@@ -755,7 +784,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
                         className="relative group aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-sm"
                       >
                         { }
-                        <img src={uri} alt={`Ekran ${idx + 1}`} className="h-full w-full object-cover" />
+                        <img src={previewUrl(uri)} alt={`Ekran ${idx + 1}`} className="h-full w-full object-cover" />
 
                         {/* Delete Badge */}
                         <button
@@ -957,6 +986,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
                 </span>
               </button>
             </div>
+            </fieldset>
           </form>
         </div>
       </div>

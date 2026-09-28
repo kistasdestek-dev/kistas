@@ -9,229 +9,62 @@ import { revalidatePath } from 'next/cache';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-/**
- * Server Action to create a new project listing
- * Validates with Zod and enforces server-side user authentication.
- */
-export async function createListingAction(formData: FormData) {
+function launchError(message: string): string {
+  if (message.includes('DRAFT_EXPIRED')) return 'Arşivin son düzenlemeden itibaren 72 saatlik saklama süresi doldu. Yeni bir lansman oluşturun.';
+  if (message.includes('EDIT_CONFLICT')) return 'Proje başka bir sekmede değişti. Arşiviniz korunuyor; güncel projeyi açıp değişiklikleri karşılaştırın.';
+  if (message.includes('MEDIA_NOT_OWNED')) return 'Görseller hesabınıza ait depolamadan seçilmelidir.';
+  if (message.includes('EMAIL_NOT_CONFIRMED')) return 'Lansman paylaşmak için e-posta adresinizi doğrulayın.';
+  if (message.includes('FORBIDDEN') || message.includes('INVALID_STATUS')) return 'Bu projeyi düzenleme yetkiniz yok veya proje düzenlemeye kapalı.';
+  return 'Lansman kaydedilemedi. Arşiviniz korunuyor; bağlantınızı kontrol edin.';
+}
+
+async function submitLaunch(formData: FormData, editing: boolean) {
   const supabase = await createClient();
-
-  // 1. Auth Guard (getUser strictly server-side)
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    redirect('/login');
-  }
-
-  // 2. Zod Input Validation
-  const platforms = formData.getAll('platforms').map(String);
-  const screenshots = formData.getAll('screenshots').map(String);
-
-  const rawData = {
-    title: formData.get('title'),
-    tagline: formData.get('tagline') || null,
-    categoryId: formData.get('categoryId'),
-    description: formData.get('description'),
-    price: Number(formData.get('price') || 0),
-    pricingModel: formData.get('pricingModel') || 'freemium',
-    platforms: platforms.length > 0 ? platforms : ['iOS'],
-    websiteUrl: formData.get('webUrl') || null,
-    appStoreUrl: formData.get('appStoreUrl') || null,
-    playStoreUrl: formData.get('playStoreUrl') || null,
-    promoCode: formData.get('promoCode') || null,
-    logoUrl: formData.get('logoUrl') || null,
-    coverUrl: formData.get('coverUrl') || null,
-    screenshots: screenshots.length > 0 ? screenshots : undefined,
-  };
-
-  const validation = createListingSchema.safeParse(rawData);
-
-  if (!validation.success) {
-    throw new Error(`Validasyon Hatası: ${validation.error.errors.map((e) => e.message).join(', ')}`);
-  }
-
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) redirect('/login');
+  const listingId = editing ? String(formData.get('listingId') || '') : null;
+  const expectedRevision = editing ? Number(formData.get('expectedRevision')) : null;
+  const archiveId = String(formData.get('archiveId') || '') || null;
+  if (editing && (!listingId || !UUID_PATTERN.test(listingId) || !formData.has('expectedRevision')
+    || !Number.isSafeInteger(expectedRevision) || (expectedRevision ?? -1) < 0)) throw new Error('Geçersiz proje sürümü.');
+  if (archiveId && !UUID_PATTERN.test(archiveId)) throw new Error('Geçersiz arşiv kimliği.');
+  const validation = createListingSchema.safeParse({
+    title: formData.get('title'), tagline: formData.get('tagline') || null,
+    categoryId: formData.get('categoryId'), description: formData.get('description'),
+    price: Number(formData.get('price') || 0), pricingModel: formData.get('pricingModel') || 'freemium',
+    platforms: formData.getAll('platforms').map(String), websiteUrl: formData.get('webUrl') || null,
+    appStoreUrl: formData.get('appStoreUrl') || null, playStoreUrl: formData.get('playStoreUrl') || null,
+    promoCode: formData.get('promoCode') || null, logoUrl: formData.get('logoUrl') || null,
+    coverUrl: formData.get('coverUrl') || null, screenshots: formData.getAll('screenshots').map(String),
+  });
+  if (!validation.success) throw new Error('Lütfen zorunlu alanları ve bağlantıları kontrol edin.');
   const valid = validation.data;
-
-  // 3. Database Insert via Server Supabase Client (RLS enforces user_id)
-  const { data, error } = await supabase
-    .from('listings')
-    .insert({
-      seller_id: user.id,
-      category_id: valid.categoryId,
-      title: valid.title,
-      tagline: valid.tagline,
-      description: valid.description,
-      price: valid.price,
-      pricing_model: valid.pricingModel,
-      platforms: valid.platforms || ['iOS'],
-      logo_url: valid.logoUrl,
-      web_url: valid.websiteUrl,
-      app_store_url: valid.appStoreUrl,
-      play_store_url: valid.playStoreUrl,
-      promo_code: valid.promoCode,
-      status: 'draft',
-    })
-    .select('id')
-    .single();
-
-  if (error) {
-    throw new Error(`Kayıt oluşturulamadı: ${error.message}`);
+  if (valid.title.length > 150 || (valid.screenshots?.length ?? 0) > 6
+    || !valid.platforms?.length || valid.platforms.length > 5
+    || valid.platforms.some(platform => !['iOS','Android','Web','macOS','SaaS'].includes(platform))) {
+    throw new Error('Başlık, görsel veya platform sınırları geçersiz.');
   }
-
-  // 4. Listing Images Insert (Cover / Screenshots)
-  const allImages = Array.from(
-    new Set(
-      [valid.coverUrl, ...(valid.screenshots || [])].filter(
-        (url): url is string => typeof url === 'string' && url.length > 0
-      )
-    )
-  );
-
-  if (allImages.length > 0) {
-    const imageRecords = allImages.map((imageUrl, idx) => ({
-      listing_id: data.id,
-      image_url: imageUrl,
-      display_order: idx,
-      is_cover: idx === 0,
-    }));
-
-    const { error: imgError } = await supabase
-      .from('listing_images')
-      .insert(imageRecords);
-
-    if (imgError) {
-      console.warn('Listing images insert warning:', imgError.message);
-    }
+  const { data, error } = await supabase.rpc('submit_launch', {
+    p_payload: valid, p_listing_id: listingId, p_expected_revision: expectedRevision, p_draft_id: archiveId,
+  });
+  if (error || !data?.success || !UUID_PATTERN.test(data.listingId || '')) {
+    throw new Error(launchError(error?.message || 'INVALID_RESPONSE'));
   }
-
   revalidatePath('/browse', 'layout');
   revalidatePath('/profile');
+  revalidatePath('/launch-archive');
+  if (listingId) revalidatePath(`/listings/${listingId}`);
+  return { id: data.listingId as string };
+}
+
+export async function createListingAction(formData: FormData) {
+  const data = await submitLaunch(formData, false);
   return { success: true as const, listingId: data.id, status: 'draft' as const };
 }
 
-/**
- * Server Action to update an existing project owned by the authenticated user.
- * Ownership is checked explicitly in addition to the database RLS/BOLA guards.
- */
 export async function updateListingAction(formData: FormData) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) redirect('/login');
-
-  const listingId = String(formData.get('listingId') || '');
-  if (!UUID_PATTERN.test(listingId)) throw new Error('Geçersiz proje kimliği.');
-
-  const platforms = formData.getAll('platforms').map(String);
-  const screenshots = formData.getAll('screenshots').map(String);
-  const validation = createListingSchema.safeParse({
-    title: formData.get('title'),
-    tagline: formData.get('tagline') || null,
-    categoryId: formData.get('categoryId'),
-    description: formData.get('description'),
-    price: Number(formData.get('price') || 0),
-    pricingModel: formData.get('pricingModel') || 'freemium',
-    platforms: platforms.length > 0 ? platforms : ['iOS'],
-    websiteUrl: formData.get('webUrl') || null,
-    appStoreUrl: formData.get('appStoreUrl') || null,
-    playStoreUrl: formData.get('playStoreUrl') || null,
-    logoUrl: formData.get('logoUrl') || null,
-    coverUrl: formData.get('coverUrl') || null,
-    screenshots: screenshots.length > 0 ? screenshots : undefined,
-  });
-
-  if (!validation.success) {
-    throw new Error(`Validasyon Hatası: ${validation.error.errors.map((e) => e.message).join(', ')}`);
-  }
-
-  const { data: currentListing, error: currentError } = await supabase
-    .from('listings')
-    .select('id, status')
-    .eq('id', listingId)
-    .eq('seller_id', user.id)
-    .maybeSingle();
-
-  if (currentError || !currentListing) {
-    throw new Error('Proje bulunamadı veya güncelleme yetkiniz yok.');
-  }
-  if (currentListing.status === 'banned' || currentListing.status === 'suspended') {
-    throw new Error('Askıya alınan proje düzenlenemez.');
-  }
-
-  const valid = validation.data;
-  const isRevisionResubmission = currentListing.status === 'inactive';
-  const { data: updatedListing, error: updateError } = await supabase
-    .from('listings')
-    .update({
-      category_id: valid.categoryId,
-      title: valid.title,
-      tagline: valid.tagline,
-      description: valid.description,
-      price: valid.price,
-      pricing_model: valid.pricingModel,
-      platforms: valid.platforms || ['iOS'],
-      logo_url: valid.logoUrl,
-      web_url: valid.websiteUrl,
-      app_store_url: valid.appStoreUrl,
-      play_store_url: valid.playStoreUrl,
-      ...(isRevisionResubmission ? {} : { status: 'draft' }),
-    })
-    .eq('id', listingId)
-    .eq('seller_id', user.id)
-    .select('id')
-    .maybeSingle();
-
-  if (updateError || !updatedListing) {
-    throw new Error(updateError?.message || 'Proje güncellenemedi.');
-  }
-
-  const imageUrls = Array.from(
-    new Set(
-      [valid.coverUrl, ...(valid.screenshots || [])].filter(
-        (url): url is string => typeof url === 'string' && url.length > 0
-      )
-    )
-  );
-  const { error: deleteImagesError } = await supabase
-    .from('listing_images')
-    .delete()
-    .eq('listing_id', listingId);
-
-  if (deleteImagesError) throw new Error(`Proje görselleri güncellenemedi: ${deleteImagesError.message}`);
-
-  if (imageUrls.length > 0) {
-    const { error: insertImagesError } = await supabase.from('listing_images').insert(
-      imageUrls.map((imageUrl, index) => ({
-        listing_id: listingId,
-        image_url: imageUrl,
-        display_order: index,
-        is_cover: index === 0,
-      }))
-    );
-    if (insertImagesError) {
-      throw new Error(`Proje görselleri güncellenemedi: ${insertImagesError.message}`);
-    }
-  }
-
-  if (isRevisionResubmission) {
-    const { data: resubmission, error: resubmissionError } = await supabase.rpc(
-      'resubmit_listing_for_review',
-      { p_listing_id: listingId }
-    );
-    if (resubmissionError || !resubmission?.success) {
-      throw new Error(resubmissionError?.message || 'Düzeltmeler yeniden incelemeye gönderilemedi.');
-    }
-  }
-
-  revalidatePath('/browse', 'layout');
-  revalidatePath('/profile');
-  revalidatePath(`/listings/${listingId}`);
+  const data = await submitLaunch(formData, true);
+  const listingId = data.id;
   return { success: true as const, listingId, status: 'draft' as const };
 }
 

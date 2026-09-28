@@ -1,0 +1,6 @@
+{
+  "fixtureRecords": 74,
+  "oldPopular40ModelBytes": 183074,
+  "newSectionCardModelBytes": 6864,
+  "limitation": "JSON model bytes on fixed fixtures; not actual RSC/HTTP transfer or database execution cost"
+}

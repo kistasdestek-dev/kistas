@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
-import { createAnonClient, getCategories, getCuratedListings } from '@kistas/supabase';
+import { loadDiscovery } from '@/lib/discovery';
+import type { DiscoveryParams } from '@kistas/shared';
 import { DiscoverExperienceClient } from '@/components/DiscoverExperienceClient';
 import type { DiscoverPlatform } from '@/components/DynamicDiscoverFilters';
 
@@ -9,6 +9,7 @@ export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{ platform: string }>;
+  searchParams: Promise<DiscoveryParams>;
 }
 
 const PLATFORM_BY_PATH: Record<string, Exclude<DiscoverPlatform, 'all'>> = {
@@ -20,16 +21,6 @@ const PLATFORM_BY_PATH: Record<string, Exclude<DiscoverPlatform, 'all'>> = {
 };
 
 const resolvePlatform = (value: string) => PLATFORM_BY_PATH[value.toLocaleLowerCase('en-US')];
-
-const getPlatformDiscoveryData = unstable_cache(async (platform: Exclude<DiscoverPlatform, 'all'>) => {
-  const supabase = createAnonClient();
-  const [categories, listings] = await Promise.all([
-    getCategories(supabase),
-    getCuratedListings(supabase, 'popular', 60, { platform }),
-  ]);
-
-  return { categories, listings };
-}, ['public-platform-discovery'], { revalidate: 60 });
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { platform: pathValue } = await params;
@@ -46,19 +37,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function PlatformDiscoveryPage({ params }: PageProps) {
+export default async function PlatformDiscoveryPage({ params, searchParams }: PageProps) {
   const { platform: pathValue } = await params;
   const platform = resolvePlatform(pathValue);
   if (!platform) notFound();
 
-  const { categories, listings } = await getPlatformDiscoveryData(platform);
+  const { state, categories, sections, timestamp } = await loadDiscovery(await searchParams, { platform });
 
   return (
     <DiscoverExperienceClient
-      initialListings={listings || []}
+      sections={sections}
+      state={state}
       categories={categories}
-      initialTimestamp={Date.now()}
-      initialPlatform={platform}
+      initialTimestamp={timestamp}
       preserveLayoutWhenEmpty
     />
   );

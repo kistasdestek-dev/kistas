@@ -1,0 +1,26 @@
+{
+  "capturedAt": "2026-09-28T11:36:45.016Z",
+  "scope": "anonymous public read-only PostgREST grammar/schema probes; no data written or row contents recorded",
+  "results": [
+    {
+      "name": "literal-search-and-thumbnail-embedding",
+      "status": 200,
+      "errorCode": null,
+      "count": null,
+      "rows": 0
+    },
+    {
+      "name": "public-sponsor-head-count",
+      "status": 200,
+      "errorCode": null,
+      "count": 0,
+      "rows": null
+    },
+    {
+      "name": "search-with-keyset-and",
+      "status": 200,
+      "errorCode": null,
+      "rows": 0
+    }
+  ]
+}

@@ -16,12 +16,14 @@
     "sayos:security": "pnpm audit --audit-level high && node scripts/security/check-repo-secrets.mjs && node scripts/security/check-xss.mjs && node scripts/security/check-sql-injection.mjs",
     "sayos:audit": "pnpm sayos:security && pnpm lint && pnpm type-check && pnpm test && pnpm build",
     "check:system": "node scripts/system-check.mjs",
+    "measure:performance": "node scripts/measure-performance.mjs",
     "system:check": "node scripts/system-check.mjs",
     "backup": "powershell -ExecutionPolicy Bypass -File scripts/create-backup.ps1",
     "tunnel:start": "powershell -ExecutionPolicy Bypass -File scripts/start-dev-tunnel.ps1",
     "tunnel:stop": "powershell -ExecutionPolicy Bypass -File scripts/stop-dev-tunnel.ps1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "turbo": "^2.4.4",
     "typescript": "~5.8.2"
   }

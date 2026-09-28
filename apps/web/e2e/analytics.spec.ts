@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
-test('GA4 yalnız açık rıza sonrası yüklenmeli ve güvenli page_view göndermeli', async ({ page }) => {
+test('GA4 yalnız açık rıza sonrası yüklenmeli ve güvenli page_view göndermeli', async ({ page, baseURL }) => {
   const googleTagRequests: string[] = [];
 
   await page.route('https://www.googletagmanager.com/**', async (route) => {
@@ -33,19 +33,31 @@ test('GA4 yalnız açık rıza sonrası yüklenmeli ve güvenli page_view gönde
         'page_view',
         expect.objectContaining({
           page_path: '/',
-          page_location: 'http://127.0.0.1:8787/',
+          page_location: `${new URL(baseURL!).origin}/`,
           send_to: 'G-2XXP5LHME9',
         }),
       ]),
     ]),
   );
 
-  await page.getByRole('button', { name: 'Analitik Tercihi' }).click();
-  await page.getByRole('button', { name: 'Reddet' }).click();
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('region', { name: 'Analitik çerez tercihi' })).toHaveCount(0);
+  await expect.poll(() => googleTagRequests.length).toBe(2);
+});
 
-  expect(
-    await page.evaluate(
-      () => (window as unknown as Record<string, unknown>)['ga-disable-G-2XXP5LHME9'],
-    ),
-  ).toBe(true);
+test('Reddedilen analitik tercihi gezinme ve yenilemede korunmalı', async ({ page }) => {
+  const requests: string[] = [];
+  await page.route('https://www.googletagmanager.com/**', async (route) => {
+    requests.push(route.request().url());
+    await route.fulfill({ status: 200, contentType: 'application/javascript', body: '' });
+  });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('button', { name: 'Reddet' }).click();
+  await expect(page.getByRole('region', { name: 'Analitik çerez tercihi' })).toHaveCount(0);
+  await page.goto('/browse', { waitUntil: 'domcontentloaded' });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('region', { name: 'Analitik çerez tercihi' })).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('kistas_analytics_consent_v1'))).toBe('denied');
+  expect(await page.evaluate(() => window.dataLayer)).toBeUndefined();
+  expect(requests).toEqual([]);
 });

@@ -8,8 +8,8 @@ export default defineConfig({
   workers: 1,
   timeout: 30000,
   use: {
-    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://127.0.0.1:3000',
-    trace: 'off',
+    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://127.0.0.1:8787',
+    trace: 'retain-on-failure',
     headless: true,
   },
   projects: [
@@ -18,4 +18,10 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
+  webServer: process.env.PLAYWRIGHT_TEST_BASE_URL ? undefined : {
+    command: 'node ../../scripts/tests/start-workers-test-server.mjs',
+    url: 'http://127.0.0.1:8787',
+    reuseExistingServer: false,
+    timeout: 30000,
+  },
 });

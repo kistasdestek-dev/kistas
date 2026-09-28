@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import type { Listing } from '@kistas/shared';
+import type { DiscoveryCard } from '@kistas/shared';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 
 export interface SponsorLogoMarqueeProps {
-  projects?: Listing[];
+  projects?: DiscoveryCard[];
 }
 
 const getInitials = (title?: string) => {
@@ -22,7 +22,7 @@ export const SponsorLogoMarquee: React.FC<SponsorLogoMarqueeProps> = ({
   projects = [],
 }) => {
   const sponsors = useMemo(() => {
-    const unique = new Map<string, Listing>();
+    const unique = new Map<string, DiscoveryCard>();
     projects.forEach((project) => {
       if (project.is_boosted || (project.upvote_count && project.upvote_count > 5)) {
         unique.set(project.id, project);

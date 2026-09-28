@@ -1,10 +1,8 @@
 import { requireUser } from '@/lib/auth';
 import { getCategories } from '@kistas/supabase';
 import { BROWSE_CATEGORY_SLUGS } from '@/lib/categoryCatalog';
-import {
-  CreateListingExperienceClient,
-  type EditableListing,
-} from '@/components/CreateListingExperienceClient';
+import { type EditableListing } from '@/components/CreateListingExperienceClient';
+import { LaunchEditor } from '@/components/LaunchEditor';
 import type { Category } from '@kistas/shared';
 import { notFound } from 'next/navigation';
 
@@ -14,7 +12,7 @@ export const metadata = {
 };
 
 interface CreateListingPageProps {
-  searchParams: Promise<{ edit?: string | string[] }>;
+  searchParams: Promise<{ edit?: string | string[]; archive?: string | string[] }>;
 }
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -22,7 +20,17 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 export default async function CreateListingPage({ searchParams }: CreateListingPageProps) {
   const { user, supabase } = await requireUser();
   const params = await searchParams;
-  const editId = typeof params.edit === 'string' ? params.edit : null;
+  let editId = typeof params.edit === 'string' ? params.edit : null;
+  const archiveId = typeof params.archive === 'string' ? params.archive : null;
+  if (archiveId) {
+    if (!UUID_PATTERN.test(archiveId)) notFound();
+    const { data: archived } = await supabase.from('launch_drafts').select('source_listing_id')
+      .eq('id', archiveId).eq('owner_id', user.id).maybeSingle();
+    if (archived?.source_listing_id) {
+      if (editId && editId !== archived.source_listing_id) notFound();
+      editId = archived.source_listing_id;
+    }
+  }
   let categories: Category[] = [];
   let initialListing: EditableListing | null = null;
 
@@ -41,6 +49,7 @@ export default async function CreateListingPage({ searchParams }: CreateListingP
       .from('listings')
       .select(`
         id,
+        save_revision,
         category_id,
         title,
         tagline,
@@ -66,6 +75,7 @@ export default async function CreateListingPage({ searchParams }: CreateListingP
 
     initialListing = {
       id: data.id,
+      revision: data.save_revision,
       categoryId: data.category_id,
       title: data.title,
       tagline: data.tagline || '',
@@ -76,13 +86,16 @@ export default async function CreateListingPage({ searchParams }: CreateListingP
       appStoreUrl: data.app_store_url || '',
       playStoreUrl: data.play_store_url || '',
       webUrl: data.web_url || '',
-      screenshots: images.map((image) => image.image_url),
+      screenshots: images.filter((image) => image !== cover).map((image) => image.image_url),
       coverUrl: cover?.image_url || '',
     };
   }
 
   return (
-    <CreateListingExperienceClient
+    <LaunchEditor
+      key={archiveId || editId || 'new'}
+      userId={user.id}
+      archiveId={archiveId}
       categories={categories}
       initialListing={initialListing}
     />

@@ -1,6 +1,12 @@
 # KISTAS Monorepo Mimarisi Sertleştirme Planı
 
+## Güncel mimari geliştirme programı — 2026-09-28
+
+Altı mimari önerinin uygulama sırası, hazırlık fazı ve çıkış ölçütleri [docs/ARCHITECTURE_ROADMAP.md](docs/ARCHITECTURE_ROADMAP.md) içinde tek kaynak olarak tutulur. Yeni program M0-M6 olarak numaralandırılır; aşağıdaki önceki monorepo geçiş fazlarının tamamlanma kayıtlarıyla karıştırılmaz. Güncel durum: M0/M1 yerelde tamamlandı; M2 yerel paketi doğrulandı, canlı geçiş/kabul bekliyor. Yalnız production ortamı var; yeni kaynak migration uygulanmadan yayınlanmaz. Kanıt, sınırlar ve devir teslim: [docs/M0_VALIDATION.md](docs/M0_VALIDATION.md), [docs/M1_VALIDATION.md](docs/M1_VALIDATION.md), [docs/M2_VALIDATION.md](docs/M2_VALIDATION.md).
+
 ## Hedef
+
+M2 saklama süresi devamı (Mimar onayı, 2026-09-28): arşiv son düzenlemeden 72 saat; bildirim oluşturulmadan 72 saat; görüşme son gerçek mesajdan 30 gün sessizlikte silinir. Yeni düzenleme/mesaj süreyi yeniler. Saatlik DB işleri, owner-only yetki, parent kilidi/cascade ve cihaz metadata/dosya TTL uygulanır. Uygulama/kanıt/devir teslim: [docs/RETENTION_VALIDATION.md](docs/RETENTION_VALIDATION.md). Canlı uygulama bekler.
 
 Next.js 16, Cloudflare Workers ve Supabase tabanlı KISTAS web uygulamasını; güvenli yayın kapıları, açık paket sınırları, tekrar üretilebilir testler ve SEO uyumlu sunucu render mimarisiyle ölçeklenebilir bir monorepo standardına taşımak.
 

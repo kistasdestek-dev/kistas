@@ -143,18 +143,17 @@ export async function uploadToStorage(
     const rawExt = uploadFile.name.split('.').pop()?.toLowerCase() || 'webp';
     const cleanExt = ['png', 'jpg', 'jpeg', 'webp'].includes(rawExt) ? rawExt : 'webp';
 
-    const randomPart = Math.random().toString(36).substring(2, 10);
-    const timestamp = Date.now();
-    const fileKey = `${folder}/${timestamp}-${randomPart}.${cleanExt}`;
-
     const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return { success: false, error: 'Görsel yüklemek için giriş yapın.' };
+    const fileKey = `${folder}/${user.id}/${crypto.randomUUID()}.${cleanExt}`;
 
     const { data: uploadData, error: sbError } = await supabase.storage
       .from('kistas')
       .upload(fileKey, uploadFile, {
         contentType: uploadFile.type || `image/${cleanExt}`,
         cacheControl: '31536000',
-        upsert: true,
+        upsert: false,
       });
 
     if (sbError || !uploadData) {

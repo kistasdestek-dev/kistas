@@ -1,0 +1,92 @@
+{
+  "capturedAt": "2026-09-28T11:11:10.934Z",
+  "environment": "local Workers emulator, one public fixture project, external requests blocked",
+  "target": "http://127.0.0.1:8788",
+  "browser": "153.0.8010.12",
+  "profile": {
+    "device": "Pixel 5",
+    "cpuSlowdown": 4,
+    "latencyMs": 150,
+    "downloadMbps": 1.6,
+    "uploadKbps": 750,
+    "cache": "disabled",
+    "runs": 3,
+    "observationWindow": "public heading ready + 2000ms; before consent interaction"
+  },
+  "median": {
+    "lcpMs": 1684,
+    "cls": 0,
+    "ttfbMs": 103.39999997615814
+  },
+  "runs": [
+    {
+      "run": 1,
+      "lcp": 1336,
+      "cls": 0,
+      "interactionDurations": [],
+      "ttfbMs": 115.70000004768372,
+      "domContentLoadedMs": 1504.7999999523163,
+      "observedInteractionMaxMs": 72,
+      "initialJavaScript": {
+        "requests": 31,
+        "rawBytes": 608922,
+        "estimatedBrotliBytes": 189173,
+        "brotliQuality": 4,
+        "budget": {
+          "status": "passed",
+          "isOverBudget": false
+        }
+      },
+      "observedEncodedNetworkBytes": 240285
+    },
+    {
+      "run": 2,
+      "lcp": 1684,
+      "cls": 0,
+      "interactionDurations": [],
+      "ttfbMs": 102.80000007152557,
+      "domContentLoadedMs": 1621.5,
+      "observedInteractionMaxMs": 104,
+      "initialJavaScript": {
+        "requests": 36,
+        "rawBytes": 824902,
+        "estimatedBrotliBytes": 256011,
+        "brotliQuality": 4,
+        "budget": {
+          "status": "passed",
+          "isOverBudget": false
+        }
+      },
+      "observedEncodedNetworkBytes": 306723
+    },
+    {
+      "run": 3,
+      "lcp": 4164,
+      "cls": 0.0003383645557384708,
+      "interactionDurations": [],
+      "ttfbMs": 103.39999997615814,
+      "domContentLoadedMs": 1698,
+      "observedInteractionMaxMs": 160,
+      "initialJavaScript": {
+        "requests": 40,
+        "rawBytes": 833237,
+        "estimatedBrotliBytes": 259421,
+        "brotliQuality": 4,
+        "budget": {
+          "status": "passed",
+          "isOverBudget": false
+        }
+      },
+      "observedEncodedNetworkBytes": 323830
+    }
+  ],
+  "fieldINP": "unmeasured; consent click Event Timing is a lab observation, not field INP",
+  "slowDatabaseQueries": "unmeasured; fixture reads do not represent PostgreSQL execution",
+  "limitations": [
+    "Synthetic device on this host; not real user performance.",
+    "JS includes scripts loaded within the observation window, including any prefetch.",
+    "Brotli is a local estimate, not actual CDN transfer.",
+    "Encoded bytes reflect local server responses, not production transport.",
+    "Single fixture project is not a capacity test."
+  ]
+}

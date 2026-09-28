@@ -1,0 +1,114 @@
+{
+  "capturedAt": "2026-09-28T14:02:31.839Z",
+  "status": "locally-validated-production-pending",
+  "sourceCommit": "8c3637c676a3fea3a75df6062ed8d26d6508fdfd",
+  "workingTreeChangesPreserved": true,
+  "policy": {
+    "launchArchive": {
+      "hours": 72,
+      "from": "last edit; edit renews deadline"
+    },
+    "notification": {
+      "hours": 72,
+      "from": "created_at; read status does not matter"
+    },
+    "conversation": {
+      "days": 30,
+      "from": "last non-system message; new message renews deadline",
+      "emptyConversationFrom": "created_at",
+      "appliesTo": "project and support conversations",
+      "wholeHistoryPreservedWhenRecentMessage": true
+    },
+    "physicalDatabaseCleanup": "hourly, on the next successful unlocked sweep; not exact-deadline deletion",
+    "storageObjectDeletion": false
+  },
+  "checks": {
+    "postgres": {
+      "retentionPassed": 15,
+      "atomicLaunchPassed": 13,
+      "totalPassed": 28,
+      "failed": 0,
+      "report": "retention-postgres-validation.json"
+    },
+    "workersE2E": {
+      "command": "pnpm test:e2e",
+      "passed": 35,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "exitCode": 0
+    },
+    "nextBuildAndTypeScript": {
+      "exitCode": 0
+    },
+    "workersBuild": {
+      "exitCode": 0
+    },
+    "webLint": {
+      "exitCode": 0
+    },
+    "regressionSuites": {
+      "shared": {
+        "files": 2,
+        "domainChecks": 84,
+        "exitCode": 0
+      },
+      "supabase": {
+        "files": 8,
+        "exitCode": 0
+      },
+      "web": {
+        "files": 20,
+        "exitCode": 0
+      }
+    },
+    "workersDryRun": {
+      "exitCode": 0,
+      "actualDeploy": false
+    },
+    "security": {
+      "dependencyAudit": "passed-no-known-vulnerabilities",
+      "trackedAndStagedSecretScan": "passed",
+      "xssScan": "passed",
+      "sqlPatternScan": "passed-existing-legacy-scope-only",
+      "newSqlVerification": "actual PostgreSQL tests and source review"
+    },
+    "whitespace": {
+      "exitCode": 0
+    }
+  },
+  "migrations": [
+    {
+      "path": "supabase/migrations/20260928000003_archive_notification_and_idle_chat_retention.sql",
+      "sha256": "1f0121752e3d0e4232571d484278b990a66d8cc1b92ca0b2052bda0f889f253f"
+    },
+    {
+      "path": "supabase/migrations/20260928000004_schedule_retention_cleanup.sql",
+      "sha256": "bb3bf3378ccd94f42b086581832ad99e6477c102ae9fdf7ab378e4dfac3a3496"
+    }
+  ],
+  "preflight": {
+    "path": "supabase/tests/retention-preflight.sql",
+    "sha256": "48a8462e2d468a5cc88c6f9c8a7ef6184d14d180478ad1a3a8058b4b409663d6",
+    "productionExecuted": false
+  },
+  "workerEntrySha256": "cc7561a4c5f9924602d916e17d1b6bcc73268a06e8b69168411837daa3b65328",
+  "deployment": {
+    "migrationApplied": false,
+    "productionDeployed": false,
+    "productionDataDeleted": false,
+    "productionCronExecuted": false,
+    "commitCreated": false,
+    "newBackupCreated": false
+  },
+  "limitations": [
+    "Minimal schema and synthetic auth roles; not live Supabase policies/triggers.",
+    "One PostgreSQL connection verifies send-before-cleanup and cleanup-before-send ordering; independent-connection lock races remain unverified.",
+    "Cron SQL registration API is simulated; actual pg_cron extension/timer execution requires production acceptance.",
+    "Only production exists; live cron jobs, full Supabase schema/policies and independent-connection races remain acceptance checks.",
+    "Browser storage is physically pruned when the application opens or its active deadline timer executes, not while the application is closed.",
+    "Uploaded objects in the existing public Storage bucket are not physically garbage-collected by this package.",
+    "Existing eligible production records become deletion candidates on the first scheduled sweep; deleted data requires a DB backup to recover.",
+    "No new public performance or database capacity claim; previous lab reports remain baselines."
+  ]
+}

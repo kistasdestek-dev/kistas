@@ -1,24 +1,23 @@
 import type { Metadata } from 'next';
 import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
-import { createAnonClient, getCategories, getCuratedListings } from '@kistas/supabase';
+import { createAnonClient, getCategories } from '@kistas/supabase';
+import { loadDiscovery } from '@/lib/discovery';
+import type { DiscoveryParams } from '@kistas/shared';
 import { DiscoverExperienceClient } from '@/components/DiscoverExperienceClient';
 
 export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<DiscoveryParams>;
 }
 
 const getCategoryDiscoveryData = unstable_cache(async (slug: string) => {
   const supabase = createAnonClient();
   const categories = await getCategories(supabase);
   const category = categories.find((item) => item.slug === slug);
-  const listings = category
-    ? await getCuratedListings(supabase, 'popular', 60, { categoryId: category.id })
-    : [];
-
-  return { categories, category, listings };
+  return { category };
 }, ['public-category-discovery'], { revalidate: 60 });
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -36,17 +35,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function CategoryDiscoveryPage({ params }: PageProps) {
+export default async function CategoryDiscoveryPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const { categories, category, listings } = await getCategoryDiscoveryData(slug);
+  const { category } = await getCategoryDiscoveryData(slug);
   if (!category) notFound();
+  const { state, categories, sections, timestamp } = await loadDiscovery(await searchParams, { categoryId: category.id });
 
   return (
     <DiscoverExperienceClient
-      initialListings={listings || []}
+      sections={sections}
+      state={state}
       categories={categories}
-      initialTimestamp={Date.now()}
-      initialCategoryId={category.id}
+      initialTimestamp={timestamp}
       preserveLayoutWhenEmpty
     />
   );

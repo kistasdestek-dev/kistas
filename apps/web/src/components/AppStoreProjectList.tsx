@@ -3,13 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, ChevronRight, ChevronUp, Sparkles } from 'lucide-react';
-import type { Listing } from '@kistas/shared';
+import type { DiscoveryCard } from '@kistas/shared';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 
 export interface AppStoreProjectListProps {
   title?: string;
   subtitle?: string;
-  projects: Listing[];
+  projects: DiscoveryCard[];
   variant?: 'ranked' | 'new';
   maxItems?: number;
   viewAllHref?: string;
@@ -59,7 +59,7 @@ export const AppStoreProjectList: React.FC<AppStoreProjectListProps> = ({
     );
   };
 
-  const renderProjectRow = (project: Listing, index: number, isLast: boolean) => {
+  const renderProjectRow = (project: DiscoveryCard, index: number, isLast: boolean) => {
     const initials = project.title ? project.title.slice(0, 2).toUpperCase() : 'KT';
     const supportCount = project.upvote_count || 0;
     const launchDate = variant === 'new' ? formatLaunchDate(project.created_at) : null;

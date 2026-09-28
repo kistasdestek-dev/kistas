@@ -4,10 +4,10 @@ import React from 'react';
 import Link from 'next/link';
 import { Trophy, Globe, Smartphone, Laptop, Cloud, ArrowRight, ChevronUp } from 'lucide-react';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
-import type { Listing } from '@kistas/shared';
+import type { DiscoveryCard } from '@kistas/shared';
 
 export interface TodayShowcaseRowProps {
-  projects: Listing[];
+  projects: DiscoveryCard[];
   title?: string;
   subtitle?: string;
   onOpenAll?: () => void;

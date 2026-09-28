@@ -5,8 +5,12 @@ const projectRoot = resolve(import.meta.dirname, '../..');
 const suites = {
   shared: [
     'core-domain.test.mjs',
+    'system-radar.test.mjs',
   ],
   supabase: [
+    'retention-cleanup.test.mjs',
+    'launch-atomic.test.mjs',
+    'discovery-query.test.mjs',
     'disaster-recovery-and-keys.test.mjs',
     'field-level-encryption.test.mjs',
     'kvkk-pci-compliance.test.mjs',
