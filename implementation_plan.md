@@ -158,3 +158,180 @@ Faz 4 geri dönüşünde kalite workflow’u ve `sayos:security` zincirindeki ek
 - Web TypeScript ve ESLint, web testleri 14/14, core-domain 85/85, Supabase TypeScript, secret/XSS/SQLi taramaları ve Next production build başarılıdır.
 - `20260925000004` ve `20260927000001` canlı Supabase'e başarıyla uygulandı; yerel/canlı migration geçmişi eşleşti ve anonim destek kapanış RPC çağrısı HTTP 401/forbidden ile reddedildi.
 - Worker deploy beklemektedir.
+
+---
+
+# Kompakt Proje Aksiyonlari Uygulama Plani
+
+## Kapsam
+
+- Profildeki proje aksiyon dock'unu daha az yer kaplayan yatay ikon/metin duzenine gecir.
+- `Sponsor Yap` aksiyonunu ortak `ShinyButton` ile Citrus Glass varyantina tasi.
+- Vitrin yonetimi modalindaki atomik islem bilgilendirme metnini kaldir.
+- Davranis, rota ve guvenli `boost_listing_scoped` RPC akislarini degistirme.
+
+## Uygulama
+
+1. `ProfileExperienceClient.tsx` icinde aktif projelerde mobil 2, genis ekranda 4 sutun yapisini koruyan kompakt bir glass dock kur.
+2. Duzenle, vitrinde gor ve sil aksiyonlarini 44 px sinifinda, yatay ikon/metinli sade glass kontrollere indir.
+3. Sponsor aksiyonunu ayni boyut sinirinda `shiny-cta--citrus` kullanan `ShinyButton` olarak uygula.
+4. `VisibilityManagementModal.tsx` footer altindaki aciklama paragrafini kaldir.
+5. Hedefli regresyon testlerini yeni tasarim sozlesmesine gore guncelle; TypeScript, lint ve ilgili testi calistir.
+
+## Cikis Olcutleri
+
+- Eski 72 px dikey aksiyon kartlari ve bunlara ait test beklentileri kalmaz.
+- Sponsor aksiyonu ortak Citrus Glass bileşenini kullanir.
+- Kaldirilmasi istenen metin kaynakta ve arayuzde bulunmaz.
+- Proje rotalari, modal acma ve silme davranislari korunur.
+- Hedefli testler, TypeScript ve lint temizdir.
+
+## Dogrulama Kaydi — 2026-09-27
+
+- Web TypeScript kontrolu basarili.
+- Web ESLint kontrolu 0 hata ve 0 uyariyla basarili.
+- Web regresyon paketi 19/19 dosyada basarili.
+- Next.js production build basarili; mevcut Edge Runtime deprecation uyarisi bu UI degisikliginden bagimsizdir.
+
+
+---
+
+# WhatsApp Tarzi Mesaj Bildirimi Uygulama Plani
+
+## Kapsam
+
+- Yeni mesaj glass bildirimini WhatsApp/iOS banner hiyerarsisiyle yeniden tasarla.
+- Gonderenin profil fotografini, adini, mesaj onizlemesini ve anlik zaman etiketini goster.
+- Yonetici `Yayinla` duyurularinin mevcut kurumsal gorunum ve davranisini koru.
+- Mesaj tercihi, `/messages` rotasinda bastirma, iki kart siniri ve konusmaya yonlendirme davranislarini degistirme.
+
+## Mimari, klasor ve veri akisi
+
+1. Yeni ileri yonlu Supabase migration'i, mevcut `trg_notify_chat_message()` fonksiyonunda gonderenin `full_name` ve `avatar_url` alanlarini ayni profil okumasinda alir.
+2. Avatar URL'si bildirim `data` JSON'una `sender_avatar_url` olarak snapshot edilir; istemci ek profil sorgusu yapmaz.
+3. `MessageNotificationProvider`, yalniz mesaj bildirimlerinde bu alani `GlobalNotificationCard` bilesenine aktarir.
+4. `GlobalNotificationCard`, mesaj icin yuvarlak `ChatAvatar`, ad, `simdi`, iki satir onizleme ve birikmis mesaj sayaci kullanir; yonetici duyurusu `AutoTransparentLogo` ile mevcut dalda kalir.
+5. `globals.css`, ortak glass tabanini bozmadan mesaj varyantina parlak ust katman, daha yumusak kapsul formu ve mobil dokunma geri bildirimi ekler.
+
+## Edge case, hata, guvenlik ve performans
+
+- Eksik veya yuklenemeyen avatar `ChatAvatar` icindeki yerel Kistas logosuna duser.
+- Uzun ad ve mesajlar tasma olmadan kirpilir; metin HTML olarak calistirilmaz.
+- Profil verisi guvenilir tetikleyicide okunur; alici, tercih, sahiplik ve Realtime RLS sinirlari degismez.
+- Fonksiyon `SECURITY DEFINER` ve bos `search_path` korumasini surdurur; istemciye secret veya yeni yazma yetkisi verilmez.
+- Avatar snapshot'i mevcut insert transaction'inda uretilir; bildirim basina ek istemci sorgusu ve render dongusu eklenmez.
+- Migration geri alimi gerekirse fonksiyon yeni bir ileri migration ile onceki JSON payload'ina dondurulur; kalici bildirim kayitlari silinmez.
+
+## Etkilenecek alanlar
+
+- `supabase/migrations/20260928000001_message_notification_sender_avatar.sql`
+- `apps/web/src/components/MessageNotificationProvider.tsx`
+- `apps/web/src/components/GlobalNotificationCard.tsx`
+- `apps/web/src/app/globals.css`
+- mesaj/bildirim regresyon testleri
+
+## Cikis olcutleri
+
+- Mesaj karti fotograf, ad, `simdi` ve onizleme ile WhatsApp benzeri yatay kompozisyondadir.
+- Eski `Mesaji ac` alt satiri ve mesaj icin genel ikon fallback dali kalmaz.
+- Yonetici duyurusu, tiklama, kapatma, gruplayarak sayma ve erisilebilirlik davranislari korunur.
+- TypeScript, ESLint, web regresyon paketi, guvenlik kontrolleri ve production build temizdir.
+
+## Dogrulama Kaydi — 2026-09-28
+
+- Mesaj bildirim karti gonderen avatari, ad, `simdi`, iki satir onizleme ve Citrus mesaj rozetiyle ayri WhatsApp/iOS kompozisyonuna tasindi.
+- Avatar profil kaydindan guvenilir tetikleyicide okunup bildirim payload'ina eklendi; istemciye yeni sorgu veya yazma yetkisi eklenmedi.
+- Eski `Mesaji ac` alt satiri kaldirildi; yonetici duyurusu ve mevcut bildirim davranislari korundu.
+- Web TypeScript, ESLint ve 20/20 regresyon paketi basarili.
+- Supabase TypeScript, bagimlilik, repository secret, XSS ve SQL enjeksiyonu kontrolleri temiz.
+- Next.js production build basarili; mevcut Edge Runtime deprecation uyarisi bu degisiklikten bagimsizdir.
+- Migration ve web degisikligi canliya uygulanmadi; production yayin ayri onay gerektirir.
+
+
+
+---
+
+# App Store Kesif Listeleri Uygulama Plani
+
+## Kapsam
+
+- `/popular` rotasinin Krediler sekmesini aktif gostermesini duzelt.
+- Populer, Yeni Cikanlar ve Kesfet bolumlerini tek App Store liste sistemiyle birlestir.
+- Proje logolarini cercevesiz ve seffaf yuzeyde goster.
+- Destek sayilarini ortak Citrus Glass sayaciyla sun.
+- Mevcut public Supabase okuma, ISR, proje rotasi ve destek is mantigini degistirme.
+
+## Mimari ve veri akisi
+
+1. `getCuratedListings` sunucuda aktif projeleri mevcut siralamayla okumaya devam eder.
+2. Public sayfalar veriyi ortak `AppStoreProjectList` bilesenine aktarir.
+3. Kesfet ana sayfasi ayni bileseni alti ogelik ozet modunda kullanir.
+4. Populer tam sayfada toplam destege gore sira, Yeni sayfasinda yeni etiketi ve tarih gosterilir.
+5. Tum satirlar dahili `/listings/[id]` rotasina gider; destek sayaci salt okunur kalir.
+
+## Uygulama
+
+- Navbar aktif rota eslemesini `/popular` ve `/new` icin Kesfet, `/credits` icin Krediler olacak sekilde ayir.
+- `PopularProjectPager` yerine semantik ortak `AppStoreProjectList` bilesenini koy ve eski dosyayi sil.
+- Logolarda arka kutu, kenarlik ve yapay cerceveyi kaldir; `AutoTransparentLogo` ile `shape="none"` kullan.
+- Sponsor durumunu destek sayisinin yerine gecirmeden ayri, kucuk bir isaret olarak goster.
+- Populer ve Yeni sayfalarindaki tekrarli legacy kart JSX'ini ortak bilesenle degistir.
+- Haftalik olmayan mevcut sorgu icin yaniltici `Haftalik` metnini `Topluluk Siralamasi` olarak duzelt.
+
+## Edge case ve cikis olcutleri
+
+- Bos listeler anlamli CTA ile gorunur; eksik logo bas harf fallback'i kullanir.
+- Uzun baslik/aciklama satiri bozmaz; mobil tek, genis ekranda iki sutun calisir.
+- Eski yesil sayac, cerceveli logo ve tekrarli kart kodu kalmaz.
+- Navbar, logo, Citrus Glass, public performans, TypeScript, lint, web testleri ve production build temizdir.
+
+## Dogrulama Kaydi — 2026-09-28
+
+- Populer ve Yeni sayfalari mobil ve masaustu Chromium render'inda gorundu; navbar Kesfet aktif durumunu korudu.
+- Gercek logolar cercevesiz, destek sayilari sponsor durumundan bagimsiz Citrus Glass olarak dogrulandi.
+- Web TypeScript ve ESLint kontrolleri basarili.
+- Web regresyon paketi 19/19 dosyada basarili.
+- Next.js production build basarili; mevcut Edge Runtime deprecation uyarisi bu UI degisikliginden bagimsizdir.
+
+
+---
+
+# Kredi Hareketleri ve Ortak Modal Kilidi Uygulama Plani
+
+## Kapsam
+
+- Kredi Hareketleri penceresini mobil cüzdan/hesap ozeti mantigiyla yeniden tasarla.
+- Dokunma kaydirma hareketinin modal sinirindan arka sayfaya zincirlenmesini engelle.
+- Profil overlay'lerinde tekrarlanan body kilidi kodunu tek, sayacli bir hook'ta birlestir.
+- Kredi verisi, odeme, RPC, RLS ve bakiye hesaplama mantigini degistirme.
+
+## Mimari ve veri akisi
+
+1. Profil istemcisi mevcut kullaniciya ait kredi hareketlerini yuklemeye devam eder.
+2. `CreditHistoryModal` yalniz yuklenmis listeyi Tumu/Gelen/Kullanilan olarak istemcide filtreler ve tarihe gore gruplar.
+3. `useBodyScrollLock` ilk acilan overlay'de sayfa konumunu ve inline stilleri kaydeder.
+4. Birden cok overlay kilidi varsa referans sayaci erken geri yuklemeyi engeller.
+5. Son overlay kapandiginda tum stiller ve onceki scroll konumu geri yuklenir.
+
+## Tasarim
+
+- Mobil bottom sheet, masaustunde merkez glass modal.
+- Kompakt bakiye karti, Citrus Glass Kredi Al aksiyonu ve islem adedi.
+- Tarih gruplari, okunabilir islem satirlari, giris/cikis yonu ve islem sonrasi bakiye.
+- Ic liste `touch-pan-y`, momentum scroll ve `overscroll-contain` kullanir; backdrop `overscroll-none` kalir.
+
+## Cikis olcutleri
+
+- Profil overlay'lerinde paralel body-lock implementasyonu kalmaz.
+- Modal acikken arka sayfa mobil dokunmayla hareket etmez; kapanista konum korunur.
+- Bos, yukleniyor ve filtre sonucu bos durumlari erisilebilir gorunur.
+- TypeScript, lint, hedefli scroll-lock/kredi testleri, web paketi ve production build temizdir.
+
+## Dogrulama Kaydi — 2026-09-28
+
+- Sekiz profil overlay'i ortak, referans sayacli `useBodyScrollLock` sistemine tasindi.
+- Eski ProfileEdit ve Visibility kopya body-lock implementasyonlari kaldirildi.
+- Kredi Hareketleri filtre, tarih grubu, Citrus Glass Kredi Al ve mobil ic-scroll sozlesmeleriyle dogrulandi.
+- Web TypeScript ve ESLint kontrolleri basarili.
+- Web regresyon paketi 20/20 dosyada basarili.
+- Next.js production build basarili; mevcut Edge Runtime deprecation uyarisi bu UI degisikliginden bagimsizdir.

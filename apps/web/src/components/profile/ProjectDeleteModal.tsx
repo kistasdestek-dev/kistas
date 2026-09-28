@@ -4,6 +4,7 @@ import React from 'react';
 import { Trash2, Loader2 } from 'lucide-react';
 import type { Listing } from '@kistas/shared';
 import { Typewriter } from '../Typewriter';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface ProjectDeleteModalProps {
   project: Listing | null;
@@ -18,10 +19,12 @@ export const ProjectDeleteModal: React.FC<ProjectDeleteModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  useBodyScrollLock(Boolean(project));
+
   if (!project) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center overscroll-none p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200" onClick={onClose}>
       <div
         className="k-modal-glass-card w-full max-w-sm overflow-hidden p-6 sm:p-7 text-center"
         onClick={(e) => e.stopPropagation()}

@@ -18,6 +18,7 @@ interface GlobalNotificationToast {
   actionPath?: string;
   logoUrl?: string;
   logoAlt?: string;
+  avatarUrl?: string;
 }
 
 interface NotificationRow {
@@ -34,6 +35,7 @@ interface NotificationRow {
     action_path?: string;
     listing_id?: string;
     logo_url?: string;
+    sender_avatar_url?: string;
   } | null;
 }
 
@@ -152,6 +154,7 @@ export const MessageNotificationProvider: React.FC = () => {
                 body: row.body,
                 count: 1,
                 conversationId,
+                avatarUrl: row.data?.sender_avatar_url,
               });
               return;
             }
@@ -231,6 +234,7 @@ export const MessageNotificationProvider: React.FC = () => {
               body={toast.body}
               logoUrl={toast.logoUrl}
               logoAlt={toast.logoAlt}
+              avatarUrl={toast.avatarUrl}
               count={toast.count}
               onOpen={() => void openNotification(toast)}
               onDismiss={() => dismiss(toast.key)}

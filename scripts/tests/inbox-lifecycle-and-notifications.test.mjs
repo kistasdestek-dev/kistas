@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 const read = (relativePath) => readFileSync(new URL(`../../${relativePath}`, import.meta.url), 'utf8');
 
 const migration = read('supabase/migrations/20260925000001_inbox_lifecycle_and_message_notifications.sql');
+const avatarNotificationMigration = read('supabase/migrations/20260928000001_message_notification_sender_avatar.sql');
 const supportLifecycle = read('supabase/migrations/20260912000002_support_conversation_lifecycle.sql');
 const supportCloseRepair = read('supabase/migrations/20260927000001_repair_support_conversation_close.sql');
 const conversationCard = read('apps/web/src/components/chat/ConversationCard.tsx');
@@ -11,6 +12,8 @@ const messagesExperience = read('apps/web/src/components/chat/MessagesExperience
 const chatWindow = read('apps/web/src/components/chat/ChatWindow.tsx');
 const messagesPage = read('apps/web/src/app/(dashboard)/messages/page.tsx');
 const notificationProvider = read('apps/web/src/components/MessageNotificationProvider.tsx');
+const notificationCard = read('apps/web/src/components/GlobalNotificationCard.tsx');
+const globalStyles = read('apps/web/src/app/globals.css');
 const notificationSettings = read('apps/web/src/components/chat/MessageNotificationSettings.tsx');
 const chatService = read('apps/web/src/lib/services/chat.ts');
 
@@ -29,6 +32,10 @@ assert.match(migration, /message_in_app_enabled/);
 assert.match(migration, /v_recipient_id = NEW\.sender_id/);
 assert.match(migration, /ALTER PUBLICATION supabase_realtime ADD TABLE public\.notifications/);
 assert.match(migration, /REVOKE ALL ON FUNCTION public\.trg_notify_chat_message\(\) FROM PUBLIC, anon, authenticated/);
+assert.match(avatarNotificationMigration, /SECURITY DEFINER[\s\S]*SET search_path = ''/, 'Avatarli bildirim tetikleyicisi sabit search_path kullanmali');
+assert.match(avatarNotificationMigration, /NULLIF\(btrim\(profile\.avatar_url\), ''\)/, 'Gonderen avatari guvenilir profil kaydindan okunmali');
+assert.match(avatarNotificationMigration, /'sender_avatar_url', v_sender_avatar_url/, 'Avatar bildirim payloadinda snapshot edilmeli');
+assert.match(avatarNotificationMigration, /REVOKE ALL ON FUNCTION public\.trg_notify_chat_message\(\) FROM PUBLIC, anon, authenticated/);
 
 assert.match(conversationCard, /pointerType !== 'touch'/, 'Mobil silme hareketi dokunmayla sınırlı olmalı');
 assert.match(conversationCard, /translateX\(-\$\{swipeOffset\}px\)/);
@@ -54,6 +61,12 @@ assert.match(notificationProvider, /table: 'notifications'/);
 assert.match(notificationProvider, /pathname\.startsWith\('\/messages'\)/, 'Mesaj ekranında çift bildirim gösterilmemeli');
 assert.match(notificationProvider, /slice\(0, 2\)/, 'Glass bildirim sayısı sınırlandırılmalı');
 assert.match(notificationProvider, /onAuthStateChange/, 'Oturum sonradan açıldığında realtime aboneliği kurulmalı');
+assert.match(notificationProvider, /avatarUrl: row\.data\?\.sender_avatar_url/, 'Mesaj bildirimi gonderen avatarini karta aktarmali');
+assert.match(notificationCard, /ChatAvatar/);
+assert.match(notificationCard, />şimdi</);
+assert.match(notificationCard, /k-notification-glass--message/);
+assert.doesNotMatch(notificationCard, /Mesajı aç/, 'Eski mesaj alt aksiyon satiri kalmamali');
+assert.match(globalStyles, /\.k-notification-glass--message\s*\{/);
 assert.match(notificationSettings, /set_message_notification_preference/);
 assert.match(notificationSettings, /Bildirimleri kapat/);
 assert.doesNotMatch(notificationSettings, />Mesaj bildirimleri</, 'Bildirim ayarı gereksiz başlığı göstermemeli');

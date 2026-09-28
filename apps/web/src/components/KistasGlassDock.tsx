@@ -73,7 +73,8 @@ export const KistasGlassDock: React.FC = () => {
       return 'browse';
     }
     if (pathname.startsWith('/create-listing')) return 'create';
-    if (pathname.startsWith('/popular') || pathname.startsWith('/credits')) return 'credits';
+    if (pathname.startsWith('/popular') || pathname.startsWith('/new')) return 'discover';
+    if (pathname.startsWith('/credits')) return 'credits';
     if (pathname.startsWith('/login') || pathname.startsWith('/profile') || pathname.startsWith('/signup')) {
       return 'profile';
     }

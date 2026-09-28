@@ -79,3 +79,11 @@ Yeni Worker kaynaklı kritik sorun çıkarsa Cloudflare Workers & Pages panelind
 - Yeni ve düzenlenen projeler `draft` inceleme kuyruğuna alınır; kullanıcı profilinde gönderim, yönetici incelemesi ve yayın aşamaları görünür. Taslak önizlemesi yalnız yönetici yetkili rotada açılır ve görüntülenme, destek veya yorum yan etkisi üretmez.
 - `20260927000004_real_admin_metrics.sql` canlı Supabase'e uygulandı; yönetim panelindeki açık destek, blog ve aktif güvenlik karantinası değerleri gerçek tablolardan hesaplanır.
 - GitHub `main` commit'i `81a2326`, Cloudflare Worker sürümü `93fc1b6b-af7f-4ed8-9b4d-114677d4cb29` olarak dağıtıldı. Public rotalar HTTP 200, anonim `/profile` ve `/admin` erişimleri girişe HTTP 307 yönlendirildi; production güvenlik başlıkları doğrulandı.
+
+## 2026-09-28 WhatsApp Bildirim Kartı, App Store Keşif ve Cüzdan Kredi Hareketleri
+
+- WhatsApp/iOS tarzı anlık mesaj bildirim kartı (`GlobalNotificationCard.tsx`): gönderen avatarı, adı, 'şimdi' zaman etiketi, iki satır önizleme ve unread sayacıyla güncellendi; `trg_notify_chat_message` tetikleyicisi gonderen profil avatarını bildirim snapshot'ına ekler.
+- Popüler ve Yeni Çıkanlar listeleri ortak `AppStoreProjectList.tsx` bileşenine taşındı; `PopularProjectPager.tsx` tamamen silindi. Proje logoları çerçevesiz `shape="none"` ve destek sayaçları ortak Citrus Glass tasarımıyla sunuldu.
+- `CreditHistoryModal.tsx` mobil cüzdan/hesap özeti mantığıyla yeniden tasarlandı (gelen/kullanılan filtreleri, tarih grupları, yön rozetleri). Sekiz profil modalı ortak, referans sayaçlı `useBodyScrollLock` hook'una bağlanarak mobil kaydırma zincirlenmesi engellendi.
+- 20/20 web test dosyası eksiksiz geçti; 0 tip hatası ve %100 Kale Sağlık Skoru doğrulandı.
+

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/browser';
 import { GlassIconButton } from '../GlassIconButton';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface AccountSecurityModalProps {
   isOpen: boolean;
@@ -44,6 +45,7 @@ export const AccountSecurityModal: React.FC<AccountSecurityModalProps> = ({
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   const supabase = createClient();
+  useBodyScrollLock(isOpen);
 
   if (!isOpen) return null;
 
@@ -112,9 +114,9 @@ export const AccountSecurityModal: React.FC<AccountSecurityModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center overscroll-none p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200" onClick={onClose}>
       <div
-        className="k-modal-glass-card w-full max-w-lg max-h-[92vh] overflow-y-auto p-6 sm:p-7"
+        className="k-modal-glass-card w-full max-w-lg max-h-[92vh] touch-pan-y overflow-y-auto overscroll-contain p-6 [-webkit-overflow-scrolling:touch] sm:p-7"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Ambient Top Glow */}

@@ -24,6 +24,7 @@ import {
 } from '@/lib/visibility';
 import { AutoTransparentLogo } from '../AutoTransparentLogo';
 import { ShinyButton } from '../ui/shiny-button';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 type VisibilityListing = Listing & {
   category_boosted_until?: string | null;
@@ -74,6 +75,7 @@ export const VisibilityManagementModal: React.FC<VisibilityManagementModalProps>
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -93,34 +95,6 @@ export const VisibilityManagementModal: React.FC<VisibilityManagementModalProps>
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [busy, isOpen, onClose]);
-
-  useEffect(() => {
-    if (!isOpen || typeof document === 'undefined') return;
-
-    const scrollY = window.scrollY;
-    const previousBody = {
-      overflow: document.body.style.overflow,
-      position: document.body.style.position,
-      top: document.body.style.top,
-      width: document.body.style.width,
-    };
-    const previousHtmlOverflow = document.documentElement.style.overflow;
-
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-
-    return () => {
-      document.documentElement.style.overflow = previousHtmlOverflow;
-      document.body.style.overflow = previousBody.overflow;
-      document.body.style.position = previousBody.position;
-      document.body.style.top = previousBody.top;
-      document.body.style.width = previousBody.width;
-      window.scrollTo(0, scrollY);
-    };
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -339,7 +313,6 @@ export const VisibilityManagementModal: React.FC<VisibilityManagementModalProps>
               </span>
             </ShinyButton>
           )}
-          <p className="mt-3 text-center text-[9px] leading-4 text-slate-500">Kredi ve görünürlük süresi sunucuda tek işlemde doğrulanır. Başarısız işlemde kredi düşmez.</p>
         </footer>
       </section>
     </div>

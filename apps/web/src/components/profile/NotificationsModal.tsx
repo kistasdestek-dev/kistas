@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { GlassIconButton } from '../GlassIconButton';
 import { AutoTransparentLogo } from '../AutoTransparentLogo';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 export interface NotificationItem {
   id: string;
@@ -92,6 +93,7 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [isConfirmingDeleteAll, setIsConfirmingDeleteAll] = useState(false);
   const [busyAction, setBusyAction] = useState(false);
+  useBodyScrollLock(isOpen);
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n.is_read).length,
@@ -108,7 +110,7 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center overscroll-none p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200" onClick={onClose}>
       <div
         className="k-modal-glass-card w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
@@ -249,7 +251,7 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
         )}
 
         {/* Notifications List */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-3">
+        <div className="flex-1 touch-pan-y overflow-y-auto overscroll-contain p-6 space-y-3 [-webkit-overflow-scrolling:touch]">
           {isLoading ? (
             <div className="py-12 flex flex-col items-center justify-center gap-2 text-xs text-[#A1A1AA]">
               <Loader2 size={24} className="animate-spin text-[#3269C7]" />

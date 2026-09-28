@@ -1257,3 +1257,11 @@ Production veya magazaya cikis icin:
 - Eski migration'lardan biriken listing SELECT politikaları kaldırılıp iki kanonik politikaya indirgenir: anonim kullanıcı yalnız aktif projeyi; authenticated kullanıcı aktif, kendi veya launches yetkisiyle incelemesi gereken projeyi görebilir.
 - RPC yalnız `active` ve `banned` hedeflerini kabul eder, satırı kilitler, önceki durumu denetim kaydına ekler ve mevcut onay bildirim zincirini korur. Proje, kredi veya kullanıcı verisi silinmez.
 - Durum: CANLI — `20260927000005` migration'ı canlı Supabase'e uygulandı ve yerel/uzak geçmiş eşleşti. GitHub `main` düzeltme commit'i `2c0bb26` olarak pushlandı. Değişiklik yalnız veritabanı fonksiyonları ve RLS politikaları olduğu için mevcut Worker sürümü korundu. Ana sayfa, Keşfet, Yeni ve Popüler HTTP 200; anonim yönetim erişimi güvenli biçimde girişe HTTP 307 yönlendirildi. Web 19/19, Supabase 5/5, çekirdek 85/85, TypeScript, ESLint, bağımlılık/secret/XSS/SQLi taramaları ve Next production build başarılıdır.
+
+### 2026-09-28 - Gönderen avatarı içeren uygulama içi mesaj bildirimi
+
+- `20260928000001_message_notification_sender_avatar.sql`, mevcut mesaj bildirimi tetikleyicisini yalnız profil `full_name` ve `avatar_url` alanlarını aynı güvenilir okumada alacak biçimde ileri yönlü günceller. Avatar, alıcıya özel bildirim JSON verisine snapshot edilir; istemci ek profil sorgusu yapmaz.
+- `SECURITY DEFINER`, boş `search_path`, mesaj alıcısı hesabı, kullanıcının bildirim tercihi, sistem mesajı istisnası ve fonksiyon `REVOKE` sınırları korunur. Yeni tablo, secret, dış URL girdisi, doğrudan istemci yazımı veya yetki genişlemesi eklenmez.
+- Bildirim metni React tarafından düz metin render edilir; sunucudaki 140 karakterlik, satır sonu arındırılmış önizleme sözleşmesi korunur. Eksik veya yüklenemeyen avatar yerel Kıstas görseline düşer.
+- Geri dönüş yalnız yeni bir ileri migration ile tetikleyicinin önceki JSON payload'ına alınmasıdır; mevcut bildirimler veya mesajlar silinmez.
+- Doğrulama: Web TypeScript, ESLint ve 20/20 regresyon; Supabase TypeScript; bağımlılık, repository secret, XSS ve SQL enjeksiyonu taramaları; Next.js production build başarılıdır. Migration ve Worker production ortamına uygulanmamıştır.

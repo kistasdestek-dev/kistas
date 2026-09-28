@@ -7,6 +7,7 @@ const read = (relativePath) => readFileSync(resolve(root, relativePath), 'utf8')
 
 const migration = read('supabase/migrations/20260924000001_google_and_kistas_profile_avatars.sql');
 const modal = read('apps/web/src/components/profile/ProfileEditModal.tsx');
+const scrollLock = read('apps/web/src/hooks/useBodyScrollLock.ts');
 const profileExperience = read('apps/web/src/components/ProfileExperienceClient.tsx');
 const brandBar = read('apps/web/src/components/KistasTopBrandBar.tsx');
 const avatarLib = read('apps/web/src/lib/avatar.ts');
@@ -17,7 +18,8 @@ assert.match(migration, /raw_user_meta_data->>'avatar_url'[\s\S]*raw_user_meta_d
 assert.match(migration, /\^https:\/\/lh3\\\.googleusercontent\\\.com\//);
 assert.match(migration, /get_byte\(decode\(md5\(NEW\.id::TEXT\), 'hex'\), 0\) % 4/);
 assert.match(migration, /avatar_url = COALESCE\(public\.profiles\.avatar_url, EXCLUDED\.avatar_url\)/);
-assert.match(modal, /document\.body\.style\.position = 'fixed'/);
+assert.match(modal, /useBodyScrollLock\(isOpen\)/);
+assert.match(scrollLock, /body\.style\.position = 'fixed'/);
 assert.match(modal, /overscroll-contain/);
 assert.match(modal, /KISTAS_AVATAR_PATHS\.map/);
 assert.match(modal, /rounded-full bg-transparent p-0/);

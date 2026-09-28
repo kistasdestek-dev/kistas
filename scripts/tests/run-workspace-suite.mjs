@@ -38,6 +38,7 @@ const suites = {
     'seo-output.test.mjs',
     'web-routing.test.mjs',
     'web-credit-store.test.mjs',
+    'web-credit-history-modal.test.mjs',
     'web-visibility-management.test.mjs',
   ],
   live: [

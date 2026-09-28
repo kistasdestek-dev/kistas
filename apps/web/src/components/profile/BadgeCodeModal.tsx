@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { X, Code, Copy, Check, ExternalLink, Moon, Sun } from 'lucide-react';
 import { GlassIconButton } from '../GlassIconButton';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 export interface BadgeCodeModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export const BadgeCodeModal: React.FC<BadgeCodeModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [format, setFormat] = useState<'markdown' | 'html'>(initialBadgeType || 'markdown');
+  useBodyScrollLock(isOpen);
 
   const siteOrigin = useMemo(() => {
     if (typeof window !== 'undefined') {
@@ -76,7 +78,7 @@ export const BadgeCodeModal: React.FC<BadgeCodeModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center overscroll-none p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200 select-none"
       onClick={onClose}
     >
       <div

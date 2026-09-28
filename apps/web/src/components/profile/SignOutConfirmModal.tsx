@@ -3,6 +3,7 @@
 import React from 'react';
 import { LogOut, Loader2 } from 'lucide-react';
 import { Typewriter } from '../Typewriter';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface SignOutConfirmModalProps {
   isOpen: boolean;
@@ -17,10 +18,12 @@ export const SignOutConfirmModal: React.FC<SignOutConfirmModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  useBodyScrollLock(isOpen);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overscroll-none p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200">
       <div
         className="k-modal-glass-card w-full max-w-md overflow-hidden p-6 sm:p-7 text-center"
         onClick={(e) => e.stopPropagation()}

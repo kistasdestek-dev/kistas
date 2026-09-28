@@ -10,7 +10,7 @@ import { DiscoveryRevealStatement } from './DiscoveryRevealStatement';
 import { SponsorLogoMarquee } from './SponsorLogoMarquee';
 import { FeaturedBoostShowcase } from './FeaturedBoostShowcase';
 import { TodayShowcaseRow } from './TodayShowcaseRow';
-import { PopularProjectPager } from './PopularProjectPager';
+import { AppStoreProjectList } from './AppStoreProjectList';
 import { FooterSloganBanner } from './FooterSloganBanner';
 import { rotateListingsByHour, type Listing, type Category } from '@kistas/shared';
 
@@ -217,10 +217,10 @@ export const DiscoverExperienceClient: React.FC<DiscoverExperienceClientProps> =
 
           {/* 8. POPULAR PROJECT PAGER (Kalıcı topluluk desteğine göre sıralama) */}
           {feedSort !== 'newest' && (
-            <PopularProjectPager
+            <AppStoreProjectList
               title={selectedCategoryObj ? `${selectedCategoryObj.name} · Popüler` : 'Popüler Projeler'}
               projects={popularListings}
-              metric="lifetime"
+              variant="ranked"
               viewAllHref="/popular"
               showEmptyState={keepShowcaseLayout}
             />
@@ -228,10 +228,10 @@ export const DiscoverExperienceClient: React.FC<DiscoverExperienceClientProps> =
 
           {/* 9. NEW PROJECT PAGER (İlk 30 günündeki bağımsız projeler) */}
           {feedSort !== 'top_voted' && (
-            <PopularProjectPager
+            <AppStoreProjectList
               title={selectedCategoryObj ? `${selectedCategoryObj.name} · Yeni` : 'Yeni Çıkanlar'}
               projects={newListings}
-              metric="lifetime"
+              variant="new"
               viewAllHref="/new"
               showEmptyState={keepShowcaseLayout}
             />

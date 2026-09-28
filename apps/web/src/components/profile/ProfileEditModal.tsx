@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Camera, Check, Loader2, AlertCircle } from 'lucide-react';
 import { isReservedBrandName } from '@kistas/shared';
 import { createClient } from '@/lib/supabase/browser';
@@ -8,6 +8,7 @@ import { KistasLogo } from '../KistasLogo';
 import { ShinyButton } from '../ui/shiny-button';
 import { KISTAS_AVATAR_PATHS, resolveAvatarUrl, toLocalKistasAvatarPath, toStoredAvatarUrl } from '@/lib/avatar';
 import type { Profile } from '@kistas/shared';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -35,34 +36,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
-
-  useEffect(() => {
-    if (!isOpen || typeof document === 'undefined') return;
-
-    const scrollY = window.scrollY;
-    const previousBody = {
-      overflow: document.body.style.overflow,
-      position: document.body.style.position,
-      top: document.body.style.top,
-      width: document.body.style.width,
-    };
-    const previousHtmlOverflow = document.documentElement.style.overflow;
-
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-
-    return () => {
-      document.documentElement.style.overflow = previousHtmlOverflow;
-      document.body.style.overflow = previousBody.overflow;
-      document.body.style.position = previousBody.position;
-      document.body.style.top = previousBody.top;
-      document.body.style.width = previousBody.width;
-      window.scrollTo(0, scrollY);
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
   if (!isOpen) return null;
 
@@ -171,14 +145,14 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-hidden bg-[#030814]/80 p-3 backdrop-blur-xl animate-in fade-in duration-200 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-hidden overscroll-none bg-[#030814]/80 p-3 backdrop-blur-xl animate-in fade-in duration-200 sm:items-center sm:p-4"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="profile-edit-title"
     >
       <div
-        className="relative w-full max-w-lg max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain rounded-[28px] border border-[#5E8FD8]/25 bg-[linear-gradient(145deg,rgba(15,31,57,.98),rgba(6,16,34,.98))] p-5 shadow-[0_24px_80px_rgba(0,0,0,.55),inset_0_1px_0_rgba(255,255,255,.08)] sm:max-h-[92vh] sm:p-7"
+        className="relative w-full max-w-lg max-h-[calc(100dvh-1.5rem)] touch-pan-y overflow-y-auto overscroll-contain rounded-[28px] border border-[#5E8FD8]/25 bg-[linear-gradient(145deg,rgba(15,31,57,.98),rgba(6,16,34,.98))] p-5 shadow-[0_24px_80px_rgba(0,0,0,.55),inset_0_1px_0_rgba(255,255,255,.08)] [-webkit-overflow-scrolling:touch] sm:max-h-[92vh] sm:p-7"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="pointer-events-none absolute -top-24 left-1/2 h-52 w-72 -translate-x-1/2 rounded-full bg-[#3269C7]/20 blur-3xl" />

@@ -637,56 +637,47 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
                         <div className="mt-4 border-t border-white/10 pt-3.5">
                           <div
                             aria-label="Proje işlemleri"
-                            className={`grid grid-cols-2 gap-1.5 rounded-[22px] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.018))] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,.08),0_16px_36px_rgba(0,0,0,.16)] backdrop-blur-2xl ${isActive ? 'sm:grid-cols-4' : 'sm:grid-cols-2'}`}
+                            className={`grid grid-cols-2 gap-2 rounded-2xl border border-white/[0.08] bg-[linear-gradient(145deg,rgba(255,255,255,.05),rgba(255,255,255,.012))] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,.07),0_10px_24px_rgba(0,0,0,.12)] backdrop-blur-2xl ${isActive ? 'sm:grid-cols-4' : 'sm:grid-cols-2'}`}
                           >
                           <Link
                             href={`/create-listing?edit=${item.id}`}
-                            className="group flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-[18px] border border-transparent px-2 py-3 text-center text-[10px] font-bold text-[#DCE8F8] transition-all duration-200 hover:border-white/10 hover:bg-white/[0.07] hover:text-white active:scale-[0.97] sm:text-xs"
+                            className="group flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.025] px-3 py-2 text-center text-[10px] font-bold text-[#DCE8F8] transition-all duration-200 hover:border-[#78ADFF]/25 hover:bg-[#3269C7]/10 hover:text-white active:scale-[0.98] sm:text-xs"
                           >
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#78ADFF]/20 bg-[#3269C7]/10 text-[#78ADFF] shadow-[inset_0_1px_0_rgba(255,255,255,.08)] transition-transform duration-200 group-hover:-rotate-6 group-hover:scale-105">
-                              <Pencil size={15} />
-                            </span>
+                            <Pencil size={14} className="shrink-0 text-[#78ADFF] transition-transform duration-200 group-hover:-rotate-6" />
                             <span>{isRevision ? 'Düzelt ve Gönder' : 'Düzenle'}</span>
                           </Link>
 
                           {isActive && (
                             <Link
                               href={`/listings/${item.id}`}
-                              className="flex min-h-[72px] items-center justify-center px-2 py-3 text-center text-[10px] font-bold text-slate-300 sm:text-xs"
+                              className="group flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.025] px-3 py-2 text-center text-[10px] font-bold text-slate-300 transition-all duration-200 hover:border-white/15 hover:bg-white/[0.06] hover:text-white active:scale-[0.98] sm:text-xs"
                             >
-                              <span className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-3.5 py-2">
-                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/[0.055] text-slate-300">
-                                  <Eye size={13} />
-                                </span>
-                                Vitrinde Gör
-                              </span>
+                              <Eye size={14} className="shrink-0 text-slate-400 transition-colors group-hover:text-slate-200" />
+                              <span>Vitrinde Gör</span>
                             </Link>
                           )}
 
                           {isActive && (
-                            <button
-                              type="button"
+                            <ShinyButton
                               onClick={() => {
                                 setVisibilityListingId(item.id);
                                 setIsVisibilityModalOpen(true);
                               }}
-                              className="group flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-[18px] border border-transparent px-2 py-3 text-center text-[10px] font-bold text-[#E9C875] transition-all duration-200 hover:border-amber-300/15 hover:bg-amber-400/[0.07] hover:text-[#FFD873] active:scale-[0.97] sm:text-xs"
+                              className="shiny-cta--citrus !min-h-11 !rounded-xl !px-3 !py-2 !text-[10px] sm:!text-xs"
                             >
-                              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-amber-300/20 bg-amber-400/[0.08] text-amber-300 shadow-[inset_0_1px_0_rgba(255,255,255,.07)] transition-transform duration-200 group-hover:scale-105 group-hover:rotate-6">
-                                <Sparkles size={15} />
+                              <span className="inline-flex items-center justify-center gap-2">
+                                <Sparkles size={14} className="shrink-0" />
+                                <span>Sponsor Yap</span>
                               </span>
-                              <span>Sponsor Yap</span>
-                            </button>
+                            </ShinyButton>
                           )}
 
                           <button
                             type="button"
                             onClick={() => setDeleteTarget(item)}
-                            className="group flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-[18px] border border-transparent px-2 py-3 text-center text-[10px] font-bold text-[#D99AA9] transition-all duration-200 hover:border-rose-400/15 hover:bg-rose-400/[0.07] hover:text-rose-300 active:scale-[0.97] sm:text-xs"
+                            className="group flex min-h-11 items-center justify-center gap-2 rounded-xl border border-rose-400/10 bg-rose-400/[0.025] px-3 py-2 text-center text-[10px] font-bold text-[#D99AA9] transition-all duration-200 hover:border-rose-400/20 hover:bg-rose-400/[0.07] hover:text-rose-300 active:scale-[0.98] sm:text-xs"
                           >
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-rose-400/15 bg-rose-400/[0.06] text-rose-300/90 shadow-[inset_0_1px_0_rgba(255,255,255,.06)] transition-transform duration-200 group-hover:scale-105">
-                              <Trash2 size={15} />
-                            </span>
+                            <Trash2 size={14} className="shrink-0 text-rose-300/90 transition-transform duration-200 group-hover:scale-105" />
                             <span>Sil</span>
                           </button>
                           </div>
