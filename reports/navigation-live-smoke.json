@@ -1,0 +1,52 @@
+{
+  "checkedAt": "2026-09-28T22:38:52.464Z",
+  "sourceCommit": "2d3e277",
+  "workerVersion": "dd788b28-4607-4450-b3de-4287d559369e",
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "location": null,
+      "contentType": "text/html; charset=utf-8",
+      "csp": true,
+      "hsts": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "path": "/popular",
+      "status": 200,
+      "location": null,
+      "contentType": "text/html; charset=utf-8",
+      "csp": true,
+      "hsts": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "path": "/new",
+      "status": 200,
+      "location": null,
+      "contentType": "text/html; charset=utf-8",
+      "csp": true,
+      "hsts": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "path": "/browse",
+      "status": 200,
+      "location": null,
+      "contentType": "text/html; charset=utf-8",
+      "csp": true,
+      "hsts": true,
+      "nosniff": "nosniff"
+    },
+    {
+      "path": "/admin",
+      "status": 307,
+      "location": "/login?redirect=%2Fadmin",
+      "contentType": null,
+      "csp": true,
+      "hsts": true,
+      "nosniff": "nosniff"
+    }
+  ]
+}

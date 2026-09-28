@@ -38,4 +38,17 @@ Yeni bağımlılık ve ağ çağrısı yoktur. Route observer yalnız URL deği�
 
 ## Yayın, geri dönüş ve handoff
 
-Push/deploy öncesi doğrulamalar tamamlandı. Önceki production Worker: `b78cd1a9-5b98-44d8-b8f8-17ae7dfc5dcc`. UI değişiklikleri bu işin commit'iyle geri alınabilir; DB migration/rollback gerekmiyor. Önceki Worker sürümüne dönüş uygulama yayınını geri alır. Çalışma sonunda release commit/Worker sürümü ve canlı smoke sonucu kaydedilir.
+Uygulama commit'i `2d3e277`, `origin/main` dalına pushlandı ve Cloudflare production yayını tamamlandı. Yeni Worker: `dd788b28-4607-4450-b3de-4287d559369e`. Canlı adres: https://www.kistas.com.tr.
+
+Canlı HTTP kontrolünde `/`, `/popular`, `/new`, `/browse` 200 döndü; anonim `/admin` isteği 307 ile girişe yönlendi. CSP, HSTS ve nosniff başlıkları korundu. Kanıt: `reports/navigation-live-smoke.json`. Canlı tarayıcıda `/?platform=Web` → `/popular?platform=Web&sort=top_voted` → Geri dön akışı kaynak URL ve Web filtresini korudu. Gerçek iPhone Safari hareketi ve gerçek admin oturumunda son kabul kontrolü ayrıca yapılmalıdır.
+
+Önceki production Worker: `b78cd1a9-5b98-44d8-b8f8-17ae7dfc5dcc`. UI değişiklikleri uygulama commit'iyle geri alınabilir; DB migration/rollback gerekmiyor. Önceki Worker sürümüne dönüş uygulama yayınını geri alır.
+
+```text
+Handoff State: KISTAS / main
+Uygulama: 2d3e277 — push ve production deploy tamamlandı.
+Worker: dd788b28-4607-4450-b3de-4287d559369e
+Kontroller: build, 21 web regresyonu, 47 tarayıcı senaryosu (tam koşu + hedefli tekrar), canlı filtreli geri dönüş.
+Kalan kabul: fiziksel iPhone Safari ve gerçek admin oturumu.
+DB değişikliği yok. Yedek henüz alınmadı.
+```
