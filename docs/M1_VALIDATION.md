@@ -1,5 +1,7 @@
 # M1 — Sunucu tarafında keşif motoru
 
+> 28 Eylül 2026 canlı yayın güncellemesi: M0/M1/M2 web paketi yayınlandı; 000002/000003/000004 migration’ları uygulandı, RLS/grant ve üç aktif cron doğrulandı. Bu belgedeki yerel aşama/handoff kayıtları tarihsel sonuçlardır. Güncel canlı durum ve sınırlar: [RELEASE_2026-09-28.md](RELEASE_2026-09-28.md).
+
 Tarih: 2026-09-28. Mimar'ın M1'e geçiş onayıyla uygulandı. Yerel doğrulama ve public read-only sorgu uyumu kanıtıdır; production deploy veya RLS sertifikası değildir.
 
 ## Mimari genel bakış

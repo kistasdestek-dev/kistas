@@ -1,6 +1,6 @@
 # KISTAS Mimari Gelişim Yol Haritası
 
-Tarih: 2026-09-28. Durum: M0/M1 yerelde tamamlandı; M2 yerel paket doğrulandı, canlı geçiş/kabul bekliyor; M3-M6 bekliyor. Kanıt ve sınırlar: [M0_VALIDATION.md](M0_VALIDATION.md), [M1_VALIDATION.md](M1_VALIDATION.md), [M2_VALIDATION.md](M2_VALIDATION.md).
+Tarih: 2026-09-28. Durum: M0/M1/M2 ve retention canlıya yayınlandı; gerçek oturum/eşzamanlılık kabul sınırları devam ediyor; M3-M6 bekliyor. Güncel yayın: [RELEASE_2026-09-28.md](RELEASE_2026-09-28.md). Kanıt ve sınırlar: [M0_VALIDATION.md](M0_VALIDATION.md), [M1_VALIDATION.md](M1_VALIDATION.md), [M2_VALIDATION.md](M2_VALIDATION.md).
 
 ## Amaç ve çalışma şekli
 

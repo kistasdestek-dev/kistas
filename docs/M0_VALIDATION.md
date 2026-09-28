@@ -1,5 +1,7 @@
 # M0 — Workers test kapısı ve ölçüm altyapısı
 
+> 28 Eylül 2026 canlı yayın güncellemesi: M0/M1/M2 web paketi yayınlandı; 000002/000003/000004 migration’ları uygulandı, RLS/grant ve üç aktif cron doğrulandı. Bu belgedeki yerel aşama/handoff kayıtları tarihsel sonuçlardır. Güncel canlı durum ve sınırlar: [RELEASE_2026-09-28.md](RELEASE_2026-09-28.md).
+
 Tarih: 2026-09-28. Yerel doğrulama kaydı; production release sertifikası değildir. Mimar faz başlamadan önce yedek aldığını bildirdi. Bu fazda deploy, migration veya commit yapılmadı.
 
 ## Mimari genel bakış

@@ -1,5 +1,7 @@
 # M2 — Atomik lansman ve kesintiye dayanıklı özel arşiv
 
+> 28 Eylül 2026 canlı yayın güncellemesi: M0/M1/M2 web paketi yayınlandı; 000002/000003/000004 migration’ları uygulandı, RLS/grant ve üç aktif cron doğrulandı. Bu belgedeki yerel aşama/handoff kayıtları tarihsel sonuçlardır. Güncel canlı durum ve sınırlar: [RELEASE_2026-09-28.md](RELEASE_2026-09-28.md).
+
 Güncel saklama kuralı: Mimar'ın sonraki onayıyla arşiv son düzenlemeden 72 saat sonra sona erer. Bildirim 72 saat, son gerçek mesajdan sonra sessiz görüşme 30 gün; [RETENTION_VALIDATION.md](RETENTION_VALIDATION.md) bu devam paketinin tek kaynağıdır. Önceki M2 raporu saklama süresi eklenmeden önceki baseline'dır.
 
 2026-09-28. Mimar'ın değiştirdiği kapsam: lansman adedi/sıklığı kısıtlanmaz; içerik tekilleştirme ve gönderim idempotency mekanizması yoktur. Kullanıcı bilinçli olarak aynı içeriği yeniden paylaşabilir. Taslak eşitleme ve proje düzenleme sürüm kontrolü, paylaşım kotasından ayrıdır.

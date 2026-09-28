@@ -1,5 +1,7 @@
 # M2 devamı — Arşiv, bildirim ve görüşme saklama süreleri
 
+> 28 Eylül 2026 canlı yayın güncellemesi: M0/M1/M2 web paketi yayınlandı; 000002/000003/000004 migration’ları uygulandı, RLS/grant ve üç aktif cron doğrulandı. Bu belgedeki yerel aşama/handoff kayıtları tarihsel sonuçlardır. Güncel canlı durum ve sınırlar: [RELEASE_2026-09-28.md](RELEASE_2026-09-28.md).
+
 2026-09-28. Mimar tarafından seçilen kapsam: arşiv **son düzenlemeden 72 saat**, bildirim **oluşturulmadan 72 saat**, görüşme **son gerçek mesajdan 30 gün**. Yeni düzenleme/mesaj kendi süresini yeniler. Bu belge M2'nin önceki sınırsız arşiv saklama davranışının yerine geçer.
 
 Durum: yerel uygulama ve doğrulama tamamlandı; 35/35 Workers E2E ve 28 PostgreSQL senaryosu başarılı. Yalnız production ortamı var. Canlı migration, cron çalıştırma, veri silme, deploy, commit ve yeni yedek yapılmadı.

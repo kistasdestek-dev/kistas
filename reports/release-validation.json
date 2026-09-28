@@ -1,0 +1,246 @@
+{
+  "capturedAt": "2026-09-28T16:35:04.793Z",
+  "status": "production-deployed",
+  "sourceCommit": "11b1100ff095be6cb24c17a5ece7a74fe28e3e1d",
+  "branch": "main",
+  "remote": "https://github.com/kistasdestek-dev/kistas",
+  "site": "https://www.kistas.com.tr",
+  "workerVersion": "d29c6b88-0ae4-4147-be7c-9723a4e97d3c",
+  "previousWorkerVersion": "2f619513-ec00-44ba-8abf-5d0148159c40",
+  "productionDatabase": {
+    "project": "iojgqicgeztqwkbetboa",
+    "grants": [
+      {
+        "anon": false,
+        "authenticated": false,
+        "function": "cleanup_expired_launch_archives"
+      },
+      {
+        "anon": false,
+        "authenticated": false,
+        "function": "cleanup_expired_notifications"
+      },
+      {
+        "anon": false,
+        "authenticated": false,
+        "function": "cleanup_idle_conversations"
+      },
+      {
+        "anon": false,
+        "authenticated": true,
+        "function": "save_launch_draft"
+      },
+      {
+        "anon": false,
+        "authenticated": true,
+        "function": "submit_launch"
+      }
+    ],
+    "jobs": [
+      {
+        "active": true,
+        "command": "SELECT public.select_daily_showcase_winners();",
+        "name": "kistas-daily-showcase-leaders",
+        "owner": "postgres",
+        "schedule": "0 21 * * *"
+      },
+      {
+        "active": true,
+        "command": "SELECT public.select_daily_showcase_winners();",
+        "name": "kistas-daily-showcase-reconciliation",
+        "owner": "postgres",
+        "schedule": "17 * * * *"
+      },
+      {
+        "active": true,
+        "command": "SELECT public.cleanup_expired_notifications();",
+        "name": "kistas-notifications-retention-cleanup",
+        "owner": "postgres",
+        "schedule": "17 * * * *"
+      },
+      {
+        "active": true,
+        "command": "SELECT public.cleanup_expired_launch_archives();",
+        "name": "kistas-launch-archive-retention-cleanup",
+        "owner": "postgres",
+        "schedule": "27 * * * *"
+      },
+      {
+        "active": true,
+        "command": "SELECT public.cleanup_idle_conversations();",
+        "name": "kistas-idle-conversations-cleanup",
+        "owner": "postgres",
+        "schedule": "37 * * * *"
+      }
+    ],
+    "migrations": [
+      {
+        "name": "atomic_launch_and_private_archive",
+        "version": "20260928000002"
+      },
+      {
+        "name": "archive_notification_and_idle_chat_retention",
+        "version": "20260928000003"
+      },
+      {
+        "name": "schedule_retention_cleanup",
+        "version": "20260928000004"
+      }
+    ],
+    "policy": [
+      "((owner_id = auth.uid()) AND (updated_at > (statement_timestamp() - '72:00:00'::interval)))"
+    ],
+    "recent_runs": [
+      {
+        "end_time": "2026-09-28T16:27:00.305904+00:00",
+        "jobname": "kistas-launch-archive-retention-cleanup",
+        "return_message": "1 row",
+        "start_time": "2026-09-28T16:27:00.296525+00:00",
+        "status": "succeeded"
+      }
+    ],
+    "rls": true,
+    "cron": {
+      "jobs": [
+        {
+          "active": true,
+          "command": "SELECT public.select_daily_showcase_winners();",
+          "name": "kistas-daily-showcase-leaders",
+          "owner": "postgres",
+          "schedule": "0 21 * * *"
+        },
+        {
+          "active": true,
+          "command": "SELECT public.select_daily_showcase_winners();",
+          "name": "kistas-daily-showcase-reconciliation",
+          "owner": "postgres",
+          "schedule": "17 * * * *"
+        },
+        {
+          "active": true,
+          "command": "SELECT public.cleanup_expired_notifications();",
+          "name": "kistas-notifications-retention-cleanup",
+          "owner": "postgres",
+          "schedule": "17 * * * *"
+        },
+        {
+          "active": true,
+          "command": "SELECT public.cleanup_expired_launch_archives();",
+          "name": "kistas-launch-archive-retention-cleanup",
+          "owner": "postgres",
+          "schedule": "27 * * * *"
+        },
+        {
+          "active": true,
+          "command": "SELECT public.cleanup_idle_conversations();",
+          "name": "kistas-idle-conversations-cleanup",
+          "owner": "postgres",
+          "schedule": "37 * * * *"
+        }
+      ],
+      "now": "2026-09-28T16:33:37.337162+00:00",
+      "recent_runs": [
+        {
+          "end_time": "2026-09-28T16:27:00.305904+00:00",
+          "jobname": "kistas-launch-archive-retention-cleanup",
+          "return_message": "1 row",
+          "start_time": "2026-09-28T16:27:00.296525+00:00",
+          "status": "succeeded"
+        }
+      ]
+    }
+  },
+  "checks": {
+    "localQuality": "15/15 workspace tasks passed without cache; 34 regression files; 84 domain checks",
+    "workersE2E": "Final rebuilt bundle: 35/35 passed in 1.8m, retries 0",
+    "security": "885 staged/tracked files; secret/XSS/SQL guards passed; audit 0 known vulnerabilities",
+    "http": [
+      {
+        "path": "/",
+        "status": 200,
+        "location": null,
+        "cache": "no-store, must-revalidate",
+        "bytes": 92055,
+        "containsError": false
+      },
+      {
+        "path": "/new",
+        "status": 200,
+        "location": null,
+        "cache": "no-store, must-revalidate",
+        "bytes": 49663,
+        "containsError": false
+      },
+      {
+        "path": "/popular",
+        "status": 200,
+        "location": null,
+        "cache": "no-store, must-revalidate",
+        "bytes": 49050,
+        "containsError": false
+      },
+      {
+        "path": "/browse",
+        "status": 200,
+        "location": null,
+        "cache": "private, max-age=0, must-revalidate",
+        "bytes": 46345,
+        "containsError": false
+      },
+      {
+        "path": "/launch-archive",
+        "status": 307,
+        "location": "/login?redirect=%2Flaunch-archive",
+        "cache": null,
+        "bytes": 0,
+        "containsError": false
+      },
+      {
+        "path": "/create-listing",
+        "status": 307,
+        "location": "/login?redirect=%2Fcreate-listing",
+        "cache": null,
+        "bytes": 0,
+        "containsError": false
+      },
+      {
+        "path": "/api/launch-drafts",
+        "status": 401,
+        "location": null,
+        "cache": "no-store, must-revalidate",
+        "bytes": 25,
+        "containsError": false
+      }
+    ],
+    "productionBrowser": {
+      "capturedAt": "2026-09-28T16:33:27.499Z",
+      "viewport": "1280x720",
+      "site": "https://www.kistas.com.tr",
+      "normalConsentDenyClick": "passed",
+      "persistedConsent": "denied"
+    }
+  },
+  "backup": {
+    "source": "backups/KISTAS_backup_2026-09-28_17-11.zip",
+    "database": "backups/KISTAS_public_db_before_release_2026-09-28_17-10.dpapi",
+    "databaseScope": "38 public application tables and rollback schema metadata; Windows DPAPI CurrentUser encryption verified; not a full cluster/Auth/Storage/PITR backup"
+  },
+  "ci": {
+    "id": 36451540201,
+    "status": "completed",
+    "conclusion": "success",
+    "sha": "11b1100ff095be6cb24c17a5ece7a74fe28e3e1d",
+    "url": "https://github.com/kistasdestek-dev/kistas/actions/runs/36451540201"
+  },
+  "limitations": [
+    "Actual authenticated Auth/Storage journeys and independent-connection concurrency/load remain unverified in production.",
+    "Archive cleanup first scheduled run succeeded at 16:27 UTC; notification and conversation first scheduled runs are pending at capture.",
+    "Closed browser local files cannot be pruned until the device opens the app; Storage orphan garbage collection is not implemented."
+  ],
+  "resolvedReleaseIssue": {
+    "initialCi": "https://github.com/kistasdestek-dev/kistas/actions/runs/36450826768",
+    "finding": "Dock intercepted consent deny pointer events at desktop viewport.",
+    "fixCommit": "11b1100ff095be6cb24c17a5ece7a74fe28e3e1d",
+    "fix": "Consent panel z-index moved above the dock; normal click passed locally, in Linux CI and on production."
+  }
+}
