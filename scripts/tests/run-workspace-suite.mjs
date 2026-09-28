@@ -24,6 +24,7 @@ const suites = {
     'typography-system.test.mjs',
   ],
   web: [
+    'route-navigation.test.mjs',
     'web-admin-center.test.mjs',
     'web-discovery-citrus-glass.test.mjs',
     'web-project-logo-shape.test.mjs',

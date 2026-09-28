@@ -1,5 +1,14 @@
 # KISTAS Monorepo Mimarisi Sertleştirme Planı
 
+## Glass mobil yönetim ve ortak geri navigasyonu — Mimar onayı: 2026-09-29
+
+- Toplam Proje tablosunu Topluluk ile aynı responsive glass kart düzenine taşı; arama, durum filtreleri ve mevcut yönetim işlemlerini koru.
+- Keşfet bölüm oklarına beyaz yüzey/çerçeve içermeyen ortak glass varyantı ekle.
+- Sayfa geçmişini, filtreli URL'leri ve scroll konumunu koruyan ortak geri davranışı; geçmiş yoksa güvenli dahili üst rota.
+- Tüm alt sayfalarda sakin glass geri oku; mevcut geri aksiyonları ortaklaştırılır. iOS native hareketi korunur; diğer touch cihazlarda sol kenar hareketi, dialog/galeri/dikey kaydırma korumasıyla uygulanır.
+- Kısa geri animasyonu, reduced-motion tercihi, çift geri koruması, listener/timer temizliği. Yeni bağımlılık, RPC veya migration yok.
+- Tip/lint/regresyon, Workers E2E ve responsive görsel kontrolünden sonra main push ve Cloudflare production deploy Mimar tarafından onaylandı.
+
 ## Keşfet navigasyonu ve bağımsız Günün Vitrini — Mimar onayı: 2026-09-28
 
 - Popüler/Yeni/Günün Vitrini başlıkları ve yanlarındaki ortak ChevronRight GlassIconButton aynı filtreli rotayı açar; Tümünü Gör kaldırılır.

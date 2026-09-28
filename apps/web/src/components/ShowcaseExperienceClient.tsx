@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { ArrowLeft, Clock3, Sparkles } from 'lucide-react';
 import { discoveryHref, type Category, type DiscoveryCard, type DiscoveryState } from '@kistas/shared';
-import { GlassIconButton } from './GlassIconButton';
+import { SiteBackButton } from './SiteNavigation';
 import { TodayShowcaseRow } from './TodayShowcaseRow';
 
 export function ShowcaseExperienceClient({ projects, state, categories, timestamp }: {
@@ -18,10 +18,7 @@ export function ShowcaseExperienceClient({ projects, state, categories, timestam
     <main className="showcase-page">
       <header className="showcase-page-hero">
         <div className="showcase-page-ambient" aria-hidden="true" />
-        <Link href={backHref} className="relative inline-flex items-center gap-2.5 rounded-full text-xs font-semibold text-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-300">
-          <GlassIconButton icon={ArrowLeft} as="div" size={36} iconSize={17} />
-          <span>Keşfet’e dön</span>
-        </Link>
+        <div className="relative inline-flex items-center gap-2.5 text-xs font-semibold text-slate-300"><SiteBackButton fallback={backHref} size={36} /><span>Geri dön</span></div>
 
         <div className="showcase-page-intro">
           <div>

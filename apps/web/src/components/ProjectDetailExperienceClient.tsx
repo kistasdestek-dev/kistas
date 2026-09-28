@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import Link from 'next/link';
+
 import {
-  ChevronLeft,
   ChevronUp,
   Share2,
   Apple,
@@ -18,6 +17,7 @@ import {
 import dynamic from 'next/dynamic';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 import { GlassIconButton } from './GlassIconButton';
+import { SiteBackButton } from "./SiteNavigation";
 import { ShinyButton } from './ui/shiny-button';
 import { DescriptionRichText } from './DescriptionRichText';
 import { ProjectScreenshotsGallery } from './ProjectScreenshotsGallery';
@@ -222,14 +222,7 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
     <div className="min-h-screen bg-transparent text-[#F8FAFC] selection:bg-[#3B82F6]/30">
       {/* 1. Sticky Navigation Header */}
       <div className="sticky top-0 z-40 bg-[#080C14]/75 backdrop-blur-xl px-4 sm:px-8 py-3 border-b border-transparent sm:border-white/10 flex items-center justify-between">
-        <Link href="/browse">
-          <GlassIconButton
-            icon={ChevronLeft}
-            size={38}
-            iconSize={20}
-            title="Keşfet Ekranına Dön"
-          />
-        </Link>
+        <SiteBackButton fallback="/browse" />
       </div>
 
       <main className="container mx-auto max-w-4xl px-4 py-4 sm:py-6 sm:px-6 lg:px-8">

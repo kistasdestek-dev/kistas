@@ -8,7 +8,7 @@ interface GlassIconButtonProps {
   icon: LucideIcon;
   onClick?: () => void;
   as?: 'button' | 'div' | 'span';
-  variant?: 'default' | 'bare';
+  variant?: 'default' | 'bare' | 'glass';
   size?: number;
   iconSize?: number;
   iconColor?: string;
@@ -44,6 +44,8 @@ export const GlassIconButton: React.FC<GlassIconButtonProps> = ({
   const Component = as || (onClick ? 'button' : 'div');
   const surfaceClasses = variant === 'bare'
     ? 'border-transparent bg-transparent shadow-none hover:opacity-75'
+    : variant === 'glass'
+      ? 'border-transparent bg-blue-400/[0.07] text-blue-200 shadow-[inset_0_1px_0_rgba(148,190,255,0.1),0_3px_12px_rgba(20,65,130,0.12)] hover:bg-blue-400/[0.12]'
     : active
       ? 'bg-gradient-to-b from-[#EEF5FF] to-[#DFEDFF] shadow-[0_4px_14px_rgba(50,105,199,0.28)] border-[#3269C7]/35 scale-95'
       : 'bg-gradient-to-b from-[#FFFFFF] to-[#EEF5FF] shadow-[0_4px_18px_rgba(50,105,199,0.20),0_2px_6px_rgba(0,0,0,0.12)] hover:shadow-[0_6px_24px_rgba(50,105,199,0.38)] hover:border-[#3269C7]/45 hover:-translate-y-0.5';

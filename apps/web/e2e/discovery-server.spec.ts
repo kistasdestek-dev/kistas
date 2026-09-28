@@ -24,6 +24,7 @@ test('Sunucu araması URL, yenileme ve geliştirici alanında doğru sonucu koru
 
 test('Popüler listesi cursor ile 30 kayıttan sonrasına erişmeli ve yeni filtrede reddetmeli', async ({ page }) => {
   await page.goto('/popular', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('button', { name: 'Reddet', exact: true }).click();
   const projectLinks = page.locator('a.ios-project-row');
   await expect(projectLinks).toHaveCount(30);
   const firstIds = await projectLinks.evaluateAll((links) => links.map((link) => link.getAttribute('href')));

@@ -12,7 +12,7 @@ export function DiscoverySectionHeading({ title, subtitle, href }: { title?: str
           {href ? <Link href={href} className="rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-300">{title}</Link> : title}
         </h2>}
         {href && <Link href={href} aria-label={`${title || 'Projeler'} sayfasını aç`} className="shrink-0 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-300">
-          <GlassIconButton icon={ChevronRight} as="div" size={34} iconSize={19} />
+          <GlassIconButton icon={ChevronRight} as="div" variant="glass" size={34} iconSize={19} iconColor="#A8C8FB" />
         </Link>}
       </div>
       {subtitle && <p className="ios-project-subtitle">{subtitle}</p>}

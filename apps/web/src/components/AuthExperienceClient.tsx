@@ -3,10 +3,10 @@
 import React, { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Lock, User, Eye, EyeOff, ArrowRight, ArrowLeft, Loader2, Check } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Loader2, Check } from 'lucide-react';
 import { LoginAvatarVideo } from './LoginAvatarVideo';
 import { ParsDevstateLogo } from './ParsDevstateLogo';
-import { GlassIconButton } from './GlassIconButton';
+import { SiteBackButton } from "./SiteNavigation";
 import { Typewriter } from './Typewriter';
 import { HoneypotDecoyField } from './HoneypotDecoyField';
 import { LegalModal, LEGAL_DOCUMENTS, LegalDoc } from './LegalModal';
@@ -291,15 +291,7 @@ export const AuthExperienceClient: React.FC<AuthExperienceClientProps> = ({ mode
 
       {/* Top Left Floating Back Button (Kıstas Tasarım Sistemi - GlassIconButton) */}
       <div className="absolute top-3 left-3 sm:top-5 sm:left-6 z-20">
-        <Link href="/" title="Ana Sayfaya Dön" aria-label="Ana Sayfaya Dön">
-          <GlassIconButton
-            icon={ArrowLeft}
-            size={40}
-            iconSize={18}
-            title="Ana Sayfaya Dön"
-            as="div"
-          />
-        </Link>
+        <SiteBackButton />
       </div>
 
       {/* Stage / Form Container */}

@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   Compass,
   Rocket,
@@ -11,13 +10,12 @@ import {
   Heart,
   Users,
   TrendingUp,
-  ArrowLeft,
   Sparkles,
   ArrowRight,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { KistasTopBrandBar } from '@/components/KistasTopBrandBar';
-import { GlassIconButton } from '@/components/GlassIconButton';
+import { SiteBackButton } from '@/components/SiteNavigation';
 
 const SplineSceneRobot = dynamic(
   () => import('@/components/ui/SplineSceneRobot').then((mod) => mod.SplineSceneRobot),
@@ -32,7 +30,6 @@ const SplineSceneRobot = dynamic(
 );
 
 export const AboutExperienceClient: React.FC = () => {
-  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-transparent text-white flex flex-col font-sans selection:bg-[#3269C7]/30 selection:text-white">
@@ -40,12 +37,7 @@ export const AboutExperienceClient: React.FC = () => {
       <header className="border-b border-white/10 bg-[#080C14]/75 backdrop-blur-xl sticky top-0 z-40">
         <div className="mx-auto max-w-[1240px] px-4 py-3 flex items-center justify-between sm:px-6">
           <div className="flex items-center gap-3">
-            <GlassIconButton
-              icon={ArrowLeft}
-              title="Geri Dön"
-              ariaLabel="Geri Dön"
-              onClick={() => router.back()}
-            />
+            <SiteBackButton />
             <div className="h-6 w-px bg-white/15" />
             <Link href="/" className="text-sm font-semibold text-[#60A5FA] hover:underline">
               Ana Sayfa

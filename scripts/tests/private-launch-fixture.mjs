@@ -1,4 +1,5 @@
 // Test-only Auth/PostgREST/Storage responses; never forwarded to a real service.
+import { listing } from './discovery-fixture.mjs';
 export const launchUsers = ['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'];
 export function launchSession(id = launchUsers[0]) {
   const exp = Math.floor(Date.now() / 1000) + 86400;
@@ -20,6 +21,14 @@ export async function privateLaunchFixtureResponse(request) {
   const session = sessions.find(item=>item.user.id===subject); if (!session) throw new Error('Unknown fixture identity');
   if (url.pathname === '/auth/v1/user' && request.method==='GET') return Response.json(session.user);
   const resource=url.pathname.split('/').at(-1);
+  if (request.method === 'POST' && resource === 'get_current_admin_access') return Response.json({is_admin:subject===launchUsers[0],is_owner:subject===launchUsers[0],permissions:['community','listings','moderation'],admin_tier:'owner'});
+  if (request.method === 'POST' && resource === 'get_admin_dashboard_stats') return Response.json({total_projects:3,active_projects:1,pending_projects:1,total_users:1});
+  if (request.method === 'POST' && resource === 'get_admin_users') return Response.json([{user_id:subject,full_name:'Test Üretici',email:'maker@example.test',user_role:'user',projects_count:3}]);
+  if (request.method === 'GET' && resource === 'listings') return Response.json([
+    {...listing,title:'Mobil Glass Proje',tagline:'Dar ekranda okunabilir proje açıklaması',status:'active',upvote_count:42,view_count:1200},
+    {...listing,id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',title:'Bekleyen Proje',status:'draft',upvote_count:0,view_count:0},
+    {...listing,id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd',title:'Askıdaki Proje',status:'banned',upvote_count:12,view_count:300},
+  ]);
   if (request.method==='POST' && resource==='save_launch_draft') {
     const body=await request.json();const current=drafts.get(body.p_id);
     if (current && current.owner_id!==subject) return Response.json({code:'P0001',message:'FORBIDDEN'},{status:403});

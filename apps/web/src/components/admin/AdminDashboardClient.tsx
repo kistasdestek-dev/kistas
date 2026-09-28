@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  ChevronLeft,
   Clock,
   MessageSquare,
   Eye,
@@ -17,7 +16,7 @@ import {
   ArrowRight,
   Megaphone,
 } from 'lucide-react';
-import { GlassIconButton } from '../GlassIconButton';
+import { SiteBackButton } from "../SiteNavigation";
 import { AdminModerationView } from './AdminModerationView';
 import { AdminListingsView } from './AdminListingsView';
 import { AdminSponsorsView } from './AdminSponsorsView';
@@ -242,16 +241,7 @@ export const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
       {/* Ana Çalışma Alanı */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-8 space-y-6">
         <div className="flex items-center gap-3">
-          <GlassIconButton
-            icon={ChevronLeft}
-            variant="bare"
-            size={44}
-            iconSize={21}
-            iconColor="#DCEAFF"
-            className="border-white/12 bg-white/[0.055] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_28px_rgba(0,0,0,0.25)] hover:bg-white/[0.1]"
-            onClick={() => router.back()}
-            title="Geri dön"
-          />
+          <SiteBackButton />
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#76A9FF]">Kıstas Operasyon</p>
             <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Yönetim Merkezi</h1>

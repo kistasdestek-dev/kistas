@@ -5,7 +5,6 @@ import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { motion, useAnimationControls, useReducedMotion } from 'framer-motion';
 import {
-  ChevronLeft,
   RotateCw,
   Search,
   X,
@@ -16,6 +15,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { GlassIconButton } from '../GlassIconButton';
+import { SiteBackButton } from '../SiteNavigation';
 import { KistasLogo } from '../KistasLogo';
 import { KistasFeedbackModal, KistasFeedbackType } from '../KistasFeedbackModal';
 import { ConversationCard } from './ConversationCard';
@@ -281,14 +281,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
       <header className="hidden lg:block z-40 bg-[radial-gradient(circle_at_50%_-40%,rgba(33,188,219,0.42),rgba(12,34,58,0.88)_45%,#080C14_82%)] backdrop-blur-xl border-b border-white/[0.08] shrink-0">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between">
           <div className="flex items-center gap-3 sm:gap-4">
-            <GlassIconButton
-              icon={ChevronLeft}
-              size={38}
-              iconSize={18}
-              onClick={() => router.back()}
-              title="Geri dön"
-              animation="nudge"
-            />
+            <SiteBackButton />
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 flex items-center justify-center">
                 <KistasLogo size={28} showWordmark={false} glow />
@@ -347,7 +340,7 @@ export const MessagesExperienceClient: React.FC<MessagesExperienceClientProps> =
             }`}
           >
             <div className="lg:hidden relative h-[218px] -mx-3 overflow-hidden bg-[radial-gradient(ellipse_at_50%_0%,rgba(31,167,202,0.25),rgba(10,22,38,0.52)_53%,#0A0F19_85%)] shrink-0">
-              <GlassIconButton icon={ChevronLeft} variant="bare" size={38} iconSize={18} iconColor="#A8C8FB" onClick={() => router.back()} title="Geri dön" className="!absolute left-4 top-4 z-10 !bg-[#1A2B41] !border-white/10 !shadow-none" />
+              <SiteBackButton className="!absolute left-4 top-4 z-10" />
               <div className="absolute left-1/2 top-[62px] -translate-x-1/2">
                 <ChatAvatar imageUrl={currentUserAvatarUrl} alt={currentUserName} size={92} />
               </div>

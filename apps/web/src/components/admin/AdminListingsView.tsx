@@ -22,6 +22,8 @@ interface AdminListingsViewProps {
   onRefresh: () => void;
 }
 
+const grantActionClass = 'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-blue-400/25 bg-blue-500/10 px-2 text-xs font-bold text-[#A9CAFF] transition hover:bg-blue-500/20 disabled:opacity-50';
+
 export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
   listings,
   onRefresh,
@@ -105,7 +107,7 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
       {/* Search and Filters Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Search Input */}
-        <div className="relative flex-1 max-w-md">
+        <div className="relative w-full min-w-0 flex-1 sm:max-w-md">
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
@@ -117,7 +119,7 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           {([
             ['all', `Tümü (${listings.length})`],
             ['active', 'Yayında'],
@@ -141,179 +143,39 @@ export const AdminListingsView: React.FC<AdminListingsViewProps> = ({
         </div>
       </div>
 
-      {/* Projects Table / Card List */}
-      <div className="rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl shadow-[0_24px_60px_rgba(0,0,0,0.7)] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] text-[10px] font-bold text-[#8DB9FF] uppercase tracking-wider">
-                <th className="py-4 px-6">Proje Bilgisi</th>
-                <th className="py-4 px-4">Durum</th>
-                <th className="py-4 px-4">Destek</th>
-                <th className="py-4 px-4">Görünürlük</th>
-                <th className="py-4 px-6 text-right">Yönetim Aksiyonları</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.06] text-xs">
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center text-xs text-slate-400">
-                    Filtreye uygun proje bulunamadı.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((item) => {
-                  const active = isActive(item.status as string);
-                  const isBusy = actionBusyId === item.id;
-                  const upvotes = (item as any).upvotes_count || item.upvote_count || 0;
-                  const views = (item as any).view_count || 0;
-
-                  return (
-                    <tr key={item.id} className="hover:bg-white/[0.03] transition-colors">
-                      {/* Title & Logo */}
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 shrink-0 flex items-center justify-center">
-                            {item.logo_url ? (
-                              <AutoTransparentLogo src={item.logo_url} alt={item.title} className="h-9 w-9 object-contain drop-shadow-[0_5px_12px_rgba(0,0,0,0.35)]" />
-                            ) : (
-                              <span className="text-xs font-black text-[#8DB9FF]">
-                                {item.title.slice(0, 2).toUpperCase()}
-                              </span>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-bold text-white truncate max-w-[200px]">
-                              {item.title}
-                            </p>
-                            <p className="text-[10px] text-[#94A3B8] truncate max-w-[200px]">
-                              {item.tagline || 'Dijital proje'}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Status */}
-                      <td className="py-4 px-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                            active
-                              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                              : isPending(item.status as string)
-                                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                                : isRevision(item.status as string)
-                                  ? 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30'
-                                  : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
-                          }`}
-                        >
-                          <span
-                            className={`h-1.5 w-1.5 rounded-full ${
-                              active
-                                ? 'bg-emerald-400'
-                                : isPending(item.status as string)
-                                  ? 'bg-amber-400'
-                                  : isRevision(item.status as string)
-                                    ? 'bg-yellow-400'
-                                    : 'bg-rose-400'
-                            }`}
-                          />
-                          <span>
-                            {active ? 'Yayında' : isPending(item.status as string) ? 'Bekliyor' : isRevision(item.status as string) ? 'Düzeltmede' : 'Askıda'}
-                          </span>
-                        </span>
-                      </td>
-
-                      {/* Upvotes */}
-                      <td className="py-4 px-4 font-bold text-white">
-                        <span className="inline-flex items-center gap-1 text-[#8DB9FF]">
-                          <Heart size={12} />
-                          <span>{upvotes}</span>
-                        </span>
-                      </td>
-
-                      {/* Views */}
-                      <td className="py-4 px-4 text-[#94A3B8] font-medium">
-                        <span className="inline-flex items-center gap-1">
-                          <Eye size={12} />
-                          <span>{views}</span>
-                        </span>
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-4 px-6 text-right">
-                        <div className="inline-flex items-center justify-end gap-1.5">
-                          {/* Grant Upvotes */}
-                          <button
-                            type="button"
-                            onClick={() => setSupportModalTarget({ id: item.id, title: item.title, type: 'support' })}
-                            className="h-8 px-2.5 rounded-lg border border-[#3269C7]/40 bg-[#3269C7]/20 text-[#8DB9FF] text-[11px] font-bold hover:bg-[#3269C7]/30 transition-all cursor-pointer"
-                            title="Yönetim Desteği Ver"
-                          >
-                            +Destek
-                          </button>
-
-                          {/* Grant Views */}
-                          <button
-                            type="button"
-                            onClick={() => setSupportModalTarget({ id: item.id, title: item.title, type: 'views' })}
-                            className="h-8 px-2.5 rounded-lg border border-emerald-500/40 bg-emerald-500/20 text-emerald-300 text-[11px] font-bold hover:bg-emerald-500/30 transition-all cursor-pointer"
-                            title="Görünürlük Tanımla"
-                          >
-                            +İzlenme
-                          </button>
-
-                          {/* Toggle Active / Suspend */}
-                          <button
-                            type="button"
-                            disabled={isBusy}
-                            onClick={() => handleToggleStatus(item.id, item.status as string)}
-                            className={`h-8 px-2.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer disabled:opacity-50 ${
-                              active
-                                ? 'border-rose-500/40 bg-rose-500/20 text-rose-300 hover:bg-rose-500/30'
-                                : 'border-emerald-500/40 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
-                            }`}
-                            title={active ? 'Askıya Al' : 'Yayınla'}
-                          >
-                            {active ? 'Askıya Al' : 'Yayınla'}
-                          </button>
-
-                          {/* Preview */}
-                          {(() => {
-                            const safeProjectUrl = `/listings/${(item as any).slug || item.id}`;
-                            return (
-                              <Link
-                                href={safeProjectUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.05] text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                                title="Vitrinde Gör"
-                              >
-                                <ExternalLink size={13} />
-                              </Link>
-                            );
-                          })()}
-
-                          {/* Delete */}
-                          <button
-                            type="button"
-                            disabled={isBusy}
-                            onClick={() => setDeleteTarget(item)}
-                            className="h-8 w-8 inline-flex items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/15 text-rose-300 hover:bg-rose-500/25 transition-colors disabled:opacity-50 cursor-pointer"
-                            title="Projeyi Sil"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+      {filtered.length === 0 ? <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-8 text-center text-xs text-slate-400">Filtreye uygun proje bulunamadı.</div> : (
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          {filtered.map(item => {
+            const active = isActive(item.status as string);
+            const isBusy = Boolean(actionBusyId) || isDeleting;
+            const statusLabel = active ? 'Yayında' : isPending(item.status as string) ? 'Bekliyor' : isRevision(item.status as string) ? 'Düzeltmede' : 'Askıda';
+            const statusColor = active ? 'text-emerald-300 bg-emerald-500/10 border-emerald-400/20' : isPending(item.status as string) || isRevision(item.status as string) ? 'text-amber-300 bg-amber-500/10 border-amber-400/20' : 'text-rose-300 bg-rose-500/10 border-rose-400/20';
+            return <article key={item.id} className="relative min-w-0 overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br from-white/[0.065] to-white/[0.025] p-4 shadow-[0_18px_45px_rgba(0,0,0,0.28)] backdrop-blur-2xl sm:p-5">
+              <div className="pointer-events-none absolute -right-12 -top-16 h-36 w-36 rounded-full bg-blue-500/10 blur-3xl" aria-hidden="true" />
+              <div className="relative flex min-w-0 items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center">{item.logo_url ? <AutoTransparentLogo src={item.logo_url} alt={item.title} className="h-9 w-9 object-contain drop-shadow-[0_5px_12px_rgba(0,0,0,0.35)]" /> : <span className="text-sm font-black text-[#8DB9FF]">{item.title.slice(0, 2).toUpperCase()}</span>}</div>
+                <div className="min-w-0 flex-1"><h3 className="truncate text-sm font-black text-white" title={item.title}>{item.title}</h3><p className="mt-1 line-clamp-2 break-words text-[11px] leading-4 text-[#94A3B8]">{item.tagline || 'Dijital proje'}</p></div>
+                <span className={'shrink-0 rounded-full border px-2.5 py-1 text-[9px] font-bold ' + statusColor}>{statusLabel}</span>
+              </div>
+              <div className="relative mt-4 grid grid-cols-2 gap-2">
+                <div className="min-w-0 rounded-2xl border border-white/[0.08] bg-black/15 p-3"><p className="flex items-center gap-1.5 text-[10px] font-semibold text-[#94A3B8]"><Heart size={12} />Destek</p><p className="mt-1 truncate text-sm font-black text-[#A9CAFF]">{(item.upvote_count || 0).toLocaleString('tr-TR')}</p></div>
+                <div className="min-w-0 rounded-2xl border border-white/[0.08] bg-black/15 p-3"><p className="flex items-center gap-1.5 text-[10px] font-semibold text-[#94A3B8]"><Eye size={12} />Görüntülenme</p><p className="mt-1 truncate text-sm font-black text-white">{(item.view_count || 0).toLocaleString('tr-TR')}</p></div>
+              </div>
+              <div className="relative mt-3 space-y-2 rounded-2xl border border-white/10 bg-[#091326]/75 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" disabled={isBusy} onClick={() => setSupportModalTarget({ id: item.id, title: item.title, type: 'support' })} className={grantActionClass}><Heart size={14} />Destek Ver</button>
+                  <button type="button" disabled={isBusy} onClick={() => setSupportModalTarget({ id: item.id, title: item.title, type: 'views' })} className={grantActionClass}><Eye size={14} />İzlenme Ver</button>
+                </div>
+                <div className="grid grid-cols-[1fr_auto_auto] items-center gap-2">
+                  <button type="button" disabled={isBusy} onClick={() => handleToggleStatus(item.id, item.status as string)} className={'inline-flex min-h-11 items-center justify-center rounded-xl border px-3 text-xs font-bold transition disabled:opacity-50 ' + (active ? 'border-rose-400/20 bg-rose-500/[0.08] text-rose-300 hover:bg-rose-500/15' : 'border-emerald-400/20 bg-emerald-500/[0.08] text-emerald-300 hover:bg-emerald-500/15')}>{active ? 'Askıya Al' : 'Yayınla'}</button>
+                  <Link href={'/listings/' + item.id} target="_blank" rel="noopener noreferrer" aria-label={item.title + ' projesini vitrinde gör'} className="rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"><GlassIconButton icon={ExternalLink} as="div" variant="glass" size={44} iconSize={17} iconColor="#A8C8FB" /></Link>
+                  <GlassIconButton icon={Trash2} variant="glass" size={44} iconSize={17} iconColor="#FDA4AF" onClick={() => setDeleteTarget(item)} disabled={isBusy} title={item.title + ' projesini sil'} />
+                </div>
+              </div>
+            </article>;
+          })}
         </div>
-      </div>
-
+      )}
       {/* Grant Support Modal */}
       {supportModalTarget && (
         <GrantSupportModal

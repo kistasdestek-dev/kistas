@@ -1,5 +1,11 @@
 # KISTAS GUVENLIK YOL HARITASI
 
+## 2026-09-29 — Glass proje kartları ve ortak geri navigasyonu
+
+Mimar UI, push ve deploy kapsamını onayladı. Değişiklik yalnız sunum/navigasyon katmanındadır; yeni tablo, RPC, grant, kimlik veya veri yazma yolu eklenmez. Admin işlemleri mevcut sunucu yetki kontrolü ve silme onayından geçmeye devam eder. Geri hedefleri dahili rotadır; history metadata doğrulanır. Sekme kurtarma metadata'sı yalnız pathname/derinlik içerir; query, PII, token veya form verisi saklanmaz ve dış servise iletilmez.
+
+Zorunlu kontrol listesi UI kapsamında değerlendirildi. Yeni secret/input/upload/ödeme/harici URL yoktur. Mevcut güvenlik statüleri değiştirilmedi. Dialog/galeri/dikey kaydırma koruması, reduced-motion ve çift geri engeli eklendi. Kanıt, gerçek cihaz sınırı ve geri dönüş: `docs/GLASS_NAVIGATION_VALIDATION.md`.
+
 ## 2026-09-28 — Günün Vitrini public okuma sınırı
 
 Yeni `/gunun-vitrini` rotası mevcut `loadDiscovery` active/anon sorgularını ve allowlist/uzunluk kontrollü discovery parser'ını kullanır. Yeni tablo, RLS, RPC, kredi/oy yazması, upload, secret veya dış servis eklenmedi. Başlık ve glass ikon hedefleri sabit iç rotalardır; q/category/platform kapsamı mevcut URL encoder ile korunur. İstemciye DiscoveryCard dışında özel profil/seller bilgisi eklenmez. Arama mevcut sözleşme gereği kalıcı cache'e alınmaz; ilk seçki ve kategori cache sınırları korunur.

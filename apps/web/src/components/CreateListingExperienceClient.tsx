@@ -4,7 +4,6 @@ import React, { useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowLeft,
   AlertCircle,
   Camera,
   Upload,
@@ -18,7 +17,7 @@ import {
   Check,
 } from 'lucide-react';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
-import { GlassIconButton } from './GlassIconButton';
+import { SiteBackButton } from "./SiteNavigation";
 import { DiscoveryRevealStatement } from './DiscoveryRevealStatement';
 import { DescriptionRichText } from './DescriptionRichText';
 import { HoneypotDecoyField } from './HoneypotDecoyField';
@@ -422,19 +421,7 @@ export const CreateListingExperienceClient: React.FC<CreateListingExperienceClie
       <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         {/* Back Link */}
         <div className="mb-6">
-          <Link
-            href={isEditing ? '/profile' : '/'}
-            title={isEditing ? 'Profile Dön' : 'Ana Sayfaya Dön'}
-            aria-label={isEditing ? 'Profile Dön' : 'Ana Sayfaya Dön'}
-          >
-            <GlassIconButton
-              icon={ArrowLeft}
-              size={40}
-              iconSize={18}
-              title={isEditing ? 'Profile Dön' : 'Ana Sayfaya Dön'}
-              as="div"
-            />
-          </Link>
+          <SiteBackButton fallback={isEditing ? "/profile" : "/"} size={40} />
         </div>
 
         {/* Intro Banner */}

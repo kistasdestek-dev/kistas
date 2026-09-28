@@ -4,6 +4,7 @@ import { KistasGlassDock } from '@/components/KistasGlassDock';
 import { RouteAwareFooter } from '@/components/RouteAwareFooter';
 import { AnalyticsProvider } from '@/components/AnalyticsProvider';
 import { GlobalClientRuntime } from '@/components/GlobalClientRuntime';
+import { SiteNavigation } from '@/components/SiteNavigation';
 
 export const metadata: Metadata = {
   title: 'Kıstas — Dijital Proje Vitrini ve Bağımsız Geliştirici Ekosistemi',
@@ -34,7 +35,7 @@ export default function RootLayout({
 
         {/* Main Content Area with Safe-Area Mobile Bottom Clearance */}
         <main className="min-h-[calc(100vh-16rem)] pb-6 overflow-x-hidden">
-          {children}
+          <SiteNavigation>{children}</SiteNavigation>
         </main>
 
         {/* Global Apple-Style Cinematic Footer */}
