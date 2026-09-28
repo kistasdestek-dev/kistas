@@ -40,7 +40,7 @@ export function AnalyticsProvider() {
   return (
     <section
       aria-label="Analitik çerez tercihi"
-      className="fixed inset-x-3 bottom-24 z-[999998] mx-auto max-w-xl rounded-2xl border border-blue-400/25 bg-[#091326]/95 p-4 text-white shadow-[0_18px_60px_rgba(0,0,0,0.45),0_0_28px_rgba(50,105,199,0.18)] backdrop-blur-xl sm:bottom-6 sm:p-5"
+      className="fixed inset-x-3 bottom-24 z-[1000000] mx-auto max-w-xl rounded-2xl border border-blue-400/25 bg-[#091326]/95 p-4 text-white shadow-[0_18px_60px_rgba(0,0,0,0.45),0_0_28px_rgba(50,105,199,0.18)] backdrop-blur-xl sm:bottom-6 sm:p-5"
     >
       <h2 className="text-sm font-bold tracking-tight sm:text-base">Analitik çerezler</h2>
       <p className="mt-1.5 text-xs leading-relaxed text-slate-300 sm:text-sm">
