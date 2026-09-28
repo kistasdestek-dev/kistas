@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Megaphone, MessageSquare, X } from 'lucide-react';
+import { Megaphone, X } from 'lucide-react';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
 import { ChatAvatar } from './chat/ChatAvatar';
 
@@ -46,11 +46,7 @@ export const GlobalNotificationCard: React.FC<GlobalNotificationCardProps> = ({
                 imageUrl={avatarUrl}
                 alt={title}
                 size={52}
-                className="ring-1 ring-white/25 shadow-[0_8px_24px_rgba(0,0,0,0.34)] transition-transform group-hover:scale-[1.03]"
               />
-              <span className="absolute -right-0.5 -bottom-0.5 flex h-[19px] w-[19px] items-center justify-center rounded-full border-2 border-[#182438] bg-[#E4FD97] text-[#091326] shadow-[0_3px_10px_rgba(228,253,151,0.35)]" aria-hidden="true">
-                <MessageSquare size={9.5} strokeWidth={2.6} />
-              </span>
             </span>
 
             <span className="min-w-0 flex-1 self-center">

@@ -6,7 +6,7 @@ import { CinematicFooter } from './CinematicFooter';
 export function RouteAwareFooter() {
   const pathname = usePathname();
 
-  if (pathname === '/browse' || pathname === '/credits' || pathname.startsWith('/admin')) return null;
+  if (['/browse', '/credits', '/create-listing', '/launch-archive', '/popular', '/new', '/gunun-vitrini'].includes(pathname) || pathname.startsWith('/admin')) return null;
 
   return <CinematicFooter />;
 }

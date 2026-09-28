@@ -2,9 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, ChevronRight, ChevronUp, Sparkles } from 'lucide-react';
+import { ChevronRight, ChevronUp, Sparkles } from 'lucide-react';
 import type { DiscoveryCard } from '@kistas/shared';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
+import { DiscoverySectionHeading } from './DiscoverySectionHeading';
 
 export interface AppStoreProjectListProps {
   title?: string;
@@ -13,7 +14,6 @@ export interface AppStoreProjectListProps {
   variant?: 'ranked' | 'new';
   maxItems?: number;
   viewAllHref?: string;
-  onOpenAll?: () => void;
   showViewAll?: boolean;
   showEmptyState?: boolean;
   fullPage?: boolean;
@@ -33,7 +33,6 @@ export const AppStoreProjectList: React.FC<AppStoreProjectListProps> = ({
   variant = 'ranked',
   maxItems = 6,
   viewAllHref = '/popular',
-  onOpenAll,
   showViewAll = true,
   showEmptyState = false,
   fullPage = false,
@@ -74,7 +73,6 @@ export const AppStoreProjectList: React.FC<AppStoreProjectListProps> = ({
               <AutoTransparentLogo
                 src={project.logo_url}
                 alt={project.title}
-                shape="none"
                 className="ios-project-logo"
               />
             ) : (
@@ -112,24 +110,7 @@ export const AppStoreProjectList: React.FC<AppStoreProjectListProps> = ({
   return (
     <section className={`ios-project-section${fullPage ? ' ios-project-section-page' : ''}${variant === 'new' ? ' is-new' : ''}`}>
       {hasHeader && (
-        <div className="ios-project-header">
-          <div>
-            {title && <h2 className="ios-project-heading">{title}</h2>}
-            {subtitle && <p className="ios-project-subtitle">{subtitle}</p>}
-          </div>
-
-          {showViewAll && (onOpenAll ? (
-            <button type="button" onClick={onOpenAll} className="ios-project-view-all group cursor-pointer">
-              <span>Tümünü Gör</span>
-              <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
-            </button>
-          ) : (
-            <Link href={viewAllHref} className="ios-project-view-all group">
-              <span>Tümünü Gör</span>
-              <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
-            </Link>
-          ))}
-        </div>
+        <DiscoverySectionHeading title={title} subtitle={subtitle} href={showViewAll ? viewAllHref : undefined} />
       )}
 
       <div className="ios-project-list-glass">

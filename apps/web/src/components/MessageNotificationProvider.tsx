@@ -23,6 +23,7 @@ interface GlobalNotificationToast {
 
 interface NotificationRow {
   id: string;
+  actor_id?: string | null;
   user_id: string;
   type: string;
   title: string;
@@ -36,6 +37,7 @@ interface NotificationRow {
     listing_id?: string;
     logo_url?: string;
     sender_avatar_url?: string;
+    sender_id?: string;
   } | null;
 }
 
@@ -138,13 +140,24 @@ export const MessageNotificationProvider: React.FC = () => {
             table: 'notifications',
             filter: `user_id=eq.${userId}`,
           },
-          (payload) => {
+          async (payload) => {
             const row = payload.new as NotificationRow;
             if (!active) return;
 
             if (row.type === 'message') {
               const conversationId = row.data?.conversation_id;
               if (!messageEnabledRef.current || !conversationId) return;
+              let avatarUrl = row.data?.sender_avatar_url;
+              const senderId = row.actor_id || row.data?.sender_id;
+              if (!avatarUrl?.trim() && senderId) {
+                try {
+                  const { data: sender } = await supabase.from('profiles_public')
+                    .select('avatar_url').eq('id', senderId)
+                    .abortSignal(AbortSignal.timeout(4000)).maybeSingle();
+                  avatarUrl = sender?.avatar_url || undefined;
+                } catch { /* Keep the local fallback if the public profile is unavailable. */ }
+              }
+              if (!active || revision !== subscriptionRevision || !messageEnabledRef.current) return;
               window.dispatchEvent(new CustomEvent('kistas:notification-received', { detail: row }));
               queueToast({
                 key: `message:${conversationId}`,
@@ -154,7 +167,7 @@ export const MessageNotificationProvider: React.FC = () => {
                 body: row.body,
                 count: 1,
                 conversationId,
-                avatarUrl: row.data?.sender_avatar_url,
+                avatarUrl,
               });
               return;
             }

@@ -7,6 +7,23 @@ const input = z.object({ id: z.string().uuid(), revision: z.number().int().min(0
 const headers = { 'Cache-Control': 'private, no-store', Vary: 'Cookie' };
 const reply = (body: unknown, status = 200) => Response.json(body, { status, headers });
 
+export async function DELETE(request: Request) {
+  if (request.headers.get('origin') !== new URL(request.url).origin) return reply({ error: 'FORBIDDEN' }, 403);
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return reply({ error: 'AUTH_REQUIRED' }, 401);
+  const params = new URL(request.url).searchParams;
+  const revision = params.get('revision');
+  if (!revision || !/^\d{1,10}$/.test(revision)) return reply({ error: 'INVALID_DRAFT' }, 400);
+  const parsed = z.object({ id: z.string().uuid(), revision: z.coerce.number().int().min(0).max(2147483647) })
+    .safeParse({ id: params.get('id'), revision });
+  if (!parsed.success) return reply({ error: 'INVALID_DRAFT' }, 400);
+  const { error } = await supabase.rpc('delete_launch_draft', { p_id: parsed.data.id, p_revision: parsed.data.revision });
+  if (error) return reply({ error: error.message.includes('DRAFT_CONFLICT') ? 'DRAFT_CONFLICT' : 'ARCHIVE_UNAVAILABLE' },
+    error.message.includes('DRAFT_CONFLICT') ? 409 : 503);
+  return reply({ deleted: true });
+}
+
 export async function GET(request: Request) {
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();

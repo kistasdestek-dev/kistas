@@ -13,6 +13,55 @@ async function signIn(context: BrowserContext, baseURL: string, id=launchUsers[0
   await context.addInitScript(({key,session})=>localStorage.setItem(key,JSON.stringify(session)),{key,session});
 }
 
+test('Arşiv silme onayı hesap, cihaz ve dosya kaydını temizlemeli; lansman footer göstermemeli',async({page,context,baseURL})=>{
+  await signIn(context,baseURL!); await page.goto('/create-listing',{waitUntil:'domcontentloaded'});
+  await expect(page.getByPlaceholder('Örn: Kıstas')).toBeVisible();
+  await expect(page.locator('footer')).toHaveCount(0);
+  const id=new URL(page.url()).searchParams.get('archive')!;
+  await page.getByPlaceholder('Örn: Kıstas').fill('Silinecek arşiv');
+  await expect.poll(async()=> (await (await context.request.get(`/api/launch-drafts?id=${id}`)).json()).payload?.title).toBe('Silinecek arşiv');
+  await page.evaluate(id=>new Promise<void>((resolve,reject)=>{
+    const request=indexedDB.open('kistas-launch-assets',1);
+    request.onupgradeneeded=()=>request.result.createObjectStore('images');
+    request.onerror=()=>reject(request.error);
+    request.onsuccess=()=>{const db=request.result;const tx=db.transaction('images','readwrite');
+      tx.objectStore('images').put({file:new Blob(['test'])},`aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa:${id}:draft-asset:test`);
+      tx.oncomplete=()=>{db.close();resolve();};tx.onerror=()=>reject(tx.error);};
+  }),id);
+  await page.goto('/launch-archive',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('footer')).toHaveCount(0);
+  const remove=page.getByRole('button',{name:'Silinecek arşiv arşivden sil',exact:true});
+  page.once('dialog',dialog=>dialog.dismiss()); await remove.click();
+  await expect(remove).toBeVisible();
+  page.once('dialog',dialog=>dialog.accept()); await remove.click();
+  await expect(page.getByRole('status')).toHaveText('Lansman arşivden silindi.');
+  await expect(remove).toHaveCount(0);
+  expect((await context.request.get(`/api/launch-drafts?id=${id}`)).status()).toBe(404);
+  expect(await page.evaluate(id=>localStorage.getItem(`kistas:launch:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa:${id}`),id)).toBeNull();
+  expect(await page.evaluate(id=>new Promise<number>((resolve,reject)=>{
+    const request=indexedDB.open('kistas-launch-assets',1);request.onerror=()=>reject(request.error);
+    request.onsuccess=()=>{const db=request.result;const tx=db.transaction('images','readonly');const keys=tx.objectStore('images').getAllKeys();
+      keys.onsuccess=()=>{resolve(keys.result.filter(key=>String(key).startsWith(`aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa:${id}:`)).length);db.close();};};
+  }),id)).toBe(0);
+});
+
+test('Arşiv silme farklı kullanıcıyı ve farklı origin isteğini reddetmeli',async({page,context,baseURL})=>{
+  await signIn(context,baseURL!,launchUsers[0]); await page.goto('/create-listing',{waitUntil:'domcontentloaded'});
+  await expect(page.getByPlaceholder('Örn: Kıstas')).toBeVisible(); const id=new URL(page.url()).searchParams.get('archive')!;
+  await page.getByPlaceholder('Örn: Kıstas').fill('Başkasının arşivi');
+  await expect.poll(async()=> (await context.request.get(`/api/launch-drafts?id=${id}`)).status()).toBe(200);
+  expect((await context.request.delete(`/api/launch-drafts?id=${id}&revision=1`,{headers:{origin:'https://foreign.example'}})).status()).toBe(403);
+  for (const revision of ['', '-1', '1e2', '2147483648']) {
+    expect((await context.request.delete(`/api/launch-drafts?id=${id}&revision=${revision}`,{headers:{origin:baseURL!}})).status()).toBe(400);
+  }
+  await signIn(context,baseURL!,launchUsers[1]);
+  expect((await context.request.delete(`/api/launch-drafts?id=${id}&revision=1`,{headers:{origin:baseURL!}})).status()).toBe(409);
+  await signIn(context,baseURL!,launchUsers[0]);
+  expect((await context.request.get(`/api/launch-drafts?id=${id}`)).status()).toBe(200);
+  await context.clearCookies();
+  expect((await context.request.delete(`/api/launch-drafts?id=${id}&revision=1`,{headers:{origin:baseURL!}})).status()).toBe(401);
+});
+
 test('Kesinti ve kapanma sonrası metin cihazdan geri yüklenmeli; bağlantıda hesap arşivine gitmeli',async({page,context,baseURL})=>{
   await signIn(context,baseURL!);
   await page.goto('/create-listing',{waitUntil:'domcontentloaded'});

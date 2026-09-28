@@ -80,6 +80,7 @@ try {
   });
   await db.exec(read('supabase/migrations/20260928000002_atomic_launch_and_private_archive.sql'));
   await db.exec(read('supabase/migrations/20260928000003_archive_notification_and_idle_chat_retention.sql'));
+  await db.exec(read('supabase/migrations/20260928000005_owner_delete_launch_draft.sql'));
   await db.exec('CREATE TRIGGER protect_status BEFORE INSERT OR UPDATE ON public.listings FOR EACH ROW EXECUTE FUNCTION public.handle_listing_status_protection()');
   await actor(userA);
   let created;
@@ -176,6 +177,23 @@ try {
     await db.exec('RESET ROLE');await query('SELECT public.cleanup_expired_launch_archives()');
     assert.equal((await query('SELECT id FROM public.listings WHERE id=$1',[launch.listingId])).rows.length,1);await actor(userA);
   });
+  await check('archive deletion rejects other owners, stale revisions, submitted rows and anonymous callers', async () => {
+    const id = '33333333-3333-4333-8333-333333333333';
+    await actor(userA); await save(id, 0);
+    const remove = (revision = 1) => query('SELECT public.delete_launch_draft($1::uuid,$2::integer)', [id, revision]);
+    await actor(userB); await assert.rejects(remove(), /DRAFT_CONFLICT/);
+    await actor(userA); await save(id, 1); await assert.rejects(remove(), /DRAFT_CONFLICT/);
+    await actor(null, 'anon'); await assert.rejects(remove(2), /permission denied/);
+    await actor(null); await assert.rejects(remove(2), /AUTH_REQUIRED/);
+    await actor(userA); await assert.rejects(remove(-1), /INVALID_DRAFT/);
+    const before = await query('SELECT count(*) AS count FROM public.listings');
+    await remove(2); await remove(2);
+    assert.equal((await query('SELECT id FROM public.launch_drafts WHERE id=$1', [id])).rows.length, 0);
+    assert.deepEqual((await query('SELECT count(*) AS count FROM public.listings')).rows, before.rows);
+    await assert.rejects(save(id, 2), /DRAFT_CONFLICT/);
+    await save(id, 0); await submit(payload, null, null, id); await assert.rejects(remove(), /DRAFT_CONFLICT/);
+    await assert.rejects(query('DELETE FROM public.launch_drafts WHERE id=$1', [id]), /permission denied/);
+  });
   console.log(`M2: ${checks} PostgreSQL transaction/role scenarios passed. PGlite uses one connection; cross-connection races and live Supabase auth remain separate staging checks.`);
   const serverVersion = (await query("SELECT current_setting('server_version') AS version")).rows[0].version;
   fs.mkdirSync(new URL('../../reports/', import.meta.url), { recursive: true });
@@ -183,6 +201,7 @@ try {
     capturedAt: new Date().toISOString(), engine:'PGlite 0.5.8', serverVersion, passed:checks, failed:0,
     migrationSha256:createHash('sha256').update(read('supabase/migrations/20260928000002_atomic_launch_and_private_archive.sql')).digest('hex'),
     retentionMigrationSha256:createHash('sha256').update(read('supabase/migrations/20260928000003_archive_notification_and_idle_chat_retention.sql')).digest('hex'),
+    deleteMigrationSha256:createHash('sha256').update(read('supabase/migrations/20260928000005_owner_delete_launch_draft.sql')).digest('hex'),
     productionDataWritten:false, auth:'synthetic claims/roles', connections:1,
     limitations:['Minimal schema is not the full production Supabase schema/policy/trigger set.','Synthetic auth claims do not verify actual Supabase Auth or Storage APIs.','Queued concurrent calls on one connection do not prove independent-connection races.'],
   },null,2)+'\n');

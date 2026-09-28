@@ -58,6 +58,7 @@ export const DiscoverExperienceClient: React.FC<DiscoverExperienceClientProps> =
   const filtered = Boolean(state.q || state.categoryId || state.platform !== 'all');
   const popularHref = discoveryHref('/popular', { ...state, sort: 'top_voted' });
   const newestHref = discoveryHref('/new', { ...state, sort: 'newest' });
+  const showcaseHref = discoveryHref('/gunun-vitrini', state);
   return (
     <div className="relative w-full pb-16" aria-busy={pending}>
       <KistasTopBrandBar onPress={handleBrandPress} />
@@ -77,7 +78,7 @@ export const DiscoverExperienceClient: React.FC<DiscoverExperienceClientProps> =
         <>
           <SponsorLogoMarquee projects={sections.sponsored} />
           <FeaturedBoostShowcase projects={sections.sponsored} selectedCategoryName={selectedCategoryObj?.name} onOpenCreditStore={() => router.push('/popular')} />
-          <TodayShowcaseRow projects={todayShowcase} title="Günün Vitrini" subtitle="Topluluğun desteklediği projeler · Her saat adil rotasyon" onOpenAll={() => router.push(popularHref)} showEmptyState={keepShowcaseLayout} />
+          <TodayShowcaseRow projects={todayShowcase} title="Günün Vitrini" subtitle="Topluluğun desteklediği projeler · Her saat adil rotasyon" viewAllHref={showcaseHref} showEmptyState={keepShowcaseLayout} />
           {state.sort !== 'newest' && <AppStoreProjectList title={selectedCategoryObj ? `${selectedCategoryObj.name} · Popüler` : 'Popüler Projeler'} projects={sections.popular} variant="ranked" viewAllHref={popularHref} showEmptyState={keepShowcaseLayout} />}
           {state.sort !== 'top_voted' && <AppStoreProjectList title={selectedCategoryObj ? `${selectedCategoryObj.name} · Yeni` : 'Yeni Çıkanlar'} projects={sections.newest} variant="new" viewAllHref={newestHref} showEmptyState={keepShowcaseLayout} />}
         </>

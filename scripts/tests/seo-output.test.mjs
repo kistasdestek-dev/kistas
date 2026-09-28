@@ -13,6 +13,7 @@ const routes = [
   ['/browse', '(public)/browse/page.tsx'],
   ['/popular', '(public)/popular/page.tsx'],
   ['/new', '(public)/new/page.tsx'],
+  ['/gunun-vitrini', '(public)/gunun-vitrini/page.tsx'],
   ['/hakkimizda', '(public)/hakkimizda/page.tsx'],
   ['/nasil-calisir', '(public)/nasil-calisir/page.tsx'],
   ['/guvenlik', '(public)/guvenlik/page.tsx'],

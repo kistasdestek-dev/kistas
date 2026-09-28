@@ -47,7 +47,7 @@ assert.match(globalStyles, /body\.k-credit-checkout-open \.kdn-shell[\s\S]*?disp
 assert.match(store, /Projeni doğru zamanda, doğru kitleyle buluştur\./);
 assert.doesNotMatch(store, /Kıstas Kredi Mağazası|Görünürlüğünü krediyle büyüt\./);
 assert.match(store, /variant="bare"[\s\S]*?ariaLabel="Ödeme penceresini kapat"/);
-assert.match(routeFooter, /pathname === '\/credits'/, 'Kredi mağazasında footer gösterilmemeli');
+assert.match(routeFooter, /'\/credits'[\s\S]*includes\(pathname\)/, 'Kredi mağazasında footer gösterilmemeli');
 assert.match(dock, /key: 'credits', label: 'Krediler', href: '\/credits'/);
 assert.match(profile, /<ShinyButton href="\/credits"/);
 assert.match(contracts, /kistas_credits_250/);

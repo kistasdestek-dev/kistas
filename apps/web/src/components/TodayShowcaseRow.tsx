@@ -2,15 +2,18 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Trophy, Globe, Smartphone, Laptop, Cloud, ArrowRight, ChevronUp } from 'lucide-react';
+import { Sparkles, Globe, Smartphone, Laptop, Cloud, ChevronUp, ArrowUpRight } from 'lucide-react';
 import { AutoTransparentLogo } from './AutoTransparentLogo';
-import type { DiscoveryCard } from '@kistas/shared';
+import { DiscoverySectionHeading } from './DiscoverySectionHeading';
+import type { Category, DiscoveryCard } from '@kistas/shared';
 
 export interface TodayShowcaseRowProps {
   projects: DiscoveryCard[];
   title?: string;
   subtitle?: string;
-  onOpenAll?: () => void;
+  viewAllHref?: string;
+  layout?: 'rail' | 'grid';
+  categories?: Category[];
   showEmptyState?: boolean;
 }
 
@@ -21,8 +24,8 @@ const formatCount = (count?: number): string => {
 };
 
 const getPlatformIcon = (platform?: string) => {
-  if (platform === 'iOS' || platform === 'macOS') return Laptop;
-  if (platform === 'Android') return Smartphone;
+  if (platform === 'macOS') return Laptop;
+  if (platform === 'Android' || platform === 'iOS') return Smartphone;
   if (platform === 'SaaS') return Cloud;
   return Globe;
 };
@@ -30,77 +33,47 @@ const getPlatformIcon = (platform?: string) => {
 export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
   projects,
   title = 'Günün Vitrini',
-  subtitle = 'Dünün kategori liderleri · Her saat adil rotasyon',
-  onOpenAll,
+  subtitle = 'Topluluğun desteklediği projeler · Her saat adil rotasyon',
+  viewAllHref = '/gunun-vitrini',
+  layout = 'rail',
+  categories = [],
   showEmptyState = false,
 }) => {
   if ((!projects || projects.length === 0) && !showEmptyState) return null;
 
   return (
-    <section className="mx-auto my-10 w-full max-w-[1320px] px-4 sm:px-6">
-      {/* Header */}
-      <div className="mb-4 flex items-end justify-between">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-            {title}
-          </h2>
-          {subtitle && (
-            <p className="mt-0.5 text-xs font-medium text-[#94A3B8]">
-              {subtitle}
-            </p>
-          )}
-        </div>
+    <section className={layout === 'grid' ? 'w-full' : 'mx-auto my-10 w-full max-w-[1320px] px-4 sm:px-6'} aria-label={title}>
+      {layout === 'rail' && <DiscoverySectionHeading title={title} subtitle={subtitle} href={viewAllHref} />}
 
-        {onOpenAll ? (
-          <button
-            type="button"
-            onClick={onOpenAll}
-            className="group inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1 text-xs font-semibold text-[#60A5FA] shadow-xs transition-all hover:border-white/25 hover:bg-white/10 hover:-translate-y-0.5 cursor-pointer"
-          >
-            <span>Tümünü Gör</span>
-            <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
-          </button>
-        ) : (
-          <Link
-            href="/popular"
-            className="group inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1 text-xs font-semibold text-[#60A5FA] shadow-xs transition-all hover:border-white/25 hover:bg-white/10 hover:-translate-y-0.5"
-          >
-            <span>Tümünü Gör</span>
-            <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
-          </Link>
-        )}
-      </div>
-
-      {/* Horizontal Scroll Cards */}
       {projects.length === 0 ? (
         <div className="flex min-h-40 items-center justify-center rounded-[26px] border border-white/10 bg-white/[0.035] px-6 text-center text-sm font-medium text-[#94A3B8] backdrop-blur-xl">
           Bu vitrinde henüz proje bulunmuyor.
         </div>
       ) : (
-      <div className="day-showcase-track mobile-scroll-x">
-        {projects.map((project) => {
-          const coverImage =
-            project.images?.[0]?.image_url ||
-            project.logo_url ||
-            'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900';
+      <div className={layout === 'grid' ? 'showcase-gallery-grid' : 'day-showcase-track mobile-scroll-x'}>
+        {projects.map((project, index) => {
+          const coverImage = project.images?.[0]?.image_url;
+          const backdropImage = coverImage || project.logo_url;
           const platform = project.platforms?.[0] || 'Web';
           const PlatformIcon = getPlatformIcon(platform);
           const initials = project.title ? project.title.slice(0, 2).toUpperCase() : 'KT';
+          const categoryName = categories.find(category => category.id === project.category_id)?.name;
 
           return (
             <Link
               key={project.id}
               href={`/listings/${project.id}`}
-              className="day-showcase-card mobile-scroll-item"
+              className={`day-showcase-card ${layout === 'grid' ? 'showcase-gallery-card' : 'mobile-scroll-item'}`}
               aria-label={`${project.title} proje detayını aç`}
             >
-              <img
-                src={coverImage}
+              {backdropImage && <img
+                src={backdropImage}
                 alt=""
                 aria-hidden="true"
-                className="day-showcase-cover"
-                loading="lazy"
-              />
+                className={`day-showcase-cover${layout === 'grid' && !coverImage ? ' showcase-gallery-logo-backdrop' : ''}`}
+                loading={layout === 'grid' && index === 0 ? 'eager' : 'lazy'}
+                fetchPriority={layout === 'grid' && index === 0 ? 'high' : 'auto'}
+              />}
               <div className="day-showcase-shade" aria-hidden="true" />
               <div className="day-showcase-ambient" aria-hidden="true" />
               <div className="day-showcase-rim" aria-hidden="true" />
@@ -108,19 +81,23 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
               <div className="day-showcase-content">
                 <div className="day-showcase-topline">
                   <span className="day-showcase-leader-badge">
-                    <Trophy size={12} aria-hidden="true" />
-                    <span>GÜNÜN LİDERİ</span>
+                    <Sparkles size={12} aria-hidden="true" />
+                    <span>{categoryName || 'VİTRİNDE'}</span>
                   </span>
                   <span className="day-showcase-platform-badge">
                     <PlatformIcon size={12} aria-hidden="true" />
                     <span>{platform}</span>
                   </span>
                 </div>
+                {layout === 'grid' && !coverImage && <div className="showcase-gallery-art" aria-hidden="true">
+                  {project.logo_url ? <AutoTransparentLogo src={project.logo_url} className="showcase-gallery-art-logo" /> : <span>{initials}</span>}
+                </div>}
                 <div className="day-showcase-editorial">
                   <h3 className="day-showcase-title">{project.title}</h3>
                   <p className="day-showcase-tagline">
                     {project.tagline || project.description || 'Bağımsız dijital proje'}
                   </p>
+                  {layout === 'grid' && <span className="showcase-gallery-cta">Projeyi keşfet <ArrowUpRight size={16} aria-hidden="true" /></span>}
                 </div>
 
                 <div className="day-showcase-dock">
@@ -138,7 +115,7 @@ export const TodayShowcaseRow: React.FC<TodayShowcaseRowProps> = ({
                       <span className="day-showcase-product-name">{project.title}</span>
                     </div>
                   </div>
-                  <span className="day-showcase-dock-support">
+                  <span className="day-showcase-dock-support" aria-label={`${project.upvote_count ?? 0} destek`}>
                     <ChevronUp size={13} aria-hidden="true" />
                     <span>{formatCount(project.upvote_count)}</span>
                   </span>

@@ -236,18 +236,15 @@ export const ProjectDetailExperienceClient: React.FC<ProjectDetailExperienceClie
         {/* 2. App Store Style Hero Section */}
         <section className="flex flex-row items-center sm:items-start justify-between gap-3.5 sm:gap-6 pt-1 sm:pt-2 pb-5 sm:pb-6 border-b border-white/10">
           <div className="flex flex-row items-center sm:items-start gap-3 sm:gap-5 text-left min-w-0 flex-1">
-            {/* Circular App Logo */}
-            <div className="relative h-16 w-16 sm:h-22 sm:w-22 shrink-0 overflow-hidden rounded-full border border-white/15 bg-white/5 shadow-sm flex items-center justify-center">
+            <div className="relative h-16 w-16 sm:h-22 sm:w-22 shrink-0 overflow-hidden rounded-[22%] border border-white/15 bg-white/5 shadow-sm flex items-center justify-center">
               {project.logo_url ? (
                 <AutoTransparentLogo
                   src={project.logo_url}
                   alt={`${project.title} logosu`}
-                  shape="circle"
-                  className="h-full w-full object-cover rounded-full"
+                  className="h-full w-full object-contain"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center rounded-full bg-[#3269C7]/10 p-3 sm:p-3.5 border border-[#3269C7]/20 shadow-[0_0_18px_rgba(50,105,199,0.2)]">
-                  { }
+                <div className="flex h-full w-full items-center justify-center rounded-[22%] bg-[#3269C7]/10 p-3 sm:p-3.5 border border-[#3269C7]/20 shadow-[0_0_18px_rgba(50,105,199,0.2)]">
                   <img
                     src="/kistas-logo-256.webp"
                     alt="Kıstas Logo"

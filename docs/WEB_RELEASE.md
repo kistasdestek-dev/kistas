@@ -87,3 +87,13 @@ Yeni Worker kaynaklı kritik sorun çıkarsa Cloudflare Workers & Pages panelind
 - `CreditHistoryModal.tsx` mobil cüzdan/hesap özeti mantığıyla yeniden tasarlandı (gelen/kullanılan filtreleri, tarih grupları, yön rozetleri). Sekiz profil modalı ortak, referans sayaçlı `useBodyScrollLock` hook'una bağlanarak mobil kaydırma zincirlenmesi engellendi.
 - 20/20 web test dosyası eksiksiz geçti; 0 tip hatası ve %100 Kale Sağlık Skoru doğrulandı.
 
+## 2026-09-29 Günün Vitrini, Profil ve Lansman Arşivi Yayını
+
+- Bağımsız `/gunun-vitrini` sayfası (`ShowcaseExperienceClient.tsx`, `showcase.css`) yayına alındı. Keşfet ile aynı deterministik saatlik rotasyon, shared rail/grid kart mimarisi ve SEO sitemap desteği sunuldu.
+- Keşfet başlıkları (Popüler, Yeni, Günün Vitrini) ve bitişiklerindeki `ChevronRight` cam ikonları aynı filtrelenmiş rotayı açacak şekilde birleştirildi; eski "Tümünü Gör" kaldırıldı.
+- Mobil temizlik amacıyla `/popular`, `/new`, `/gunun-vitrini`, `/create-listing` ve `/launch-archive` rotalarında footer gizlendi.
+- Mesaj avatarlarında çerçeve/rozet kaldırıldı; eksik snapshot için public profile avatar fallback'i bağlandı (`trg_notify_chat_message` migration `20260928000001` canlıya uygulandı).
+- Lansman arşivine authenticated owner-only, satır ve advisory lock korumalı `delete_launch_draft` RPC'si (`20260928000005_owner_delete_launch_draft.sql`) ve API rotası eklendi; silme sonrası yerel IndexedDB/localStorage cihaz kopyaları temizlenir.
+- Popüler, Yeni ve Detay proje logoları vitrindeki %22 yumuşak köşe standardına eşitlendi; Sponsor Yap butonundaki dönen animasyonlar kapatıldı.
+- Cloudflare Worker sürümü: `b78cd1a9-5b98-44d8-b8f8-17ae7dfc5dcc`. Canlı `/` ve `/gunun-vitrini` HTTP 200 ile doğrulandı.
+

@@ -31,8 +31,8 @@ assert.match(profileExperience, /h-\[72px\] w-\[72px\][^\"]*rounded-full object-
 assert.doesNotMatch(brandBar, /Logo Plate|backdrop-blur-2xl|border-white\/20|bg-white\/\[0\.08\]/);
 assert.match(avatarLib, /toStoredAvatarUrl/);
 assert.doesNotMatch(footerBanner, /onClick|role="button"|tabIndex|cursor-pointer|onPress/);
-assert.match(routeFooter, /pathname === '\/browse'/);
-assert.match(routeFooter, /pathname === '\/credits'/);
+assert.match(routeFooter, /'\/browse'[\s\S]*includes\(pathname\)/);
+assert.match(routeFooter, /'\/credits'[\s\S]*includes\(pathname\)/);
 
 for (let index = 1; index <= 4; index += 1) {
   const avatarPath = resolve(root, `apps/web/public/avatars/kistas-avatar-${index}.webp`);

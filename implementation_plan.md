@@ -1,5 +1,24 @@
 # KISTAS Monorepo Mimarisi Sertleştirme Planı
 
+## Keşfet navigasyonu ve bağımsız Günün Vitrini — Mimar onayı: 2026-09-28
+
+- Popüler/Yeni/Günün Vitrini başlıkları ve yanlarındaki ortak ChevronRight GlassIconButton aynı filtreli rotayı açar; Tümünü Gör kaldırılır.
+- Günün Vitrini `/gunun-vitrini` rotasına ayrılır; mevcut discovery snapshot ve saatlik rotasyon kullanılır.
+- Mevcut vitrin kartı rail/grid varyantıyla paylaşılır; kategori, platform, gerçek destek ve logo-only/kapak durumları sunulur.
+- Sayfaya özel CSS ile mobil/tablet/masaüstü 1/2/3 kolon, lacivert zemin, safir detaylar, glass geri bağlantısı ve SEO metadata/sitemap eklenir.
+- Popüler, Yeni ve Günün Vitrini rotalarında footer render edilmez; eski başlık/buton CSS ve kullanılmayan onOpenAll sözleşmesi temizlenir.
+- Doğrulama/devir: `docs/SHOWCASE_PAGE_VALIDATION.md`; önceki profil/arşiv değişiklikleri korunur, production deploy kapsam dışıdır.
+
+## Profil, mesaj avatarı ve lansman arşivi — Mimar onayı: 2026-09-28
+
+- Mesaj avatarının çerçeve/rozetini kaldır; snapshot eksikse yalnız public profil avatarını oku.
+- Profil arşiv bağlantısını kaldır; Lansman Paylaş bağlantısı kalsın. Lansman ve arşiv footer'ını gizle.
+- Arşive owner-only, revision kontrollü RPC/API ve onaylı silme ekle; başarıdan sonra cihaz metadata/dosyalarını temizle.
+- Sponsor Yap Citrus renklerini koru; yalnız bu butondaki CSS animasyonlarını kapat.
+- Popüler/Yeni ve detay proje logolarını vitrindeki yüzde 22 yumuşak köşeye eşitle.
+- Doğrulama: tip/lint/web, PostgreSQL negatif yetki ve stale revision, tarayıcı silme/CSRF/cihaz temizliği, production derlemeleri.
+- Canlı migration/deploy bu yerel değişiklik onayına dahil değildir. Kanıt ve devir: `docs/PROFILE_LAUNCH_UI_VALIDATION.md`.
+
 ## Güncel mimari geliştirme programı — 2026-09-28
 
 Altı mimari önerinin uygulama sırası, hazırlık fazı ve çıkış ölçütleri [docs/ARCHITECTURE_ROADMAP.md](docs/ARCHITECTURE_ROADMAP.md) içinde tek kaynak olarak tutulur. Yeni program M0-M6 olarak numaralandırılır; aşağıdaki önceki monorepo geçiş fazlarının tamamlanma kayıtlarıyla karıştırılmaz. Güncel durum: M0/M1 yerelde tamamlandı; M2 yerel paketi doğrulandı, canlı geçiş/kabul bekliyor. Yalnız production ortamı var; yeni kaynak migration uygulanmadan yayınlanmaz. Kanıt, sınırlar ve devir teslim: [docs/M0_VALIDATION.md](docs/M0_VALIDATION.md), [docs/M1_VALIDATION.md](docs/M1_VALIDATION.md), [docs/M2_VALIDATION.md](docs/M2_VALIDATION.md).

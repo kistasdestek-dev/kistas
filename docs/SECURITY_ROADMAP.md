@@ -1,5 +1,19 @@
 # KISTAS GUVENLIK YOL HARITASI
 
+## 2026-09-28 — Günün Vitrini public okuma sınırı
+
+Yeni `/gunun-vitrini` rotası mevcut `loadDiscovery` active/anon sorgularını ve allowlist/uzunluk kontrollü discovery parser'ını kullanır. Yeni tablo, RLS, RPC, kredi/oy yazması, upload, secret veya dış servis eklenmedi. Başlık ve glass ikon hedefleri sabit iç rotalardır; q/category/platform kapsamı mevcut URL encoder ile korunur. İstemciye DiscoveryCard dışında özel profil/seller bilgisi eklenmez. Arama mevcut sözleşme gereği kalıcı cache'e alınmaz; ilk seçki ve kategori cache sınırları korunur.
+
+Eksik görselde stok dış servis isteği yerine logo/baş harf fallback'i kullanılır. Destek sayısı gerçek veri alanından okunur; sahte liderlik/ödül eklenmez. Zorunlu kontrol bu okuma/UI kapsamında değerlendirildi; SEC statüleri değiştirilmedi. Test/derleme/visual QA kanıtı ve geri dönüş: `docs/SHOWCASE_PAGE_VALIDATION.md`. Production değişmedi; önceki M2 yayın kapıları geçerlidir.
+
+## 2026-09-28 — Profil/lansman arşivi silme kontrolü
+
+Mimar onaylı yerel değişiklik: `delete_launch_draft(UUID, INTEGER)` yalnız authenticated kullanıcının kendi editing taslağını, eşleşen revision ile siler. Boş search_path, sunucuda auth.uid(), save ile aynı advisory lock, satır kilidi, anonim/PUBLIC revoke ve doğrudan tablo yazma yasağı korunur. Eksik kayda tekrar çağrı başarılı; farklı hesap, submitted ve eski revision genel conflict verir. RPC yayımlanmış projeyi veya Storage görsellerini silmez. DELETE API aynı-origin, Auth, UUID/integer doğrulaması ve private/no-store kullanır. İstemcide açık silme onayı ve sunucu başarısı sonrası cihaz temizliği vardır.
+
+Bildirim avatarı eksik snapshot için yalnız `profiles_public.avatar_url` alanından okunur; özel profil/PII sorgusu veya yeni grant açılmaz. React düz metin çıktısı, varsayılan yerel avatar ve dört saniyelik istek sınırı korunur. Yeni secret, service role, ödeme, upload veya dış servis eklenmedi; yeni doğrulanmış güvenlik açığı yok, SEC durumları değiştirilmedi.
+
+PostgreSQL role/revision/idempotency negatif senaryoları `scripts/tests/launch-atomic.test.mjs` içinde 14/14 geçti. PGlite tek bağlantı/sentetik auth kanıtıdır; canlı Auth/RLS ve bağımsız bağlantı yarış doğrulaması değildir. Tarayıcı/derleme sonuçları, sınırlar, geri dönüş ve handoff: `docs/PROFILE_LAUNCH_UI_VALIDATION.md`. Migration ve production deploy yapılmadı; M2 yayın kapıları geçerlidir.
+
 > Bu belge yasayan bir guvenlik kaydidir. Yeni ozellik, migration, entegrasyon ve yayin degisikliklerinde kontrol edilir ve guncellenir.
 
 ## 1. Amac ve Guvenlik Yaklasimi

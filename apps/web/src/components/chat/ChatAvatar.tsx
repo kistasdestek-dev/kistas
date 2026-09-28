@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { resolveAvatarUrl, isKistasDefaultAvatar } from '@/lib/avatar';
 
 interface ChatAvatarProps {
   imageUrl?: string | null;
@@ -21,7 +22,7 @@ export const ChatAvatar: React.FC<ChatAvatarProps> = ({
     setImageFailed(false);
   }, [imageUrl]);
 
-  const showUserImage = Boolean(imageUrl && !imageFailed);
+  const showUserImage = Boolean(!isKistasDefaultAvatar(imageUrl) && !imageFailed);
 
   return (
     <div
@@ -38,7 +39,7 @@ export const ChatAvatar: React.FC<ChatAvatarProps> = ({
 
       {showUserImage && (
         <img
-          src={imageUrl!}
+          src={resolveAvatarUrl(imageUrl)}
           alt={alt}
           onError={() => setImageFailed(true)}
           className="absolute inset-0 h-full w-full object-cover"

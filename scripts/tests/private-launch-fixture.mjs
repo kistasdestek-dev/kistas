@@ -36,5 +36,12 @@ export async function privateLaunchFixtureResponse(request) {
       .reverse().slice(offset,offset+30).map(row=>({...row,title:row.payload.title})));
   }
   if (resource==='categories' && request.method==='GET') return null;
+  if (request.method==='POST' && resource==='delete_launch_draft') {
+    const body=await request.json(); const row=drafts.get(body.p_id);
+    if (row && (row.owner_id!==subject || row.state!=='editing' || row.revision!==body.p_revision)) {
+      return Response.json({code:'P0001',message:'DRAFT_CONFLICT'},{status:400});
+    }
+    drafts.delete(body.p_id); return Response.json(null);
+  }
   throw new Error(`Unmocked private fixture request: ${request.method} ${url.pathname}`);
 }
