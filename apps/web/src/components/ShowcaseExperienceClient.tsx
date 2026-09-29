@@ -131,13 +131,12 @@ export function ShowcaseExperienceClient({
         )}
       </header>
 
-      {/* 3-Column Responsive Apple Card Grid */}
+      {/* 3-Column Responsive App Store / Mobbin Vitrin Card Grid */}
       {filteredProjects.length > 0 ? (
         <section className="relative w-full py-2">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 sm:gap-7">
             {filteredProjects.map((project) => {
               const coverImage = project.images?.[0]?.image_url;
-              const backdropImage = coverImage || project.logo_url;
               const platform = project.platforms?.[0] || 'Web';
               const projectCategory =
                 categories.find((c) => c.id === project.category_id)?.name ||
@@ -147,71 +146,83 @@ export function ShowcaseExperienceClient({
                 <Link
                   key={project.id}
                   href={`/listings/${project.id}`}
-                  className="showcase-gallery-card group relative flex h-[380px] sm:h-[400px] lg:h-[420px] w-full flex-col justify-between overflow-hidden rounded-[24px] border border-white/10 bg-[#091326] p-5 sm:p-6 shadow-[0_16px_40px_rgba(0,0,0,0.45)] transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_22px_50px_rgba(30,58,138,0.35)] cursor-pointer"
+                  className="showcase-gallery-card group relative flex h-[360px] sm:h-[375px] w-full flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#081226] shadow-[0_16px_36px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-1.5 hover:border-white/25 hover:shadow-[0_22px_50px_rgba(30,58,138,0.35)] cursor-pointer"
                 >
-                  {/* Card Cover Art */}
-                  {coverImage ? (
-                    <img
-                      src={coverImage}
-                      alt={project.title}
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    />
-                  ) : backdropImage ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(ellipse_at_top,rgba(50,105,199,0.32),transparent_72%),#081226]">
+                  {/* Top: Framed Media Showcase */}
+                  <div className="relative h-[190px] sm:h-[200px] w-full overflow-hidden bg-[#030712] border-b border-white/5">
+                    {coverImage ? (
                       <img
-                        src={backdropImage}
-                        alt=""
-                        className="h-24 w-24 object-contain drop-shadow-[0_16px_36px_rgba(0,0,0,0.65)] transition-transform duration-500 group-hover:scale-110"
+                        src={coverImage}
+                        alt={project.title}
+                        className="h-full w-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105"
                       />
-                    </div>
-                  ) : (
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(50,105,199,0.35),transparent_72%),#081226]" />
-                  )}
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.18),transparent_70%),#070e20]">
+                        {project.logo_url && (
+                          <img
+                            src={project.logo_url}
+                            alt=""
+                            className="h-16 w-16 rounded-2xl border border-white/10 bg-[#0d1b38] p-2 object-contain shadow-xl transition-transform duration-300 group-hover:scale-110"
+                          />
+                        )}
+                      </div>
+                    )}
 
-                  {/* Apple-style Gradient Film */}
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#020712]/85 via-[#020712]/25 to-[#020712]/92" />
+                    {/* Subtle top & bottom image gradients for badge contrast */}
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/75 to-transparent" />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#081226]/80 to-transparent" />
 
-                  {/* Upper Info */}
-                  <div className="relative z-10 flex flex-col gap-2 text-white">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#93C5FD]">
+                    {/* Floating Floating Badges */}
+                    <div className="absolute inset-x-3.5 top-3.5 flex items-center justify-between gap-2 z-10">
+                      <span className="rounded-full border border-white/15 bg-black/65 px-2.5 py-1 text-[11px] font-semibold text-[#93C5FD] backdrop-blur-md shadow-sm">
                         {projectCategory}
-                      </p>
+                      </span>
                       {platform && (
-                        <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-0.5 text-[10px] font-bold text-slate-200 backdrop-blur-md">
+                        <span className="rounded-full border border-white/15 bg-black/65 px-2.5 py-1 text-[10px] font-bold text-slate-200 backdrop-blur-md shadow-sm">
                           {platform}
                         </span>
                       )}
                     </div>
-
-                    <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-snug text-white line-clamp-2 transition-colors duration-200 group-hover:text-blue-100">
-                      {project.title}
-                    </h2>
-
-                    {project.tagline && (
-                      <p className="text-xs sm:text-sm leading-relaxed text-slate-300 line-clamp-2">
-                        {project.tagline}
-                      </p>
-                    )}
                   </div>
 
-                  {/* Bottom Info & Rotating Arrow Action */}
-                  <div className="relative z-10 flex items-end justify-between gap-3 pt-3">
-                    <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur-md">
-                      {project.logo_url && (
-                        <img
-                          src={project.logo_url}
-                          alt=""
-                          className="h-4.5 w-4.5 rounded object-contain"
-                        />
-                      )}
-                      <span className="text-xs font-bold text-[#E4FD97]">
-                        ▲ {(project.upvote_count ?? 0).toLocaleString('tr-TR')} destek
-                      </span>
+                  {/* Bottom: Dedicated Clean Info Panel */}
+                  <div className="flex flex-1 flex-col justify-between p-5 sm:p-6 bg-[#081226]">
+                    {/* App Icon + Title & Tagline */}
+                    <div className="flex items-start gap-3.5">
+                      <div className="h-12 w-12 shrink-0 rounded-[14px] overflow-hidden border border-white/10 bg-[#0d1b38] p-1.5 shadow-md flex items-center justify-center">
+                        {project.logo_url ? (
+                          <img
+                            src={project.logo_url}
+                            alt=""
+                            className="h-full w-full rounded-[10px] object-contain"
+                          />
+                        ) : (
+                          <div className="h-full w-full rounded-[10px] bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center text-sm font-bold text-white">
+                            {project.title.slice(0, 1).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-base sm:text-lg font-bold text-white tracking-tight leading-snug line-clamp-1 transition-colors duration-200 group-hover:text-blue-200">
+                          {project.title}
+                        </h2>
+                        <p className="mt-1 text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                          {project.tagline || 'Kıstas topluluğunda öne çıkan bağımsız ürün.'}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 group-hover:bg-[#E4FD97] group-hover:scale-110">
-                      <ArrowUpRight className="h-4.5 w-4.5 text-black transition-transform duration-300 group-hover:rotate-45 will-change-transform" />
+                    {/* Footer: Vote Count + Action Arrow Button */}
+                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                      <div className="inline-flex items-center gap-1.5 rounded-full border border-lime-400/25 bg-lime-400/10 px-3 py-1 text-xs font-bold text-[#E4FD97] shadow-sm">
+                        <span>▲</span>
+                        <span>{(project.upvote_count ?? 0).toLocaleString('tr-TR')} destek</span>
+                      </div>
+
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-sm transition-all duration-300 group-hover:bg-[#E4FD97] group-hover:text-black group-hover:border-[#E4FD97] group-hover:scale-105">
+                        <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:rotate-45 will-change-transform" />
+                      </div>
                     </div>
                   </div>
                 </Link>
