@@ -45,6 +45,8 @@ const suites = {
     'web-credit-store.test.mjs',
     'web-credit-history-modal.test.mjs',
     'web-visibility-management.test.mjs',
+    'sponsor-refresh.test.mjs',
+    'sponsor-purchase.test.mjs',
   ],
   live: [
     'pars-defender-live.test.mjs',

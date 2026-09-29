@@ -48,6 +48,7 @@ test('Geçersiz keşif filtresi ve cursor hata ekranına gitmeli', async ({ page
 
 test('Yavaş sunucu yanıtında filtre temizleme eski scope ile tekrar gönderilmemeli', async ({ page, baseURL }) => {
   await page.goto('/?q=missing&platform=Web&category=11111111-1111-4111-8111-111111111111', { waitUntil: 'domcontentloaded' });
+  await expect.poll(() => page.evaluate(() => Boolean(history.state?.__kistasNavigation))).toBe(true);
   await page.route('**/*', async (route) => {
     if (new URL(route.request().url()).origin === new URL(baseURL!).origin && new URL(route.request().url()).pathname === '/') await new Promise((resolve) => setTimeout(resolve, 600));
     await route.fallback();

@@ -59,6 +59,7 @@ export interface Listing {
   status: ListingStatus;
   is_boosted: boolean;
   boosted_until?: string | null;
+  category_boosted_until?: string | null;
   upvote_count: number;
   rating_average: number;
   rating_count: number;

@@ -1,6 +1,13 @@
 import type { Listing } from './types';
 
-export type DiscoveryCard = Pick<Listing, 'id' | 'category_id' | 'title' | 'tagline' | 'description' | 'logo_url' | 'developer_name' | 'platforms' | 'created_at' | 'is_boosted' | 'boosted_until' | 'upvote_count' | 'images'>;
+export type DiscoveryCard = Pick<Listing, 'id' | 'category_id' | 'title' | 'tagline' | 'description' | 'logo_url' | 'developer_name' | 'platforms' | 'created_at' | 'is_boosted' | 'boosted_until' | 'category_boosted_until' | 'upvote_count' | 'images'>;
+export interface SponsorSnapshot { items: DiscoveryCard[]; timestamp: number }
+/** The last expiry that grants visibility in the selected sponsor scope. */
+export function sponsorExpiry(card: DiscoveryCard, categoryId: string | null): number {
+  const global = Date.parse(card.boosted_until ?? '');
+  const category = categoryId && card.category_id === categoryId ? Date.parse(card.category_boosted_until ?? '') : NaN;
+  return Math.max(Number.isFinite(global) ? global : 0, Number.isFinite(category) ? category : 0);
+}
 export type DiscoveryPlatform = 'all' | 'iOS' | 'Android' | 'Web' | 'macOS' | 'SaaS';
 export type DiscoverySort = 'trending' | 'top_voted' | 'newest';
 export interface DiscoveryState { q: string; categoryId: string | null; platform: DiscoveryPlatform; sort: DiscoverySort }

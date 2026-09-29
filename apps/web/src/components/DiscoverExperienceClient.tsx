@@ -12,6 +12,7 @@ import { FeaturedBoostShowcase } from './FeaturedBoostShowcase';
 import { TodayShowcaseRow } from './TodayShowcaseRow';
 import { AppStoreProjectList } from './AppStoreProjectList';
 import { FooterSloganBanner } from './FooterSloganBanner';
+import { useSponsoredDiscovery } from '@/hooks/useSponsoredDiscovery';
 import { rotateListingsByHour, discoveryHref, DISCOVERY_DEFAULTS, type DiscoveryState, type DiscoveryCard, type Category } from '@kistas/shared';
 
 export interface DiscoverExperienceClientProps {
@@ -23,6 +24,7 @@ export interface DiscoverExperienceClientProps {
 }
 export const DiscoverExperienceClient: React.FC<DiscoverExperienceClientProps> = ({ sections, state, categories, initialTimestamp, preserveLayoutWhenEmpty = false }) => {
   const router = useRouter();
+  const sponsored = useSponsoredDiscovery(state, sections.sponsored, initialTimestamp);
   const [searchQuery, setSearchQuery] = useState(state.q);
   const draftQuery = useRef(state.q);
   const submittedQuery = useRef(state.q);
@@ -52,7 +54,7 @@ export const DiscoverExperienceClient: React.FC<DiscoverExperienceClientProps> =
   const handleClearFilters = useCallback(() => { draftQuery.current = ''; setSearchQuery(''); navigate(DISCOVERY_DEFAULTS); }, [navigate]);
   const handleBrandPress = useCallback(() => { handleClearFilters(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, [handleClearFilters]);
   const selectedCategoryObj = categories.find((category) => category.id === state.categoryId);
-  const projects = useMemo(() => [...new Map([...sections.sponsored, ...sections.popular, ...sections.newest].map((project) => [project.id, project])).values()], [sections]);
+  const projects = useMemo(() => [...new Map([...sponsored, ...sections.popular, ...sections.newest].map((project) => [project.id, project])).values()], [sponsored, sections.popular, sections.newest]);
   const todayShowcase = useMemo(() => rotateListingsByHour(sections.popular, initialTimestamp), [sections.popular, initialTimestamp]);
   const keepShowcaseLayout = preserveLayoutWhenEmpty || ((state.categoryId !== null || state.platform !== 'all') && !state.q);
   const filtered = Boolean(state.q || state.categoryId || state.platform !== 'all');
@@ -76,8 +78,8 @@ export const DiscoverExperienceClient: React.FC<DiscoverExperienceClientProps> =
         </div>
       ) : (
         <>
-          <SponsorLogoMarquee projects={sections.sponsored} />
-          <FeaturedBoostShowcase projects={sections.sponsored} selectedCategoryName={selectedCategoryObj?.name} onOpenCreditStore={() => router.push('/popular')} />
+          <SponsorLogoMarquee projects={sponsored} />
+          <FeaturedBoostShowcase projects={sponsored} selectedCategoryName={selectedCategoryObj?.name} onOpenCreditStore={() => router.push('/popular')} />
           <TodayShowcaseRow projects={todayShowcase} title="Günün Vitrini" subtitle="Topluluğun desteklediği projeler · Her saat adil rotasyon" viewAllHref={showcaseHref} showEmptyState={keepShowcaseLayout} />
           {state.sort !== 'newest' && <AppStoreProjectList title={selectedCategoryObj ? `${selectedCategoryObj.name} · Popüler` : 'Popüler Projeler'} projects={sections.popular} variant="ranked" viewAllHref={popularHref} showEmptyState={keepShowcaseLayout} />}
           {state.sort !== 'top_voted' && <AppStoreProjectList title={selectedCategoryObj ? `${selectedCategoryObj.name} · Yeni` : 'Yeni Çıkanlar'} projects={sections.newest} variant="new" viewAllHref={newestHref} showEmptyState={keepShowcaseLayout} />}

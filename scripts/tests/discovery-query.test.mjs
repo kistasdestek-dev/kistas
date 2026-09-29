@@ -5,7 +5,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import ts from 'typescript';
-import { parseDiscoveryState, decodeDiscoveryCursor, encodeDiscoveryCursor, discoverySearchFilter, DISCOVERY_DEFAULTS } from '../../packages/shared/src/discovery.ts';
+import { parseDiscoveryState, decodeDiscoveryCursor, encodeDiscoveryCursor, discoverySearchFilter, sponsorExpiry, DISCOVERY_DEFAULTS } from '../../packages/shared/src/discovery.ts';
 import { discoveryFixtureRows, queryDiscoveryFixture } from './discovery-fixture.mjs';
 
 const requireWeb = createRequire(new URL('../../apps/web/package.json', import.meta.url));
@@ -88,6 +88,39 @@ try {
   }
   rows = [{ ...sponsor, boosted_until: new Date(now).toISOString() }];
   assert.equal((await getSponsoredDiscovery(client, DISCOVERY_DEFAULTS, now)).length, 0, 'Expiry boundary is exclusive');
+  const cat = '11111111-1111-4111-8111-111111111111';
+  const categoryState = { ...DISCOVERY_DEFAULTS, categoryId: cat };
+  rows = discoveryFixtureRows();
+  const union = await getSponsoredDiscovery(client, categoryState, now);
+  assert.deepEqual(union.map(card => card.title).sort(), ['Kategori Sponsor Projesi', 'M1 Sponsor Projesi']);
+  assert.ok(union.every(card => card.is_boosted));
+  assert.equal((await getSponsoredDiscovery(client, DISCOVERY_DEFAULTS, now)).some(card => card.title === 'Kategori Sponsor Projesi'), false);
+  assert.deepEqual((await getSponsoredDiscovery(client, { ...categoryState, q: 'Kategori Sponsor', platform: 'Web' }, now)).map(card => card.title), ['Kategori Sponsor Projesi']);
+  assert.equal((await getSponsoredDiscovery(client, { ...categoryState, q: 'Kategori Sponsor', platform: 'Android' }, now)).length, 0);
+  assert.equal((await getSponsoredDiscovery(client, { ...categoryState, q: 'x"),status.eq.pending_review' }, now)).length, 0, 'Combined sponsor/search expression must not broaden status or scope');
+  const scopedOrganic = await getDiscoveryPage(client, { ...categoryState, q: 'Kategori Sponsor' }, undefined, 30, now);
+  assert.equal(scopedOrganic.items.find(card => card.title === 'Kategori Sponsor Projesi').is_boosted, true);
+  rows = [{ ...sponsor, category_boosted_until: '2031-01-01T00:00:00Z' },
+    { ...sponsor, id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', category_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' },
+    { ...sponsor, id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', status: 'inactive' }];
+  const dual = await getSponsoredDiscovery(client, categoryState, now);
+  assert.equal(dual.length, 1, 'Dual sponsorship must not duplicate, and wrong category/inactive must be excluded');
+  assert.equal(sponsorExpiry(dual[0], cat), Date.parse('2031-01-01T00:00:00Z'));
+  assert.equal(sponsorExpiry(dual[0], null), Date.parse(sponsor.boosted_until));
+  rows = [{ ...sponsor, boosted_until: null, category_boosted_until: new Date(now).toISOString() }];
+  assert.equal((await getSponsoredDiscovery(client, categoryState, now)).length, 0);
+  for (const count of [0, 1, 3, 17]) {
+    rows = base.slice(0, count);
+    const appearances = new Map(rows.map(row => [row.id, 0]));
+    const slots = [new Set(), new Set(), new Set()];
+    for (let hour = 0; hour < Math.max(1, count); hour++) {
+      const cards = await getSponsoredDiscovery(client, DISCOVERY_DEFAULTS, hour * 3600000, 12);
+      assert.equal(new Set(cards.map(card => card.id)).size, cards.length);
+      cards.slice(0, 3).forEach((card, index) => { appearances.set(card.id, appearances.get(card.id) + 1); slots[index].add(card.id); });
+    }
+    assert.ok([...appearances.values()].every(value => value === Math.min(3, count)));
+    for (const slot of slots.slice(0, Math.min(3, count))) assert.equal(slot.size, count);
+  }
   fail = true;
   await assert.rejects(getDiscoveryPage(client, DISCOVERY_DEFAULTS, undefined, 30, now), /TEST_ERROR/);
   await assert.rejects(getSponsoredDiscovery(client, DISCOVERY_DEFAULTS, now), /TEST_ERROR/);
@@ -97,7 +130,7 @@ try {
   const queriesPath = path.join(root, 'loader-queries.mjs');
   const navigationPath = path.join(root, 'navigation.mjs');
   fs.writeFileSync(cachePath, "export const stores = []; export function unstable_cache(fn, names, options) { const store = new Map(); stores.push({names, options, store}); return (...args) => { const key = JSON.stringify(args); if (!store.has(key)) store.set(key, fn(...args)); return store.get(key); }; }");
-  fs.writeFileSync(queriesPath, "export const calls = {categories:0, sections:0, pages:0}; export function createAnonClient(){return {}} export async function getCategories(){calls.categories++; return []} export async function getDiscoverySections(){calls.sections++; return {popular:[], newest:[], sponsored:[]}} export async function getDiscoveryPage(){calls.pages++; return {items:[], nextCursor:null}} ");
+  fs.writeFileSync(queriesPath, "export const calls = {categories:0, sponsors:0, pages:0}; export function createAnonClient(){return {}} export async function getCategories(){calls.categories++; return []} export async function getSponsoredDiscovery(){calls.sponsors++; return []} export async function getDiscoveryPage(){calls.pages++; return {items:[], nextCursor:null}} ");
   fs.writeFileSync(navigationPath, "export function notFound(){throw new Error('NotFound')} ");
   const loaderPath = path.join(root, 'loader.mjs');
   let loader = fs.readFileSync(new URL('../../apps/web/src/lib/discovery.ts', import.meta.url), 'utf8');
@@ -108,16 +141,18 @@ try {
   const { calls } = await import(pathToFileURL(queriesPath));
   const { stores } = await import(pathToFileURL(cachePath));
   await loadDiscovery({}); await loadDiscovery({});
-  assert.equal(calls.sections, 1);
+  assert.equal(calls.pages, 2, 'Organic sections stay cached');
+  assert.equal(calls.sponsors, 2, 'Sponsors must be read fresh for each request');
   const entriesBeforeSearch = stores.reduce((sum, entry) => sum + entry.store.size, 0);
   await loadDiscovery({q:'one'}); await loadDiscovery({q:'two'});
-  assert.equal(calls.sections, 3);
+  assert.equal(calls.pages, 6);
+  assert.equal(calls.sponsors, 4);
   assert.equal(stores.reduce((sum, entry) => sum + entry.store.size, 0), entriesBeforeSearch, 'Free-text search must not add persistent cache keys');
   await loadDiscoveryCollection({}, 'newest'); await loadDiscoveryCollection({}, 'newest');
-  assert.equal(calls.pages, 1);
+  assert.equal(calls.pages, 7);
   const entriesBeforeCursor = stores.reduce((sum, entry) => sum + entry.store.size, 0);
   await loadDiscoveryCollection({cursor:first.nextCursor}, 'newest'); await loadDiscoveryCollection({cursor:first.nextCursor}, 'newest');
-  assert.equal(calls.pages, 3);
+  assert.equal(calls.pages, 9);
   assert.equal(stores.reduce((sum, entry) => sum + entry.store.size, 0), entriesBeforeCursor, 'Cursor must not add persistent cache keys');
   assert.ok(stores.every((entry) => entry.options.revalidate === 60));
   console.log('M1 discovery: >40 records, independent sections, server scope, safe filters, tie pagination, insert/delete, sponsor rotation/expiry, minimal payload and fail-closed errors passed.');

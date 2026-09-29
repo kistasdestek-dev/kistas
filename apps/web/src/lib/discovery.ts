@@ -1,13 +1,17 @@
 import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
-import { createAnonClient, getCategories, getDiscoverySections, getDiscoveryPage } from '@kistas/supabase';
+import { createAnonClient, getCategories, getSponsoredDiscovery, getDiscoveryPage } from '@kistas/supabase';
 import { parseDiscoveryState, InvalidDiscoveryQuery, type DiscoveryParams, type DiscoveryState } from '@kistas/shared';
 
 export const getDiscoveryCategories = unstable_cache(async () => getCategories(createAnonClient()), ['discovery-categories-v1'], { revalidate: 60 });
 const getSections = unstable_cache(async (state: DiscoveryState) => {
-  const timestamp = Date.now();
-  return { sections: await getDiscoverySections(createAnonClient(), state, timestamp), timestamp };
-}, ['discovery-sections-v2'], { revalidate: 60 });
+  const client = createAnonClient();
+  const [popular, newest] = await Promise.all([
+    getDiscoveryPage(client, { ...state, sort: 'top_voted' }, undefined, 6),
+    getDiscoveryPage(client, { ...state, sort: 'newest' }, undefined, 6),
+  ]);
+  return { popular: popular.items, newest: newest.items };
+}, ['discovery-organic-sections-v3'], { revalidate: 60 });
 const getFirstPage = unstable_cache(async (state: DiscoveryState) => getDiscoveryPage(createAnonClient(), state), ['discovery-first-page-v2'], { revalidate: 60 });
 export async function resolveDiscoveryState(params: DiscoveryParams, defaults: Partial<DiscoveryState> = {}) {
   try {
@@ -19,11 +23,15 @@ export async function resolveDiscoveryState(params: DiscoveryParams, defaults: P
 }
 export async function loadDiscovery(params: DiscoveryParams, defaults: Partial<DiscoveryState> = {}) {
   const { state, categories } = await resolveDiscoveryState(params, defaults);
-  if (state.q) {
-    const timestamp = Date.now();
-    return { state, categories, sections: await getDiscoverySections(createAnonClient(), state, timestamp), timestamp };
-  }
-  return { state, categories, ...await getSections(state) };
+  const timestamp = Date.now();
+  const [organic, sponsored] = await Promise.all([
+    state.q ? Promise.all([
+      getDiscoveryPage(createAnonClient(), { ...state, sort: 'top_voted' }, undefined, 6, timestamp),
+      getDiscoveryPage(createAnonClient(), { ...state, sort: 'newest' }, undefined, 6, timestamp),
+    ]).then(([popular, newest]) => ({ popular: popular.items, newest: newest.items })) : getSections(state),
+    getSponsoredDiscovery(createAnonClient(), state, timestamp),
+  ]);
+  return { state, categories, sections: { ...organic, sponsored }, timestamp };
 }
 export async function loadDiscoveryCollection(params: DiscoveryParams, sort: 'top_voted' | 'newest') {
   const { state } = await resolveDiscoveryState(params, { sort });

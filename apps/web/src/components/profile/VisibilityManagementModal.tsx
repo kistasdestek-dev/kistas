@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { startTransition, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   AlertCircle,
@@ -16,7 +16,8 @@ import {
   X,
 } from 'lucide-react';
 import type { Listing } from '@kistas/shared';
-import { createClient } from '@/lib/supabase/browser';
+import { purchaseSponsorAction } from '@/app/actions/sponsors';
+import { SPONSORS_CHANGED_EVENT } from '@/lib/sponsor-refresh';
 import {
   getVisibilityErrorMessage,
   VISIBILITY_PACKAGES,
@@ -26,10 +27,6 @@ import { AutoTransparentLogo } from '../AutoTransparentLogo';
 import { ShinyButton } from '../ui/shiny-button';
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
-type VisibilityListing = Listing & {
-  category_boosted_until?: string | null;
-};
-
 interface VisibilityManagementModalProps {
   isOpen: boolean;
   listings: Listing[];
@@ -37,11 +34,6 @@ interface VisibilityManagementModalProps {
   boostCredits: number;
   onClose: () => void;
   onSuccess: (newCredits?: number) => void;
-}
-
-interface BoostResult {
-  success?: boolean;
-  new_credits?: number;
 }
 
 const formatExpiry = (value?: string | null) => {
@@ -54,7 +46,7 @@ const formatExpiry = (value?: string | null) => {
   }).format(new Date(value));
 };
 
-const getActiveExpiry = (listing: VisibilityListing, scope: VisibilityScope) =>
+const getActiveExpiry = (listing: Listing, scope: VisibilityScope) =>
   scope === 'global' ? listing.boosted_until : listing.category_boosted_until;
 
 export const VisibilityManagementModal: React.FC<VisibilityManagementModalProps> = ({
@@ -65,8 +57,10 @@ export const VisibilityManagementModal: React.FC<VisibilityManagementModalProps>
   onClose,
   onSuccess,
 }) => {
+  const purchaseInFlight = useRef(false);
+  const initialized = useRef<{ listingId: string | null } | null>(null);
   const activeListings = useMemo(
-    () => listings.filter((listing): listing is VisibilityListing => listing.status === 'active'),
+    () => listings.filter((listing) => listing.status === 'active'),
     [listings]
   );
   const [selectedListingId, setSelectedListingId] = useState('');
@@ -78,7 +72,9 @@ export const VisibilityManagementModal: React.FC<VisibilityManagementModalProps>
   useBodyScrollLock(isOpen);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) { initialized.current = null; return; }
+    if (initialized.current && initialized.current.listingId === (initialListingId ?? null)) return;
+    if (activeListings.length) initialized.current = { listingId: initialListingId ?? null };
     const preferredListing = activeListings.find((listing) => listing.id === initialListingId);
     setSelectedListingId(preferredListing?.id ?? activeListings[0]?.id ?? '');
     setScope('category');
@@ -115,32 +111,33 @@ export const VisibilityManagementModal: React.FC<VisibilityManagementModalProps>
   };
 
   const handleApplyBoost = async () => {
-    if (!selectedListing || busy || !hasEnoughCredits) return;
+    if (!selectedListing || purchaseInFlight.current || busy || successMsg || !hasEnoughCredits) return;
 
+    purchaseInFlight.current = true;
     setBusy(true);
     setError('');
 
     try {
-      const supabase = createClient();
-      const { data, error: rpcError } = await supabase.rpc('boost_listing_scoped', {
-        p_listing_id: selectedListing.id,
-        p_scope: scope,
-        p_duration_hours: selectedPackage.durationHours,
-        p_credit_cost: selectedPackage.creditCost,
-      });
-      const result = data as BoostResult | null;
-
-      if (rpcError || !result?.success) {
-        throw new Error(rpcError?.message || 'BOOST_FAILED');
-      }
+      const result = await purchaseSponsorAction(selectedListing.id, selectedPackage.id);
+      if (!result.success) { setError(result.error); return; }
 
       const scopeLabel = scope === 'global' ? 'Genel Keşfet' : 'Kategori Vitrini';
       setSuccessMsg(`“${selectedListing.title}” için ${scopeLabel} görünürlüğü etkinleştirildi.`);
-      onSuccess(result.new_credits);
+      // Refresh is a separate outcome; never offer to repeat a completed credit spend.
+      try {
+        window.dispatchEvent(new Event(SPONSORS_CHANGED_EVENT));
+        if (typeof BroadcastChannel !== 'undefined') {
+          const channel = new BroadcastChannel(SPONSORS_CHANGED_EVENT);
+          channel.postMessage('changed');
+          channel.close();
+        }
+        onSuccess(result.newCredits);
+      } catch { /* The purchase succeeded; periodic refresh will catch up. */ }
     } catch (caughtError) {
       const message = caughtError instanceof Error ? caughtError.message : undefined;
       setError(getVisibilityErrorMessage(message));
     } finally {
+      purchaseInFlight.current = false;
       setBusy(false);
     }
   };
@@ -306,7 +303,7 @@ export const VisibilityManagementModal: React.FC<VisibilityManagementModalProps>
           ) : successMsg ? (
             <ShinyButton onClick={onClose} className="min-h-11 w-full text-xs font-bold">Tamam</ShinyButton>
           ) : (
-            <ShinyButton onClick={handleApplyBoost} disabled={busy || !selectedListing} className="shiny-cta--citrus min-h-12 w-full text-xs font-extrabold">
+            <ShinyButton onClick={() => startTransition(handleApplyBoost)} disabled={busy || !selectedListing} className="shiny-cta--citrus min-h-12 w-full text-xs font-extrabold">
               <span className="inline-flex items-center justify-center gap-2">
                 {busy && <Loader2 size={16} className="animate-spin" />}
                 {busy ? 'Güvenli işlem tamamlanıyor...' : `${isAlreadyActive ? 'Görünürlüğü Uzat' : 'Projeyi Öne Çıkar'} · ${selectedPackage.creditCost} Kredi`}

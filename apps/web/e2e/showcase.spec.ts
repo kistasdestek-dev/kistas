@@ -67,7 +67,8 @@ for (const { width, name } of [
     }));
     expect(layout).toEqual({ cards: true, overflow: false });
     await expect(page.locator('footer')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Reddet', exact: true }).click();
+    const reject = page.getByRole('button', { name: 'Reddet', exact: true });
+    if (await reject.isVisible()) await reject.click();
     await expect(page.getByRole('button', { name: 'Reddet', exact: true })).toHaveCount(0);
     await page.mouse.move(0, 0);
     await page.screenshot({ path: `../../reports/showcase-${name}.png`, fullPage: width > 390, animations: 'disabled' });

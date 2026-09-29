@@ -8,8 +8,11 @@ const profileExperience = read('apps/web/src/components/ProfileExperienceClient.
 const visibility = read('apps/web/src/lib/visibility.ts');
 const scrollLock = read('apps/web/src/hooks/useBodyScrollLock.ts');
 const rpcMigration = read('supabase/migrations/20260916000006_credit_ledger_details.sql');
+const action = read('apps/web/src/app/actions/sponsors.ts');
 
-assert.match(modal, /supabase\.rpc\('boost_listing_scoped'/, 'Vitrin işlemi güvenli RPC üzerinden yürümeli');
+assert.match(action, /supabase\.rpc\('boost_listing_scoped'/, 'Vitrin işlemi sunucuda güvenli RPC üzerinden yürümeli');
+assert.doesNotMatch(modal, /supabase\.rpc|supabase\/browser/, 'Eski doğrudan istemci satın alma yolu kaldırılmalı');
+assert.match(modal, /purchaseSponsorAction\(selectedListing\.id, selectedPackage\.id\)/);
 assert.doesNotMatch(modal, /\.from\('listings'\)[\s\S]{0,120}\.update\(/, 'İstemci sponsor alanlarını doğrudan güncellememeli');
 assert.match(modal, /ShinyButton/, 'Ana eylem Kıstas Glass Buton kullanmalı');
 assert.doesNotMatch(modal, /GlassIconButton|Kıstas görünürlük motoru|\{activeListings\.length\} yayındaki proje/, 'Kaldırılan başlık ikon ve metinleri geri gelmemeli');

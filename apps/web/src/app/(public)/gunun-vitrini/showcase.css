@@ -98,15 +98,18 @@
   color: #7d8fa8;
 }
 
-/* Apple Card Carousel Styling */
+/* Apple Card Grid & Gallery Card Styling */
 .showcase-gallery-card {
   user-select: none;
   -webkit-user-select: none;
-  touch-action: pan-y;
 }
 
-.showcase-gallery-card:active {
-  cursor: grabbing;
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .showcase-page-empty {

@@ -1,13 +1,14 @@
 export const category = { id: '11111111-1111-4111-8111-111111111111', parent_id: null, name: 'Geliştirici Araçları', slug: 'app-devtools', icon_url: null, order_index: 1 };
 export const listing = {
   id: '22222222-2222-4222-8222-222222222222', seller_id: '33333333-3333-4333-8333-333333333333', category_id: category.id,
-  title: 'M0 Test Projesi', tagline: 'Tekrar üretilebilir keşif verisi', description: 'Workers test fixture', price: 0, status: 'active', boosted_until: null, upvotes_count: 7, platforms: ['Web'],
+  title: 'M0 Test Projesi', tagline: 'Tekrar üretilebilir keşif verisi', description: 'Workers test fixture', price: 0, status: 'active', boosted_until: null, category_boosted_until: null, upvotes_count: 7, platforms: ['Web'],
   web_url: 'https://example.com', logo_url: '/kistas-logo-256.webp', pricing_model: 'free', developer_name: 'Test Maker', created_at: '2026-09-01T12:00:00Z', updated_at: '2026-09-01T12:00:00Z', images: [], category: { name: category.name },
 };
 export function discoveryFixtureRows() {
   return [listing, ...Array.from({ length: 70 }, (_, index) => ({ ...listing, id: `44444444-4444-4444-8444-${String(index + 1).padStart(12, '0')}`, title: `Eski Proje ${index + 1}`, upvotes_count: 1000 - Math.floor(index / 2), description: 'A'.repeat(4000) })),
     { ...listing, id: '55555555-5555-4555-8555-555555555555', title: 'M1 Yeni Proje', developer_name: 'Aranabilir Ekip', created_at: '2026-09-27T12:00:00Z', upvotes_count: 0 },
     { ...listing, id: '66666666-6666-4666-8666-666666666666', title: 'M1 Sponsor Projesi', created_at: '2026-09-26T12:00:00Z', boosted_until: '2030-01-01T00:00:00Z', upvotes_count: 0 },
+    { ...listing, id: '99999999-9999-4999-8999-999999999999', title: 'Kategori Sponsor Projesi', category_boosted_until: '2030-01-02T00:00:00Z', upvotes_count: 0 },
     { ...listing, id: '77777777-7777-4777-8777-777777777777', title: 'Yayınlanmamış Proje', status: 'pending_review', upvotes_count: 9999 },
   ];
 }

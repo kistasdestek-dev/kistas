@@ -10,6 +10,7 @@ export function launchSession(id = launchUsers[0]) {
 }
 const drafts = new Map();
 const sessions = launchUsers.map(id=>launchSession(id));
+const sponsorAccounts = new Map();
 export async function privateLaunchFixtureResponse(request) {
   const url = new URL(request.url);
   if (!url.hostname.endsWith('.supabase.co')) return null;
@@ -21,11 +22,32 @@ export async function privateLaunchFixtureResponse(request) {
   const session = sessions.find(item=>item.user.id===subject); if (!session) throw new Error('Unknown fixture identity');
   if (url.pathname === '/auth/v1/user' && request.method==='GET') return Response.json(session.user);
   const resource=url.pathname.split('/').at(-1);
+  if (!sponsorAccounts.has(subject)) sponsorAccounts.set(subject,{credits:5000,global:null,category:null,transactions:[]});
+  const sponsorAccount=sponsorAccounts.get(subject);
+  if (request.method==='GET' && resource==='profiles') return Response.json({id:subject,full_name:'Test Üretici',boost_credits:sponsorAccount.credits,avatar_url:null});
+  if (request.method==='GET' && resource==='notifications') return Response.json([]);
+  if (request.method==='GET' && resource==='conversations') return Response.json([]);
+  if (request.method==='HEAD' && resource==='project_upvotes') return new Response(null,{headers:{'content-range':'*/0'}});
+  if (request.method==='GET' && resource==='credit_transactions') return Response.json(sponsorAccount.transactions);
+  if (request.method==='POST' && resource==='is_platform_admin') return Response.json(false);
+  if (request.method==='POST' && resource==='boost_listing_scoped') {
+    const body=await request.json();
+    const costs={global:{24:200,72:450,168:900},category:{24:50,72:120,168:250}};
+    if (body.p_listing_id!==listing.id || costs[body.p_scope]?.[body.p_duration_hours]!==body.p_credit_cost) {
+      return Response.json({code:'P0001',message:'INVALID_BOOST_PACKAGE'},{status:400});
+    }
+    if (sponsorAccount.credits<body.p_credit_cost) return Response.json({code:'P0001',message:'INSUFFICIENT_CREDITS'},{status:400});
+    sponsorAccount.credits-=body.p_credit_cost;
+    sponsorAccount[body.p_scope]=new Date(Math.max(Date.parse(sponsorAccount[body.p_scope])||0,Date.now())+body.p_duration_hours*3600000).toISOString();
+    sponsorAccount.transactions.unshift({id:crypto.randomUUID(),amount:-body.p_credit_cost,balance_after:sponsorAccount.credits,
+      type:'spend_boost',description:'Vitrin Kredisi',created_at:new Date().toISOString(),metadata:{listing_id:listing.id,listing_title:'Mobil Glass Proje',scope:body.p_scope,duration_hours:body.p_duration_hours}});
+    return Response.json({success:true,new_credits:sponsorAccount.credits,boosted_until:sponsorAccount[body.p_scope],scope:body.p_scope});
+  }
   if (request.method === 'POST' && resource === 'get_current_admin_access') return Response.json({is_admin:subject===launchUsers[0],is_owner:subject===launchUsers[0],permissions:['community','listings','moderation'],admin_tier:'owner'});
   if (request.method === 'POST' && resource === 'get_admin_dashboard_stats') return Response.json({total_projects:3,active_projects:1,pending_projects:1,total_users:1});
   if (request.method === 'POST' && resource === 'get_admin_users') return Response.json([{user_id:subject,full_name:'Test Üretici',email:'maker@example.test',user_role:'user',projects_count:3}]);
   if (request.method === 'GET' && resource === 'listings') return Response.json([
-    {...listing,title:'Mobil Glass Proje',tagline:'Dar ekranda okunabilir proje açıklaması',status:'active',upvote_count:42,view_count:1200},
+    {...listing,seller_id:subject,title:'Mobil Glass Proje',tagline:'Dar ekranda okunabilir proje açıklaması',status:'active',upvote_count:42,view_count:1200,boosted_until:sponsorAccount.global,category_boosted_until:sponsorAccount.category},
     {...listing,id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',title:'Bekleyen Proje',status:'draft',upvote_count:0,view_count:0},
     {...listing,id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd',title:'Askıdaki Proje',status:'banned',upvote_count:12,view_count:300},
   ]);

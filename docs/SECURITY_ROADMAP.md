@@ -1,5 +1,11 @@
 # KISTAS GUVENLIK YOL HARITASI
 
+## 2026-09-29 — Web sponsor kapsamı ve canlı yenileme
+
+Mimar onaylı kapsam: kategori seçilince genel/kategori sponsorlarının active ve süre kontrollü tek havuzda birleşmesi; salt okunur no-store endpoint; sunucu action üzerinden mevcut oturumlu `boost_listing_scoped` satın alma. Yeni tablo, migration, RPC/grant, secret veya dış servis yok. Paket fiyatı/süresi sunucuda sabit listeden seçilir; sahiplik, auth.uid(), bakiye, satır kilidi ve atomik ledger mevcut RPC'de korunur. Public veri anonim RLS ile sınırlı kart alanlarından okunur; arama/sponsor koşulları tek PostgREST ifadesinde birleştirilir, ham hata/PII dönülmez.
+
+Zorunlu kontrol bu okuma/satın alma kapsamına uygulandı. Refresh olayları özel veri içermez; tek istek, 12 kayıt sınırı, 10 saniye timeout ve gizli sekmede polling durdurma ağ yükünü sınırlar. Satın alma ile görünürlük yenilemesi ayrı sonuçlardır; UI eşzamanlı tıklamayı engeller ve kredi işlemini otomatik tekrar etmez. Mevcut RPC'de farklı çağrıların her biri ayrı süre satın alır; yeni sunucu idempotency sözleşmesi eklenmedi. PGlite ile negatif sahiplik/paket/bakiye/durum, kapsam ve ledger testleri geçti; sentetik auth/tek bağlantı sınırı canlı RLS/yarış doğrulaması değildir. Yeni doğrulanmış güvenlik açığı kaydı veya SEC durum değişikliği yok. Kanıt, yayın sınırı, geri dönüş ve handoff: `docs/SPONSORED_SHOWCASE_VALIDATION.md`.
+
 ## 2026-09-29 — Glass proje kartları ve ortak geri navigasyonu
 
 Mimar UI, push ve deploy kapsamını onayladı. Değişiklik yalnız sunum/navigasyon katmanındadır; yeni tablo, RPC, grant, kimlik veya veri yazma yolu eklenmez. Admin işlemleri mevcut sunucu yetki kontrolü ve silme onayından geçmeye devam eder. Geri hedefleri dahili rotadır; history metadata doğrulanır. Sekme kurtarma metadata'sı yalnız pathname/derinlik içerir; query, PII, token veya form verisi saklanmaz ve dış servise iletilmez.

@@ -43,6 +43,8 @@ import { VisibilityManagementModal } from './profile/VisibilityManagementModal';
 
 import type { Profile, Listing } from '@kistas/shared';
 
+const EMPTY_LISTINGS: Listing[] = [];
+
 export interface ProfileExperienceClientProps {
   user?: {
     id: string;
@@ -61,7 +63,7 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
   user,
   profile: initialProfile,
   isAdmin,
-  initialListings = [],
+  initialListings = EMPTY_LISTINGS,
   initialNotifications = [],
   initialSupportedCount = 0,
   initialCreditTransactions = [],
@@ -73,6 +75,8 @@ export const ProfileExperienceClient: React.FC<ProfileExperienceClientProps> = (
   // Local State
   const [profile, setProfile] = useState<Profile | null>(initialProfile || null);
   const [myListings, setMyListings] = useState<Listing[]>(initialListings);
+  useEffect(() => { setProfile(initialProfile || null); }, [initialProfile]);
+  useEffect(() => { setMyListings(initialListings); }, [initialListings]);
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
   const supportedCount = initialSupportedCount;
   const creditTransactions = initialCreditTransactions;
