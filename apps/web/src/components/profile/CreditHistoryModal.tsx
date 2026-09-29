@@ -166,11 +166,9 @@ export const CreditHistoryModal: React.FC<CreditHistoryModalProps> = ({
         <div className="pointer-events-none absolute -left-24 -top-24 h-60 w-60 rounded-full bg-[#3269C7]/20 blur-[76px]" />
         <div className="pointer-events-none absolute -right-20 top-28 h-48 w-48 rounded-full bg-[#E4FD97]/[0.07] blur-[68px]" />
 
-        <header className="relative flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6 sm:py-5">
+        <header className="relative flex items-center justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6 sm:py-5">
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#78ADFF]">Kıstas Cüzdanı</p>
-            <h2 id="credit-history-title" className="mt-0.5 text-xl font-black tracking-tight text-white">Kredi Hareketleri</h2>
-            <p className="mt-1 text-xs text-[#94A3B8]">Yükleme, ödül ve vitrin kullanımlarınızın güvenli özeti.</p>
+            <h2 id="credit-history-title" className="text-xl font-black tracking-tight text-white">Kredi Hareketleri</h2>
           </div>
           <GlassIconButton
             icon={X}
@@ -179,7 +177,8 @@ export const CreditHistoryModal: React.FC<CreditHistoryModalProps> = ({
             iconSize={16}
             iconColor="#DCE8F8"
             ariaLabel="Kredi hareketlerini kapat"
-            className="!border-white/15 !bg-white/[0.07]"
+            variant="glass"
+            className="!border-transparent !bg-white/[0.06] hover:!bg-white/[0.12]"
           />
         </header>
 
@@ -198,8 +197,7 @@ export const CreditHistoryModal: React.FC<CreditHistoryModalProps> = ({
                 Kredi Al
               </ShinyButton>
             </div>
-            <div className="relative mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-[10px] font-semibold text-[#91A6C5]">
-              <span>Güvenli kredi defteri</span>
+            <div className="relative mt-4 flex items-center justify-end border-t border-white/10 pt-3 text-[10px] font-semibold text-[#91A6C5]">
               <span>{transactions.length.toLocaleString('tr-TR')} işlem</span>
             </div>
           </div>

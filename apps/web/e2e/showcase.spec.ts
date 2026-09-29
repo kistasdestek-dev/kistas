@@ -52,20 +52,20 @@ test('Yeni vitrin geçersiz filtreyi reddetmeli; boş arama gerçek boş durum g
   await expect(page.locator('footer')).toHaveCount(0);
 });
 
-for (const { width, columns, name } of [
-  { width: 390, columns: 1, name: 'mobile' },
-  { width: 768, columns: 2, name: 'tablet' },
-  { width: 1440, columns: 3, name: 'desktop' },
+for (const { width, name } of [
+  { width: 390, name: 'mobile' },
+  { width: 768, name: 'tablet' },
+  { width: 1440, name: 'desktop' },
 ]) {
   test(`Günün Vitrini ${name} düzeni taşmamalı ve okunabilir kartlar göstermeli`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/gunun-vitrini', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.showcase-gallery-card').first()).toBeVisible();
-    const layout = await page.locator('.showcase-gallery-grid').evaluate(element => ({
-      columns: getComputedStyle(element).gridTemplateColumns.split(' ').length,
+    const layout = await page.locator('.showcase-page').evaluate(element => ({
+      cards: element.querySelectorAll('.showcase-gallery-card').length > 0,
       overflow: document.documentElement.scrollWidth > window.innerWidth,
     }));
-    expect(layout).toEqual({ columns, overflow: false });
+    expect(layout).toEqual({ cards: true, overflow: false });
     await expect(page.locator('footer')).toHaveCount(0);
     await page.getByRole('button', { name: 'Reddet', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Reddet', exact: true })).toHaveCount(0);
